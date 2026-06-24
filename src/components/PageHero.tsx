@@ -46,9 +46,9 @@ export function PageHero({
         {title}
       </h1>
       {lead ? (
-        <p className="max-w-prose text-lg leading-relaxed text-muted-foreground">
+        <div className="max-w-prose text-lg leading-relaxed text-muted-foreground">
           {lead}
-        </p>
+        </div>
       ) : null}
       {children}
     </header>

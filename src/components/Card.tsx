@@ -84,15 +84,15 @@ export function Card({
         </h3>
       ) : null}
       {description ? (
-        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+        <div className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
           {description}
-        </p>
+        </div>
       ) : null}
       {children}
       {footer ? (
-        <p className="mt-3 border-t pt-3 text-[0.8125rem] text-muted-foreground">
+        <div className="mt-3 border-t pt-3 text-[0.8125rem] text-muted-foreground">
           {footer}
-        </p>
+        </div>
       ) : null}
     </>
   );

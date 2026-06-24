@@ -1,0 +1,76 @@
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { scrollToId, anchorId } from "@/lib/scroll";
+import { useToc, type TocItem } from "@/lib/toc";
+
+// PageToc (00 — оглавление «На этой странице») — страница объявляет свои секции.
+// Пункты = заголовкам секций ДОСЛОВНО. Десктоп: переносятся в липкий рейл со
+// scrollspy (TocRail в Layout). Узкий экран: рисуются здесь, в теле под заголовком.
+// Показывать только от ~3 секций (на 1–2 секции PageToc на странице не ставят).
+// Маршрутизация хеш-адресами → переход к секции делаем программным скроллом,
+// а не href="#id" (иначе HashRouter примет это за смену маршрута).
+
+/** Общий рендерер ссылок оглавления (используется и в рейле, и в теле). */
+export function TocLinks({
+  items,
+  activeId,
+  className,
+}: {
+  items: TocItem[];
+  activeId?: string | null;
+  className?: string;
+}) {
+  return (
+    <ul className={cn("space-y-1.5", className)}>
+      {items.map((item) => {
+        const id = anchorId(item.anchor);
+        const active = activeId === id;
+        return (
+          <li key={id}>
+            <button
+              type="button"
+              onClick={() => scrollToId(id)}
+              aria-current={active ? "true" : undefined}
+              className={cn(
+                "rounded-sm text-left text-sm underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                active
+                  ? "font-medium text-brand underline"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {item.label}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+export function PageToc({ items }: { items: TocItem[] }) {
+  const { setItems } = useToc();
+  const key = items.map((i) => i.anchor + "|" + i.label).join("§");
+
+  // useLayoutEffect — рейл получает пункты до отрисовки, без скачка ширины колонок.
+  React.useLayoutEffect(() => {
+    if (items.length >= 3) setItems(items);
+    else setItems([]);
+    return () => setItems([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  if (items.length < 3) return null;
+
+  // До xl: в теле, НЕ липкое (на широком экране это место занимает рейл TocRail).
+  return (
+    <nav
+      aria-label="На этой странице"
+      className="rounded-lg border bg-muted/30 p-5 xl:hidden"
+    >
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        На этой странице
+      </p>
+      <TocLinks items={items} />
+    </nav>
+  );
+}

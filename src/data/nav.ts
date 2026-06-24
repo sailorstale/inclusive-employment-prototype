@@ -1,4 +1,4 @@
-// Единый источник навигации (00 — Карта сайта). Из него строятся
+// Единый источник навигации (00 — Карта сайта и навигация, v2). Из него строятся
 // крошки, активные пункты, боковое меню и подписи. Страницы не хардкодят навигацию.
 
 export type Track = "companies" | "ngo" | "jobseekers";
@@ -7,9 +7,11 @@ export type Track = "companies" | "ngo" | "jobseekers";
 export const routeTitles: Record<string, string> = {
   "/": "Главная",
 
+  // Трек «Для компаний» (М1–М5)
   "/companies": "Для компаний",
   "/companies/start": "Стоит ли начинать",
-  "/companies/legal": "Правила оформления",
+  "/companies/how": "Как устроен наём",
+  "/companies/legal": "Правовые основы",
   "/companies/legal/contract": "Договор и оформление",
   "/companies/legal/benefits": "Льготы и формы занятости",
   "/companies/legal/quotas": "Квоты и господдержка",
@@ -24,7 +26,12 @@ export const routeTitles: Record<string, string> = {
   "/companies/hire/step-6": "Шаг 6. Затраты",
   "/companies/team": "Команда и коммуникация",
 
+  // Трек «Для НКО» — Основы (дубль общего слоя М1–М4) + Программа НКО (М6)
   "/ngo": "Для НКО",
+  "/ngo/reality": "Реалии и мифы",
+  "/ngo/how": "Как устроен наём",
+  "/ngo/legal": "Правовые основы",
+  "/ngo/ethics": "Этика и коммуникация",
   "/ngo/start": "Запустить программу",
   "/ngo/candidates": "Работать с соискателем",
   "/ngo/employers": "Выходить на работодателей",
@@ -32,6 +39,7 @@ export const routeTitles: Record<string, string> = {
   "/ngo/scale": "Развивать и масштабировать",
   "/ngo/funding": "Финансировать программу",
 
+  // Трек «Для соискателей» (следующий заход — оставлен как есть)
   "/jobseekers": "Для соискателей",
   "/jobseekers/guide": "Гид по удалённым профессиям",
   "/jobseekers/tools": "Инструменты для работы",
@@ -39,6 +47,7 @@ export const routeTitles: Record<string, string> = {
   "/jobseekers/stories": "Истории коллег",
   "/jobseekers/resources": "Полезные материалы",
 
+  // Сквозные (следующий заход — оставлены как есть)
   "/yandex-jobs": "Трудоустройство в Яндексе",
   "/glossary": "Глоссарий",
   "/feedback": "Обратная связь",
@@ -58,65 +67,95 @@ export type SidebarItem = {
   children?: { label: string; path: string }[];
 };
 
+/** Группа пунктов бокового меню. У трека может быть одна группа без заголовка
+ *  (Компании, Соискатели) или несколько с заголовками (НКО: Основы / Программа). */
+export type SidebarGroup = {
+  label?: string;
+  items: SidebarItem[];
+};
+
 export type SidebarSpec = {
   title: string;
   track: Track;
-  items: SidebarItem[];
+  groups: SidebarGroup[];
 };
 
 export const sidebars: Record<Track, SidebarSpec> = {
   companies: {
     title: "Для компаний",
     track: "companies",
-    items: [
-      { label: "Стоит ли начинать", path: "/companies/start" },
+    groups: [
       {
-        label: "Правила оформления",
-        path: "/companies/legal",
-        children: [
-          { label: "Договор и оформление", path: "/companies/legal/contract" },
-          { label: "Льготы и формы занятости", path: "/companies/legal/benefits" },
-          { label: "Квоты и господдержка", path: "/companies/legal/quotas" },
-          { label: "Особые ситуации", path: "/companies/legal/status" },
-          { label: "Вопросы и ответы", path: "/companies/legal/faq" },
+        items: [
+          { label: "Стоит ли начинать", path: "/companies/start" },
+          { label: "Как устроен наём", path: "/companies/how" },
+          {
+            label: "Правовые основы",
+            path: "/companies/legal",
+            children: [
+              { label: "Договор и оформление", path: "/companies/legal/contract" },
+              { label: "Льготы и формы занятости", path: "/companies/legal/benefits" },
+              { label: "Квоты и господдержка", path: "/companies/legal/quotas" },
+              { label: "Особые ситуации", path: "/companies/legal/status" },
+              { label: "Вопросы и ответы", path: "/companies/legal/faq" },
+            ],
+          },
+          {
+            label: "Найм по шагам",
+            path: "/companies/hire",
+            children: [
+              { label: "Шаг 1. Выбор вакансии", path: "/companies/hire/step-1" },
+              { label: "Шаг 2. Аудит готовности", path: "/companies/hire/step-2" },
+              { label: "Шаг 3. Создание среды", path: "/companies/hire/step-3" },
+              { label: "Шаг 4. Поиск и оформление", path: "/companies/hire/step-4" },
+              { label: "Шаг 5. Онбординг", path: "/companies/hire/step-5" },
+              { label: "Шаг 6. Затраты", path: "/companies/hire/step-6" },
+            ],
+          },
+          { label: "Команда и коммуникация", path: "/companies/team" },
         ],
       },
-      {
-        label: "Найм по шагам",
-        path: "/companies/hire",
-        children: [
-          { label: "Шаг 1. Выбор вакансии", path: "/companies/hire/step-1" },
-          { label: "Шаг 2. Аудит готовности", path: "/companies/hire/step-2" },
-          { label: "Шаг 3. Создание среды", path: "/companies/hire/step-3" },
-          { label: "Шаг 4. Поиск и оформление", path: "/companies/hire/step-4" },
-          { label: "Шаг 5. Онбординг", path: "/companies/hire/step-5" },
-          { label: "Шаг 6. Затраты", path: "/companies/hire/step-6" },
-        ],
-      },
-      { label: "Команда и коммуникация", path: "/companies/team" },
     ],
   },
   ngo: {
     title: "Для НКО",
     track: "ngo",
-    items: [
-      { label: "Запустить программу", path: "/ngo/start" },
-      { label: "Работать с соискателем", path: "/ngo/candidates" },
-      { label: "Выходить на работодателей", path: "/ngo/employers" },
-      { label: "Сопровождать сотрудника", path: "/ngo/support" },
-      { label: "Развивать и масштабировать", path: "/ngo/scale" },
-      { label: "Финансировать программу", path: "/ngo/funding" },
+    groups: [
+      {
+        label: "Основы",
+        items: [
+          { label: "Реалии и мифы", path: "/ngo/reality" },
+          { label: "Как устроен наём", path: "/ngo/how" },
+          { label: "Правовые основы", path: "/ngo/legal" },
+          { label: "Этика и коммуникация", path: "/ngo/ethics" },
+        ],
+      },
+      {
+        label: "Программа НКО",
+        items: [
+          { label: "Запустить программу", path: "/ngo/start" },
+          { label: "Работать с соискателем", path: "/ngo/candidates" },
+          { label: "Выходить на работодателей", path: "/ngo/employers" },
+          { label: "Сопровождать сотрудника", path: "/ngo/support" },
+          { label: "Развивать и масштабировать", path: "/ngo/scale" },
+          { label: "Финансировать программу", path: "/ngo/funding" },
+        ],
+      },
     ],
   },
   jobseekers: {
     title: "Для соискателей",
     track: "jobseekers",
-    items: [
-      { label: "Гид по удалённым профессиям", path: "/jobseekers/guide" },
-      { label: "Инструменты для работы", path: "/jobseekers/tools" },
-      { label: "Куда устроиться в Яндекс", path: "/jobseekers/employers" },
-      { label: "Истории коллег", path: "/jobseekers/stories" },
-      { label: "Полезные материалы", path: "/jobseekers/resources" },
+    groups: [
+      {
+        items: [
+          { label: "Гид по удалённым профессиям", path: "/jobseekers/guide" },
+          { label: "Инструменты для работы", path: "/jobseekers/tools" },
+          { label: "Куда устроиться в Яндекс", path: "/jobseekers/employers" },
+          { label: "Истории коллег", path: "/jobseekers/stories" },
+          { label: "Полезные материалы", path: "/jobseekers/resources" },
+        ],
+      },
     ],
   },
 };

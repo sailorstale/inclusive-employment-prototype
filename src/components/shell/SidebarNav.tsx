@@ -4,9 +4,10 @@ import { ChevronDown } from "lucide-react";
 import { type SidebarItem, type Track, sidebars } from "@/data/nav";
 import { cn } from "@/lib/utils";
 
-// SidebarNav (00b §2.1) — вторичная навигация внутри трека: заголовок = название
-// трека, список пунктов, активный подсвечен. У «Компаний» — две раскрываемые
-// группы («Правила оформления», «Найм по шагам»). Только на страницах треков.
+// SidebarNav (00 — три уровня навигации) — локальная навигация внутри трека:
+// заголовок = название трека, список пунктов, текущий выделен («вы здесь»).
+// Компании — один блок с раскрываемыми группами («Правовые основы», «Найм по шагам»).
+// НКО — две группы с подписями («Основы», «Программа НКО»). Только на страницах треков.
 
 const leafLink =
   "block rounded-md px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -106,22 +107,31 @@ export function SidebarNav({ track }: { track: Track }) {
   const spec = sidebars[track];
 
   return (
-    <nav aria-label={spec.title} className="space-y-1">
-      <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <nav aria-label={`Разделы трека «${spec.title}»`} className="space-y-4">
+      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {spec.title}
       </p>
-      {spec.items.map((item) =>
-        item.children ? (
-          <GroupItem key={item.path} item={item} pathname={pathname} />
-        ) : (
-          <LeafItem
-            key={item.path}
-            label={item.label}
-            path={item.path}
-            active={pathname === item.path}
-          />
-        )
-      )}
+      {spec.groups.map((group, gi) => (
+        <div key={gi} className="space-y-1">
+          {group.label ? (
+            <p className="px-3 pb-0.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              {group.label}
+            </p>
+          ) : null}
+          {group.items.map((item) =>
+            item.children ? (
+              <GroupItem key={item.path} item={item} pathname={pathname} />
+            ) : (
+              <LeafItem
+                key={item.path}
+                label={item.label}
+                path={item.path}
+                active={pathname === item.path}
+              />
+            )
+          )}
+        </div>
+      ))}
     </nav>
   );
 }
