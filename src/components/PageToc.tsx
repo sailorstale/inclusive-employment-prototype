@@ -10,14 +10,17 @@ import { useToc, type TocItem } from "@/lib/toc";
 // Маршрутизация хеш-адресами → переход к секции делаем программным скроллом,
 // а не href="#id" (иначе HashRouter примет это за смену маршрута).
 
-/** Общий рендерер ссылок оглавления (используется и в рейле, и в теле). */
+/** Общий рендерер ссылок оглавления (используется и в рейле, и в теле, и в мобильном меню). */
 export function TocLinks({
   items,
   activeId,
+  onSelect,
   className,
 }: {
   items: TocItem[];
   activeId?: string | null;
+  /** Если задан — заменяет переход по умолчанию (например: закрыть меню, затем прокрутить). */
+  onSelect?: (id: string) => void;
   className?: string;
 }) {
   return (
@@ -29,8 +32,8 @@ export function TocLinks({
           <li key={id}>
             <button
               type="button"
-              onClick={() => scrollToId(id)}
-              aria-current={active ? "true" : undefined}
+              onClick={() => (onSelect ? onSelect(id) : scrollToId(id))}
+              aria-current={active ? "location" : undefined}
               className={cn(
                 "rounded-sm text-left text-sm underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 active

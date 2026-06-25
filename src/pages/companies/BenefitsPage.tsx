@@ -1,6 +1,6 @@
 import { PageHero } from "@/components/PageHero";
 import { ContentSection } from "@/components/ContentSection";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { DataTable } from "@/components/DataTable";
 import { Callout } from "@/components/Callout";
 import { CompareColumns } from "@/components/CompareColumns";
@@ -25,7 +25,7 @@ export function BenefitsPage() {
         lead="Официальное трудоустройство на полную ставку не всегда удобно для людей с инвалидностью. Поэтому люди рассматривают другие формы занятости: гражданско-правовой договор (ГПХ), самозанятость. При таких форматах люди с инвалидность могут сами планировать свой график и работать столько времени, сколько им по силам."
       />
 
-      <TableOfContents
+      <PageToc
         items={[
           {
             label: "Какие льготы положены сотрудникам с инвалидностью",

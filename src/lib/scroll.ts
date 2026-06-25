@@ -3,7 +3,11 @@
 export function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Уважаем «уменьшить движение» (WCAG 2.3.3): без плавной анимации прокрутки.
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   }
 }
 

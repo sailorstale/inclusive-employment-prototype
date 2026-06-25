@@ -1,6 +1,6 @@
 import { PageHero } from "@/components/PageHero";
 import { ContentSection } from "@/components/ContentSection";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { Card, CardGrid } from "@/components/Card";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ export function ResourcesPage() {
         caption="Полка материалов: гайды, подкасты и инструкции по доступности."
       />
 
-      <TableOfContents
+      <PageToc
         items={[
           { label: "Гиды", anchor: "#res-guides" },
           { label: "Подкасты и интервью", anchor: "#res-podcasts" },

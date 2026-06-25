@@ -17,15 +17,18 @@ function LeafItem({
   path,
   active,
   nested,
+  onNavigate,
 }: {
   label: string;
   path: string;
   active: boolean;
   nested?: boolean;
+  onNavigate?: () => void;
 }) {
   return (
     <Link
       to={path}
+      onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
         leafLink,
@@ -43,9 +46,11 @@ function LeafItem({
 function GroupItem({
   item,
   pathname,
+  onNavigate,
 }: {
   item: SidebarItem;
   pathname: string;
+  onNavigate?: () => void;
 }) {
   const withinGroup =
     pathname === item.path || pathname.startsWith(item.path + "/");
@@ -62,6 +67,7 @@ function GroupItem({
       <div className="flex items-center">
         <Link
           to={item.path}
+          onClick={onNavigate}
           aria-current={parentActive ? "page" : undefined}
           className={cn(
             leafLink,
@@ -93,6 +99,7 @@ function GroupItem({
               label={child.label}
               path={child.path}
               active={pathname === child.path}
+              onNavigate={onNavigate}
               nested
             />
           ))}
@@ -102,7 +109,13 @@ function GroupItem({
   );
 }
 
-export function SidebarNav({ track }: { track: Track }) {
+export function SidebarNav({
+  track,
+  onNavigate,
+}: {
+  track: Track;
+  onNavigate?: () => void;
+}) {
   const { pathname } = useLocation();
   const spec = sidebars[track];
 
@@ -120,13 +133,19 @@ export function SidebarNav({ track }: { track: Track }) {
           ) : null}
           {group.items.map((item) =>
             item.children ? (
-              <GroupItem key={item.path} item={item} pathname={pathname} />
+              <GroupItem
+                key={item.path}
+                item={item}
+                pathname={pathname}
+                onNavigate={onNavigate}
+              />
             ) : (
               <LeafItem
                 key={item.path}
                 label={item.label}
                 path={item.path}
                 active={pathname === item.path}
+                onNavigate={onNavigate}
               />
             )
           )}

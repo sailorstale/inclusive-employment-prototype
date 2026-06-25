@@ -1,6 +1,6 @@
 import { PageHero } from "@/components/PageHero";
 import { ContentSection } from "@/components/ContentSection";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { Card, CardGrid } from "@/components/Card";
 import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { RelatedLinks } from "@/components/RelatedLinks";
@@ -32,7 +32,7 @@ export function ToolsPage() {
         caption="Набор инструментов удалёнщика: иконки сервисов по этапам пути — отклик, собеседование, документы, дорога, работа в команде."
       />
 
-      <TableOfContents
+      <PageToc
         items={[
           { label: "Откликнуться на вакансию", anchor: "#tools-apply" },
           { label: "Подготовиться к собеседованию", anchor: "#tools-interview" },

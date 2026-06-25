@@ -1,5 +1,5 @@
 import { PageHero } from "@/components/PageHero";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
 import { Paragraph, BulletList } from "@/components/Prose";
 import { Callout } from "@/components/Callout";
@@ -68,7 +68,7 @@ export function Step3Page() {
         </Callout>
       </PageHero>
 
-      <TableOfContents
+      <PageToc
         items={[
           { label: "Что такое разумная адаптация", anchor: "#s3-reasonable" },
           { label: "Как адаптировать физическую среду", anchor: "#s3-physical" },

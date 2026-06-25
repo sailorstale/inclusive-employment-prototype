@@ -1,16 +1,13 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, X } from "lucide-react";
-import { routeTitles } from "@/data/nav";
+import { searchPages } from "@/lib/search";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 
 // Поиск в шапке. По брифу: «не оставлять немую кнопку» — реализован простой
-// клиентский поиск по заголовкам страниц (не заглушка).
-
-const allPages = Object.entries(routeTitles)
-  .filter(([path]) => path !== "/")
-  .map(([path, title]) => ({ path, title }));
+// клиентский поиск по заголовкам страниц (не заглушка). Фильтр — из @/lib/search
+// (общий с мобильным меню).
 
 export function SiteSearch() {
   const [open, setOpen] = React.useState(false);
@@ -22,11 +19,7 @@ export function SiteSearch() {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  const results = query.trim()
-    ? allPages.filter((p) =>
-        p.title.toLowerCase().includes(query.trim().toLowerCase())
-      )
-    : [];
+  const results = searchPages(query);
 
   const close = () => {
     setOpen(false);

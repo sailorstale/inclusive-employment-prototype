@@ -1,6 +1,6 @@
 import { PageHero } from "@/components/PageHero";
 import { ContentSection } from "@/components/ContentSection";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { Card, CardGrid } from "@/components/Card";
 import { Callout } from "@/components/Callout";
 import { CtaButton } from "@/components/PromoBanner";
@@ -32,7 +32,7 @@ export function GuidePage() {
 
       <ImagePlaceholder caption="Иллюстрация: человек за домашним рабочим местом — обложка гида по удалённой работе." />
 
-      <TableOfContents
+      <PageToc
         items={[
           { label: "Кому это будет полезно", anchor: "#guide-who" },
           { label: "Из чего состоит курс", anchor: "#guide-what" },

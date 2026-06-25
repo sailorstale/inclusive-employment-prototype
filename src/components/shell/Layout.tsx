@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { getTrack, sidebars } from "@/data/nav";
+import { getTrack } from "@/data/nav";
 import { cn } from "@/lib/utils";
 import { TocProvider, useToc } from "@/lib/toc";
 import { AppHeader } from "./AppHeader";
@@ -59,17 +59,6 @@ function LayoutBody() {
           {/* Контентная колонка */}
           <div className="min-w-0">
             <Breadcrumbs />
-
-            {/* Боковое меню трека — узкий экран: раскрывашка над контентом */}
-            <details className="mb-6 rounded-lg border lg:hidden">
-              <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-foreground marker:text-muted-foreground">
-                Разделы трека «{sidebars[track].title}»
-              </summary>
-              <div className="border-t p-3">
-                <SidebarNav track={track} />
-              </div>
-            </details>
-
             <div className="space-y-12">
               <Outlet />
             </div>

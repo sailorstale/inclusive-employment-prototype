@@ -1,6 +1,6 @@
 import { PageHero } from "@/components/PageHero";
 import { ContentSection } from "@/components/ContentSection";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { Card, CardGrid } from "@/components/Card";
 import { Callout } from "@/components/Callout";
 import { CodeSnippet } from "@/components/CodeSnippet";
@@ -72,7 +72,7 @@ export function NgoEthicsPage() {
         </BulletList>
       </Callout>
 
-      <TableOfContents
+      <PageToc
         items={[
           {
             label: "Как говорить о людях с инвалидностью",

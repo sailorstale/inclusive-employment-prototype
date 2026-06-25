@@ -1,5 +1,5 @@
 import { PageHero } from "@/components/PageHero";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
 import { Paragraph, BulletList, Checklist } from "@/components/Prose";
 import { Callout } from "@/components/Callout";
@@ -23,7 +23,7 @@ export function NgoStartPage() {
         lead="Первые два этапа запуска программы инклюзивного трудоустройства в НКО: стратегия (зачем НКО как «мостик», команда, этапы работы, инклюзивный подход) и начало операционки — как анализировать свою аудиторию и где искать внешнюю. НКО не «трудоустраивает» напрямую, а сопровождает; по опыту экспертов на работу выходят только 10–20% участников."
       />
 
-      <TableOfContents
+      <PageToc
         items={[
           { label: "Введение", anchor: "#start-intro" },
           {
