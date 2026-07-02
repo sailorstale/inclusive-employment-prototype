@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 import {
   Table,
   TableBody,
@@ -29,13 +30,15 @@ export function DataTable({
   className,
 }: DataTableProps) {
   return (
-    <figure className={cn("max-w-full", className)}>
+    <figure data-component="DataTable" className={cn("max-w-full", className)}>
       <div className="overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               {headers.map((h, i) => (
-                <TableHead key={i}>{h}</TableHead>
+                <TableHead key={i}>
+                  <Editable as="inline">{h}</Editable>
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -43,7 +46,9 @@ export function DataTable({
             {rows.map((row, r) => (
               <TableRow key={r}>
                 {row.map((cell, c) => (
-                  <TableCell key={c}>{cell}</TableCell>
+                  <TableCell key={c}>
+                    <Editable as="inline">{cell}</Editable>
+                  </TableCell>
                 ))}
               </TableRow>
             ))}
@@ -57,7 +62,7 @@ export function DataTable({
             captionHidden && "sr-only"
           )}
         >
-          {caption}
+          <Editable as="inline">{caption}</Editable>
         </figcaption>
       ) : null}
     </figure>

@@ -3,6 +3,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { Layout } from "./components/shell/Layout";
 import { ScrollToTop } from "./components/shell/ScrollToTop";
 import { NotFound } from "./pages/NotFound";
+import { ChangesPage } from "./editor/ChangesPage";
 
 // Сквозные / лендинг (следующий заход — оставлены как есть)
 import { HomePage } from "./pages/HomePage";
@@ -103,6 +104,7 @@ export default function App() {
           <Route path="/jobseekers/resources" element={<ResourcesPage />} />
 
           {/* Сквозные */}
+          <Route path="/changes" element={<ChangesPage />} />
           <Route path="/yandex-jobs" element={<YandexJobsPage />} />
           <Route path="/glossary" element={<GlossaryPage />} />
           <Route path="/feedback" element={<FeedbackPage />} />

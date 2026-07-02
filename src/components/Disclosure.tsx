@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ChevronDown, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 
 // Disclosure (00 — дисциплина раскрытия) — вторичные блоки, которые МОЖНО
 // сворачивать: FAQ, тренажёры «ситуация → разбор», возражения, длинные списки.
@@ -52,7 +53,9 @@ function DetailRow({
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-left font-medium text-foreground transition-colors hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-webkit-details-marker]:hidden">
         <span className="flex flex-1 items-center justify-between gap-3">
-          <span>{entry.trigger}</span>
+          <span>
+            <Editable as="inline">{entry.trigger}</Editable>
+          </span>
           {entry.badge ? <span className="shrink-0">{entry.badge}</span> : null}
         </span>
         <ChevronDown
@@ -62,8 +65,8 @@ function DetailRow({
           )}
         />
       </summary>
-      <div className="max-w-prose space-y-2 pb-4 leading-relaxed text-muted-foreground">
-        {entry.content}
+      <div className="max-w-prose space-y-2 pb-4 leading-relaxed text-foreground">
+        <Editable as="inline">{entry.content}</Editable>
       </div>
     </details>
   );
@@ -102,7 +105,7 @@ export function Disclosure({
   const withExpandAll = showExpandAll ?? total > 1;
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div data-component="Disclosure" className={cn("space-y-3", className)}>
       {withExpandAll ? (
         <div className="flex justify-end">
           <button
@@ -120,7 +123,7 @@ export function Disclosure({
         <div key={gi} className="space-y-1">
           {group.label ? (
             <h3 className="text-base font-semibold text-foreground">
-              {group.label}
+              <Editable as="inline">{group.label}</Editable>
             </h3>
           ) : null}
           <div className="border-t">

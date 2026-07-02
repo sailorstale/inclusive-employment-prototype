@@ -1,4 +1,5 @@
 import { PageHero } from "@/components/PageHero";
+import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
 import { Paragraph, BulletList } from "@/components/Prose";
 import { Card, CardGrid } from "@/components/Card";
@@ -16,7 +17,15 @@ export function LegalHubPage() {
         lead="От официального трудоустройства со всеми социальными гарантиями до гибких проектных форм занятости. Раздел снимает страх перед запутанным законодательством и раздаёт по пяти самодостаточным подстраницам."
       />
 
-      <ContentSection title="Вступление">
+      <PageToc
+        minItems={2}
+        items={[
+          { label: "Вступление", anchor: "#vstuplenie" },
+          { label: "Разделы", anchor: "#razdely" },
+        ]}
+      />
+
+      <ContentSection anchor="vstuplenie" title="Вступление">
         <Paragraph>
           В законах РФ используется термин «
           <SmartLink to="https://www.consultant.ru/document/cons_doc_LAW_8559/9aa5265357047462326bd90c6df7a780c911b6cc/">
@@ -79,7 +88,7 @@ export function LegalHubPage() {
         </BulletList>
       </ContentSection>
 
-      <ContentSection title="Разделы">
+      <ContentSection anchor="razdely" title="Разделы">
         <CardGrid cols={2}>
           <Card
             link="internal"

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 
 // StatBlock (00b §2.5) — крупное число + подпись. Факт-крючок лендинга
 // и «Яндекс в цифрах». Факт-крючок принадлежит ТОЛЬКО StatBlock (не Callout).
@@ -23,6 +24,7 @@ export function StatBlock({
       : "sm:grid-cols-2";
   return (
     <div
+      data-component="StatBlock"
       className={cn(
         "grid grid-cols-1 gap-4",
         cols,
@@ -33,10 +35,10 @@ export function StatBlock({
       {stats.map((s, i) => (
         <div key={i} className="rounded-lg border bg-card p-5">
           <div className="text-3xl font-bold tracking-tight text-brand">
-            {s.value}
+            <Editable as="inline">{s.value}</Editable>
           </div>
           <div className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            {s.label}
+            <Editable as="inline">{s.label}</Editable>
           </div>
         </div>
       ))}

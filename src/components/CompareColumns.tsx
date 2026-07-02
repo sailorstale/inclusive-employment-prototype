@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 
 // CompareColumns (00b §2.5) — парное противопоставление в две панели:
 // «Сохраняется / Отменяется», «можно / нельзя», «Адаптация / Гиперопека», «Было / Стало».
@@ -22,7 +23,10 @@ export function CompareColumns({
   className?: string;
 }) {
   return (
-    <div className={cn("grid grid-cols-1 gap-4 md:grid-cols-2", className)}>
+    <div
+      data-component="CompareColumns"
+      className={cn("grid grid-cols-1 gap-4 md:grid-cols-2", className)}
+    >
       <ComparePanel col={left} />
       <ComparePanel col={right} />
     </div>
@@ -49,7 +53,7 @@ function ComparePanel({ col }: { col: Column }) {
     <div className={cn("rounded-lg border bg-card p-5", toneRing)}>
       <h3 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
         {Marker ? <Marker className={cn("h-4 w-4", markerColor)} /> : null}
-        {col.title}
+        <Editable as="inline">{col.title}</Editable>
       </h3>
       {col.items ? (
         <ul className="space-y-2 text-sm leading-relaxed">
@@ -60,7 +64,9 @@ function ComparePanel({ col }: { col: Column }) {
               ) : (
                 <span className="mt-1 text-muted-foreground">•</span>
               )}
-              <span>{it}</span>
+              <span>
+                <Editable as="inline">{it}</Editable>
+              </span>
             </li>
           ))}
         </ul>

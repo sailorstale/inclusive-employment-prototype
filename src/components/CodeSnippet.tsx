@@ -31,6 +31,7 @@ export function CodeSnippet({ tag, text, header, className }: CodeSnippetProps) 
 
   return (
     <div
+      data-component="CodeSnippet"
       className={cn(
         "max-w-prose overflow-hidden rounded-lg border bg-muted/40",
         className

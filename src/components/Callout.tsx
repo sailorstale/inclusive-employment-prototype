@@ -7,6 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 
 // Callout (00b §2.6) — редакционная врезка, закрытый список 5 вариантов.
 // Не затаскивать сюда факт-крючок (→ StatBlock), цитаты (→ Blockquote), полки.
@@ -68,6 +69,7 @@ export function Callout({
   const { icon: Icon, box, iconColor } = config[variant];
   return (
     <div
+      data-component="Callout"
       className={cn(
         "max-w-prose rounded-lg border p-4 text-sm leading-relaxed",
         box,
@@ -80,7 +82,9 @@ export function Callout({
         )}
         <div className="min-w-0 space-y-2">
           {title ? (
-            <div className="font-semibold text-foreground">{title}</div>
+            <div className="font-semibold text-foreground">
+              <Editable as="inline">{title}</Editable>
+            </div>
           ) : null}
           {children ? <div className="space-y-2">{children}</div> : null}
         </div>

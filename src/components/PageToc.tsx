@@ -1,7 +1,9 @@
 import * as React from "react";
+import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { scrollToId, anchorId } from "@/lib/scroll";
 import { useToc, type TocItem } from "@/lib/toc";
+import { useEditor } from "@/editor/EditorProvider";
 
 // PageToc (00 — оглавление «На этой странице») — страница объявляет свои секции.
 // Пункты = заголовкам секций ДОСЛОВНО. Десктоп: переносятся в липкий рейл со
@@ -23,6 +25,8 @@ export function TocLinks({
   onSelect?: (id: string) => void;
   className?: string;
 }) {
+  const { headingTextOf } = useEditor();
+  const { pathname } = useLocation();
   return (
     <ul className={cn("space-y-1.5", className)}>
       {items.map((item) => {
@@ -41,7 +45,7 @@ export function TocLinks({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {item.label}
+              {headingTextOf(pathname, item.label, item.anchor)}
             </button>
           </li>
         );
@@ -50,24 +54,34 @@ export function TocLinks({
   );
 }
 
-export function PageToc({ items }: { items: TocItem[] }) {
+export function PageToc({
+  items,
+  minItems = 3,
+}: {
+  items: TocItem[];
+  /** Минимум пунктов для показа оглавления. По умолчанию 3 (1–2 секции не
+   *  показываем). Хабы с короткой структурой могут понизить до 2. */
+  minItems?: number;
+}) {
   const { setItems } = useToc();
+  const show = items.length >= minItems;
   const key = items.map((i) => i.anchor + "|" + i.label).join("§");
 
   // useLayoutEffect — рейл получает пункты до отрисовки, без скачка ширины колонок.
   React.useLayoutEffect(() => {
-    if (items.length >= 3) setItems(items);
+    if (show) setItems(items);
     else setItems([]);
     return () => setItems([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, show]);
 
-  if (items.length < 3) return null;
+  if (!show) return null;
 
   // До xl: в теле, НЕ липкое (на широком экране это место занимает рейл TocRail).
   return (
     <nav
       aria-label="На этой странице"
+      data-component="PageToc"
       className="rounded-lg border bg-muted/30 p-5 xl:hidden"
     >
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

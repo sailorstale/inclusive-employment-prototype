@@ -17,7 +17,7 @@ export function ImagePlaceholder({
   const aspect =
     ratio === "4/3" ? "aspect-[4/3]" : ratio === "1/1" ? "aspect-square" : "aspect-video";
   return (
-    <figure className={cn("max-w-prose", className)}>
+    <figure data-component="ImagePlaceholder" className={cn("max-w-prose", className)}>
       <div
         className={cn(
           "flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 p-6 text-muted-foreground",

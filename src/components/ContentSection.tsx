@@ -1,6 +1,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Lead } from "./Prose";
+import { Editable } from "@/editor/Editable";
+import { AnchorScope } from "@/editor/AnchorContext";
 
 // ContentSection (00b §2.2) — несущая рамка смыслового раздела:
 // заголовок с якорем (цель оглавления) + опц. лид + вложенные блоки.
@@ -23,7 +25,6 @@ export function ContentSection({
   children,
   className,
 }: ContentSectionProps) {
-  const Heading = level;
   const headingClass =
     level === "h2"
       ? "text-2xl font-semibold tracking-tight"
@@ -32,14 +33,24 @@ export function ContentSection({
       : "text-base font-semibold";
 
   return (
-    <section id={anchor} data-anchor={anchor} className={cn("space-y-4", className)}>
-      {title ? (
-        <Heading className={cn("scroll-mt-20 text-foreground", headingClass)}>
-          {title}
-        </Heading>
-      ) : null}
-      {lead ? <Lead>{lead}</Lead> : null}
-      {children}
+    <section
+      id={anchor}
+      data-anchor={anchor}
+      data-component="ContentSection"
+      className={cn("space-y-4", className)}
+    >
+      <AnchorScope anchor={anchor}>
+        {title ? (
+          <Editable
+            as={level}
+            className={cn("scroll-mt-20 text-foreground", headingClass)}
+          >
+            {title}
+          </Editable>
+        ) : null}
+        {lead ? <Lead>{lead}</Lead> : null}
+        {children}
+      </AnchorScope>
     </section>
   );
 }

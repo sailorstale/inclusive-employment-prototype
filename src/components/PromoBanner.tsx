@@ -28,6 +28,7 @@ export function PromoBanner({
   const fill = emphasis === "brand-fill";
   return (
     <div
+      data-component="PromoBanner"
       className={cn(
         "flex flex-col items-start gap-4 rounded-lg border p-6 md:flex-row md:items-center md:justify-between",
         fill

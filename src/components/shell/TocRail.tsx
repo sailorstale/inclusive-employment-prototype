@@ -10,7 +10,7 @@ export function TocRail() {
   const { items } = useToc();
   const activeId = useScrollSpy(items.map((i) => i.anchor));
 
-  if (items.length < 3) return null;
+  if (!items.length) return null;
 
   return (
     <nav

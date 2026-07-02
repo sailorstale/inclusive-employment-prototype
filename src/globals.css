@@ -122,3 +122,42 @@
     list-style: none;
   }
 }
+
+/*
+  «Шильдики компонентов» — подсказка разработчику (какой компонент использовать)
+  и параллель с именами в Figma. Включается тумблером (класс .tags-on на <html>).
+  Имя компонента берётся из атрибута data-component на его корневом элементе;
+  шильдик рисуется псевдоэлементом — вёрстку компонентов не меняет.
+*/
+.tags-on [data-component] {
+  position: relative;
+  outline: 1px dashed hsl(var(--brand) / 0.35);
+  outline-offset: 1px;
+}
+.tags-on [data-component]::before {
+  content: attr(data-component);
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 20;
+  transform: translateY(-50%);
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: hsl(var(--brand));
+  color: hsl(var(--brand-foreground));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+@media print {
+  .tags-on [data-component] {
+    outline: none;
+  }
+  .tags-on [data-component]::before {
+    display: none;
+  }
+}

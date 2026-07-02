@@ -13,7 +13,7 @@ export type RelatedItem = {
 export function RelatedLinks({ items }: { items: RelatedItem[] }) {
   if (!items.length) return null;
   return (
-    <section className="mt-12 border-t pt-8">
+    <section data-component="RelatedLinks" className="mt-12 border-t pt-8">
       <h2 className="mb-4 text-xl font-semibold text-foreground">
         Читайте также
       </h2>

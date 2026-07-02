@@ -16,6 +16,7 @@ export function TableOfContents({
   return (
     <nav
       aria-label="Содержание страницы"
+      data-component="TableOfContents"
       className={cn(
         "rounded-lg border bg-muted/30 p-5",
         className

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 import {
   type GlossaryEntry,
   glossaryAnchorId,
@@ -31,7 +32,7 @@ export function DefinitionList({
 }) {
   const groups = groupByLetter(entries);
   return (
-    <dl className={cn("space-y-6", className)}>
+    <dl data-component="DefinitionList" className={cn("space-y-6", className)}>
       {groups.map((group) => (
         <div key={group.letter} className="space-y-3">
           <h4 className="text-base font-semibold text-muted-foreground">
@@ -50,10 +51,10 @@ export function DefinitionList({
                     data-anchor={id}
                     className="scroll-mt-20 font-semibold text-foreground"
                   >
-                    {entry.term}
+                    <Editable as="inline">{entry.term}</Editable>
                   </dt>
                   <dd className="leading-relaxed text-muted-foreground">
-                    {entry.definition}
+                    <Editable as="inline">{entry.definition}</Editable>
                   </dd>
                 </div>
               );

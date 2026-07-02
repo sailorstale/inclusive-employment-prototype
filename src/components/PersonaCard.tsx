@@ -33,7 +33,10 @@ export function PersonaCard({
   className,
 }: PersonaCardProps) {
   return (
-    <div className={cn("rounded-lg border bg-card p-6", className)}>
+    <div
+      data-component="PersonaCard"
+      className={cn("rounded-lg border bg-card p-6", className)}
+    >
       <h3 className="font-semibold leading-snug text-foreground">{name}</h3>
       {role ? (
         <p className="mt-0.5 text-sm text-muted-foreground">{role}</p>

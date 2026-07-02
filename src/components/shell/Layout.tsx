@@ -9,6 +9,11 @@ import { Breadcrumbs } from "./Breadcrumbs";
 import { TocRail } from "./TocRail";
 import { BackToTop } from "./BackToTop";
 import { SkipLink } from "./SkipLink";
+import { ComponentTagsToggle } from "./ComponentTagsToggle";
+import { EditorInspector } from "@/editor/EditorInspector";
+import { CommentsLayer } from "@/editor/CommentsLayer";
+import { EditorDock } from "@/editor/EditorDock";
+import { EditorToast, StoreModeBanner } from "@/editor/EditorNotices";
 
 // Общая оболочка (00 — Карта сайта и навигация): шапка везде; боковое меню трека
 // (десктоп — рейл, узкий экран — раскрывашка); крошки кроме главной; оглавление
@@ -21,8 +26,14 @@ export function Layout() {
       <div className="flex min-h-screen flex-col">
         <SkipLink />
         <AppHeader />
+        <StoreModeBanner />
         <LayoutBody />
         <AppFooter />
+        <EditorInspector />
+        <CommentsLayer />
+        <EditorDock />
+        <EditorToast />
+        <ComponentTagsToggle />
       </div>
     </TocProvider>
   );
@@ -33,7 +44,7 @@ function LayoutBody() {
   const track = getTrack(pathname);
   const isHome = pathname === "/";
   const { items } = useToc();
-  const hasToc = items.length >= 3;
+  const hasToc = items.length > 0;
 
   return (
     <main

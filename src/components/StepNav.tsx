@@ -25,7 +25,11 @@ export function StepNav({
     "group flex flex-1 flex-col gap-1 rounded-lg border p-4 transition-colors hover:border-ring hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
   return (
-    <nav aria-label="Навигация по шагам" className="mt-4 space-y-4">
+    <nav
+      aria-label="Навигация по шагам"
+      data-component="StepNav"
+      className="mt-4 space-y-4"
+    >
       {current ? (
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-muted-foreground">

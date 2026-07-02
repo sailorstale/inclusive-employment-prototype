@@ -2,6 +2,23 @@ import * as React from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SmartLink } from "./SmartLink";
+import { Editable } from "@/editor/Editable";
+
+// Оборачивает содержимое каждого <li> в Editable — пункты списков становятся
+// редактируемыми, сам <li> (маркер, отступы) остаётся как есть.
+function wrapEditableItems(children: React.ReactNode): React.ReactNode {
+  return React.Children.map(children, (child) => {
+    if (React.isValidElement(child) && child.type === "li") {
+      const props = child.props as { children?: React.ReactNode };
+      return React.cloneElement(
+        child as React.ReactElement,
+        undefined,
+        <Editable as="li">{props.children}</Editable>
+      );
+    }
+    return child;
+  });
+}
 
 // «Prose» (00b §2.2) — вся авторская проза и списки. Один компонент,
 // различия — вариантами: paragraph / lead / list / checklist / link-list / footnote.
@@ -19,6 +36,10 @@ export function Prose({
   );
 }
 
+// Paragraph / Lead / Footnote делегируют в Editable — поэтому весь авторский
+// текст на сайте становится редактируемым в режиме редактора без правки страниц.
+// Визуальные классы — в proseClasses.ts (общий источник с Editable).
+
 export function Lead({
   children,
   className,
@@ -27,14 +48,9 @@ export function Lead({
   className?: string;
 }) {
   return (
-    <p
-      className={cn(
-        "max-w-prose text-lg leading-relaxed text-muted-foreground",
-        className
-      )}
-    >
+    <Editable as="lead" className={className}>
       {children}
-    </p>
+    </Editable>
   );
 }
 
@@ -46,9 +62,9 @@ export function Paragraph({
   className?: string;
 }) {
   return (
-    <p className={cn("leading-relaxed text-foreground", className)}>
+    <Editable as="paragraph" className={className}>
       {children}
-    </p>
+    </Editable>
   );
 }
 
@@ -60,14 +76,9 @@ export function Footnote({
   className?: string;
 }) {
   return (
-    <p
-      className={cn(
-        "max-w-prose text-[0.8125rem] leading-relaxed text-muted-foreground",
-        className
-      )}
-    >
+    <Editable as="footnote" className={className}>
       {children}
-    </p>
+    </Editable>
   );
 }
 
@@ -85,7 +96,7 @@ export function BulletList({
         className
       )}
     >
-      {children}
+      {wrapEditableItems(children)}
     </ul>
   );
 }
@@ -104,7 +115,7 @@ export function OrderedList({
         className
       )}
     >
-      {children}
+      {wrapEditableItems(children)}
     </ol>
   );
 }
@@ -118,11 +129,16 @@ export function Checklist({
   className?: string;
 }) {
   return (
-    <ul className={cn("max-w-prose space-y-2.5", className)}>
+    <ul
+      data-component="Checklist"
+      className={cn("max-w-prose space-y-2.5", className)}
+    >
       {items.map((item, i) => (
         <li key={i} className="flex gap-3 leading-relaxed">
           <Check className="mt-1 h-4 w-4 shrink-0 text-[hsl(var(--ok))]" />
-          <span>{item}</span>
+          <span>
+            <Editable as="li">{item}</Editable>
+          </span>
         </li>
       ))}
     </ul>
@@ -150,6 +166,7 @@ export function LinkList({
   const ListTag = ordered ? "ol" : "ul";
   return (
     <ListTag
+      data-component="LinkList"
       className={cn(
         "max-w-prose space-y-2.5 leading-relaxed",
         ordered ? "list-decimal pl-5 marker:text-muted-foreground" : "",

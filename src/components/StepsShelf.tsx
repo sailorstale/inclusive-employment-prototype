@@ -56,7 +56,10 @@ export function StepsShelf({
   const colClass = cols === 2 ? "md:grid-cols-2" : "md:grid-cols-3";
   const base = "rounded-lg border bg-card p-6 text-card-foreground";
   return (
-    <div className={cn("grid grid-cols-1 gap-4", colClass, className)}>
+    <div
+      data-component="StepsShelf"
+      className={cn("grid grid-cols-1 gap-4", colClass, className)}
+    >
       {steps.map((step, i) =>
         link === "each-step-link" && step.to ? (
           <Link

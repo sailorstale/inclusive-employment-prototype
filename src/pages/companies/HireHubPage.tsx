@@ -1,4 +1,5 @@
 import { PageHero } from "@/components/PageHero";
+import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
 import { StepsShelf } from "@/components/StepsShelf";
 import { Paragraph } from "@/components/Prose";
@@ -13,6 +14,14 @@ export function HireHubPage() {
         variant="section-hub"
         title="Найм по шагам"
         lead="Пошаговый план найма и адаптации сотрудников с инвалидностью — от выбора вакансии до сопровождения. Можно использовать как готовый маршрут или адаптировать отдельные шаги под свою ситуацию."
+      />
+
+      <PageToc
+        minItems={2}
+        items={[
+          { label: "Вступление", anchor: "#vstuplenie" },
+          { label: "Шесть шагов найма", anchor: "#shest-shagov" },
+        ]}
       />
 
       <ContentSection anchor="vstuplenie" title="Вступление">

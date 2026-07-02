@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 
 // Card (00b §2.3) — универсальная карточка. Обязательный вариант `link` —
 // смысловое различие (Правила верности §3.1): карточка-факт (none) ≠ навигационная
@@ -72,12 +73,12 @@ export function Card({
       )}
       {eyebrow ? (
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {eyebrow}
+          <Editable as="inline">{eyebrow}</Editable>
         </p>
       ) : null}
       {title ? (
         <h3 className="font-semibold leading-snug text-foreground">
-          {title}
+          <Editable as="inline">{title}</Editable>
           {isExternal ? (
             <ArrowUpRight className="ml-1 inline-block h-4 w-4 align-text-top text-muted-foreground" />
           ) : null}
@@ -85,13 +86,13 @@ export function Card({
       ) : null}
       {description ? (
         <div className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-          {description}
+          <Editable as="inline">{description}</Editable>
         </div>
       ) : null}
       {children}
       {footer ? (
         <div className="mt-3 border-t pt-3 text-[0.8125rem] text-muted-foreground">
-          {footer}
+          <Editable as="inline">{footer}</Editable>
         </div>
       ) : null}
     </>
@@ -103,6 +104,7 @@ export function Card({
         href={to}
         target="_blank"
         rel="noopener noreferrer"
+        data-component="Card"
         className={cn(base, interactive, "group", className)}
       >
         {inner}
@@ -111,19 +113,23 @@ export function Card({
   }
   if (isLink && isMail) {
     return (
-      <a href={to} className={cn(base, interactive, "group", className)}>
+      <a href={to} data-component="Card" className={cn(base, interactive, "group", className)}>
         {inner}
       </a>
     );
   }
   if (isLink) {
     return (
-      <Link to={to!} className={cn(base, interactive, "group", className)}>
+      <Link to={to!} data-component="Card" className={cn(base, interactive, "group", className)}>
         {inner}
       </Link>
     );
   }
-  return <div className={cn(base, className)}>{inner}</div>;
+  return (
+    <div data-component="Card" className={cn(base, className)}>
+      {inner}
+    </div>
+  );
 }
 
 /** Сетка карточек-входов / фактов. cols — число колонок на десктопе. */

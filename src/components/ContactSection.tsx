@@ -29,7 +29,7 @@ export function ContactSection({
   className?: string;
 }) {
   return (
-    <section className={cn("space-y-4", className)}>
+    <section data-component="ContactSection" className={cn("space-y-4", className)}>
       {title ? (
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           {title}
