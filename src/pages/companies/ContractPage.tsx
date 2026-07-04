@@ -10,6 +10,7 @@ import {
 import { Card, CardGrid } from "@/components/Card";
 import { DataTable } from "@/components/DataTable";
 import { Callout } from "@/components/Callout";
+import { Warning } from "@/components/Warning";
 import { Disclosure } from "@/components/Disclosure";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
@@ -148,13 +149,13 @@ export function ContractPage() {
           </li>
         </BulletList>
 
-        <Callout variant="warning" title="Важно">
+        <Warning title="Важно">
           Важно не оценивать возможности сотрудника только по группе инвалидности.
           Человек с 1‑й группой может быть высококвалифицированным удалённым
           специалистом, сотрудник с 3‑й группой может нуждаться в строгом режиме
           труда. Единственный исчерпывающий источник информации о необходимых
           условиях — ИПРА.
-        </Callout>
+        </Warning>
       </ContentSection>
 
       <ContentSection
@@ -671,10 +672,10 @@ export function ContractPage() {
           ]}
         />
 
-        <Callout variant="warning">
+        <Warning>
           Если работодатель не может обеспечить условия труда, указанные в ИПРА, он не
           имеет права допустить сотрудника к работе.
-        </Callout>
+        </Warning>
       </ContentSection>
 
       <ContentSection anchor="lc-acts" title="Ключевые нормативные акты">

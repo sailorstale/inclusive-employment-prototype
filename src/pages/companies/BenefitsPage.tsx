@@ -3,6 +3,7 @@ import { ContentSection } from "@/components/ContentSection";
 import { PageToc } from "@/components/PageToc";
 import { DataTable } from "@/components/DataTable";
 import { Callout } from "@/components/Callout";
+import { Warning } from "@/components/Warning";
 import { CompareColumns } from "@/components/CompareColumns";
 import { Disclosure } from "@/components/Disclosure";
 import { RelatedLinks } from "@/components/RelatedLinks";
@@ -244,13 +245,13 @@ export function BenefitsPage() {
           график и работать столько времени, сколько им по силам.
         </Paragraph>
 
-        <Callout variant="warning" title="Важно помнить">
+        <Warning title="Важно помнить">
           Если человек состоит на бирже труда, ему обязательно стоит сообщить в
           ЦЗН и Социальный фонд России о том, что он работает. С него снимут
           статус безработного и он больше не будет получать пособие, даже если
           его доход равен нулю. Если пропустить этот шаг, есть риск, что
           сотрудника обяжут через суд вернуть все выплаты.
-        </Callout>
+        </Warning>
 
         <ContentSection
           anchor="lb-forms-gph"

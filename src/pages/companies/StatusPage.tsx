@@ -3,6 +3,7 @@ import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
 import { DataTable } from "@/components/DataTable";
 import { Callout } from "@/components/Callout";
+import { Warning } from "@/components/Warning";
 import { Disclosure } from "@/components/Disclosure";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { Paragraph, BulletList, Footnote } from "@/components/Prose";
@@ -671,10 +672,10 @@ export function StatusPage() {
           ]}
         />
 
-        <Callout variant="warning">
+        <Warning>
           Если работодатель не может обеспечить условия труда, указанные в ИПРА,
           он не имеет права допустить сотрудника к работе.
-        </Callout>
+        </Warning>
       </ContentSection>
 
       <ContentSection
