@@ -28,7 +28,7 @@ export function ContractPage() {
 
       <PageToc
         items={[
-          { label: "Как оформить сотрудника по трудовому договору", anchor: "#lc-contract" },
+          { label: "Оформление и социальные гарантии", anchor: "#lc-contract" },
           { label: "Справка об инвалидности", anchor: "#lc-spravka" },
           { label: "ИПРА", anchor: "#lc-ipra" },
           { label: "Когда работодатель обязан соблюдать льготы", anchor: "#lc-obligation" },
@@ -42,7 +42,7 @@ export function ContractPage() {
 
       <ContentSection
         anchor="lc-contract"
-        title="Как оформить сотрудника с инвалидностью по трудовому договору"
+        title="Оформление и социальные гарантии"
       >
         <Paragraph>
           Процесс оформления почти не отличается от трудоустройства сотрудников без
