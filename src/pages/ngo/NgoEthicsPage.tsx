@@ -359,7 +359,7 @@ export function NgoEthicsPage() {
           комфортным для всех.
         </Paragraph>
 
-        <CardGrid cols={2}>
+        <CardGrid cols={1}>
           <Card title="Обращайтесь напрямую к человеку">
             <Paragraph>
               Если рядом есть сопровождающий, переводчик жестового языка или
