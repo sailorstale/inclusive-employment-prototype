@@ -36,6 +36,7 @@ export const abbreviations: GlossaryEntry[] = [
   { slug: "snils", section: "abbr", term: "СНИЛС", definition: "Страховой номер индивидуального лицевого счёта." },
   { slug: "sfr", section: "abbr", term: "СФР", definition: "Социальный фонд России. Государственный фонд, куда подаются заявления на ряд мер господдержки работодателей." },
   { slug: "fns", section: "abbr", term: "ФНС", definition: "Федеральная налоговая служба." },
+  { slug: "szn", section: "abbr", term: "СЗН", definition: "Служба занятости населения. Государственная служба (ранее — Центр занятости, ЦЗН), помогает соискателям и работодателям найти друг друга; консультирует по квотам и мерам господдержки." },
   { slug: "czn", section: "abbr", term: "ЦЗН", definition: "Центр занятости населения. Государственная служба, помогающая соискателям и работодателям найти друг друга; консультирует по квотам и мерам поддержки." },
   { slug: "crm", section: "abbr", term: "CRM", definition: "Система для управления работой с клиентами (customer relationship management)." },
   { slug: "hr", section: "abbr", term: "HR", definition: "Функция и специалисты по работе с персоналом (human resources)." },
