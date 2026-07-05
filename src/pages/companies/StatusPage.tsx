@@ -522,7 +522,7 @@ export function StatusPage() {
         <Disclosure
           entries={[
             {
-              trigger: "1. Нарушения опорно‑двигательного аппарата",
+              trigger: "Нарушения опорно‑двигательного аппарата",
               content: (
                 <>
                   <Paragraph>
@@ -556,7 +556,7 @@ export function StatusPage() {
               ),
             },
             {
-              trigger: "2. Слепота",
+              trigger: "Слепота",
               content: (
                 <>
                   <Paragraph>Работодатель организует:</Paragraph>
@@ -584,7 +584,7 @@ export function StatusPage() {
               ),
             },
             {
-              trigger: "3. Слабовидение",
+              trigger: "Слабовидение",
               content: (
                 <>
                   <Paragraph>Работодатель предусматривает:</Paragraph>
@@ -605,7 +605,7 @@ export function StatusPage() {
               ),
             },
             {
-              trigger: "4. Глухота",
+              trigger: "Глухота",
               content: (
                 <>
                   <Paragraph>Работодатель реализует:</Paragraph>
@@ -628,7 +628,7 @@ export function StatusPage() {
               ),
             },
             {
-              trigger: "5. Снижение слуха",
+              trigger: "Снижение слуха",
               content: (
                 <>
                   <Paragraph>
@@ -645,7 +645,7 @@ export function StatusPage() {
               ),
             },
             {
-              trigger: "6. Хронические состояния",
+              trigger: "Хронические состояния",
               content: (
                 <>
                   <Paragraph>
