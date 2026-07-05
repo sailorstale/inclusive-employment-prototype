@@ -4,6 +4,9 @@ import { Layout } from "./components/shell/Layout";
 import { ScrollToTop } from "./components/shell/ScrollToTop";
 import { NotFound } from "./pages/NotFound";
 import { ChangesPage } from "./editor/ChangesPage";
+import { InventoryPage } from "./editor/InventoryPage";
+import { UnifyPage } from "./editor/UnifyPage";
+import { CatalogPage } from "./editor/CatalogPage";
 
 // Сквозные / лендинг (следующий заход — оставлены как есть)
 import { HomePage } from "./pages/HomePage";
@@ -105,6 +108,9 @@ export default function App() {
 
           {/* Сквозные */}
           <Route path="/changes" element={<ChangesPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/unify" element={<UnifyPage />} />
+          <Route path="/catalog" element={<CatalogPage />} />
           <Route path="/yandex-jobs" element={<YandexJobsPage />} />
           <Route path="/glossary" element={<GlossaryPage />} />
           <Route path="/feedback" element={<FeedbackPage />} />

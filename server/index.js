@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import * as store from "./store.js";
 import * as comments from "./comments.js";
+import * as unify from "./unify.js";
 
 // Локально читаем prototype/.env (пароль и т.п.). На хостинге переменные задаёт
 // сам хостинг — там .env нет, и это нормально. Реальные env-переменные имеют
@@ -93,6 +94,22 @@ api.patch("/comments/:id", async (req, res) => {
 });
 api.delete("/comments/:id", async (req, res) => {
   await comments.remove(req.params.id);
+  res.json({ ok: true });
+});
+
+// Решения по унификации типов контента.
+api.get("/unify", async (_req, res) => {
+  res.json(await unify.getAll());
+});
+api.put("/unify/:type", async (req, res) => {
+  const approach = req.body?.approach ?? null;
+  if (approach && !["convention", "component"].includes(approach)) {
+    return res.status(400).json({ error: "approach: convention|component" });
+  }
+  res.json(await unify.setDecision(req.params.type, approach));
+});
+api.delete("/unify/:type", async (req, res) => {
+  await unify.clearDecision(req.params.type);
   res.json({ ok: true });
 });
 

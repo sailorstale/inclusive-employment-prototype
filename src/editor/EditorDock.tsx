@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ListChecks, MessageCircle, PencilLine } from "lucide-react";
+import { Boxes, Combine, ListChecks, MessageCircle, PencilLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./EditorProvider";
 import { useComments } from "./CommentsProvider";
@@ -43,6 +43,20 @@ export function EditorDock() {
         active={pathname === "/changes"}
         badge={pending}
         to="/changes"
+      />
+      <DockItem
+        label="Инвентарь контента"
+        icon={<Boxes className="h-[18px] w-[18px]" />}
+        active={pathname === "/inventory"}
+        badge={0}
+        to="/inventory"
+      />
+      <DockItem
+        label="Унификация"
+        icon={<Combine className="h-[18px] w-[18px]" />}
+        active={pathname === "/unify"}
+        badge={0}
+        to="/unify"
       />
     </div>
   );
