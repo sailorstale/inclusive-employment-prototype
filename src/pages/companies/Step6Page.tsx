@@ -787,7 +787,7 @@ export function Step6Page() {
         total={6}
         prev={{ label: "Шаг 5. Онбординг", to: "/companies/hire/step-5" }}
         next={{
-          label: "Найм по шагам — к началу маршрута",
+          label: "Наём по шагам — к началу маршрута",
           to: "/companies/hire",
         }}
       />

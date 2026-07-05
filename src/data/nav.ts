@@ -17,7 +17,7 @@ export const routeTitles: Record<string, string> = {
   "/companies/legal/quotas": "Квоты и господдержка",
   "/companies/legal/status": "Особые ситуации",
   "/companies/legal/faq": "Вопросы и ответы",
-  "/companies/hire": "Найм по шагам",
+  "/companies/hire": "Наём по шагам",
   "/companies/hire/step-1": "Шаг 1. Выбор вакансии",
   "/companies/hire/step-2": "Шаг 2. Аудит готовности",
   "/companies/hire/step-3": "Шаг 3. Создание среды",
@@ -101,7 +101,7 @@ export const sidebars: Record<Track, SidebarSpec> = {
             ],
           },
           {
-            label: "Найм по шагам",
+            label: "Наём по шагам",
             path: "/companies/hire",
             children: [
               { label: "Шаг 1. Выбор вакансии", path: "/companies/hire/step-1" },

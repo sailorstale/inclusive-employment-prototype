@@ -306,7 +306,7 @@ export function YandexJobsPage() {
                   },
                   {
                     to: "https://inclusion.yandex.ru/job",
-                    label: "[тип: Гайд] Как устроен инклюзивный найм в Яндексе",
+                    label: "[тип: Гайд] Как устроен инклюзивный наём в Яндексе",
                   },
                   {
                     to: "https://inclusion.yandex.ru/job",

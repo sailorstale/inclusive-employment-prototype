@@ -11,7 +11,7 @@ import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { StepNav } from "@/components/StepNav";
 
-// 14 — Шаг 3. Создание среды (трек «Для компаний», найм по шагам). Контент дословно из спеки v2.
+// 14 — Шаг 3. Создание среды (трек «Для компаний», наём по шагам). Контент дословно из спеки v2.
 export function Step3Page() {
   return (
     <>

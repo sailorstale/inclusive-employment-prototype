@@ -33,7 +33,7 @@ export function CompaniesHubPage() {
         <Card
           link="internal"
           to="/companies/hire"
-          title="Найм по шагам"
+          title="Наём по шагам"
           description="Воркфлоу от выбора вакансии до сопровождения. По своему проекту найма."
         />
         <Card

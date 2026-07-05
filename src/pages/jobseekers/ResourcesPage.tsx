@@ -68,7 +68,7 @@ export function ResourcesPage() {
             link="external"
             to="https://inclusion.yandex.ru/"
             badge={<Badge tone="neutral">Гайд</Badge>}
-            title="Как устроен инклюзивный найм в Яндексе"
+            title="Как устроен инклюзивный наём в Яндексе"
           />
           <Card
             link="external"

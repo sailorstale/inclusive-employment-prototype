@@ -6,13 +6,13 @@ import { Paragraph } from "@/components/Prose";
 import { Callout } from "@/components/Callout";
 import { RelatedLinks } from "@/components/RelatedLinks";
 
-// 11 — Найм по шагам (хаб раздела трека «Для компаний»). Контент дословно из спеки v2.
+// 11 — Наём по шагам (хаб раздела трека «Для компаний»). Контент дословно из спеки v2.
 export function HireHubPage() {
   return (
     <>
       <PageHero
         variant="section-hub"
-        title="Найм по шагам"
+        title="Наём по шагам"
         lead="Пошаговый план найма и адаптации сотрудников с инвалидностью — от выбора вакансии до сопровождения. Можно использовать как готовый маршрут или адаптировать отдельные шаги под свою ситуацию."
       />
 
