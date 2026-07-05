@@ -7,14 +7,17 @@ import {
   Copy,
   Download,
   Eye,
+  MessageSquare,
   RotateCcw,
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./EditorProvider";
+import { useComments } from "./CommentsProvider";
 import { apiFetch } from "./auth";
 import { stripMarkdown } from "./richText";
 import type { EditRecord } from "./types";
+import type { Comment } from "./comments";
 
 // Страница «Изменения» — рабочий экран для разработчика и клиента. Список всех
 // правок по страницам: было → стало, дата, тип; статусы новая → внесена →
@@ -51,6 +54,7 @@ type Filter = "all" | "new" | "rollback" | "orphan";
 
 export function ChangesPage() {
   const { edits, setStatus, revert, orphanStatus } = useEditor();
+  const { comments, toggleResolved } = useComments();
   const [filter, setFilter] = React.useState<Filter>("all");
   const [copied, setCopied] = React.useState<string | null>(null);
 
@@ -93,6 +97,20 @@ export function ChangesPage() {
     }
     return [...m.entries()];
   }, [shown]);
+
+  const openComments = comments.filter((c) => !c.resolved).length;
+  const commentsByPage = React.useMemo(() => {
+    const sorted = [...comments].sort((a, b) =>
+      (b.createdAt || "").localeCompare(a.createdAt || "")
+    );
+    const m = new Map<string, Comment[]>();
+    for (const c of sorted) {
+      const key = c.page || "—";
+      if (!m.has(key)) m.set(key, []);
+      m.get(key)!.push(c);
+    }
+    return [...m.entries()];
+  }, [comments]);
 
   const copy = (id: string, text: string) => {
     navigator.clipboard?.writeText(text).then(() => {
@@ -144,6 +162,9 @@ export function ChangesPage() {
         <Stat label="проверено" value={counts.verified} />
         {counts.rollback > 0 ? (
           <Stat label="откаты" value={counts.rollback} bad />
+        ) : null}
+        {comments.length > 0 ? (
+          <Stat label="комментарии" value={openComments} />
         ) : null}
         <button
           type="button"
@@ -230,6 +251,104 @@ export function ChangesPage() {
           </section>
         ))
       )}
+
+      {commentsByPage.length > 0 ? (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 border-b pb-1.5">
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">
+              Комментарии
+            </h2>
+            <span className="ml-auto text-xs text-muted-foreground">
+              {openComments} открытых · {comments.length} всего
+            </span>
+          </div>
+          {commentsByPage.map(([page, items]) => (
+            <div key={page} className="space-y-2">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-semibold text-muted-foreground">
+                  {page}
+                </h3>
+                <Link
+                  to={page}
+                  className="inline-flex items-center gap-1 text-xs text-brand hover:underline"
+                >
+                  открыть <ArrowRight className="h-3 w-3" />
+                </Link>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {items.length}
+                </span>
+              </div>
+              {items.map((c) => (
+                <CommentCard
+                  key={c.id}
+                  comment={c}
+                  onToggle={() => toggleResolved(c.id, !c.resolved)}
+                />
+              ))}
+            </div>
+          ))}
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function CommentCard({
+  comment,
+  onToggle,
+}: {
+  comment: Comment;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-3 text-card-foreground">
+      <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs">
+        <span
+          className={cn(
+            "rounded-full px-2 py-0.5 font-medium",
+            comment.resolved
+              ? "bg-[hsl(var(--ok)/0.12)] text-[hsl(var(--ok))]"
+              : "bg-[hsl(var(--warn)/0.12)] text-[hsl(var(--warn))]"
+          )}
+        >
+          {comment.resolved ? "решён" : "открыт"}
+        </span>
+        {comment.author ? (
+          <span className="text-muted-foreground">{comment.author}</span>
+        ) : null}
+        <span className="ml-auto text-muted-foreground">
+          {fmt(comment.createdAt)}
+        </span>
+      </div>
+
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+        {comment.text}
+      </p>
+
+      {comment.anchorText ? (
+        <p className="mt-1.5 truncate text-xs text-muted-foreground">
+          у блока: «{comment.anchorText.slice(0, 90)}»
+        </p>
+      ) : null}
+
+      <div className="mt-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          {comment.resolved ? (
+            <>
+              <RotateCcw className="h-3.5 w-3.5" /> Открыть заново
+            </>
+          ) : (
+            <>
+              <Check className="h-3.5 w-3.5" /> Отметить решённым
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
