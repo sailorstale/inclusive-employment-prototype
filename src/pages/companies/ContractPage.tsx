@@ -1,6 +1,7 @@
 import { PageHero } from "@/components/PageHero";
 import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
+import { QuizItem } from "@/components/QuizItem";
 import {
   Paragraph,
   BulletList,
@@ -746,6 +747,84 @@ export function ContractPage() {
             Открыть полезный промпт
           </SmartLink>
         </Paragraph>
+      </ContentSection>
+
+      <ContentSection anchor="self-check" title="Проверьте себя">
+        <Paragraph>
+          Проверьте, насколько хорошо вы ориентируетесь в теме: короткие вопросы
+          с разбором ответов.
+        </Paragraph>
+
+        <QuizItem
+          question="Что из перечисленного может быть указано в ИПРА?"
+          options={[
+            {
+              text: "необходимость регулируемого по высоте стола",
+              verdict: "correct",
+            },
+            {
+              text: "размер заработной платы в размере от 50 тысяч рублей",
+              verdict: "wrong",
+            },
+            {
+              text: "запрещено работать в помещении с высоким уровнем шума и вибрации",
+              verdict: "correct",
+            },
+            {
+              text: "противопоказана строго сидячая и строго стоячая работа",
+              verdict: "correct",
+            },
+          ]}
+          explanation={
+            <>
+              <Paragraph>
+                В <GlossaryTerm term="ИПРА">ИПРА</GlossaryTerm> указывается
+                (иногда в размытых формулировках):
+              </Paragraph>
+              <BulletList>
+                <li>в каких условиях рекомендовано работать человеку,</li>
+                <li>как должно быть оборудовано рабочее место,</li>
+                <li>какие виды труда доступны,</li>
+                <li>какую работу не рекомендовано выполнять.</li>
+              </BulletList>
+            </>
+          }
+          revealLabel="Ответ"
+        />
+
+        <QuizItem
+          question="Какие утверждения верны?"
+          options={[
+            {
+              text: "сотрудник обязан предоставить ИПРА при трудоустройстве",
+              verdict: "wrong",
+            },
+            {
+              text: "работодатель обязан убедиться, что у сотрудника нет инвалидности",
+              verdict: "wrong",
+            },
+            {
+              text: "сотрудник может отказаться от условий, прописанных в ИПРА",
+              verdict: "correct",
+            },
+            { text: "ИПРА всегда является бессрочным документом", verdict: "wrong" },
+          ]}
+          explanation={
+            <>
+              <Paragraph>
+                Сотрудник предоставляет ИПРА по своему желанию — тогда
+                работодатель обязан выполнять условия, прописанные там. Нельзя
+                требовать предоставить ИПРА или доказать наличие или отсутствие
+                инвалидности.
+              </Paragraph>
+              <Paragraph>
+                ИПРА может быть выдана на определённый срок, тогда продление
+                оформляется дополнительным соглашением к трудовому договору.
+              </Paragraph>
+            </>
+          }
+          revealLabel="Ответ"
+        />
       </ContentSection>
 
       <RelatedLinks

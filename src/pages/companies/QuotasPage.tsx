@@ -1,6 +1,7 @@
 import { PageHero } from "@/components/PageHero";
 import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
+import { QuizItem } from "@/components/QuizItem";
 import { Callout } from "@/components/Callout";
 import { Disclosure } from "@/components/Disclosure";
 import { RelatedLinks } from "@/components/RelatedLinks";
@@ -441,6 +442,37 @@ export function QuotasPage() {
           оформления. Чтобы выбрать подходящие варианты, уточните актуальные
           требования в ЦЗН или профильных ведомствах вашего региона.
         </Paragraph>
+      </ContentSection>
+
+      <ContentSection anchor="self-check" title="Проверьте себя">
+        <Paragraph>
+          Проверьте, насколько хорошо вы ориентируетесь в теме: короткие вопросы
+          с разбором ответов.
+        </Paragraph>
+
+        <QuizItem
+          question="Какая форма занятости позволяет закрыть квоту?"
+          options={[
+            { text: "трудовой договор", verdict: "correct" },
+            { text: "гражданско-правовой договор", verdict: "wrong" },
+            { text: "самозанятость", verdict: "wrong" },
+            { text: "срочный трудовой договор", verdict: "correct" },
+          ]}
+          explanation={
+            <>
+              <Paragraph>
+                Трудовой договор (при предоставлении справки об инвалидности)
+                любой формы закрывает квоты.
+              </Paragraph>
+              <Paragraph>
+                Если сотрудник работает по совместительству или на часть ставки,
+                могут действовать ограничения, установленные региональными
+                властями.
+              </Paragraph>
+            </>
+          }
+          revealLabel="Ответ"
+        />
       </ContentSection>
 
       <RelatedLinks
