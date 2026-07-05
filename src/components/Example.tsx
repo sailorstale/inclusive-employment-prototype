@@ -1,43 +1,31 @@
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { Callout } from "@/components/Callout";
 
 // Example (унификация) — семантический блок «Пример»: иллюстрация, кейс или
-// образец формулировки. В отличие от Blockquote у примера НЕТ говорящего,
-// поэтому нет атрибуции (аватар · имя · должность · логотип) — именно её пустые
-// заглушки и делали пример похожим на чью-то цитату. Ярлык «Пример», лёгкий фон
-// и левый акцент выделяют блок из основного текста.
+// образец формулировки. Канонический вид на сайте — Callout · highlight с
+// заголовком «Пример» (десятки таких примеров, см. КАНОН). Тонкая обёртка
+// фиксирует этот вид — по образцу Warning над Callout · warning, — чтобы пример
+// нельзя было случайно оформить как цитату: Blockquote всегда рисует подпись
+// автора (аватар · имя · должность · логотип), а у примера говорящего нет.
 //
-// Чистый контейнер: сам не оборачивает содержимое в Editable. Редактируемость
-// даёт содержимое — блочные примеры кладут внутрь свои <Paragraph>/списки (они
-// уже Editable), инлайн-текст оборачивают в <Paragraph>. text-sm задаёт
-// «примерный» размер, как у прежней врезки-цитаты.
+// Заголовок по умолчанию «Пример»; можно уточнить («Пример. Как…») или опустить
+// (title={null}) — тогда остаётся только характерная врезка со звёздочкой.
 
 type ExampleProps = {
-  /** Ярлык блока. Канон — «Пример»; можно переопределить или опустить (null). */
-  label?: React.ReactNode;
+  /** Заголовок врезки. Канон — «Пример»; можно переопределить или опустить. */
+  title?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
 };
 
 export function Example({
-  label = "Пример",
+  title = "Пример",
   children,
   className,
 }: ExampleProps) {
   return (
-    <div
-      data-component="Example"
-      className={cn(
-        "max-w-prose space-y-3 rounded-r-md border-l-2 border-border bg-muted/40 py-3 pl-4 pr-4 text-sm",
-        className
-      )}
-    >
-      {label != null ? (
-        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {label}
-        </div>
-      ) : null}
+    <Callout variant="highlight" title={title ?? undefined} className={className}>
       {children}
-    </div>
+    </Callout>
   );
 }
