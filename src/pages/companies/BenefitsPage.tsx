@@ -123,6 +123,18 @@ export function BenefitsPage() {
             Зарплата снижается только при изменении нормы рабочего времени.
           </Paragraph>
         </ContentSection>
+
+        <ContentSection
+          anchor="lb-benefits-salary"
+          level="h3"
+          title="6. Когда может измениться заработная плата"
+        >
+          <Paragraph>
+            Заработная плата может измениться только в том случае, если меняется
+            норма рабочего времени или другие условия труда, предусмотренные
+            законодательством.
+          </Paragraph>
+        </ContentSection>
       </ContentSection>
 
       <ContentSection
