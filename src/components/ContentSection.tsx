@@ -32,12 +32,18 @@ export function ContentSection({
       ? "text-xl font-semibold"
       : "text-base font-semibold";
 
+  // Вертикальный ритм: между h2-секциями 48px задаёт space-y-12 в макете.
+  // Вложенные подсекции живут внутри space-y-4 родителя (16px) — этого мало,
+  // подзаголовок сливается с абзацами. Даём им отдельную ступень сверху
+  // (h3 — 32px, h4 — 24px); important перебивает space-y родителя.
+  const topGap = level === "h3" ? "!mt-8" : level === "h4" ? "!mt-6" : "";
+
   return (
     <section
       id={anchor}
       data-anchor={anchor}
       data-component="ContentSection"
-      className={cn("space-y-4", className)}
+      className={cn("space-y-4", topGap, className)}
     >
       <AnchorScope anchor={anchor}>
         {title ? (
