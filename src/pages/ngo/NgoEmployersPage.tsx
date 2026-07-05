@@ -127,7 +127,7 @@ export function NgoEmployersPage() {
         <ContentSection
           anchor="why-early-1"
           level="h3"
-          title="1. Кандидат сохраняет мотивацию"
+          title="Кандидат сохраняет мотивацию"
         >
           <Paragraph>
             Когда работодатель найден ещё во время подготовки, путь к
@@ -150,7 +150,7 @@ export function NgoEmployersPage() {
         <ContentSection
           anchor="why-early-2"
           level="h3"
-          title="2. НКО может подбирать вакансии более осознанно"
+          title="НКО может подбирать вакансии более осознанно"
         >
           <Paragraph>
             Когда у НКО уже есть круг работодателей, заинтересованных в
@@ -185,7 +185,7 @@ export function NgoEmployersPage() {
         <ContentSection
           anchor="why-early-3"
           level="h3"
-          title="3. Возможности и условия можно оценить заранее"
+          title="Возможности и условия можно оценить заранее"
         >
           <Paragraph>
             Многие особенности будущего рабочего места становятся понятны только
@@ -221,7 +221,7 @@ export function NgoEmployersPage() {
         <ContentSection
           anchor="why-early-4"
           level="h3"
-          title="4. Работодатель успевает подготовиться"
+          title="Работодатель успевает подготовиться"
         >
           <Paragraph>
             Даже если компания заинтересована в инклюзивном найме, ей обычно
@@ -250,7 +250,7 @@ export function NgoEmployersPage() {
         <ContentSection
           anchor="why-early-5"
           level="h3"
-          title="5. У НКО формируется сеть партнёров"
+          title="У НКО формируется сеть партнёров"
         >
           <Paragraph>
             Когда НКО постепенно выстраивает отношения с работодателями, со
@@ -282,7 +282,7 @@ export function NgoEmployersPage() {
         <ContentSection
           anchor="why-early-6"
           level="h3"
-          title="6. Разговор с работодателем становится партнёрским"
+          title="Разговор с работодателем становится партнёрским"
         >
           <Paragraph>
             Когда НКО начинает общаться с работодателем заранее, взаимодействие

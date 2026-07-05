@@ -216,7 +216,7 @@ export function NgoHowPage() {
         <ContentSection
           anchor="scenario-czn"
           level="h3"
-          title="1. Трудоустройство при поддержке Центра занятости населения (ЦЗН)"
+          title="Трудоустройство при поддержке Центра занятости населения (ЦЗН)"
         >
           <Paragraph>
             <strong>РАБОТОДАТЕЛЬ → ЦЗН → СОИСКАТЕЛЬ</strong>
@@ -238,7 +238,7 @@ export function NgoHowPage() {
         <ContentSection
           anchor="scenario-nko"
           level="h3"
-          title="2. Трудоустройство с участием некоммерческой организации (НКО)"
+          title="Трудоустройство с участием некоммерческой организации (НКО)"
         >
           <Paragraph>
             <strong>СОИСКАТЕЛЬ → НКО → РАБОТОДАТЕЛЬ</strong>

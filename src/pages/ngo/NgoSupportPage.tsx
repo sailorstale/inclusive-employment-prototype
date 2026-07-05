@@ -561,7 +561,7 @@ export function NgoSupportPage() {
           процессе работы.
         </Paragraph>
 
-        <ContentSection level="h3" title="1. Регресс навыков">
+        <ContentSection level="h3" title="Регресс навыков">
           <Paragraph>
             Одной из специфических трудностей, с которой могут столкнуться
             сотрудники с ментальной инвалидностью, является утрата или снижение
@@ -590,7 +590,7 @@ export function NgoSupportPage() {
 
         <ContentSection
           level="h3"
-          title="2. Сотрудник систематически допускает ошибки"
+          title="Сотрудник систематически допускает ошибки"
         >
           <Paragraph>
             Одна из важных компетенций НКО — умение вовремя признать, что
@@ -628,7 +628,7 @@ export function NgoSupportPage() {
           </Paragraph>
         </ContentSection>
 
-        <ContentSection level="h3" title="3. Выгорание сотрудника">
+        <ContentSection level="h3" title="Выгорание сотрудника">
           <Paragraph>
             НКО важно обращать внимание не только на сам факт трудоустройства, но
             и на то, насколько устойчиво человек справляется с рабочими буднями.

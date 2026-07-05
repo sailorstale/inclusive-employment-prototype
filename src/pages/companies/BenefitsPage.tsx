@@ -54,7 +54,7 @@ export function BenefitsPage() {
         <ContentSection
           anchor="lb-benefits-week"
           level="h3"
-          title="1. Сокращённая рабочая неделя"
+          title="Сокращённая рабочая неделя"
         >
           <Paragraph>
             Для сотрудников с инвалидностью I или II группы — не более 35 часов в
@@ -65,7 +65,7 @@ export function BenefitsPage() {
         <ContentSection
           anchor="lb-benefits-vacation"
           level="h3"
-          title="2. Удлинённый ежегодный отпуск"
+          title="Удлинённый ежегодный отпуск"
         >
           <Paragraph>
             Не менее 30 календарных дней (это на 2 дня больше, чем стандартный
@@ -76,7 +76,7 @@ export function BenefitsPage() {
         <ContentSection
           anchor="lb-benefits-unpaid"
           level="h3"
-          title="3. Отпуск без сохранения зарплаты"
+          title="Отпуск без сохранения зарплаты"
         >
           <Paragraph>
             Сотрудник с инвалидностью может дополнительно без сохранения
@@ -92,7 +92,7 @@ export function BenefitsPage() {
         <ContentSection
           anchor="lb-benefits-special"
           level="h3"
-          title="4. Ограничения на особые виды работ"
+          title="Ограничения на особые виды работ"
         >
           <Paragraph>Сотрудник может:</Paragraph>
           <BulletList>
@@ -113,7 +113,7 @@ export function BenefitsPage() {
         <ContentSection
           anchor="lb-benefits-night"
           level="h3"
-          title="5. Право на отказ от ночной смены"
+          title="Право на отказ от ночной смены"
         >
           <Paragraph>
             Если в компании сменный график, а сотрудник не хочет работать ночью,
@@ -127,7 +127,7 @@ export function BenefitsPage() {
         <ContentSection
           anchor="lb-benefits-salary"
           level="h3"
-          title="6. Когда может измениться заработная плата"
+          title="Когда может измениться заработная плата"
         >
           <Paragraph>
             Заработная плата может измениться только в том случае, если меняется
