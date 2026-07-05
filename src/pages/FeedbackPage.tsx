@@ -23,7 +23,7 @@ export function FeedbackPage() {
         ]}
       />
 
-      <Callout variant="wip" title="Этот раздел дополняется.">
+      <Callout variant="wip" title="Этот раздел дополняется">
         Форму обратной связи добавим позже — пока напишите нам на почту выше.
       </Callout>
 

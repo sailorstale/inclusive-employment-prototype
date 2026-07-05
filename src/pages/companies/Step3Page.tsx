@@ -1181,6 +1181,13 @@ export function Step3Page() {
         </Callout>
       </ContentSection>
 
+      <StepNav
+        current={3}
+        total={6}
+        prev={{ label: "Шаг 2. Аудит готовности", to: "/companies/hire/step-2" }}
+        next={{ label: "Шаг 4. Поиск и оформление", to: "/companies/hire/step-4" }}
+      />
+
       <RelatedLinks
         items={[
           {
@@ -1202,13 +1209,6 @@ export function Step3Page() {
               "Откуда берётся список барьеров, которые устраняются на этом шаге.",
           },
         ]}
-      />
-
-      <StepNav
-        current={3}
-        total={6}
-        prev={{ label: "Шаг 2. Аудит готовности", to: "/companies/hire/step-2" }}
-        next={{ label: "Шаг 4. Поиск и оформление", to: "/companies/hire/step-4" }}
       />
     </>
   );

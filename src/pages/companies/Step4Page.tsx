@@ -1271,6 +1271,13 @@ export function Step4Page() {
         </ContentSection>
       </ContentSection>
 
+      <StepNav
+        current={4}
+        total={6}
+        prev={{ label: "Шаг 3. Создание среды", to: "/companies/hire/step-3" }}
+        next={{ label: "Шаг 5. Онбординг", to: "/companies/hire/step-5" }}
+      />
+
       <RelatedLinks
         items={[
           {
@@ -1290,13 +1297,6 @@ export function Step4Page() {
             description: "Предыдущий шаг: подготовка доступной рабочей среды.",
           },
         ]}
-      />
-
-      <StepNav
-        current={4}
-        total={6}
-        prev={{ label: "Шаг 3. Создание среды", to: "/companies/hire/step-3" }}
-        next={{ label: "Шаг 5. Онбординг", to: "/companies/hire/step-5" }}
       />
     </>
   );

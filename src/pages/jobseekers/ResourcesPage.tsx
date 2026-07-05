@@ -125,7 +125,7 @@ export function ResourcesPage() {
         </CardGrid>
       </ContentSection>
 
-      <Callout variant="info" title="Где это всё лежит.">
+      <Callout variant="info" title="Где это всё лежит">
         Основной архив — на{" "}
         <SmartLink to="https://inclusion.yandex.ru/">
           inclusion.yandex.ru
@@ -135,7 +135,7 @@ export function ResourcesPage() {
         отдельные разделы.
       </Callout>
 
-      <Callout variant="info" title="Если не нашли нужного.">
+      <Callout variant="info" title="Если не нашли нужного">
         Напишите на{" "}
         <SmartLink to="mailto:inclusion@yandex-team.ru">
           inclusion@yandex-team.ru

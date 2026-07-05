@@ -871,6 +871,12 @@ export function Step1Page() {
         </Paragraph>
       </ContentSection>
 
+      <StepNav
+        current={1}
+        total={6}
+        next={{ label: "Шаг 2. Аудит готовности", to: "/companies/hire/step-2" }}
+      />
+
       <RelatedLinks
         items={[
           {
@@ -892,12 +898,6 @@ export function Step1Page() {
               "если по дороге возникли сомнения, объяснение «зачем компании инклюзивный наём» лежит здесь.",
           },
         ]}
-      />
-
-      <StepNav
-        current={1}
-        total={6}
-        next={{ label: "Шаг 2. Аудит готовности", to: "/companies/hire/step-2" }}
       />
     </>
   );

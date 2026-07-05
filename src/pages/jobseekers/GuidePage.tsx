@@ -143,7 +143,7 @@ export function GuidePage() {
         </Paragraph>
       </ContentSection>
 
-      <Callout variant="info" title="Если сейчас не до полного курса.">
+      <Callout variant="info" title="Если сейчас не до полного курса">
         Загляните в{" "}
         <SmartLink to="/jobseekers/tools">«Инструменты для работы»</SmartLink> —
         отдельные инструменты под конкретные задачи: написать резюме,

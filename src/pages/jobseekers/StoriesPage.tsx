@@ -19,7 +19,7 @@ export function StoriesPage() {
         lead="Реальные сотрудники Яндекса с инвалидностью в реальных профессиях. Это не «истории преодоления» — обычные рассказы людей о том, как они нашли работу и что делают каждый день."
       />
 
-      <Callout variant="info" title="Этичность.">
+      <Callout variant="info" title="Этичность">
         Заголовки рассказов мы переписываем так, чтобы человек был на первом
         месте, а инвалидность — фактическим обстоятельством. Никаких «удивительных
         историй», никаких «несмотря на».
@@ -107,7 +107,7 @@ export function StoriesPage() {
         </CardGrid>
       </ContentSection>
 
-      <Callout variant="info" title="Полный архив.">
+      <Callout variant="info" title="Полный архив">
         Все ~15 историй с фильтрами по сервису, формату и форме инвалидности — на{" "}
         <SmartLink to="https://inclusion.yandex.ru/job">
           inclusion.yandex.ru/job
@@ -116,7 +116,7 @@ export function StoriesPage() {
         нашими коллегами». Здесь — короткий срез; этот раздел дополняется.
       </Callout>
 
-      <Callout variant="info" title="Если знаете кого-то.">
+      <Callout variant="info" title="Если знаете кого-то">
         Если у вас есть история сотрудника, которая могла бы войти сюда, —
         напишите на{" "}
         <SmartLink to="mailto:inclusion@yandex-team.ru">

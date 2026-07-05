@@ -194,7 +194,7 @@ export function BenefitsPage() {
           }}
         />
 
-        <Callout variant="highlight" title="Давайте рассмотрим на примере.">
+        <Callout variant="highlight" title="Давайте рассмотрим на примере">
           <Paragraph>
             Человек не работает. Его пенсия по инвалидности составляет 12 000
             рублей. Прожиточный минимум в регионе - 15 000 рублей. Поскольку

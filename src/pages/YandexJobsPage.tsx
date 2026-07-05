@@ -402,7 +402,7 @@ export function YandexJobsPage() {
         />
       </ContentSection>
 
-      <Callout variant="briefing" title="Откуда это.">
+      <Callout variant="briefing" title="Откуда это">
         Раздел собран по публичной странице{" "}
         <SmartLink to="https://inclusion.yandex.ru/job">
           inclusion.yandex.ru/job

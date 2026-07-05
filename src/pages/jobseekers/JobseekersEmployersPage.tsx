@@ -70,7 +70,7 @@ export function JobseekersEmployersPage() {
         </CardGrid>
       </ContentSection>
 
-      <Callout variant="info" title="Это один из примеров.">
+      <Callout variant="info" title="Это один из примеров">
         Яндекс — не единственный работодатель, который нанимает людей с
         инвалидностью. В{" "}
         <SmartLink to="/companies">разделе «Для компаний»</SmartLink> мы
@@ -79,7 +79,7 @@ export function JobseekersEmployersPage() {
         работодателей.
       </Callout>
 
-      <Callout variant="info" title="Как откликнуться.">
+      <Callout variant="info" title="Как откликнуться">
         <Paragraph>
           Открытые вакансии Яндекса публикуются на{" "}
           <SmartLink to="https://yandex.ru/jobs">yandex.ru/jobs</SmartLink>. Для
