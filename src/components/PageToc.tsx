@@ -2,7 +2,7 @@ import * as React from "react";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { scrollToId, anchorId } from "@/lib/scroll";
-import { useToc, type TocItem } from "@/lib/toc";
+import { useToc, type TocItem, type TocSubItem } from "@/lib/toc";
 import { useEditor } from "@/editor/EditorProvider";
 
 // PageToc (00 — оглавление «На этой странице») — страница объявляет свои секции.
@@ -18,12 +18,17 @@ export function TocLinks({
   activeId,
   onSelect,
   className,
+  subItems,
+  activeSubId,
 }: {
   items: TocItem[];
   activeId?: string | null;
   /** Если задан — заменяет переход по умолчанию (например: закрыть меню, затем прокрутить). */
   onSelect?: (id: string) => void;
   className?: string;
+  /** Подзаголовки (h3) АКТИВНОЙ секции — рисуются вложенным списком под ней (десктоп-рейл). */
+  subItems?: TocSubItem[];
+  activeSubId?: string | null;
 }) {
   const { headingTextOf } = useEditor();
   const { pathname } = useLocation();
@@ -32,6 +37,7 @@ export function TocLinks({
       {items.map((item) => {
         const id = anchorId(item.anchor);
         const active = activeId === id;
+        const subs = active && subItems && subItems.length > 0 ? subItems : null;
         return (
           <li key={id}>
             <button
@@ -47,6 +53,29 @@ export function TocLinks({
             >
               {headingTextOf(pathname, item.label, item.anchor)}
             </button>
+            {subs ? (
+              <ul className="ml-1 mt-1.5 space-y-1 border-l border-border pl-3">
+                {subs.map((s) => (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      onClick={() => (onSelect ? onSelect(s.id) : scrollToId(s.id))}
+                      aria-current={
+                        activeSubId === s.id ? "location" : undefined
+                      }
+                      className={cn(
+                        "rounded-sm text-left text-[0.8125rem] leading-snug underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                        activeSubId === s.id
+                          ? "font-medium text-brand"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {s.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </li>
         );
       })}

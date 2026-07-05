@@ -1,4 +1,9 @@
-import { useToc, useScrollSpy } from "@/lib/toc";
+import {
+  usePassedSpy,
+  useScrollSpy,
+  useSubSections,
+  useToc,
+} from "@/lib/toc";
 import { TocLinks } from "../PageToc";
 
 // TocRail (00 — оглавление «На этой странице», десктоп) — липкий рейл справа со
@@ -9,6 +14,10 @@ import { TocLinks } from "../PageToc";
 export function TocRail() {
   const { items } = useToc();
   const activeId = useScrollSpy(items.map((i) => i.anchor));
+  // Двухуровневость: у активной секции авто-раскрываются её h3-подзаголовки
+  // (читаются из DOM — страницы ничего не размечают). Ушёл из секции — свернулись.
+  const subItems = useSubSections(activeId);
+  const activeSubId = usePassedSpy(subItems.map((s) => s.id));
 
   if (!items.length) return null;
 
@@ -20,7 +29,12 @@ export function TocRail() {
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         На этой странице
       </p>
-      <TocLinks items={items} activeId={activeId} />
+      <TocLinks
+        items={items}
+        activeId={activeId}
+        subItems={subItems}
+        activeSubId={activeSubId}
+      />
     </nav>
   );
 }
