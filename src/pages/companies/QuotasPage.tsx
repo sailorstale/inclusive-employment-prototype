@@ -59,7 +59,7 @@ export function QuotasPage() {
           </li>
         </BulletList>
 
-        <Callout variant="highlight" title="Пример">
+        <Callout variant="highlight" title="Пример. Расчёт квоты для компании из 208 человек">
           <Paragraph>
             В компании по производству корпусной мебели среднесписочная
             численность за предыдущий квартал — 208 человек. В Москве квота
@@ -145,7 +145,7 @@ export function QuotasPage() {
           </Paragraph>
         </ContentSection>
 
-        <Callout variant="highlight" title="Пример">
+        <Callout variant="highlight" title="Пример. Аренда квотируемых рабочих мест у НКО">
           <Paragraph>
             Логистическая компания “Ромашка” по закону, из-за численности штата
             обязана создать несколько рабочих мест для людей с инвалидностью.

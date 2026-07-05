@@ -69,7 +69,7 @@ export function JobseekersEmployersPage() {
         </CardGrid>
       </ContentSection>
 
-      <Callout variant="info" title="Это один из примеров">
+      <Callout variant="info" title="Пример. Яндекс — не единственный работодатель">
         Яндекс — не единственный работодатель, который нанимает людей с
         инвалидностью. В{" "}
         <SmartLink to="/companies">разделе «Для компаний»</SmartLink> мы
