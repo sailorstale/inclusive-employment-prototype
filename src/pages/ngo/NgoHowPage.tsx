@@ -76,8 +76,8 @@ export function NgoHowPage() {
           процесса важно понимать свою роль и роли друг друга.
         </Paragraph>
 
-        <CardGrid cols={2}>
-          <Card link="none" icon={<Users />} title="Соискатель с инвалидностью">
+        <CardGrid cols={1}>
+          <Card layout="horizontal" link="none" icon={<Users />} title="Соискатель с инвалидностью">
             <Paragraph>
               Соискателю важно быть не пассивным благополучателем, а активным участником
               процесса. Его цели, мотивация и сильные стороны — основа успешного
@@ -101,7 +101,7 @@ export function NgoHowPage() {
             </Paragraph>
           </Card>
 
-          <Card link="none" icon={<Building2 />} title="Работодатель">
+          <Card layout="horizontal" link="none" icon={<Building2 />} title="Работодатель">
             <Paragraph>
               Работодатель — не благотворитель. Он хочет получить подготовленного,
               мотивированного сотрудника, который закроет задачи бизнеса.
@@ -120,7 +120,7 @@ export function NgoHowPage() {
             </Paragraph>
           </Card>
 
-          <Card link="none" icon={<HeartHandshake />} title="Некоммерческая организация (НКО)">
+          <Card layout="horizontal" link="none" icon={<HeartHandshake />} title="Некоммерческая организация (НКО)">
             <Paragraph>
               Многие НКО работают с людьми с инвалидностью годами и хорошо знают, с какими
               трудностями они сталкиваются при поиске работы. Это может быть не только
@@ -146,7 +146,7 @@ export function NgoHowPage() {
             </Paragraph>
           </Card>
 
-          <Card link="none" icon={<Landmark />} title="Центр занятости населения (ЦЗН)">
+          <Card layout="horizontal" link="none" icon={<Landmark />} title="Центр занятости населения (ЦЗН)">
             <Paragraph>
               Центр занятости выступает государственным регулятором и помогает соискателям и
               работодателям найти друг друга.

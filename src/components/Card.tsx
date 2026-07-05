@@ -26,6 +26,8 @@ type CardProps = {
   children?: React.ReactNode;
   /** Подвал-текст «Связанный материал» — НЕ ссылка (§3.8). */
   footer?: React.ReactNode;
+  /** Раскладка: vertical (по умолч.) или horizontal (иконка слева, текст справа) — для карточек с большим текстом. */
+  layout?: "vertical" | "horizontal";
   className?: string;
 };
 
@@ -40,8 +42,10 @@ export function Card({
   marker,
   children,
   footer,
+  layout = "vertical",
   className,
 }: CardProps) {
+  const horizontal = layout === "horizontal";
   const isLink = link !== "none" && to;
   const isExternal = link === "external";
   const isMail = link === "mailto";
@@ -52,25 +56,42 @@ export function Card({
     ? "hover:border-ring hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     : "";
 
-  const inner = (
-    <>
-      {(icon || badge || marker) && (
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            {marker ? (
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary text-lg font-bold text-secondary-foreground">
-                {marker}
-              </span>
-            ) : null}
-            {icon ? (
-              <span className="text-muted-foreground [&_svg]:h-5 [&_svg]:w-5">
-                {icon}
-              </span>
-            ) : null}
-          </div>
-          {badge ? <span>{badge}</span> : null}
+  const mediaTop =
+    icon || badge || marker ? (
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {marker ? (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary text-lg font-bold text-secondary-foreground">
+              {marker}
+            </span>
+          ) : null}
+          {icon ? (
+            <span className="text-muted-foreground [&_svg]:h-5 [&_svg]:w-5">
+              {icon}
+            </span>
+          ) : null}
         </div>
-      )}
+        {badge ? <span>{badge}</span> : null}
+      </div>
+    ) : null;
+
+  const mediaLeft =
+    marker || icon ? (
+      <div className="shrink-0">
+        {marker ? (
+          <span className="flex h-11 w-11 items-center justify-center rounded-md bg-secondary text-lg font-bold text-secondary-foreground">
+            {marker}
+          </span>
+        ) : (
+          <span className="text-muted-foreground [&_svg]:h-7 [&_svg]:w-7">
+            {icon}
+          </span>
+        )}
+      </div>
+    ) : null;
+
+  const body = (
+    <>
       {eyebrow ? (
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Editable as="inline">{eyebrow}</Editable>
@@ -95,6 +116,21 @@ export function Card({
           <Editable as="inline">{footer}</Editable>
         </div>
       ) : null}
+    </>
+  );
+
+  const inner = horizontal ? (
+    <div className="flex gap-4 sm:gap-5">
+      {mediaLeft}
+      <div className="min-w-0 flex-1">
+        {badge ? <div className="mb-1 flex justify-end">{badge}</div> : null}
+        {body}
+      </div>
+    </div>
+  ) : (
+    <>
+      {mediaTop}
+      {body}
     </>
   );
 
@@ -138,12 +174,18 @@ export function CardGrid({
   children,
   className,
 }: {
-  cols?: 2 | 3 | 4;
+  cols?: 1 | 2 | 3 | 4;
   children: React.ReactNode;
   className?: string;
 }) {
   const colClass =
-    cols === 2 ? "md:grid-cols-2" : cols === 4 ? "md:grid-cols-4" : "md:grid-cols-3";
+    cols === 1
+      ? ""
+      : cols === 2
+        ? "md:grid-cols-2"
+        : cols === 4
+          ? "md:grid-cols-4"
+          : "md:grid-cols-3";
   return (
     <div className={cn("grid grid-cols-1 gap-4", colClass, className)}>
       {children}
