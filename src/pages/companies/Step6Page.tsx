@@ -33,7 +33,7 @@ export function Step6Page() {
               "Какие регулярные расходы нужно учитывать и можно ли их сократить",
             anchor: "#regulyarnye",
           },
-          { label: "Подведём итоги", anchor: "#itogi" },
+          { label: "Подведём итоги", anchor: "#step6-summary" },
           {
             label: "Практическое задание для работодателей",
             anchor: "#zadanie",
@@ -41,7 +41,7 @@ export function Step6Page() {
         ]}
       />
 
-      <ContentSection anchor="step6-intro" title="Введение">
+      <ContentSection anchor="step6-intro" title="Вступление">
         <Paragraph>
           На предыдущих этапах мы разобрали, как подготовить инклюзивную среду,
           найти кандидата, провести собеседование, оформить сотрудника и
@@ -743,7 +743,7 @@ export function Step6Page() {
         </ContentSection>
       </ContentSection>
 
-      <ContentSection anchor="itogi" title="Подведём итоги">
+      <ContentSection anchor="step6-summary" title="Подведём итоги">
         <Paragraph>
           На первый взгляд список затрат на инклюзивный наём может показаться
           значительным. Однако важно помнить, что многие расходы носят разовый

@@ -1523,7 +1523,7 @@ export function TeamPage() {
         </Paragraph>
         <Paragraph>Об этом поговорим в следующем модуле.</Paragraph>
 
-        <Callout variant="info" title="Остались вопросы или предложения?">
+        <Callout variant="info" title="Остались вопросы? Есть пожелания?">
           Помогите сделать следующую версию гида лучше —{" "}
           <SmartLink to="/feedback">оставьте их здесь</SmartLink>.
         </Callout>

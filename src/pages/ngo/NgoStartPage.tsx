@@ -66,7 +66,7 @@ export function NgoStartPage() {
         ]}
       />
 
-      <ContentSection anchor="start-intro" title="Введение">
+      <ContentSection anchor="start-intro" title="Вступление">
         <Paragraph>
           Многие НКО уже работают с благополучателями и помогают им в самых
           разных жизненных ситуациях. Для части аудитории со временем становится

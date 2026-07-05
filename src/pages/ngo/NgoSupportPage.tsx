@@ -727,7 +727,7 @@ export function NgoSupportPage() {
         </ContentSection>
       </ContentSection>
 
-      <Callout variant="highlight" title="Подведём итог">
+      <Callout variant="highlight" title="Подведём итоги">
         <Paragraph>
           Сопровождаемое трудоустройство — это непрерывная система поддержки, в
           которой НКО выступает посредником между соискателем и работодателем.

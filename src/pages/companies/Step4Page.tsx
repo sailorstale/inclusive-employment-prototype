@@ -1264,8 +1264,8 @@ export function Step4Page() {
           </Callout>
         </ContentSection>
 
-        <ContentSection level="h3" title="Остались вопросы или пожелания?">
-          <Callout variant="info" title="Остались вопросы или пожелания?">
+        <ContentSection level="h3" title="Остались вопросы? Есть пожелания?">
+          <Callout variant="info" title="Остались вопросы? Есть пожелания?">
             Оставьте их здесь. Мы учтём ваши комментарии при подготовке следующей версии гида.
           </Callout>
         </ContentSection>

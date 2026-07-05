@@ -565,7 +565,7 @@ export function NgoCandidatesPage() {
             <li>дополнительные комментарии.</li>
           </BulletList>
           <Paragraph>
-            Вы можете преобразовать транскрибацию беседы в портрет кандидата. Делимся{" "}
+            Вы можете преобразовать транскрибацию беседы в портрет соискателя. Делимся{" "}
             <SmartLink to="https://docs.google.com/document/d/1PObmW1ACd7pvRPPX5N5ndPH6C_3OO2PA/edit">
               пошаговой инструкцией
             </SmartLink>
@@ -573,7 +573,7 @@ export function NgoCandidatesPage() {
           </Paragraph>
         </ContentSection>
 
-        <ContentSection anchor="cand-interview-summary" level="h3" title="Подведём итог">
+        <ContentSection anchor="cand-interview-summary" level="h3" title="Подведём итоги">
           <Paragraph>
             На первой встрече НКО собирает сведения, которые понадобятся для дальнейшего трудоустройства:
             информацию об опыте, навыках, образовании, мотивации, интересе к работе, подходящем формате занятости,

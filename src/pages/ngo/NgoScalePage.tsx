@@ -341,7 +341,7 @@ export function NgoScalePage() {
           </Paragraph>
           <Paragraph>
             <SmartLink to="https://docs.google.com/spreadsheets/d/1Gj7n89Od56yva_dcvkN099Xue6lBlyzDuIy9yfzddA4/edit?usp=sharing">
-              Пример таймлайна №1
+              Пример таймлайна № 1
             </SmartLink>
           </Paragraph>
           <Paragraph>
@@ -351,7 +351,7 @@ export function NgoScalePage() {
           </Paragraph>
           <Paragraph>
             <SmartLink to="https://docs.google.com/spreadsheets/d/1hfsOshL8emDuH_2mQw6w30Pf-OKSikWgnx_f_nzjpGY/edit?usp=sharing">
-              Пример таймлайна №2
+              Пример таймлайна № 2
             </SmartLink>
           </Paragraph>
         </ContentSection>

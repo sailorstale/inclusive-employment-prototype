@@ -59,9 +59,6 @@ export function NgoEthicsPage() {
         <Paragraph>
           <strong>Что говорят компании и НКО</strong>
         </Paragraph>
-        <Paragraph>
-          <strong>В этом материале вы узнаете:</strong>
-        </Paragraph>
         <BulletList>
           <li>
             как общаться с людьми с инвалидностью без неловкости и лишних
@@ -1527,7 +1524,7 @@ export function NgoEthicsPage() {
         </Paragraph>
         <Paragraph>Об этом поговорим в следующем модуле.</Paragraph>
 
-        <Callout variant="info" title="Остались вопросы или предложения?">
+        <Callout variant="info" title="Остались вопросы? Есть пожелания?">
           Помогите сделать следующую версию гида лучше —{" "}
           <SmartLink to="/feedback">оставьте их здесь</SmartLink>.
         </Callout>
