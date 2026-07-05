@@ -104,9 +104,6 @@ export function Editable({
   // Разборы (наши варианты) показываем на ЛЮБОМ блоке, чей текст совпал —
   // не только на прозе: следы курса живут и в заголовках, плашках, пунктах.
   const variants = getVariantsFor(originalText);
-  const variantIsCourse = variants?.some((v) =>
-    v.rationale.some((r) => r.kind === "course")
-  );
   // Показываем правку, если она есть, непустая и по ней не запрошен откат;
   // иначе — оригинал.
   const showEdit = Boolean(
@@ -164,7 +161,7 @@ export function Editable({
   } else if (variants) {
     badge = {
       icon: <Sparkles className="h-3 w-3" />,
-      label: variantIsCourse ? "убрать курс" : "есть короче",
+      label: "предложения",
       cls: "border-[hsl(var(--brand)/0.3)] bg-[hsl(var(--brand)/0.1)] text-brand",
     };
   } else {
