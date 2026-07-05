@@ -871,8 +871,6 @@ export function Step1Page() {
       </ContentSection>
 
       <StepNav
-        current={1}
-        total={6}
         next={{ label: "Шаг 2. Аудит готовности", to: "/companies/hire/step-2" }}
       />
 

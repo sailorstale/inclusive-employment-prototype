@@ -1271,8 +1271,6 @@ export function Step4Page() {
       </ContentSection>
 
       <StepNav
-        current={4}
-        total={6}
         prev={{ label: "Шаг 3. Создание среды", to: "/companies/hire/step-3" }}
         next={{ label: "Шаг 5. Онбординг", to: "/companies/hire/step-5" }}
       />

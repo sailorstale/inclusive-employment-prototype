@@ -1248,8 +1248,6 @@ export function Step2Page() {
       </ContentSection>
 
       <StepNav
-        current={2}
-        total={6}
         prev={{ label: "Шаг 1. Выбор вакансии", to: "/companies/hire/step-1" }}
         next={{ label: "Шаг 3. Создание среды", to: "/companies/hire/step-3" }}
       />

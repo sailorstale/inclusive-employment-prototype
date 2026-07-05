@@ -1216,8 +1216,6 @@ export function Step5Page() {
       </ContentSection>
 
       <StepNav
-        current={5}
-        total={6}
         prev={{
           label: "Шаг 4. Поиск и оформление",
           to: "/companies/hire/step-4",
