@@ -29,7 +29,7 @@ export function ContentSection({
     level === "h2"
       ? "text-2xl font-semibold tracking-tight"
       : level === "h3"
-      ? "text-xl font-semibold"
+      ? "text-xl font-semibold tracking-tight"
       : "text-base font-semibold";
 
   // Вертикальный ритм: между h2-секциями 48px задаёт space-y-12 в макете.

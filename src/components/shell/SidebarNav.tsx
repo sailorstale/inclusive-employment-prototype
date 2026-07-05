@@ -133,7 +133,7 @@ export function SidebarNav({
       {spec.groups.map((group, gi) => (
         <div key={gi} className="space-y-1">
           {group.label ? (
-            <p className="px-3 pb-0.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            <p className="px-3 pb-0.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {group.label}
             </p>
           ) : null}

@@ -14,7 +14,7 @@ export function RelatedLinks({ items }: { items: RelatedItem[] }) {
   if (!items.length) return null;
   return (
     <section data-component="RelatedLinks" className="mt-12 border-t pt-8">
-      <h2 className="mb-4 text-xl font-semibold text-foreground">
+      <h2 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">
         Читайте также
       </h2>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

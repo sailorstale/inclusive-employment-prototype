@@ -1,10 +1,13 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 
 // StepsShelf (00b §2.4) — нумерованный воркфлоу как набор карточек-шагов.
 // Обязательный вариант link: each-step-link (карточки ведут на страницы шагов)
 // vs non-link (нумерованные правила/шаги в теле страницы — НЕ ссылки, §3).
+// Текст шага (eyebrow/title/description) — редактируемый (как в Card): обёрнут
+// в Editable as="inline", чтобы авторский текст оставался в редакторском слое.
 
 export type Step = {
   /** Номер/метка шага (например, «1» или «Шаг 1»). */
@@ -31,16 +34,16 @@ function StepBody({ step }: { step: Step }) {
         </span>
         {step.eyebrow ? (
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {step.eyebrow}
+            <Editable as="inline">{step.eyebrow}</Editable>
           </span>
         ) : null}
       </div>
-      <h3 className="font-semibold leading-snug text-foreground">
-        {step.title}
+      <h3 className="text-base font-semibold leading-snug text-foreground">
+        <Editable as="inline">{step.title}</Editable>
       </h3>
       {step.description ? (
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-          {step.description}
+          <Editable as="inline">{step.description}</Editable>
         </p>
       ) : null}
     </>

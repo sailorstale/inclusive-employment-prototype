@@ -51,7 +51,7 @@ function ComparePanel({ col }: { col: Column }) {
 
   return (
     <div className={cn("rounded-lg border bg-card p-5", toneRing)}>
-      <h3 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
+      <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground">
         {Marker ? <Marker className={cn("h-4 w-4", markerColor)} /> : null}
         <Editable as="inline">{col.title}</Editable>
       </h3>

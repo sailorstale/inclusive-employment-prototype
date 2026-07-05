@@ -38,7 +38,7 @@ export function PromoBanner({
       )}
     >
       <div className="space-y-1">
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <h3 className="text-base font-semibold text-foreground">{title}</h3>
         {text ? (
           <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
             {text}

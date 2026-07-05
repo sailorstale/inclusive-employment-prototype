@@ -47,7 +47,7 @@ export function AppFooter() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           {columns.map((col) => (
             <div key={col.title}>
-              <h2 className="mb-3 text-sm font-semibold text-foreground">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {col.title}
               </h2>
               <ul className="space-y-2">

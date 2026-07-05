@@ -36,7 +36,7 @@ export function ContactSection({
         </h2>
       ) : null}
       {intro ? (
-        <p className="max-w-prose leading-relaxed text-muted-foreground">
+        <p className="max-w-prose leading-relaxed text-foreground">
           {intro}
         </p>
       ) : null}

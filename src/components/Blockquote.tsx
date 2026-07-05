@@ -137,7 +137,7 @@ export function Blockquote({
       <blockquote
         ref={quoteRef}
         style={clampStyle}
-        className="text-base leading-relaxed text-foreground"
+        className="text-sm leading-relaxed text-foreground"
       >
         <Editable as="inline">{children}</Editable>
       </blockquote>

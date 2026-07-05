@@ -26,7 +26,7 @@ export function ImagePlaceholder({
       >
         <ImageIcon className="h-6 w-6" />
         {caption ? (
-          <figcaption className="px-4 text-center text-sm">{caption}</figcaption>
+          <figcaption className="px-4 text-center text-[0.8125rem] text-muted-foreground">{caption}</figcaption>
         ) : null}
       </div>
     </figure>

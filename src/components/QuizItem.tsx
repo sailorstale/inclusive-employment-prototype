@@ -98,7 +98,7 @@ export function QuizItem({
       {context ? <div className="space-y-2 text-sm">{context}</div> : null}
       <p className="font-medium text-foreground">{question}</p>
       {!revealed ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[0.8125rem] text-muted-foreground">
           {multi
             ? "Выберите все подходящие варианты, затем нажмите «Проверить»."
             : "Выберите вариант, затем нажмите «Проверить»."}
@@ -160,7 +160,7 @@ export function QuizItem({
                 ) : null}
               </button>
               {revealed && o.note ? (
-                <p className="px-3 pb-1 text-xs text-muted-foreground">
+                <p className="px-3 pb-1 text-[0.8125rem] text-muted-foreground">
                   <span className={cn("font-medium", cfg.color)}>
                     {cfg.tag}.{" "}
                   </span>

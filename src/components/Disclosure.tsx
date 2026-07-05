@@ -51,7 +51,7 @@ function DetailRow({
       onToggle={(e) => onToggle((e.currentTarget as HTMLDetailsElement).open)}
       className="border-b"
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-left font-medium text-foreground transition-colors hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-webkit-details-marker]:hidden">
         <span className="flex flex-1 items-center justify-between gap-3">
           <span>
             <Editable as="inline">{entry.trigger}</Editable>
@@ -65,7 +65,7 @@ function DetailRow({
           )}
         />
       </summary>
-      <div className="max-w-prose space-y-2 pb-4 leading-relaxed text-foreground">
+      <div className="max-w-prose space-y-2 pb-4 text-sm leading-relaxed text-foreground">
         <Editable as="inline">{entry.content}</Editable>
       </div>
     </details>

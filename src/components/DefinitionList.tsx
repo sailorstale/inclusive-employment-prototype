@@ -35,7 +35,7 @@ export function DefinitionList({
     <dl data-component="DefinitionList" className={cn("space-y-6", className)}>
       {groups.map((group) => (
         <div key={group.letter} className="space-y-3">
-          <h4 className="text-base font-semibold text-muted-foreground">
+          <h4 className="text-base font-semibold text-foreground">
             {group.letter}
           </h4>
           <div className="space-y-4 border-t pt-3">
