@@ -1,5 +1,5 @@
 import * as React from "react";
-import { User, Building2 } from "lucide-react";
+import { User, Building2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SmartLink } from "./SmartLink";
 import { Editable } from "@/editor/Editable";
@@ -8,6 +8,7 @@ import { Editable } from "@/editor/Editable";
 // Атрибуция — структурный контейнер: аватар · имя · должность · логотип
 // организации. Изображения и структурные поля заполняются позже; пока пустые
 // слоты показываются заглушками (честно про пробелы, как ImagePlaceholder).
+// Длинная цитата сворачивается до clampLines строк с кнопкой «Далее».
 
 type BlockquoteProps = {
   children: React.ReactNode;
@@ -27,6 +28,8 @@ type BlockquoteProps = {
   /** Ссылка «Подробнее». */
   moreTo?: string;
   moreLabel?: React.ReactNode;
+  /** До скольких строк сворачивать длинную цитату (кнопка «Далее»). */
+  clampLines?: number;
   className?: string;
 };
 
@@ -86,6 +89,7 @@ export function Blockquote({
   note,
   moreTo,
   moreLabel = "Подробнее",
+  clampLines = 6,
   className,
 }: BlockquoteProps) {
   // Имя: структурное authorName → legacy attribution → заглушка.
@@ -95,14 +99,65 @@ export function Blockquote({
   const roleContent =
     authorRole ?? (nameContent == null ? placeholder("Должность") : null);
 
+  // Сворачивание длинной цитаты. «Далее» показываем, только если текст реально
+  // не влезает в clampLines строк (меряем по факту, а не на глаз).
+  const quoteRef = React.useRef<HTMLQuoteElement>(null);
+  const [expanded, setExpanded] = React.useState(false);
+  const [overflowing, setOverflowing] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    // В раскрытом виде не пересчитываем (клэмпа нет — переполнение «пропало» бы,
+    // и кнопка «Свернуть» исчезла бы). Сохраняем прошлое значение.
+    if (expanded) return;
+    const el = quoteRef.current;
+    if (!el) return;
+    const measure = () =>
+      setOverflowing(el.scrollHeight - el.clientHeight > 1);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [children, expanded, clampLines]);
+
+  const clampStyle: React.CSSProperties | undefined =
+    expanded
+      ? undefined
+      : {
+          display: "-webkit-box",
+          WebkitBoxOrient: "vertical",
+          WebkitLineClamp: clampLines,
+          overflow: "hidden",
+        };
+
   return (
     <figure
       data-component="Blockquote"
       className={cn("max-w-prose border-l-2 border-brand pl-5", className)}
     >
-      <blockquote className="text-base leading-relaxed text-foreground">
+      <blockquote
+        ref={quoteRef}
+        style={clampStyle}
+        className="text-base leading-relaxed text-foreground"
+      >
         <Editable as="inline">{children}</Editable>
       </blockquote>
+
+      {overflowing ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="mt-1.5 inline-flex items-center gap-1 rounded-sm text-sm font-medium text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          {expanded ? "Свернуть" : "Далее"}
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 transition-transform",
+              expanded && "rotate-180"
+            )}
+          />
+        </button>
+      ) : null}
 
       <figcaption className="mt-3 space-y-2 text-sm">
         {/* Атрибуция: аватар · имя/должность · логотип. Заполним позже. */}
