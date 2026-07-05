@@ -10,7 +10,8 @@ import { CompareColumns } from "@/components/CompareColumns";
 import { StatBlock } from "@/components/StatBlock";
 import { CodeSnippet } from "@/components/CodeSnippet";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
-import { Paragraph, OrderedList } from "@/components/Prose";
+import { QuizItem } from "@/components/QuizItem";
+import { Paragraph, OrderedList, BulletList } from "@/components/Prose";
 import { Badge } from "@/components/ui/badge";
 
 // Каталог компонентов (/catalog) — дизайн-референс канонического набора.
@@ -48,6 +49,7 @@ const SEMANTIC_MAP: { meaning: string; maps: string }[] = [
   { meaning: "Кейс (портрет)", maps: "PersonaCard" },
   { meaning: "Вопрос-ответ (faq)", maps: "Disclosure" },
   { meaning: "Миф / факт", maps: "Disclosure (режим-квиз, Badge)" },
+  { meaning: "Тест / тренажёр (кейс → варианты → разбор)", maps: "QuizItem (новый)" },
   { meaning: "ИИ-промпт / шаблон", maps: "CodeSnippet" },
   { meaning: "Пошаговый список (в тексте)", maps: "OrderedList" },
   { meaning: "Шаги-ссылки", maps: "StepsShelf" },
@@ -56,6 +58,47 @@ const SEMANTIC_MAP: { meaning: string; maps: string }[] = [
 ];
 
 const PRIMITIVES: Primitive[] = [
+  {
+    name: "QuizItem — тест / тренажёр",
+    tagline: "Условие → варианты с вердиктом → разбор. Интерактивный.",
+    meanings: ["тест", "тренажёр", "кейс-вопрос"],
+    when: "Кейс/вопрос с вариантами ответа, где важно показать верный и разобрать почему. Условие видно всегда, скрыт только разбор.",
+    notWhen: "Просто вопрос-ответ без выбора → Disclosure. Перечень задач для галочек → Checklist.",
+    code:
+      '<QuizItem question="…" options={[{ text, verdict: "correct|wrong|partial" }]} explanation={<>…</>} />',
+    preview: (
+      <QuizItem
+        context={
+          <>
+            <p className="font-medium text-foreground">
+              Кейс — специалист по видеомонтажу
+            </p>
+            <BulletList>
+              <li>работа с таймкодами и визуальными переходами;</li>
+              <li>сборка ролика по ТЗ, обратная связь письменно.</li>
+            </BulletList>
+          </>
+        }
+        question="Кому из кандидатов эта вакансия подходит лучше всего?"
+        options={[
+          { text: "Люди с инвалидностью по зрению", verdict: "wrong" },
+          { text: "Люди с инвалидностью по слуху", verdict: "wrong" },
+          {
+            text: "Люди с инвалидностью опорно-двигательного аппарата",
+            verdict: "correct",
+          },
+        ]}
+        explanation={
+          <p>
+            Монтаж требует зрительной концентрации и работы со звуковой
+            дорожкой — кандидатам с инвалидностью по зрению и слуху он подойдёт
+            хуже. Наиболее подходят соискатели с инвалидностью
+            опорно-двигательного аппарата (с учётом доступности помещения).
+          </p>
+        }
+      />
+    ),
+  },
   {
     name: "Callout — врезка",
     tagline: "Редакционная плашка с закрытым списком вариантов.",
