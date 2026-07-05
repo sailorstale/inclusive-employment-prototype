@@ -1152,7 +1152,11 @@ export function NgoEmployersPage() {
           </Paragraph>
         </ContentSection>
 
-        <Callout variant="highlight" title="Подведём итоги">
+        <ContentSection
+          anchor="how-find-summary"
+          level="h3"
+          title="Подведём итоги"
+        >
           <Paragraph>
             Поиск работодателей — это не разовая задача перед трудоустройством
             конкретного кандидата, а постоянная часть работы НКО. Чем раньше вы
@@ -1169,7 +1173,7 @@ export function NgoEmployersPage() {
             Следующий шаг — выстроить первое общение с работодателем. Об этом
             поговорим в следующей главе.
           </Paragraph>
-        </Callout>
+        </ContentSection>
       </ContentSection>
 
       <ContentSection

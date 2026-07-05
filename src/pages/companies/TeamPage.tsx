@@ -9,7 +9,6 @@ import { Blockquote } from "@/components/Blockquote";
 import { QuizItem } from "@/components/QuizItem";
 import {
   Paragraph,
-  Lead,
   BulletList,
   OrderedList,
 } from "@/components/Prose";
@@ -1478,7 +1477,7 @@ export function TeamPage() {
 
       {/* Секция 7 */}
       <ContentSection anchor="team-summary" title="Подведём итоги">
-        <Lead>Давайте коротко резюмируем самое важное.</Lead>
+        <Paragraph>Давайте коротко резюмируем самое важное.</Paragraph>
         <OrderedList>
           <li>
             <strong>Замечайте человека, а не диагноз.</strong> Ваш собеседник —

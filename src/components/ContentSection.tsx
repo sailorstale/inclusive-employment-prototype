@@ -1,11 +1,13 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Lead } from "./Prose";
+import { Paragraph } from "./Prose";
 import { Editable } from "@/editor/Editable";
 import { AnchorScope } from "@/editor/AnchorContext";
 
 // ContentSection (00b §2.2) — несущая рамка смыслового раздела:
-// заголовок с якорем (цель оглавления) + опц. лид + вложенные блоки.
+// заголовок с якорем (цель оглавления) + опц. вводный абзац + вложенные блоки.
+// Вводный абзац (lead) набирается ОБЫЧНЫМ стилем абзаца: крупный лид-стиль
+// зарезервирован за началом страницы (PageHero).
 
 type ContentSectionProps = {
   /** id-якорь для оглавления / прямых ссылок. */
@@ -54,7 +56,7 @@ export function ContentSection({
             {title}
           </Editable>
         ) : null}
-        {lead ? <Lead>{lead}</Lead> : null}
+        {lead ? <Paragraph>{lead}</Paragraph> : null}
         {children}
       </AnchorScope>
     </section>

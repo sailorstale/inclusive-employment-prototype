@@ -36,6 +36,7 @@ export function NgoSupportPage() {
             label: "Что дальше? Кризис-менеджмент на рабочем месте",
             anchor: "#sup-crisis",
           },
+          { label: "Подведём итоги", anchor: "#sup-summary" },
         ]}
       />
 
@@ -726,7 +727,7 @@ export function NgoSupportPage() {
         </ContentSection>
       </ContentSection>
 
-      <Callout variant="highlight" title="Подведём итоги">
+      <ContentSection anchor="sup-summary" title="Подведём итоги">
         <Paragraph>
           Сопровождаемое трудоустройство — это непрерывная система поддержки, в
           которой НКО выступает посредником между соискателем и работодателем.
@@ -748,7 +749,7 @@ export function NgoSupportPage() {
           отслеживать развитие ситуации и при необходимости помогать в решении
           возникающих сложностей и кризисных ситуаций.
         </Paragraph>
-      </Callout>
+      </ContentSection>
 
       <RelatedLinks
         items={[

@@ -10,7 +10,6 @@ import { Blockquote } from "@/components/Blockquote";
 import { Badge } from "@/components/ui/badge";
 import {
   Paragraph,
-  Lead,
   BulletList,
   OrderedList,
 } from "@/components/Prose";
@@ -1466,7 +1465,7 @@ export function NgoEthicsPage() {
 
       {/* Секция 5 — главное в общении (итоги) */}
       <ContentSection anchor="team-summary" title="Главное в общении">
-        <Lead>Давайте коротко резюмируем самое важное.</Lead>
+        <Paragraph>Давайте коротко резюмируем самое важное.</Paragraph>
         <OrderedList>
           <li>
             <strong>Замечайте человека, а не диагноз.</strong> Ваш собеседник —

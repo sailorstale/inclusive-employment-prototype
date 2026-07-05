@@ -4,6 +4,7 @@ import { ContentSection } from "@/components/ContentSection";
 import { Paragraph, BulletList, LinkList } from "@/components/Prose";
 import { Callout } from "@/components/Callout";
 import { Card, CardGrid } from "@/components/Card";
+import { StepsShelf } from "@/components/StepsShelf";
 import { DataTable } from "@/components/DataTable";
 import { Disclosure } from "@/components/Disclosure";
 import { Blockquote } from "@/components/Blockquote";
@@ -293,21 +294,30 @@ export function CompaniesHowPage() {
           специалист по обучению и адаптации, менеджер по инклюзивному трудоустройству.
         </Paragraph>
         <Paragraph>Как это работает на практике:</Paragraph>
-        <BulletList>
-          <li>
-            <strong>До выхода на работу.</strong> Куратор помогает кандидату подготовить
-            резюме, потренировать навыки собеседования и объясняет условия вакансии.
-          </li>
-          <li>
-            <strong>На старте работы.</strong> Куратор присутствует в первые дни, помогает
-            сотруднику запомнить маршрут, объяснить рабочие инструкции вместе с руководителем.
-          </li>
-          <li>
-            <strong>В процессе работы.</strong> Куратор остаётся на связи, чтобы помочь решить
-            конфликтные ситуации или подсказать руководителю, как лучше настроить процессы под
-            особенности сотрудника.
-          </li>
-        </BulletList>
+        <StepsShelf
+          link="non-link"
+          cols={3}
+          steps={[
+            {
+              number: 1,
+              title: "До выхода на работу",
+              description:
+                "Куратор помогает кандидату подготовить резюме, потренировать навыки собеседования и объясняет условия вакансии.",
+            },
+            {
+              number: 2,
+              title: "На старте работы",
+              description:
+                "Куратор присутствует в первые дни, помогает сотруднику запомнить маршрут, объяснить рабочие инструкции вместе с руководителем.",
+            },
+            {
+              number: 3,
+              title: "В процессе работы",
+              description:
+                "Куратор остаётся на связи, чтобы помочь решить конфликтные ситуации или подсказать руководителю, как лучше настроить процессы под особенности сотрудника.",
+            },
+          ]}
+        />
         <Paragraph>
           Сопровождение не длится вечно. Его цель — помочь сотруднику адаптироваться и стать
           самостоятельным. Обычно активная фаза занимает от 1 до 6 месяцев, после чего куратор

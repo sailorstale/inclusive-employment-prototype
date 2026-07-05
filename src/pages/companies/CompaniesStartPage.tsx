@@ -91,7 +91,7 @@ export function CompaniesStartPage() {
             title: "Медицинский подход",
             tone: "neutral",
             children: (
-              <Paragraph className="text-sm">
+              <Paragraph>
                 фокусируется на диагнозе: человек воспринимается через призму
                 болезни или нарушения функций. Здесь инвалидность — это проблема
                 самого человека, которую нужно «лечить» или «исправлять».
@@ -102,7 +102,7 @@ export function CompaniesStartPage() {
             title: "Социальный подход",
             tone: "neutral",
             children: (
-              <Paragraph className="text-sm">
+              <Paragraph>
                 фокусируется на среде: нет ограниченных возможностей человека,
                 есть ограничивающая среда. Инвалидность возникает там, где
                 барьеры (физические, информационные, коммуникационные) мешают
@@ -791,7 +791,7 @@ export function CompaniesStartPage() {
             title: "Создавать разнообразные команды — возможности",
             tone: "good",
             children: (
-              <div className="space-y-2 text-sm leading-relaxed">
+              <div className="space-y-2">
                 <p>
                   Инклюзивная среда стимулирует появление новых идей. Например, в
                   Яндексе незрячие и слабовидящие тестировщики:

@@ -67,7 +67,11 @@ function ComparePanel({ col }: { col: Column }) {
           ))}
         </ul>
       ) : null}
-      {col.children}
+      {col.children ? (
+        // Кегль компонентного текста (как у items) — страницы не должны
+        // задавать text-sm сами.
+        <div className="text-sm leading-relaxed">{col.children}</div>
+      ) : null}
     </div>
   );
 }
