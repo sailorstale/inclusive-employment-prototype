@@ -453,10 +453,10 @@ export function QuotasPage() {
         <QuizItem
           question="Какая форма занятости позволяет закрыть квоту?"
           options={[
-            { text: "трудовой договор", verdict: "correct" },
-            { text: "гражданско-правовой договор", verdict: "wrong" },
-            { text: "самозанятость", verdict: "wrong" },
-            { text: "срочный трудовой договор", verdict: "correct" },
+            { text: "Трудовой договор", verdict: "correct" },
+            { text: "Гражданско-правовой договор", verdict: "wrong" },
+            { text: "Самозанятость", verdict: "wrong" },
+            { text: "Срочный трудовой договор", verdict: "correct" },
           ]}
           explanation={
             <>

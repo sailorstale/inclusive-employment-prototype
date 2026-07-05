@@ -197,27 +197,27 @@ export function TeamPage() {
           question="Зрение"
           options={[
             {
-              text: "незрячий человек;",
+              text: "Незрячий человек",
               verdict: "correct",
               note: "Нейтральная, принятая формулировка.",
             },
             {
-              text: "слабовидящий человек;",
+              text: "Слабовидящий человек",
               verdict: "correct",
               note: "Корректно: описывает степень, не вешает ярлык.",
             },
             {
-              text: "человек с особенностями зрения;",
+              text: "Человек с особенностями зрения",
               verdict: "correct",
               note: "Нейтрально, ставит человека на первое место.",
             },
             {
-              text: "слабозрячий;",
+              text: "Слабозрячий",
               verdict: "wrong",
               note: "Разговорное и некорректное — лучше «слабовидящий человек».",
             },
             {
-              text: "плоховидящий.",
+              text: "Плоховидящий",
               verdict: "wrong",
               note: "Просторечие, звучит уничижительно — лучше «слабовидящий человек».",
             },
@@ -226,9 +226,9 @@ export function TeamPage() {
         <QuizItem
           question="Слух"
           options={[
-            { text: "глухонемой;", verdict: "wrong" },
-            { text: "слабослышащий человек;", verdict: "correct" },
-            { text: "неслышащий человек;", verdict: "correct" },
+            { text: "Глухонемой", verdict: "wrong" },
+            { text: "Слабослышащий человек", verdict: "correct" },
+            { text: "Неслышащий человек", verdict: "correct" },
           ]}
           explanation={
             <Paragraph>
@@ -242,11 +242,11 @@ export function TeamPage() {
         <QuizItem
           question="Речь"
           options={[
-            { text: "человек с особенностями речи;", verdict: "correct" },
-            { text: "неразговаривающий человек;", verdict: "wrong" },
-            { text: "немой;", verdict: "wrong" },
+            { text: "Человек с особенностями речи", verdict: "correct" },
+            { text: "Неразговаривающий человек", verdict: "wrong" },
+            { text: "Немой", verdict: "wrong" },
             {
-              text: "человек с потерей речи или голоса.",
+              text: "Человек с потерей речи или голоса",
               verdict: "correct",
             },
           ]}
@@ -265,18 +265,18 @@ export function TeamPage() {
           question="Передвижение"
           options={[
             {
-              text: "человек с особенностями опорно-двигательного аппарата;",
+              text: "Человек с особенностями опорно-двигательного аппарата",
               verdict: "correct",
             },
             {
-              text: "человек, использующий инвалидное кресло;",
+              text: "Человек, использующий инвалидное кресло",
               verdict: "correct",
             },
-            { text: "маломобильный человек;", verdict: "correct" },
-            { text: "колясочник;", verdict: "wrong" },
-            { text: "ДЦПэшник;", verdict: "wrong" },
-            { text: "неходячий;", verdict: "wrong" },
-            { text: "парализованный;", verdict: "wrong" },
+            { text: "Маломобильный человек", verdict: "correct" },
+            { text: "Колясочник", verdict: "wrong" },
+            { text: "ДЦПэшник", verdict: "wrong" },
+            { text: "Неходячий", verdict: "wrong" },
+            { text: "Парализованный", verdict: "wrong" },
           ]}
           explanation={
             <Paragraph>
@@ -290,14 +290,14 @@ export function TeamPage() {
         <QuizItem
           question="Ментальная инвалидность"
           options={[
-            { text: "человек с психическим заболеванием;", verdict: "correct" },
-            { text: "душевнобольной;", verdict: "wrong" },
-            { text: "аутист;", verdict: "wrong" },
+            { text: "Человек с психическим заболеванием", verdict: "correct" },
+            { text: "Душевнобольной", verdict: "wrong" },
+            { text: "Аутист", verdict: "wrong" },
             {
-              text: "человек с особенностями интеллектуального развития;",
+              text: "Человек с особенностями интеллектуального развития",
               verdict: "correct",
             },
-            { text: "псих.", verdict: "wrong" },
+            { text: "Псих", verdict: "wrong" },
           ]}
           explanation={
             <Paragraph>
@@ -348,7 +348,7 @@ export function TeamPage() {
           комфортным для всех.
         </Paragraph>
 
-        <CardGrid cols={2}>
+        <CardGrid cols={1}>
           <Card title="Обращайтесь напрямую к человеку">
             <Paragraph>
               Если рядом есть сопровождающий, переводчик жестового языка или
