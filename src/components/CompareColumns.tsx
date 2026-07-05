@@ -59,11 +59,7 @@ function ComparePanel({ col }: { col: Column }) {
         <ul className="space-y-2 text-sm leading-relaxed">
           {col.items.map((it, i) => (
             <li key={i} className="flex gap-2">
-              {Marker ? (
-                <Marker className={cn("mt-1 h-4 w-4 shrink-0", markerColor)} />
-              ) : (
-                <span className="mt-1 text-muted-foreground">•</span>
-              )}
+              <span className="mt-1 shrink-0 text-muted-foreground">•</span>
               <span>
                 <Editable as="inline">{it}</Editable>
               </span>
