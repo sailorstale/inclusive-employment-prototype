@@ -7,7 +7,7 @@ import { DataTable } from "@/components/DataTable";
 import { Callout } from "@/components/Callout";
 import { Disclosure } from "@/components/Disclosure";
 import { QuizItem } from "@/components/QuizItem";
-import { Blockquote } from "@/components/Blockquote";
+import { Example } from "@/components/Example";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { StepNav } from "@/components/StepNav";
 import { SmartLink } from "@/components/SmartLink";
@@ -77,7 +77,7 @@ export function Step4Page() {
               Давайте сразу перейём к практике. Прочитайте описание вакансии и оцените её по
               нескольким критериям.
             </Paragraph>
-            <Blockquote>
+            <Example>
               <Paragraph>
                 <strong>Должность:</strong> Администратор в офис
                 <br />
@@ -107,7 +107,7 @@ export function Step4Page() {
                 <li>работа в дружном коллективе;</li>
                 <li>испытательный срок 3 месяца.</li>
               </BulletList>
-            </Blockquote>
+            </Example>
             <Paragraph>
               <strong>Критерии для оценки вакансии:</strong>
             </Paragraph>
@@ -241,7 +241,7 @@ export function Step4Page() {
             Мы переделали описание вакансии с учётом принципов инклюзивного найма. Посмотрите, что
             получилось.
           </Paragraph>
-          <Blockquote>
+          <Example>
             <Paragraph>
               <strong>Должность: Администратор офиса</strong>
             </Paragraph>
@@ -276,10 +276,10 @@ export function Step4Page() {
               <li>официальное трудоустройство по ТК РФ;</li>
               <li>помощь наставника на период адаптации.</li>
             </BulletList>
-          </Blockquote>
+          </Example>
 
           <Paragraph>Вот ещё один пример вакансии для людей с инвалидностью.</Paragraph>
-          <Blockquote>
+          <Example>
             <Paragraph>
               <strong>Должность: Тестировщик программного обеспечения (QA Engineer)</strong>
             </Paragraph>
@@ -383,7 +383,7 @@ export function Step4Page() {
               <li>профильное образование или пройденные курсы по тестированию ПО;</li>
               <li>опыт участия в проектах по доступной среде.</li>
             </BulletList>
-          </Blockquote>
+          </Example>
 
           <Paragraph>
             Когда вакансия готова, важно разместить её там, где её увидят потенциальные сотрудники.
