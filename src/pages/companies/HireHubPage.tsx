@@ -5,6 +5,7 @@ import { StepsShelf } from "@/components/StepsShelf";
 import { Paragraph } from "@/components/Prose";
 import { Callout } from "@/components/Callout";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { GlossaryTerm } from "@/components/GlossaryTerm";
 
 // 11 — Наём по шагам (хаб раздела трека «Для компаний»). Контент дословно из спеки v2.
 export function HireHubPage() {
@@ -26,7 +27,9 @@ export function HireHubPage() {
 
       <ContentSection anchor="vstuplenie" title="Вступление">
         <Paragraph>
-          На этом этапе пути работодателя и НКО начинают идти параллельно. У
+          На этом этапе пути работодателя и{" "}
+          <GlossaryTerm term="НКО">НКО</GlossaryTerm> начинают идти параллельно.
+          У
           каждой стороны свои задачи и зоны ответственности, но общая цель
           остаётся прежней — создание инклюзивной среды и трудоустройство людей с
           инвалидностью.
@@ -34,7 +37,11 @@ export function HireHubPage() {
         <Paragraph>
           В этом модуле мы собрали пошаговый план найма и адаптации сотрудников с
           инвалидностью, основанный на практическом опыте работодателей, НКО и
-          экспертов по инклюзивному трудоустройству. Эти рекомендации подойдут
+          экспертов по{" "}
+          <GlossaryTerm term="Инклюзивное трудоустройство">
+            инклюзивному трудоустройству
+          </GlossaryTerm>
+          . Эти рекомендации подойдут
           как крупным компаниям, так и представителям малого и среднего бизнеса.
         </Paragraph>
         <Paragraph>
