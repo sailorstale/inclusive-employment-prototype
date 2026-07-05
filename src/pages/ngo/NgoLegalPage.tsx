@@ -14,7 +14,6 @@ export function NgoLegalPage() {
     <>
       <PageHero
         variant="leaf"
-        eyebrow="Правовые основы · общий слой"
         title="Правовые нюансы трудоустройства людей с инвалидностью: нормы, квоты и льготы"
       >
         <Paragraph>

@@ -14,7 +14,6 @@ export function NgoFundingPage() {
     <>
       <PageHero
         variant="leaf"
-        eyebrow="Справочник + инструкция"
         title="Затраты и финансирование: как сделать проект устойчивым"
       >
         <Paragraph>

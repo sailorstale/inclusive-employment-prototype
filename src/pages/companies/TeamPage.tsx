@@ -25,7 +25,6 @@ export function TeamPage() {
     <>
       <PageHero
         variant="leaf"
-        eyebrow="Модуль 3"
         title="Модуль 3. Общение без барьеров: этика и коммуникация"
       >
         <Paragraph>

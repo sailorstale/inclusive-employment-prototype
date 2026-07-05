@@ -20,7 +20,6 @@ export function Step4Page() {
     <>
       <PageHero
         variant="leaf"
-        eyebrow="Шаг 4 из 6"
         title="Поиск кандидатов, проведение собеседований и оформление"
         lead={
           <>

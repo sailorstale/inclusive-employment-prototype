@@ -29,7 +29,6 @@ export function NgoEthicsPage() {
     <>
       <PageHero
         variant="leaf"
-        eyebrow="Туториал · практика"
         title="Этика и коммуникация"
         lead={
           <>
