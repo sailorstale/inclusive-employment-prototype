@@ -40,7 +40,7 @@ export function NgoCandidatesPage() {
           может понадобиться.
         </Paragraph>
 
-        <Callout variant="info" title="В этом разделе вы узнаете">
+        <Callout variant="briefing" title="В этом разделе вы узнаете">
           <BulletList>
             <li>зачем НКО проводить первичное интервью с соискателем;</li>
             <li>о чём говорить на интервью;</li>
@@ -610,7 +610,7 @@ export function NgoCandidatesPage() {
           трудоустройстве людей с ментальными особенностями этот этап является обязательным.
         </Paragraph>
 
-        <Callout variant="info" title="В этом разделе вы узнаете">
+        <Callout variant="briefing" title="В этом разделе вы узнаете">
           <BulletList>
             <li>что такое профориентация и когда она нужна;</li>
             <li>как её проводить;</li>
@@ -1977,7 +1977,7 @@ export function NgoCandidatesPage() {
           работодателя и подготовиться к следующему шагу.
         </Paragraph>
 
-        <Callout variant="info" title="В этом разделе вы узнаете">
+        <Callout variant="briefing" title="В этом разделе вы узнаете">
           <BulletList>
             <li>как помочь кандидату найти подходящую вакансию;</li>
             <li>как составить резюме, даже если формального опыта работы мало;</li>

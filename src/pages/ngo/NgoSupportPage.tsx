@@ -40,7 +40,7 @@ export function NgoSupportPage() {
         ]}
       />
 
-      <Callout variant="info" title="В этом разделе вы узнаете">
+      <Callout variant="briefing" title="В этом разделе вы узнаете">
         <BulletList>
           <li>
             какое сопровождение может понадобиться людям с физической и ментальной

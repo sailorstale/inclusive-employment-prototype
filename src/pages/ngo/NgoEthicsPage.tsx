@@ -55,7 +55,7 @@ export function NgoEthicsPage() {
         }
       />
 
-      <Callout variant="info" title="В этом материале вы узнаете">
+      <Callout variant="briefing" title="В этом разделе вы узнаете">
         <Paragraph>
           <strong>Что говорят компании и НКО</strong>
         </Paragraph>

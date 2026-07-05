@@ -59,7 +59,7 @@ export function NgoScalePage() {
           сопровождает участников на разных этапах программы.
         </Paragraph>
 
-        <Callout variant="briefing" title="В этом разделе вы узнаете:">
+        <Callout variant="briefing" title="В этом разделе вы узнаете">
           <BulletList>
             <li>как составить дорожную карту;</li>
             <li>
@@ -546,7 +546,7 @@ export function NgoScalePage() {
           польза для людей с инвалидностью.
         </Paragraph>
 
-        <Callout variant="briefing" title="В этом разделе вы узнаете:">
+        <Callout variant="briefing" title="В этом разделе вы узнаете">
           <BulletList>
             <li>как расширить географию деятельности;</li>
             <li>

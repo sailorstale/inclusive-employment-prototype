@@ -30,7 +30,7 @@ export function Step5Page() {
           увольнением.
         </Paragraph>
 
-        <Callout variant="info" title="В этом разделе вы узнаете:">
+        <Callout variant="briefing" title="В этом разделе вы узнаете">
           <BulletList>
             <li>
               почему адаптация важна в том числе для сотрудников с приобретённой

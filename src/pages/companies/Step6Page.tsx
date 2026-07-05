@@ -95,7 +95,7 @@ export function Step6Page() {
           </Paragraph>
         </Callout>
 
-        <Callout variant="info" title="В этом разделе вы узнаете:">
+        <Callout variant="briefing" title="В этом разделе вы узнаете">
           <BulletList>
             <li>
               какие первоначальные затраты могут возникнуть при подготовке к

@@ -48,7 +48,7 @@ export function TeamPage() {
         </Paragraph>
       </PageHero>
 
-      <Callout variant="info" title="В этом модуле вы узнаете">
+      <Callout variant="briefing" title="В этом разделе вы узнаете">
         <Paragraph>
           <strong>Что говорят компании и НКО</strong>
         </Paragraph>

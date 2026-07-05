@@ -39,7 +39,7 @@ export function Step2Page() {
             </li>
           </BulletList>
         </Callout>
-        <Callout variant="briefing" title="В этом разделе вы узнаете:">
+        <Callout variant="briefing" title="В этом разделе вы узнаете">
           <BulletList>
             <li>кто может проводить аудит;</li>
             <li>что важно проверить на каждом этапе пути кандидата;</li>
