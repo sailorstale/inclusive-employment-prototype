@@ -4,7 +4,7 @@ import { Pencil, Sparkles, Check, AlertTriangle, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { PROSE_CLASSES, type ProseKind } from "@/components/proseClasses";
 import { getVariantsFor } from "./registry";
-import { autoId, normalizeText } from "./ids";
+import { autoId, normalizeText, routeId } from "./ids";
 import { renderInline } from "./richText";
 import { useAnchor } from "./AnchorContext";
 import { useEditor } from "./EditorProvider";
@@ -79,9 +79,12 @@ export function Editable({
   const anchor = useAnchor();
 
   const originalText = React.useMemo(() => reactText(children), [children]);
+  // h1 — один на страницу и адресуется по маршруту (`route:<path>`), чтобы правка
+  // заголовка прорастала в навигацию (крошки/меню знают путь, но не текст h1).
+  // Остальные блоки — по хэшу текста.
   const id = React.useMemo(
-    () => autoId(pathname, as, originalText, anchor),
-    [pathname, as, originalText, anchor]
+    () => (as === "h1" ? routeId(pathname) : autoId(pathname, as, originalText, anchor)),
+    [as, pathname, originalText, anchor]
   );
 
   // Регистрируем отрисованный блок — дашборд так находит осиротевшие правки.

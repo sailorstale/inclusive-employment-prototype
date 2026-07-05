@@ -26,3 +26,10 @@ export function autoId(
 ): string {
   return `${page}::${anchor || "-"}::${type}::${hashStr(normalizeText(text))}`;
 }
+
+// Адрес заголовка страницы (h1) — по маршруту, а не по хэшу текста. Навигация
+// (крошки, боковое меню) знает путь, но не текст h1, поэтому ищет правку по
+// этому адресу: правка h1 прорастает в подпись раздела во всех местах меню.
+export function routeId(path: string): string {
+  return `route:${path}`;
+}

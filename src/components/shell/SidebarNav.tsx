@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { type SidebarItem, type Track, sidebars } from "@/data/nav";
+import { useEditor } from "@/editor/EditorProvider";
 import { cn } from "@/lib/utils";
 
 // SidebarNav (00 — три уровня навигации) — локальная навигация внутри трека:
@@ -25,6 +26,7 @@ function LeafItem({
   nested?: boolean;
   onNavigate?: () => void;
 }) {
+  const { navLabel } = useEditor();
   return (
     <Link
       to={path}
@@ -38,7 +40,7 @@ function LeafItem({
           : "text-foreground/75 hover:bg-accent hover:text-foreground"
       )}
     >
-      {label}
+      {navLabel(path, label)}
     </Link>
   );
 }
@@ -52,6 +54,7 @@ function GroupItem({
   pathname: string;
   onNavigate?: () => void;
 }) {
+  const { navLabel } = useEditor();
   const withinGroup =
     pathname === item.path || pathname.startsWith(item.path + "/");
   const [open, setOpen] = React.useState(withinGroup);
@@ -77,7 +80,7 @@ function GroupItem({
               : "font-medium text-foreground/85 hover:bg-accent hover:text-foreground"
           )}
         >
-          {item.label}
+          {navLabel(item.path, item.label)}
         </Link>
         <button
           type="button"
@@ -117,12 +120,15 @@ export function SidebarNav({
   onNavigate?: () => void;
 }) {
   const { pathname } = useLocation();
+  const { navLabel } = useEditor();
   const spec = sidebars[track];
+  // Заголовок трека = h1 его хаба (`/companies` и т.п.) — прорастает так же.
+  const title = navLabel(`/${track}`, spec.title);
 
   return (
-    <nav aria-label={`Разделы трека «${spec.title}»`} className="space-y-4">
+    <nav aria-label={`Разделы трека «${title}»`} className="space-y-4">
       <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {spec.title}
+        {title}
       </p>
       {spec.groups.map((group, gi) => (
         <div key={gi} className="space-y-1">

@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { EditRecord, EditStatus, Variant } from "./types";
-import { autoId } from "./ids";
+import { autoId, routeId } from "./ids";
 import {
   deleteEdit,
   getMode,
@@ -48,6 +48,10 @@ type EditorContextValue = {
 
   /** Текст заголовка с учётом правки — чтобы оглавление/навигация прорастали. */
   headingTextOf: (page: string, original: string, anchor?: string) => string;
+
+  /** Подпись раздела в навигации (крошки/меню) с учётом правки h1 страницы:
+   *  если у страницы `path` правлен заголовок — возвращаем его, иначе fallback. */
+  navLabel: (path: string, fallback: string) => string;
 
   /** Отметить, что блок с таким id отрисован (для поиска осиротевших правок). */
   markSeen: (id: string, page: string) => void;
@@ -220,6 +224,15 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     [edits]
   );
 
+  const navLabel = React.useCallback(
+    (path: string, fallback: string) => {
+      const rec = edits[routeId(path)];
+      if (rec && rec.text.trim() && rec.status !== "rollback") return rec.text;
+      return fallback;
+    },
+    [edits]
+  );
+
   // Отслеживаем отрисованные id блоков и посещённые страницы — чтобы дашборд мог
   // показать «осиротевшие» правки (id больше не встречается на своей странице).
   const seenIdsRef = React.useRef<Set<string>>(new Set());
@@ -255,6 +268,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       openBlock,
       closeInspector,
       headingTextOf,
+      navLabel,
       markSeen,
       orphanStatus,
       notice,
@@ -276,6 +290,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       openBlock,
       closeInspector,
       headingTextOf,
+      navLabel,
       markSeen,
       orphanStatus,
       notice,
