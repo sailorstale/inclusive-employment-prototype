@@ -3,6 +3,8 @@ import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
 import { Paragraph, BulletList, OrderedList } from "@/components/Prose";
 import { Callout } from "@/components/Callout";
+import { Warning } from "@/components/Warning";
+import { CompareColumns } from "@/components/CompareColumns";
 import { DataTable } from "@/components/DataTable";
 import { QuizItem } from "@/components/QuizItem";
 import { Blockquote } from "@/components/Blockquote";
@@ -275,10 +277,12 @@ export function NgoCandidatesPage() {
               Последний вопрос особенно важен, если у человека был перерыв в работе или изменилось состояние
               здоровья. Навыки могут сохраниться, но часть привычных условий труда уже может быть недоступна.
             </Paragraph>
-            <Paragraph>
-              <em>Сквозной кейс:</em> Марина рассказывает, что работала младшим дизайнером и один раз
-              самостоятельно верстала макет на заказ.
-            </Paragraph>
+            <Callout variant="highlight" title="Сквозной кейс">
+              <Paragraph>
+                Марина рассказывает, что работала младшим дизайнером и один раз
+                самостоятельно верстала макет на заказ.
+              </Paragraph>
+            </Callout>
 
             <QuizItem
               context={
@@ -336,7 +340,7 @@ export function NgoCandidatesPage() {
               </Paragraph>
             </Callout>
 
-            <Callout variant="highlight" title="Кейс">
+            <Example title="Кейс">
               <Paragraph>
                 Соискательница с ментальной инвалидностью рассказывала, что каждый день шьёт платья. Однако в ходе
                 интервью выяснилось, что речь шла о мобильной игре, где нужно было нажимать на экран для выполнения
@@ -347,7 +351,7 @@ export function NgoCandidatesPage() {
                 какой результат он получает. Без таких уточняющих вопросов легко переоценить или неверно
                 интерпретировать имеющиеся навыки.
               </Paragraph>
-            </Callout>
+            </Example>
           </ContentSection>
 
           <ContentSection anchor="cand-interview-education" level="h4" title="Образование и обучение">
@@ -372,10 +376,12 @@ export function NgoCandidatesPage() {
             <Paragraph>
               Это помогает не сводить разговор к формальному вопросу: «Кем вы хотите работать?».
             </Paragraph>
-            <Paragraph>
-              <em>Сквозной кейс:</em> Марина рассказывает, что хочет стать востребованным дизайнером, а среди
-              приоритетов называет хороший коллектив, самореализацию и возможности для профессионального роста.
-            </Paragraph>
+            <Callout variant="highlight" title="Сквозной кейс">
+              <Paragraph>
+                Марина рассказывает, что хочет стать востребованным дизайнером, а среди
+                приоритетов называет хороший коллектив, самореализацию и возможности для профессионального роста.
+              </Paragraph>
+            </Callout>
 
             <QuizItem
               context={
@@ -412,10 +418,10 @@ export function NgoCandidatesPage() {
               человека. Это помогает собрать первичные пожелания, однако они нуждаются в обязательной практической
               верификации (см. раздел «Профориентация»).
             </Paragraph>
-            <Paragraph>
+            <Warning>
               При трудоустройстве человека с ментальными особенностями нельзя ориентироваться только на информацию,
               полученную в ходе интервью.
-            </Paragraph>
+            </Warning>
           </ContentSection>
 
           <ContentSection anchor="cand-interview-motivation" level="h4" title="Мотивация и готовность к работе">
@@ -629,14 +635,17 @@ export function NgoCandidatesPage() {
             </Paragraph>
           </Callout>
           <Paragraph>Важно не путать профориентацию с подбором вакансий.</Paragraph>
-          <Paragraph>
-            <strong>Подбор вакансий</strong> отвечает на вопрос: «На какие конкретные позиции можно откликаться
-            сейчас?»
-          </Paragraph>
-          <Paragraph>
-            <strong>Профориентация</strong> отвечает на другой вопрос: «В каком направлении человеку стоит
-            двигаться и что для этого нужно сделать?»
-          </Paragraph>
+          <CompareColumns
+            left={{
+              title: "Подбор вакансий",
+              children: "отвечает на вопрос: «На какие конкретные позиции можно откликаться сейчас?»",
+            }}
+            right={{
+              title: "Профориентация",
+              children:
+                "отвечает на другой вопрос: «В каком направлении человеку стоит двигаться и что для этого нужно сделать?»",
+            }}
+          />
           <Paragraph>
             Например, соискатель предпочитает удалённую работу. Это ещё не значит, что он точно понимает, какая
             вакансия ему нужна. Важно понять, почему человек хочет работать удалённо. Ему нужен гибкий график?
@@ -1023,9 +1032,7 @@ export function NgoCandidatesPage() {
               ]}
             />
 
-            <Paragraph>
-              <strong>Какие нюансы стоит учитывать при формировании гипотез</strong>
-            </Paragraph>
+            <ContentSection level="h4" title="Какие нюансы стоит учитывать при формировании гипотез">
             <BulletList>
               <li>не предлагайте нереалистичные переходы. Например: грузчик → программист за один месяц;</li>
               <li>учитывайте состояние здоровья и связанные с ним ограничения;</li>
@@ -1035,6 +1042,7 @@ export function NgoCandidatesPage() {
               </li>
               <li>не подменяйте выбор соискателя своими представлениями о подходящей работе.</li>
             </BulletList>
+            </ContentSection>
 
             <ContentSection
               anchor="cand-orientation-no-hypo"
@@ -1478,9 +1486,7 @@ export function NgoCandidatesPage() {
               </Paragraph>
             </Callout>
 
-            <Paragraph>
-              <strong>Когда пора переходить к реальным шагам</strong>
-            </Paragraph>
+            <ContentSection level="h4" title="Когда пора переходить к реальным шагам">
             <Paragraph>
               Профориентация не должна превращаться в бесконечное обсуждение профессий, интересов и возможных
               сценариев. Если у человека уже есть:
@@ -1504,6 +1510,7 @@ export function NgoCandidatesPage() {
               понятные задания, наблюдение, экскурсии и пробы в реальной или максимально приближённой к рабочей
               среде.
             </Paragraph>
+            </ContentSection>
           </ContentSection>
         </ContentSection>
 
@@ -2253,10 +2260,12 @@ export function NgoCandidatesPage() {
             <li>можно ли дублировать задачи в письменном виде;</li>
             <li>есть ли возможность заранее познакомиться с рабочим местом.</li>
           </BulletList>
-          <Paragraph>
+          <Warning>
             Важно заранее обсудить с кандидатом, какую информацию о себе он готов сообщить работодателю. НКО не должна
-            передавать сведения о здоровье или другие личные данные без согласия человека. После этого можно
-            вернуться к обсуждению вакансии вместе с кандидатом и принять решение об отклике.
+            передавать сведения о здоровье или другие личные данные без согласия человека.
+          </Warning>
+          <Paragraph>
+            После этого можно вернуться к обсуждению вакансии вместе с кандидатом и принять решение об отклике.
           </Paragraph>
           <Paragraph>
             <em>Сценарий 2. Вакансия не подходит сейчас, но работодатель выглядит перспективным.</em> Такое тоже
@@ -2349,9 +2358,7 @@ export function NgoCandidatesPage() {
             </Paragraph>
           </Callout>
 
-          <Paragraph>
-            <strong>Что важно учитывать при составлении резюме</strong>
-          </Paragraph>
+          <ContentSection level="h4" title="Что важно учитывать при составлении резюме">
           <Paragraph>
             Прежде чем составлять резюме, уточните, есть ли у кандидата старая версия документа. Если резюме уже
             существует, полезно сначала разобрать его вместе с кандидатом, а не начинать работу с нуля. Часто в нём
@@ -2398,6 +2405,7 @@ export function NgoCandidatesPage() {
               под конкретные вакансии.
             </Paragraph>
           </Callout>
+          </ContentSection>
         </ContentSection>
 
         <ContentSection anchor="cand-search-step5" level="h3" title="Шаг 5. Согласование решения об отклике">

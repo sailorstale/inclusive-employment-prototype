@@ -2,6 +2,7 @@ import { PageHero } from "@/components/PageHero";
 import { ContentSection } from "@/components/ContentSection";
 import { PageToc } from "@/components/PageToc";
 import { Card, CardGrid } from "@/components/Card";
+import { StepsShelf } from "@/components/StepsShelf";
 import { Callout } from "@/components/Callout";
 import { CtaButton } from "@/components/PromoBanner";
 import { ImagePlaceholder } from "@/components/ImagePlaceholder";
@@ -64,32 +65,39 @@ export function GuidePage() {
         title="Из чего состоит курс"
         lead="Четыре модуля, которые проходят по порядку — от азов удалёнки до пошагового плана выхода на работу."
       >
-        <CardGrid cols={2}>
-          <Card
-            link="none"
-            eyebrow="Модуль 1"
-            title="Всё об удалённой работе"
-            description="Что такое удалённая работа и кому она подходит."
-          />
-          <Card
-            link="none"
-            eyebrow="Модуль 2"
-            title="База удалённого специалиста"
-            description="Цифровая грамотность, инструменты для работы и как организовать себя."
-          />
-          <Card
-            link="none"
-            eyebrow="Модуль 3"
-            title="Какие удалённые профессии бывают"
-            description="Каталог профессий с описаниями, зарплатами и тем, как в них начать."
-          />
-          <Card
-            link="none"
-            eyebrow="Модуль 4"
-            title="Как начать работать. Первые шаги"
-            description="Этапы трудоустройства, документы и налоги, защита от мошенников, пошаговый план."
-          />
-        </CardGrid>
+        <StepsShelf
+          link="non-link"
+          cols={2}
+          steps={[
+            {
+              number: "1",
+              eyebrow: "Модуль 1",
+              title: "Всё об удалённой работе",
+              description: "Что такое удалённая работа и кому она подходит.",
+            },
+            {
+              number: "2",
+              eyebrow: "Модуль 2",
+              title: "База удалённого специалиста",
+              description:
+                "Цифровая грамотность, инструменты для работы и как организовать себя.",
+            },
+            {
+              number: "3",
+              eyebrow: "Модуль 3",
+              title: "Какие удалённые профессии бывают",
+              description:
+                "Каталог профессий с описаниями, зарплатами и тем, как в них начать.",
+            },
+            {
+              number: "4",
+              eyebrow: "Модуль 4",
+              title: "Как начать работать. Первые шаги",
+              description:
+                "Этапы трудоустройства, документы и налоги, защита от мошенников, пошаговый план.",
+            },
+          ]}
+        />
       </ContentSection>
 
       <ContentSection

@@ -3,7 +3,9 @@ import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
 import { Callout } from "@/components/Callout";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
-import { DataTable } from "@/components/DataTable";
+import { CompareColumns } from "@/components/CompareColumns";
+import { StepsShelf } from "@/components/StepsShelf";
+import { Warning } from "@/components/Warning";
 import { Paragraph, BulletList, LinkList } from "@/components/Prose";
 import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { SmartLink } from "@/components/SmartLink";
@@ -143,25 +145,42 @@ export function NgoFundingPage() {
             Стоит избегать канцеляризмов, сложных конструкций и расплывчатых
             формулировок.
           </Paragraph>
-          <DataTable
-            headers={["Как правильно", "Пример типичной ошибки"]}
-            rows={[
-              [
-                "Мы проведём 10 тренингов по подготовке к собеседованию для 50 людей с инвалидностью",
-                "Реализация комплекса мероприятий по профориентации целевой группы",
-              ],
-            ]}
+          <CompareColumns
+            left={{
+              title: "Как правильно",
+              tone: "good",
+              children: (
+                <Paragraph>
+                  Мы проведём 10 тренингов по подготовке к собеседованию для 50
+                  людей с инвалидностью
+                </Paragraph>
+              ),
+            }}
+            right={{
+              title: "Пример типичной ошибки",
+              tone: "bad",
+              children: (
+                <Paragraph>
+                  Реализация комплекса мероприятий по профориентации целевой
+                  группы
+                </Paragraph>
+              ),
+            }}
           />
         </ContentSection>
 
         <ContentSection level="h4" title="Логическая цепочка">
           <Paragraph>Заявка должна читаться как единая история:</Paragraph>
-          <Paragraph>
-            <strong>
-              Проблема → Решение (цель) → Шаги (задачи и план работы) → Результат
-              → Устойчивость проекта.
-            </strong>
-          </Paragraph>
+          <StepsShelf
+            link="non-link"
+            steps={[
+              { number: 1, title: "Проблема" },
+              { number: 2, title: "Решение (цель)" },
+              { number: 3, title: "Шаги (задачи и план работы)" },
+              { number: 4, title: "Результат" },
+              { number: 5, title: "Устойчивость проекта." },
+            ]}
+          />
           <Paragraph>
             Каждое мероприятие в плане должно быть связано с ожидаемым
             результатом. Если связь между действиями и результатами не
@@ -175,14 +194,26 @@ export function NgoFundingPage() {
             или примерами из практики. Голословные формулировки вроде «проблема
             очень острая» обычно не работают.
           </Paragraph>
-          <DataTable
-            headers={["Как правильно", "Пример типичной ошибки"]}
-            rows={[
-              [
-                "В регионе N только 15% людей с инвалидностью трудоспособного возраста имеют работу (источник: данные официальной статистики)",
-                "В регионе много безработных людей с инвалидностью",
-              ],
-            ]}
+          <CompareColumns
+            left={{
+              title: "Как правильно",
+              tone: "good",
+              children: (
+                <Paragraph>
+                  В регионе N только 15% людей с инвалидностью трудоспособного
+                  возраста имеют работу (источник: данные официальной статистики)
+                </Paragraph>
+              ),
+            }}
+            right={{
+              title: "Пример типичной ошибки",
+              tone: "bad",
+              children: (
+                <Paragraph>
+                  В регионе много безработных людей с инвалидностью
+                </Paragraph>
+              ),
+            }}
           />
         </ContentSection>
 
@@ -396,11 +427,13 @@ export function NgoFundingPage() {
             В этом разделе важно указать все статьи расходов и объяснить, на что
             именно будут направлены средства.
           </Paragraph>
-          <Paragraph>
-            Не стоит занижать бюджет в надежде, что небольшую сумму проще
-            согласовать. Реалистичная и обоснованная смета обычно вызывает больше
-            доверия, чем искусственно сокращённые расходы.
-          </Paragraph>
+          <Warning>
+            <Paragraph>
+              Не стоит занижать бюджет в надежде, что небольшую сумму проще
+              согласовать. Реалистичная и обоснованная смета обычно вызывает
+              больше доверия, чем искусственно сокращённые расходы.
+            </Paragraph>
+          </Warning>
         </ContentSection>
 
         <ContentSection level="h3" title="Описание команды">
