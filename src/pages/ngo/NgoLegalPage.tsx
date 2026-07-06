@@ -6,6 +6,7 @@ import { Paragraph, BulletList } from "@/components/Prose";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 // 21 — НКО — Правовые основы. Тонкая страница-дубль общего слоя (Модуль 2).
 // Тип leaf. Оглавления нет (короткая сводная, 3 секции). Текст дословно из Модуля 2.
@@ -116,6 +117,8 @@ export function NgoLegalPage() {
           </SmartLink>
         </Callout>
       </ContentSection>
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

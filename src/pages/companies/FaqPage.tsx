@@ -5,6 +5,7 @@ import { Paragraph, BulletList, OrderedList } from "@/components/Prose";
 import { Disclosure } from "@/components/Disclosure";
 import { SmartLink } from "@/components/SmartLink";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 
 export function FaqPage() {
@@ -435,6 +436,8 @@ export function FaqPage() {
           следующей редакции гида.
         </Paragraph>
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

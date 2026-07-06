@@ -5,6 +5,7 @@ import { Card, CardGrid } from "@/components/Card";
 import { Callout } from "@/components/Callout";
 import { CodeSnippet } from "@/components/CodeSnippet";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { Blockquote } from "@/components/Blockquote";
 import { QuizItem } from "@/components/QuizItem";
 import {
@@ -1563,6 +1564,8 @@ export function TeamPage() {
           <SmartLink to="/feedback">оставьте их здесь</SmartLink>.
         </Callout>
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

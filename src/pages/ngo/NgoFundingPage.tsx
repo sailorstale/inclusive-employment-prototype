@@ -7,6 +7,7 @@ import { Paragraph, BulletList, LinkList } from "@/components/Prose";
 import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { SmartLink } from "@/components/SmartLink";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 // 29 — Финансировать программу (трек «Для НКО», справочник + инструкция). Контент дословно.
 export function NgoFundingPage() {
@@ -645,6 +646,8 @@ export function NgoFundingPage() {
 
         <Paragraph>Желаем вам успехов на этом пути!</Paragraph>
       </ContentSection>
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

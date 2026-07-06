@@ -9,6 +9,7 @@ import { StepsShelf } from "@/components/StepsShelf";
 import { DataTable } from "@/components/DataTable";
 import { StepNav } from "@/components/StepNav";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { SmartLink } from "@/components/SmartLink";
 import { ContactSection } from "@/components/ContactSection";
 
@@ -1736,6 +1737,8 @@ export function NgoStartPage() {
       />
 
       <StepNav next={{ label: "Работать с соискателем", to: "/ngo/candidates" }} />
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

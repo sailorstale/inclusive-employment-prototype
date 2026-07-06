@@ -5,6 +5,7 @@ import { QuizItem } from "@/components/QuizItem";
 import { Callout } from "@/components/Callout";
 import { Disclosure } from "@/components/Disclosure";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import {
   Paragraph,
   BulletList,
@@ -476,6 +477,8 @@ export function QuotasPage() {
           revealLabel="Ответ"
         />
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

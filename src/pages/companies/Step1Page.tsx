@@ -13,6 +13,7 @@ import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { StepNav } from "@/components/StepNav";
 
 export function Step1Page() {
@@ -874,6 +875,8 @@ export function Step1Page() {
       <StepNav
         next={{ label: "Шаг 2. Аудит готовности", to: "/companies/hire/step-2" }}
       />
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

@@ -11,6 +11,7 @@ import { Blockquote } from "@/components/Blockquote";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { QuizItem } from "@/components/QuizItem";
 import { Users, Building2, HeartHandshake, Landmark } from "lucide-react";
 
@@ -1418,6 +1419,8 @@ export function CompaniesHowPage() {
           человеку с инвалидностью трудоустроиться.
         </Paragraph>
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

@@ -7,6 +7,7 @@ import { Disclosure } from "@/components/Disclosure";
 import { Blockquote } from "@/components/Blockquote";
 import { CompareColumns } from "@/components/CompareColumns";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import {
   Paragraph,
   BulletList,
@@ -1389,6 +1390,8 @@ export function NgoRealityPage() {
         Оставьте их <SmartLink to="/feedback">здесь</SmartLink>. Мы их учтём в
         следующей редакции гида.
       </Callout>
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

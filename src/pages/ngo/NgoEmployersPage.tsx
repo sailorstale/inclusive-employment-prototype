@@ -11,6 +11,7 @@ import { Blockquote } from "@/components/Blockquote";
 import { Example } from "@/components/Example";
 import { StepNav } from "@/components/StepNav";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { SmartLink } from "@/components/SmartLink";
 
 // 26 — Выходить на работодателей (трек «Для НКО», лист). Контент дословно из Модуля 6.3.
@@ -2418,6 +2419,8 @@ export function NgoEmployersPage() {
         prev={{ label: "Работать с соискателем", to: "/ngo/candidates" }}
         next={{ label: "Сопровождать сотрудника", to: "/ngo/support" }}
       />
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

@@ -11,6 +11,7 @@ import { QuizItem } from "@/components/QuizItem";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { Users, Building2, HeartHandshake, Landmark } from "lucide-react";
 
 export function NgoHowPage() {
@@ -1344,6 +1345,8 @@ export function NgoHowPage() {
           человеку с инвалидностью трудоустроиться.
         </Paragraph>
       </ContentSection>
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

@@ -8,6 +8,7 @@ import { Callout } from "@/components/Callout";
 import { QuizItem } from "@/components/QuizItem";
 import { StepNav } from "@/components/StepNav";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 
@@ -1233,6 +1234,8 @@ export function Step5Page() {
         }}
         next={{ label: "Шаг 6. Затраты", to: "/companies/hire/step-6" }}
       />
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

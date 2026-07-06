@@ -5,6 +5,7 @@ import { StepsShelf } from "@/components/StepsShelf";
 import { Paragraph } from "@/components/Prose";
 import { Callout } from "@/components/Callout";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 
 // 11 — Наём по шагам (хаб раздела трека «Для компаний»). Контент дословно из спеки v2.
@@ -133,6 +134,8 @@ export function HireHubPage() {
           ]}
         />
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

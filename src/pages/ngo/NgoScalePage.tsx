@@ -14,6 +14,7 @@ import {
 import { SmartLink } from "@/components/SmartLink";
 import { StepNav } from "@/components/StepNav";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 // 28 — Развивать и масштабировать (трек «Для НКО», объяснение + туториал). Контент дословно из спеки v2.
 export function NgoScalePage() {
@@ -1483,6 +1484,8 @@ export function NgoScalePage() {
         prev={{ label: "Сопровождать сотрудника", to: "/ngo/support" }}
         next={{ label: "Финансировать программу", to: "/ngo/funding" }}
       />
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

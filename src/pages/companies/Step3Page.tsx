@@ -9,6 +9,7 @@ import { CollapsibleBlock } from "@/components/CollapsibleBlock";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { StepNav } from "@/components/StepNav";
 
 // 14 — Шаг 3. Создание среды (трек «Для компаний», наём по шагам). Контент дословно из спеки v2.
@@ -1202,6 +1203,8 @@ export function Step3Page() {
         prev={{ label: "Шаг 2. Аудит готовности", to: "/companies/hire/step-2" }}
         next={{ label: "Шаг 4. Поиск и оформление", to: "/companies/hire/step-4" }}
       />
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

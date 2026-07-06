@@ -16,6 +16,7 @@ import { Disclosure } from "@/components/Disclosure";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 export function ContractPage() {
   return (
@@ -845,6 +846,8 @@ export function ContractPage() {
           revealLabel="Ответ"
         />
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

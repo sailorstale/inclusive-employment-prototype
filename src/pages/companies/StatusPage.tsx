@@ -6,6 +6,7 @@ import { Callout } from "@/components/Callout";
 import { Warning } from "@/components/Warning";
 import { Disclosure } from "@/components/Disclosure";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { Paragraph, BulletList, Footnote } from "@/components/Prose";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
@@ -797,6 +798,8 @@ export function StatusPage() {
           </BulletList>
         </ContentSection>
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

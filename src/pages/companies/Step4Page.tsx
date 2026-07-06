@@ -9,6 +9,7 @@ import { Disclosure } from "@/components/Disclosure";
 import { QuizItem } from "@/components/QuizItem";
 import { Example } from "@/components/Example";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { StepNav } from "@/components/StepNav";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
@@ -705,7 +706,7 @@ export function Step4Page() {
         </Paragraph>
 
         <QuizItem
-          question="Ситуация 1. Соискатель заметно заикается и делает паузы, рассказывая о предыдущем опыте"
+          question="Ситуация 1"
           context={
             <Paragraph>
               Соискатель рассказывает о своём предыдущем опыте работы, заметно заикается и делает
@@ -737,7 +738,7 @@ export function Step4Page() {
         />
 
         <QuizItem
-          question="Ситуация 2. Кандидат с особенностями слуха смотрит на интервьюера, но не отвечает"
+          question="Ситуация 2"
           context={
             <Paragraph>
               Кандидат с особенностями слуха смотрит на интервьюера после вопроса, но не отвечает.
@@ -769,7 +770,7 @@ export function Step4Page() {
         />
 
         <QuizItem
-          question="Ситуация 3. Кандидат, использующий кресло-коляску, просит провести экскурсию по офису"
+          question="Ситуация 3"
           context={
             <Paragraph>
               Кандидат, использующий кресло-коляску, в конце собеседования говорит: «Я хотел бы
@@ -802,7 +803,7 @@ export function Step4Page() {
         />
 
         <QuizItem
-          question="Ситуация 4. Куратор НКО начинает отвечать вместо кандидата"
+          question="Ситуация 4"
           context={
             <Paragraph>
               На собеседовании присутствует куратор НКО. В ответ на вопрос о профессиональных
@@ -845,7 +846,7 @@ export function Step4Page() {
         />
 
         <QuizItem
-          question="Ситуация 5. Кандидат с ментальной инвалидностью выглядит растерянным и молчит"
+          question="Ситуация 5"
           context={
             <Paragraph>
               Вместо ответа на вопрос «Как вам дорога до офиса?» кандидат с ментальной
@@ -882,7 +883,7 @@ export function Step4Page() {
         />
 
         <QuizItem
-          question="Ситуация 6. Кандидат с РАС не поддерживает зрительный контакт"
+          question="Ситуация 6"
           context={
             <Paragraph>
               Кандидат с РАС (расстройством аутистического спектра) отвечает на вопросы, но не
@@ -920,7 +921,7 @@ export function Step4Page() {
         />
 
         <QuizItem
-          question="Ситуация 7. После собеседования кандидат просит сделать перерыв"
+          question="Ситуация 7"
           context={
             <Paragraph>
               После собеседования рекрутер предлагает кандидату выполнить тестовое задание.
@@ -1279,6 +1280,8 @@ export function Step4Page() {
         prev={{ label: "Шаг 3. Создание среды", to: "/companies/hire/step-3" }}
         next={{ label: "Шаг 5. Онбординг", to: "/companies/hire/step-5" }}
       />
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

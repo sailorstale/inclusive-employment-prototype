@@ -6,6 +6,7 @@ import { Card, CardGrid } from "@/components/Card";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 // 05 — Правовые основы (хаб раздела трека «Для компаний»). Авторский текст дословно.
 export function LegalHubPage() {
@@ -137,6 +138,8 @@ export function LegalHubPage() {
           />
         </CardGrid>
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

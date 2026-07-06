@@ -8,6 +8,7 @@ import { Warning } from "@/components/Warning";
 import { CompareColumns } from "@/components/CompareColumns";
 import { Disclosure } from "@/components/Disclosure";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import {
   Paragraph,
   BulletList,
@@ -839,6 +840,8 @@ export function BenefitsPage() {
           revealLabel="Ответ"
         />
       </ContentSection>
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

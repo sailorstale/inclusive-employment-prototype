@@ -5,6 +5,7 @@ import { Card, CardGrid } from "@/components/Card";
 import { Callout } from "@/components/Callout";
 import { Blockquote } from "@/components/Blockquote";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { Paragraph, BulletList } from "@/components/Prose";
 import { SmartLink } from "@/components/SmartLink";
 import { MonitorSmartphone, Users } from "lucide-react";
@@ -750,6 +751,8 @@ export function NgoSupportPage() {
           возникающих сложностей и кризисных ситуаций.
         </Paragraph>
       </ContentSection>
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

@@ -9,6 +9,7 @@ import { Blockquote } from "@/components/Blockquote";
 import { Example } from "@/components/Example";
 import { SmartLink } from "@/components/SmartLink";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 export function NgoCandidatesPage() {
   return (
@@ -2676,6 +2677,8 @@ export function NgoCandidatesPage() {
           </Callout>
         </ContentSection>
       </ContentSection>
+
+      <FeedbackForm defaultRole="ngo" />
 
       <RelatedLinks
         items={[

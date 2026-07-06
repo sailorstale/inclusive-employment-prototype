@@ -8,6 +8,7 @@ import { Disclosure } from "@/components/Disclosure";
 import { Card } from "@/components/Card";
 import { StepNav } from "@/components/StepNav";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 
@@ -804,6 +805,8 @@ export function Step6Page() {
           to: "/companies/hire",
         }}
       />
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[

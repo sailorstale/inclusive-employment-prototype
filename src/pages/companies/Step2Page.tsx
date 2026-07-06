@@ -7,6 +7,7 @@ import { Example } from "@/components/Example";
 import { Disclosure } from "@/components/Disclosure";
 import { StepNav } from "@/components/StepNav";
 import { RelatedLinks } from "@/components/RelatedLinks";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { Paragraph, BulletList, Checklist } from "@/components/Prose";
@@ -1313,6 +1314,8 @@ export function Step2Page() {
         prev={{ label: "Шаг 1. Выбор вакансии", to: "/companies/hire/step-1" }}
         next={{ label: "Шаг 3. Создание среды", to: "/companies/hire/step-3" }}
       />
+
+      <FeedbackForm defaultRole="company" />
 
       <RelatedLinks
         items={[
