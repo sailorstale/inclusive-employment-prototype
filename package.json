@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:my": "vite --port 5999 --strictPort",
     "server": "node --watch server/index.js",
     "build": "tsc -b && vite build",
     "start": "node server/index.js",
