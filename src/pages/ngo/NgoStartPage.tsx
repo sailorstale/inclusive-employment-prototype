@@ -642,7 +642,7 @@ export function NgoStartPage() {
           Чтобы лучше разобраться в этих вопросах, предлагаем представителям НКО
           посмотреть на ситуацию.
         </Paragraph>
-        <ContentSection level="h3" title="Проверьте себя: ситуация">
+        <ContentSection level="h3" title="Проверьте себя: ситуация 1">
           <QuizItem
             context={
               <>
