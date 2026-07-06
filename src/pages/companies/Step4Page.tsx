@@ -2,7 +2,6 @@ import { PageHero } from "@/components/PageHero";
 import { PageToc } from "@/components/PageToc";
 import { ContentSection } from "@/components/ContentSection";
 import { Paragraph, BulletList } from "@/components/Prose";
-import { Card, CardGrid } from "@/components/Card";
 import { DataTable } from "@/components/DataTable";
 import { Callout } from "@/components/Callout";
 import { Disclosure } from "@/components/Disclosure";
@@ -13,7 +12,6 @@ import { FeedbackForm } from "@/components/FeedbackForm";
 import { StepNav } from "@/components/StepNav";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
-import { HeartHandshake, Globe, Building2, GraduationCap, Users } from "lucide-react";
 
 // 15 — Шаг 4. Поиск кандидатов, проведение собеседований и оформление (трек «Для компаний»). Контент дословно.
 export function Step4Page() {
@@ -389,54 +387,40 @@ export function Step4Page() {
           </Paragraph>
           <Paragraph>Здесь кратко напомним основные варианты.</Paragraph>
 
-          <Disclosure
-            entries={[
-              {
-                trigger: "Где искать кандидатов с инвалидностью — пять каналов",
-                content: (
-                  <CardGrid cols={2}>
-                    <Card link="none" icon={<HeartHandshake />} title="НКО">
-                      Удобно начинать с{" "}
-                      <SmartLink to="https://help.yandex.ru/npo?=&seed=86eed207&search=&program=active_inclusion&theme=&geo=&recipients=&tab=filter&page=1">
-                        партнёрства с НКО
-                      </SmartLink>
-                      . Для многих работодателей это один из самых эффективных каналов поиска.
-                      Профильные некоммерческие организации хорошо знают своих кандидатов и могут
-                      рекомендовать людей, чьи навыки и опыт соответствуют требованиям вакансии.
-                    </Card>
-                    <Card link="none" icon={<Globe />} title="Работные сайты">
-                      Разместить вакансию можно на крупных работных сайтах, таких как{" "}
-                      <SmartLink to="http://hh.ru">HeadHunter</SmartLink> или{" "}
-                      <SmartLink to="https://www.avito.ru/moskva/vakansii">Avito Работа</SmartLink>. На
-                      этих площадках есть возможность указать, что вакансия открыта для соискателей с
-                      инвалидностью.
-                    </Card>
-                    <Card link="none" icon={<Building2 />} title="Службы занятости населения">
-                      Ещё один канал поиска — службы занятости населения (
-                      <GlossaryTerm term="СЗН">СЗН</GlossaryTerm>). Особенно часто им
-                      пользуются работодатели, которым важно выполнять{" "}
-                      <GlossaryTerm term="квота">квоты</GlossaryTerm> на трудоустройство людей с
-                      инвалидностью.
-                    </Card>
-                    <Card link="none" icon={<GraduationCap />} title="Вузы и колледжи">
-                      Полезно выстраивать сотрудничество с вузами и колледжами. Среди студентов и
-                      выпускников с инвалидностью можно найти перспективных специалистов для стажировок
-                      и первых профессиональных ролей.
-                    </Card>
-                    <Card
-                      link="none"
-                      icon={<Users />}
-                      title="Профессиональные сообщества и социальные сети"
-                    >
-                      Для поиска кандидатов также можно использовать тематические телеграм-каналы и
-                      профессиональные сообщества. В некоторых случаях помогают публикации у блогеров с
-                      инвалидностью, которые могут рассказать о вакансии своей аудитории.
-                    </Card>
-                  </CardGrid>
-                ),
-              },
-            ]}
-          />
+          <Paragraph>
+            <strong>НКО.</strong> Удобно начинать с{" "}
+            <SmartLink to="https://help.yandex.ru/npo?=&seed=86eed207&search=&program=active_inclusion&theme=&geo=&recipients=&tab=filter&page=1">
+              партнёрства с НКО
+            </SmartLink>
+            . Для многих работодателей это один из самых эффективных каналов поиска.
+            Профильные некоммерческие организации хорошо знают своих кандидатов и могут
+            рекомендовать людей, чьи навыки и опыт соответствуют требованиям вакансии.
+          </Paragraph>
+          <Paragraph>
+            <strong>Работные сайты.</strong> Разместить вакансию можно на крупных работных
+            сайтах, таких как <SmartLink to="http://hh.ru">HeadHunter</SmartLink> или{" "}
+            <SmartLink to="https://www.avito.ru/moskva/vakansii">Avito Работа</SmartLink>. На
+            этих площадках есть возможность указать, что вакансия открыта для соискателей с
+            инвалидностью.
+          </Paragraph>
+          <Paragraph>
+            <strong>Службы занятости населения.</strong> Ещё один канал поиска — службы
+            занятости населения (<GlossaryTerm term="СЗН">СЗН</GlossaryTerm>). Особенно часто
+            им пользуются работодатели, которым важно выполнять{" "}
+            <GlossaryTerm term="квота">квоты</GlossaryTerm> на трудоустройство людей с
+            инвалидностью.
+          </Paragraph>
+          <Paragraph>
+            <strong>Вузы и колледжи.</strong> Полезно выстраивать сотрудничество с вузами и
+            колледжами. Среди студентов и выпускников с инвалидностью можно найти
+            перспективных специалистов для стажировок и первых профессиональных ролей.
+          </Paragraph>
+          <Paragraph>
+            <strong>Профессиональные сообщества и социальные сети.</strong> Для поиска
+            кандидатов также можно использовать тематические телеграм-каналы и
+            профессиональные сообщества. В некоторых случаях помогают публикации у блогеров с
+            инвалидностью, которые могут рассказать о вакансии своей аудитории.
+          </Paragraph>
 
           <Paragraph>
             Когда отклики получены, начинается следующий важный этап — собеседование.
