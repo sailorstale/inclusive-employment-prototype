@@ -1269,12 +1269,14 @@ export function CompaniesStartPage() {
           Вот ключевые особенности, которые важно учитывать при планировании:
         </Paragraph>
 
-        <CardGrid cols={2}>
+        <CardGrid cols={1}>
           <Card
+            layout="horizontal"
             title="Качество важнее скорости"
             description="Каждое трудоустройство нуждается в индивидуальной настройке условий и внимательном отношении к деталям. В отличие от стандартного рекрутинга, здесь фокус смещен с количества закрытых вакансий на качество интеграции. Успешный наём мотивированных специалистов, которые остаются в компании на годы, часто ценнее быстрого закрытия позиции без должной адаптации."
           />
           <Card
+            layout="horizontal"
             title="Адаптация имеет свой ритм"
             description={
               <>
@@ -1297,6 +1299,7 @@ export function CompaniesStartPage() {
             }
           />
           <Card
+            layout="horizontal"
             title="Профессионализм вместо «вечной лояльности»"
             description={
               <>
@@ -1316,6 +1319,7 @@ export function CompaniesStartPage() {
             }
           />
           <Card
+            layout="horizontal"
             title="Работа с культурой компании"
             description={
               <>
@@ -1336,6 +1340,7 @@ export function CompaniesStartPage() {
             }
           />
           <Card
+            layout="horizontal"
             title="Реалистичный взгляд на процесс"
             description={
               <>
