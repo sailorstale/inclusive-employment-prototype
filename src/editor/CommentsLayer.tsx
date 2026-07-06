@@ -42,6 +42,7 @@ export function CommentsLayer() {
     comments,
     adding,
     setAdding,
+    panelOpen,
     focusId,
     setFocusId,
     addComment,
@@ -53,6 +54,10 @@ export function CommentsLayer() {
   const [, force] = React.useReducer((n) => n + 1, 0);
   const [openId, setOpenId] = React.useState<string | null>(null);
   const [draft, setDraft] = React.useState<Draft | null>(null);
+
+  // Правый край, за который попап не должен заезжать: при открытой панели
+  // «все комментарии» (ширина ~21rem) он наступает раньше края окна.
+  const rightEdge = () => window.innerWidth - (panelOpen ? 352 : 0);
 
   const pagePins = React.useMemo(
     () => comments.filter((c) => c.page === pathname),
@@ -198,6 +203,7 @@ export function CommentsLayer() {
             left={pos.left}
             top={pos.top}
             lost={pos.lost}
+            flip={pos.left + 330 > rightEdge()}
             open={openId === c.id}
             onToggle={() => setOpenId((id) => (id === c.id ? null : c.id))}
             onSave={(text) => editComment(c.id, text)}
@@ -213,6 +219,7 @@ export function CommentsLayer() {
       {draft ? (
         <DraftPin
           position={positionOf(draft.anchorText, draft.dx, draft.dy)}
+          rightEdge={rightEdge()}
           onCancel={() => {
             setDraft(null);
             setOpenId(null);
@@ -273,6 +280,7 @@ function Pin({
   left,
   top,
   lost,
+  flip,
   open,
   onToggle,
   onSave,
@@ -283,6 +291,7 @@ function Pin({
   left: number;
   top: number;
   lost: boolean;
+  flip: boolean;
   open: boolean;
   onToggle: () => void;
   onSave: (text: string) => void;
@@ -296,7 +305,7 @@ function Pin({
     <div className="absolute" style={{ left, top }}>
       <PinDot resolved={comment.resolved} lost={lost} onClick={onToggle} />
       {open ? (
-        <Popover flipX={left + 330 > window.innerWidth}>
+        <Popover flipX={flip}>
           <div className="mb-2 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>{fmt(comment.createdAt)}</span>
             <div className="flex items-center gap-1">
@@ -349,10 +358,12 @@ function Pin({
 
 function DraftPin({
   position,
+  rightEdge,
   onCancel,
   onSave,
 }: {
   position: { left: number; top: number } | null;
+  rightEdge: number;
   onCancel: () => void;
   onSave: (text: string) => void;
 }) {
@@ -371,7 +382,7 @@ function DraftPin({
   return (
     <div className="absolute" style={{ left: position.left, top: position.top }}>
       <PinDot onClick={() => {}} />
-      <Popover flipX={position.left + 330 > window.innerWidth}>
+      <Popover flipX={position.left + 330 > rightEdge}>
         <textarea
           ref={ref}
           data-comments-ui
