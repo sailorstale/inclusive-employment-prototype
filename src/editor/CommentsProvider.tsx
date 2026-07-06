@@ -8,8 +8,9 @@ import {
   updateComment,
 } from "./comments";
 
-// Состояние слоя комментариев: список пинов (общий, с сервера/локально) и режим
-// добавления (когда клик по странице ставит новую точку).
+// Состояние слоя комментариев: список пинов (общий, с сервера/локально), режим
+// добавления (когда клик по странице ставит новую точку), панель со сводным
+// списком (в стиле Figma) и «прыжок к пину» из неё.
 
 type CommentsContextValue = {
   comments: Comment[];
@@ -20,6 +21,15 @@ type CommentsContextValue = {
   adding: boolean;
   setAdding: (v: boolean) => void;
   toggleAdding: () => void;
+
+  /** Панель со сводным списком всех комментариев. */
+  panelOpen: boolean;
+  setPanelOpen: (v: boolean) => void;
+  togglePanel: () => void;
+
+  /** id пина, к которому нужно проскроллить и раскрыть (переход из панели). */
+  focusId: string | null;
+  setFocusId: (id: string | null) => void;
 
   addComment: (input: CommentInput) => Promise<Comment>;
   editComment: (id: string, text: string) => void;
@@ -36,6 +46,8 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
   const [loaded, setLoaded] = React.useState(false);
   const [storeMode, setStoreMode] = React.useState<"server" | "local">("local");
   const [adding, setAddingState] = React.useState(false);
+  const [panelOpen, setPanelOpenState] = React.useState(false);
+  const [focusId, setFocusId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let alive = true;
@@ -52,8 +64,29 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const setAdding = React.useCallback((v: boolean) => setAddingState(v), []);
-  const toggleAdding = React.useCallback(() => setAddingState((v) => !v), []);
+  // Режим добавления и панель не живут одновременно: прицел поверх открытой
+  // панели сбивает с толку, поэтому включение одного закрывает другое.
+  const setAdding = React.useCallback((v: boolean) => {
+    setAddingState(v);
+    if (v) setPanelOpenState(false);
+  }, []);
+  const toggleAdding = React.useCallback(() => {
+    setAddingState((v) => {
+      if (!v) setPanelOpenState(false);
+      return !v;
+    });
+  }, []);
+
+  const setPanelOpen = React.useCallback((v: boolean) => {
+    setPanelOpenState(v);
+    if (v) setAddingState(false);
+  }, []);
+  const togglePanel = React.useCallback(() => {
+    setPanelOpenState((v) => {
+      if (!v) setAddingState(false);
+      return !v;
+    });
+  }, []);
 
   const addComment = React.useCallback(async (input: CommentInput) => {
     const rec = await createComment(input);
@@ -103,6 +136,11 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
       adding,
       setAdding,
       toggleAdding,
+      panelOpen,
+      setPanelOpen,
+      togglePanel,
+      focusId,
+      setFocusId,
       addComment,
       editComment,
       toggleResolved,
@@ -116,6 +154,10 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
       adding,
       setAdding,
       toggleAdding,
+      panelOpen,
+      setPanelOpen,
+      togglePanel,
+      focusId,
       addComment,
       editComment,
       toggleResolved,

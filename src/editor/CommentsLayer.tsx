@@ -42,6 +42,8 @@ export function CommentsLayer() {
     comments,
     adding,
     setAdding,
+    focusId,
+    setFocusId,
     addComment,
     editComment,
     toggleResolved,
@@ -106,6 +108,44 @@ export function CommentsLayer() {
       document.removeEventListener("click", onClick, true);
     };
   }, [adding, pathname, setAdding]);
+
+  // Прыжок к пину из панели «все комментарии»: ждём, пока страница отрисует
+  // блок-якорь (после перехода контент появляется не мгновенно), затем скроллим
+  // окно так, чтобы пин оказался в верхней трети, и раскрываем его попап.
+  React.useEffect(() => {
+    if (!focusId) return;
+    const target = comments.find((c) => c.id === focusId);
+    if (!target || target.page !== pathname) return;
+    let cancelled = false;
+    const deadline = Date.now() + 2500;
+    const tryScroll = () => {
+      if (cancelled) return;
+      const el = target.anchorText ? findAnchorEl(target.anchorText) : mainEl();
+      if (!el) {
+        if (Date.now() < deadline) {
+          requestAnimationFrame(tryScroll);
+          return;
+        }
+        // Якорь так и не нашёлся (текст изменился) — целимся в контейнер.
+      }
+      const base = el ?? mainEl();
+      if (!base) {
+        setFocusId(null);
+        return;
+      }
+      const rect = base.getBoundingClientRect();
+      window.scrollTo({
+        top: Math.max(0, rect.top + window.scrollY + target.dy - window.innerHeight / 3),
+        behavior: "smooth",
+      });
+      setOpenId(target.id);
+      setFocusId(null);
+    };
+    tryScroll();
+    return () => {
+      cancelled = true;
+    };
+  }, [focusId, comments, pathname, setFocusId]);
 
   const positionOf = (anchorText: string, dx: number, dy: number) => {
     const el = anchorText ? findAnchorEl(anchorText) : mainEl();

@@ -12,6 +12,7 @@ import { SkipLink } from "./SkipLink";
 import { ComponentTagsToggle } from "./ComponentTagsToggle";
 import { EditorInspector } from "@/editor/EditorInspector";
 import { CommentsLayer } from "@/editor/CommentsLayer";
+import { CommentsPanel } from "@/editor/CommentsPanel";
 import { EditorDock } from "@/editor/EditorDock";
 import { EditorToast, StoreModeBanner } from "@/editor/EditorNotices";
 
@@ -31,6 +32,7 @@ export function Layout() {
         <AppFooter />
         <EditorInspector />
         <CommentsLayer />
+        <CommentsPanel />
         <EditorDock />
         <EditorToast />
         <ComponentTagsToggle />

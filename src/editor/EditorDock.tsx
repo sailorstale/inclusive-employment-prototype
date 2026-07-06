@@ -7,11 +7,12 @@ import { useComments } from "./CommentsProvider";
 
 // Компактный плавающий док редакторских инструментов в левом нижнем углу:
 // Редактор · Комментарии · Изменения. Вынесен из шапки, чтобы не мешать чтению
-// и не влиять на ощущение сайта.
+// и не влиять на ощущение сайта. Кнопка «Комментарии» открывает панель со
+// сводным списком (как в Figma); режим «поставить пин» — кнопкой + в панели.
 
 export function EditorDock() {
   const { editorMode, toggleEditorMode, editedCount, edits } = useEditor();
-  const { adding, toggleAdding, openCount } = useComments();
+  const { adding, panelOpen, togglePanel, openCount } = useComments();
   const { pathname } = useLocation();
 
   const pending = Object.values(edits).filter(
@@ -33,9 +34,9 @@ export function EditorDock() {
       <DockItem
         label="Комментарии"
         icon={<MessageCircle className="h-[18px] w-[18px]" />}
-        active={adding}
+        active={panelOpen || adding}
         badge={openCount}
-        onClick={toggleAdding}
+        onClick={togglePanel}
       />
       <DockItem
         label="Изменения"
