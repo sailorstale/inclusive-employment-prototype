@@ -13,6 +13,7 @@ import { StepNav } from "@/components/StepNav";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { SmartLink } from "@/components/SmartLink";
+import { GlossaryTerm } from "@/components/GlossaryTerm";
 
 // 26 — Выходить на работодателей (трек «Для НКО», лист). Контент дословно из Модуля 6.3.
 export function NgoEmployersPage() {
@@ -2410,8 +2411,9 @@ export function NgoEmployersPage() {
           устойчивым окажется трудоустройство.
         </Paragraph>
         <Paragraph>
-          О том, как сопровождать кандидата на этапе оформления и онбординга,
-          поговорим в следующей главе.
+          О том, как сопровождать кандидата на этапе оформления и{" "}
+          <GlossaryTerm term="онбординг">онбординга</GlossaryTerm>, поговорим в
+          следующей главе.
         </Paragraph>
       </ContentSection>
 

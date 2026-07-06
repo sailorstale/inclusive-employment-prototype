@@ -126,7 +126,10 @@ export function Step2Page() {
                 <strong>
                   <GlossaryTerm term="HR">HR</GlossaryTerm>
                 </strong>,
-                "на этапах подбора, собеседования, оформления и онбординга;",
+                <>
+                  на этапах подбора, собеседования, оформления и{" "}
+                  <GlossaryTerm term="онбординг">онбординга</GlossaryTerm>;
+                </>,
               ],
               [
                 <strong>нанимающий руководитель</strong>,
