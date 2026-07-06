@@ -509,7 +509,7 @@ export function Step1Page() {
                 при режиме офлайн нужно учитывать доступность помещений.
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
 
           <QuizItem
@@ -544,7 +544,7 @@ export function Step1Page() {
                 быть слишком эмоционально и коммуникативно сложными.
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
 
           <QuizItem
@@ -594,7 +594,7 @@ export function Step1Page() {
                 </Paragraph>
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
 
           <QuizItem
@@ -633,7 +633,7 @@ export function Step1Page() {
                 полностью доступной.
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
 
           <Paragraph>

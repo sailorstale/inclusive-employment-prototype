@@ -736,10 +736,8 @@ export function NgoHowPage() {
           title="Квиз: кто берёт инициативу — работодатель или НКО"
         >
           <Paragraph>
-            <strong>
-              Изучите ситуации и определите, кто должен взять на себя инициативу — работодатель
-              или НКО.
-            </strong>
+            Изучите ситуации и определите, кто должен взять на себя инициативу — работодатель
+            или НКО.
           </Paragraph>
           <ContentSection
             anchor="quiz-marina"
@@ -790,7 +788,7 @@ export function NgoHowPage() {
                   а не волнение или зажатость.
                 </>
               }
-              revealLabel="Обратная связь"
+              revealLabel="Ответ"
             />
           </ContentSection>
 
@@ -838,7 +836,7 @@ export function NgoHowPage() {
                   компании.
                 </>
               }
-              revealLabel="Обратная связь"
+              revealLabel="Ответ"
             />
           </ContentSection>
 
@@ -890,7 +888,7 @@ export function NgoHowPage() {
                   ошибок.
                 </>
               }
-              revealLabel="Обратная связь"
+              revealLabel="Ответ"
             />
           </ContentSection>
 
@@ -952,7 +950,7 @@ export function NgoHowPage() {
                   компания.
                 </>
               }
-              revealLabel="Обратная связь"
+              revealLabel="Ответ"
             />
           </ContentSection>
         </ContentSection>

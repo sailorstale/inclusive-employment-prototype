@@ -742,7 +742,7 @@ export function Step5Page() {
         <QuizItem
           context={
             <>
-              <p className="font-medium text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 Ситуация 1. Сотрудник без предупреждения не выходит на работу
               </p>
               <Paragraph>
@@ -796,13 +796,13 @@ export function Step5Page() {
               </Paragraph>
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
           context={
             <>
-              <p className="font-medium text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 Ситуация 2. Сотрудник ждёт особых условий
               </p>
               <Paragraph>
@@ -852,13 +852,13 @@ export function Step5Page() {
               </Paragraph>
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
           context={
             <>
-              <p className="font-medium text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 Ситуация 3. Сотрудник не говорит о сложностях
               </p>
               <Paragraph>
@@ -911,13 +911,13 @@ export function Step5Page() {
               </Paragraph>
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
           context={
             <>
-              <p className="font-medium text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 Ситуация 4. Работодатель начинает чрезмерно опекать сотрудника
               </p>
               <Paragraph>
@@ -964,13 +964,13 @@ export function Step5Page() {
               </Paragraph>
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
           context={
             <>
-              <p className="font-medium text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 Ситуация 5. Конфликт в команде
               </p>
               <Paragraph>
@@ -1030,13 +1030,13 @@ export function Step5Page() {
               </Paragraph>
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
           context={
             <>
-              <p className="font-medium text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 Ситуация 6. Сотрудник устаёт и начинает хуже справляться с работой
               </p>
               <Paragraph>
@@ -1091,13 +1091,13 @@ export function Step5Page() {
               </Paragraph>
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
           context={
             <>
-              <p className="font-medium text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 Ситуация 7. Сотрудник уходит от разговора о рабочих проблемах
               </p>
               <Paragraph>
@@ -1142,13 +1142,13 @@ export function Step5Page() {
               </Paragraph>
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
           context={
             <>
-              <p className="font-medium text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 Ситуация 8. Разговор о завершении сотрудничества
               </p>
               <Paragraph>
@@ -1196,7 +1196,7 @@ export function Step5Page() {
               </Paragraph>
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <Callout variant="info" title="Что говорит бизнес">

@@ -247,7 +247,7 @@ export function TeamPage() {
               другие способы коммуникации.
             </Paragraph>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
         <QuizItem
           question="Речь"
@@ -269,7 +269,7 @@ export function TeamPage() {
               потерей речи или голоса».
             </Paragraph>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
         <QuizItem
           question="Передвижение"
@@ -295,7 +295,7 @@ export function TeamPage() {
               восприниматься как грубые или уничижительные.
             </Paragraph>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
         <QuizItem
           question="Ментальная инвалидность"
@@ -316,7 +316,7 @@ export function TeamPage() {
               лучше использовать нейтральные и уважительные формулировки.
             </Paragraph>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
         <Paragraph>
           Если вам хочется разобраться в этой теме подробнее, можно посмотреть

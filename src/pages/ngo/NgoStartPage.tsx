@@ -701,7 +701,7 @@ export function NgoStartPage() {
                 </Paragraph>
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
         </ContentSection>
         <Blockquote
@@ -1219,7 +1219,7 @@ export function NgoStartPage() {
               { text: "почти все", verdict: "wrong" },
             ]}
             explanation={selfcheckFeedback}
-            revealLabel="Общая обратная связь"
+            revealLabel="Ответ"
           />
         </ContentSection>
         <ContentSection
@@ -1236,7 +1236,7 @@ export function NgoStartPage() {
               { text: "почти все", verdict: "wrong" },
             ]}
             explanation={selfcheckFeedback}
-            revealLabel="Общая обратная связь"
+            revealLabel="Ответ"
           />
         </ContentSection>
         <ContentSection
@@ -1253,7 +1253,7 @@ export function NgoStartPage() {
               { text: "почти все", verdict: "wrong" },
             ]}
             explanation={selfcheckFeedback}
-            revealLabel="Общая обратная связь"
+            revealLabel="Ответ"
           />
         </ContentSection>
         <ContentSection
@@ -1270,7 +1270,7 @@ export function NgoStartPage() {
               { text: "почти все", verdict: "wrong" },
             ]}
             explanation={selfcheckFeedback}
-            revealLabel="Общая обратная связь"
+            revealLabel="Ответ"
           />
         </ContentSection>
 
@@ -1350,7 +1350,7 @@ export function NgoStartPage() {
                 </Paragraph>
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
         </ContentSection>
       </ContentSection>

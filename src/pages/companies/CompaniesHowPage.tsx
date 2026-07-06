@@ -793,15 +793,13 @@ export function CompaniesHowPage() {
           title="Квиз: кто берёт инициативу — работодатель или НКО"
         >
           <Paragraph>
-            <strong>
-              Изучите ситуации и определите, кто должен взять на себя инициативу — работодатель
-              или НКО.
-            </strong>
+            Изучите ситуации и определите, кто должен взять на себя инициативу — работодатель
+            или НКО.
           </Paragraph>
           <QuizItem
             context={
               <>
-                <p className="font-medium text-foreground">
+                <p className="text-lg font-semibold text-foreground">
                   Ситуация 1. Подготовка Марины к собеседованию
                 </p>
                 <Paragraph>
@@ -847,13 +845,13 @@ export function CompaniesHowPage() {
                 реальные навыки, а не волнение или зажатость.
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
 
           <QuizItem
             context={
               <>
-                <p className="font-medium text-foreground">
+                <p className="text-lg font-semibold text-foreground">
                   Ситуация 2. Условия для работы Ильи
                 </p>
                 <Paragraph>
@@ -896,13 +894,13 @@ export function CompaniesHowPage() {
                 компании.
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
 
           <QuizItem
             context={
               <>
-                <p className="font-medium text-foreground">
+                <p className="text-lg font-semibold text-foreground">
                   Ситуация 3. Подготовка коллектива к приходу Володи
                 </p>
                 <Paragraph>
@@ -948,13 +946,13 @@ export function CompaniesHowPage() {
                 типичных ошибок.
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
 
           <QuizItem
             context={
               <>
-                <p className="font-medium text-foreground">
+                <p className="text-lg font-semibold text-foreground">
                   Ситуация 4. Формат планёрок для Нины
                 </p>
                 <Paragraph>
@@ -1008,7 +1006,7 @@ export function CompaniesHowPage() {
                 может только сама компания.
               </>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
         </ContentSection>
 

@@ -205,7 +205,7 @@ export function NgoEthicsPage() {
                 зрения».
               </Paragraph>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
           <QuizItem
             question="Слух"
@@ -221,7 +221,7 @@ export function NgoEthicsPage() {
                 или другие способы коммуникации.
               </Paragraph>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
           <QuizItem
             question="Речь"
@@ -241,7 +241,7 @@ export function NgoEthicsPage() {
                 всегда: человек может говорить, но испытывать трудности с речью.
               </Paragraph>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
           <QuizItem
             question="Передвижение"
@@ -267,7 +267,7 @@ export function NgoEthicsPage() {
                 восприниматься как грубые или уничижительные.
               </Paragraph>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
           <QuizItem
             question="Ментальная инвалидность"
@@ -291,7 +291,7 @@ export function NgoEthicsPage() {
                 лучше использовать нейтральные и уважительные формулировки.
               </Paragraph>
             }
-            revealLabel="Обратная связь"
+            revealLabel="Ответ"
           />
           <Paragraph>
             Если вам хочется разобраться в этой теме подробнее, можно посмотреть

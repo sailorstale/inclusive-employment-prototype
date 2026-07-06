@@ -2103,7 +2103,7 @@ export function NgoEmployersPage() {
               обесценивать проблему или стыдить собеседника за его вопросы.
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
@@ -2130,7 +2130,7 @@ export function NgoEmployersPage() {
               работы или отсутствием поддержки внутри команды.
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
@@ -2156,7 +2156,7 @@ export function NgoEmployersPage() {
               риск, о котором говорит работодатель.
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <QuizItem
@@ -2182,7 +2182,7 @@ export function NgoEmployersPage() {
               который позволит продолжить диалог и снизить тревогу.
             </>
           }
-          revealLabel="Обратная связь"
+          revealLabel="Ответ"
         />
 
         <Paragraph>
