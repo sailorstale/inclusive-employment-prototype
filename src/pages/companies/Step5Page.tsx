@@ -740,6 +740,7 @@ export function Step5Page() {
           — варианты реакции и блок «Обратная связь» с разбором.
         </Paragraph>
 
+        <ContentSection level="h3" title="Проверьте себя">
         <QuizItem
           context={
             <>
@@ -1199,6 +1200,7 @@ export function Step5Page() {
           }
           revealLabel="Ответ"
         />
+        </ContentSection>
 
         <Callout variant="info" title="Что говорит бизнес">
           <Paragraph>

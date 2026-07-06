@@ -642,7 +642,7 @@ export function NgoStartPage() {
           Чтобы лучше разобраться в этих вопросах, предлагаем представителям НКО
           посмотреть на ситуацию.
         </Paragraph>
-        <ContentSection level="h3" title="Ситуация">
+        <ContentSection level="h3" title="Проверьте себя: ситуация">
           <QuizItem
             context={
               <>
@@ -1164,7 +1164,7 @@ export function NgoStartPage() {
         </ContentSection>
       </ContentSection>
 
-      <ContentSection anchor="start-selfcheck" title="С кем начинать работать">
+      <ContentSection anchor="start-selfcheck" title="Проверьте себя: с кем начинать работать">
         <Paragraph>
           Небольшая самопроверка поможет представителям НКО реалистично оценить
           масштаб будущей работы: сколько людей действительно могут стать
@@ -1305,7 +1305,7 @@ export function NgoStartPage() {
           запрос аудитории, так и ресурсы организации.
         </Paragraph>
 
-        <ContentSection level="h3" title="Ситуация 2">
+        <ContentSection level="h3" title="Проверьте себя: ситуация 2">
           <QuizItem
             context={
               <Paragraph>

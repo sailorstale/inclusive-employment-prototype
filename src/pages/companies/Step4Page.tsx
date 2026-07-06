@@ -44,7 +44,7 @@ export function Step4Page() {
         items={[
           { label: "Как составить вакансию и где найти кандидатов", anchor: "#step4-vacancy" },
           { label: "Как подготовить и провести собеседование", anchor: "#step4-interview" },
-          { label: "Разбор ситуаций собеседования", anchor: "#step4-situations" },
+          { label: "Проверьте себя: ситуации собеседования", anchor: "#step4-situations" },
           { label: "Оформление сотрудников с инвалидностью", anchor: "#step4-hiring" },
         ]}
       />
@@ -698,7 +698,7 @@ export function Step4Page() {
       </ContentSection>
 
       {/* ============ Раздел 3 — Разбор ситуаций ============ */}
-      <ContentSection anchor="step4-situations" title="Разбор ситуаций собеседования">
+      <ContentSection anchor="step4-situations" title="Проверьте себя: ситуации собеседования">
         <Paragraph>
           Даже при тщательной подготовке к собеседованию могут возникнуть неожиданные ситуации.
           Рассмотрим несколько типичных кейсов, с которыми работодатель может столкнуться при
