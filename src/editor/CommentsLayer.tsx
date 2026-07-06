@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useLocation } from "react-router-dom";
-import { Check, MessageCircle, Trash2, X } from "lucide-react";
+import { Check, MessageCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { normalizeText } from "./ids";
 import { useComments } from "./CommentsProvider";
@@ -76,6 +76,27 @@ export function CommentsLayer() {
       window.removeEventListener("resize", onMove);
     };
   }, []);
+
+  // Открытый попап закрывается кликом за его пределами или по Esc (как в Figma).
+  // Слушаем click (не mousedown): клик по самому пину гасится stopPropagation
+  // в PinDot, поэтому его переключение попапа не конфликтует с этим слушателем.
+  React.useEffect(() => {
+    if (!openId || openId === "__draft__") return;
+    const onDocClick = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && t.closest("[data-comment-popover]")) return;
+      setOpenId(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenId(null);
+    };
+    document.addEventListener("click", onDocClick);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [openId]);
 
   // Режим добавления: клик по странице ставит пин.
   React.useEffect(() => {
@@ -179,7 +200,6 @@ export function CommentsLayer() {
             lost={pos.lost}
             open={openId === c.id}
             onToggle={() => setOpenId((id) => (id === c.id ? null : c.id))}
-            onClose={() => setOpenId(null)}
             onSave={(text) => editComment(c.id, text)}
             onResolve={(v) => toggleResolved(c.id, v)}
             onDelete={() => {
@@ -255,7 +275,6 @@ function Pin({
   lost,
   open,
   onToggle,
-  onClose,
   onSave,
   onResolve,
   onDelete,
@@ -266,7 +285,6 @@ function Pin({
   lost: boolean;
   open: boolean;
   onToggle: () => void;
-  onClose: () => void;
   onSave: (text: string) => void;
   onResolve: (v: boolean) => void;
   onDelete: () => void;
@@ -278,7 +296,7 @@ function Pin({
     <div className="absolute" style={{ left, top }}>
       <PinDot resolved={comment.resolved} lost={lost} onClick={onToggle} />
       {open ? (
-        <Popover onClose={onClose} flipX={left + 330 > window.innerWidth}>
+        <Popover flipX={left + 330 > window.innerWidth}>
           <div className="mb-2 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>{fmt(comment.createdAt)}</span>
             <div className="flex items-center gap-1">
@@ -353,7 +371,7 @@ function DraftPin({
   return (
     <div className="absolute" style={{ left: position.left, top: position.top }}>
       <PinDot onClick={() => {}} />
-      <Popover onClose={onCancel} flipX={position.left + 330 > window.innerWidth}>
+      <Popover flipX={position.left + 330 > window.innerWidth}>
         <textarea
           ref={ref}
           data-comments-ui
@@ -389,28 +407,21 @@ function DraftPin({
 
 function Popover({
   children,
-  onClose,
   flipX,
 }: {
   children: React.ReactNode;
-  onClose: () => void;
   flipX?: boolean;
 }) {
   // Раскрываемся в сторону, где есть место, чтобы окошко не уезжало за край.
+  // Крестика нет: окно закрывается кликом за его пределами или по Esc
+  // (слушатель в CommentsLayer) — крестик в углу перекрывал корзину.
   return (
     <div
       data-comments-ui
+      data-comment-popover
       style={flipX ? { right: 36 } : { left: 36 }}
       className="pointer-events-auto absolute top-0 w-[min(18rem,86vw)] rounded-lg border bg-card p-3 text-card-foreground shadow-xl"
     >
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Закрыть"
-        className="absolute right-2 top-2 rounded-md p-1 text-muted-foreground hover:bg-accent"
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
       {children}
     </div>
   );
