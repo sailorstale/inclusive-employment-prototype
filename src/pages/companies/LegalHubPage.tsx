@@ -150,7 +150,7 @@ export function LegalHubPage() {
       <RelatedLinks
         items={[
           {
-            title: "Этика и коммуникация",
+            title: "Команда и коммуникация",
             to: "/companies/team",
             description:
               "Как корректно говорить о терминах и общаться с сотрудниками.",

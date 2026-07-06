@@ -140,7 +140,7 @@ export function HireHubPage() {
       <RelatedLinks
         items={[
           {
-            title: "Стоит ли начинать",
+            title: "Реалии и мифы",
             to: "/companies/start",
             description:
               "если по дороге возникли сомнения, объяснение «зачем» лежит здесь.",

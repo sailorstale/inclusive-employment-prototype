@@ -9,7 +9,7 @@ export const routeTitles: Record<string, string> = {
 
   // Трек «Для компаний» (М1–М5)
   "/companies": "Для компаний",
-  "/companies/start": "Стоит ли начинать",
+  "/companies/start": "Реалии и мифы",
   "/companies/how": "Как устроен наём",
   "/companies/legal": "Правовые основы",
   "/companies/legal/contract": "Договор и оформление",
@@ -31,7 +31,7 @@ export const routeTitles: Record<string, string> = {
   "/ngo/reality": "Реалии и мифы",
   "/ngo/how": "Как устроен наём",
   "/ngo/legal": "Правовые основы",
-  "/ngo/ethics": "Этика и коммуникация",
+  "/ngo/ethics": "Команда и коммуникация",
   "/ngo/start": "Запустить программу",
   "/ngo/candidates": "Работать с соискателем",
   "/ngo/employers": "Выходить на работодателей",
@@ -87,7 +87,7 @@ export const sidebars: Record<Track, SidebarSpec> = {
     groups: [
       {
         items: [
-          { label: "Стоит ли начинать", path: "/companies/start" },
+          { label: "Реалии и мифы", path: "/companies/start" },
           { label: "Как устроен наём", path: "/companies/how" },
           {
             label: "Правовые основы",
@@ -148,7 +148,7 @@ export const sidebars: Record<Track, SidebarSpec> = {
           { label: "Реалии и мифы", path: "/ngo/reality" },
           { label: "Как устроен наём", path: "/ngo/how" },
           { label: "Правовые основы", path: "/ngo/legal" },
-          { label: "Этика и коммуникация", path: "/ngo/ethics" },
+          { label: "Команда и коммуникация", path: "/ngo/ethics" },
         ],
       },
       {

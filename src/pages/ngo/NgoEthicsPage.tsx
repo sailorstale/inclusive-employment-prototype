@@ -26,7 +26,7 @@ export function NgoEthicsPage() {
     <>
       <PageHero
         variant="leaf"
-        title="Этика и коммуникация"
+        title="Команда и коммуникация"
         lead={
           <>
             <Paragraph>

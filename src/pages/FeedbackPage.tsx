@@ -41,7 +41,7 @@ export function FeedbackPage() {
             description: "Простые определения терминов и аббревиатур.",
           },
           {
-            title: "Стоит ли начинать",
+            title: "Реалии и мифы",
             to: "/companies/start",
             description: "Зачем компании инклюзивный наём и с чего начать.",
           },

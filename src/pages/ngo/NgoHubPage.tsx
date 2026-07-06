@@ -126,7 +126,7 @@ export function NgoHubPage() {
           <Card
             link="internal"
             to="/ngo/ethics"
-            title="Этика и коммуникация"
+            title="Команда и коммуникация"
             description="Как говорить о людях с инвалидностью и с ними. Корректные слова, ситуации, памятки."
           />
         </CardGrid>

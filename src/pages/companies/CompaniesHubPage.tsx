@@ -15,7 +15,7 @@ export function CompaniesHubPage() {
         <Card
           link="internal"
           to="/companies/start"
-          title="Стоит ли начинать"
+          title="Реалии и мифы"
           description="Реалии, мифы, плюсы и риски. Для тех, кто ещё не решил."
         />
         <Card
