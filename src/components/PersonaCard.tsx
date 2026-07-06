@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Editable } from "@/editor/Editable";
 import {
   Collapsible,
   CollapsibleContent,
@@ -37,13 +38,17 @@ export function PersonaCard({
       data-component="PersonaCard"
       className={cn("rounded-lg border bg-card p-6", className)}
     >
-      <h3 className="font-semibold leading-snug text-foreground">{name}</h3>
+      <h3 className="font-semibold leading-snug text-foreground">
+        <Editable as="inline">{name}</Editable>
+      </h3>
       {role ? (
-        <p className="mt-0.5 text-sm text-muted-foreground">{role}</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          <Editable as="inline">{role}</Editable>
+        </p>
       ) : null}
       {description ? (
         <div className="mt-2 text-sm leading-relaxed text-foreground">
-          {description}
+          <Editable as="inline">{description}</Editable>
         </div>
       ) : null}
       {children}
@@ -55,7 +60,7 @@ export function PersonaCard({
           </CollapsibleTrigger>
           <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
             <div className="pt-3 text-sm leading-relaxed text-muted-foreground">
-              {summary}
+              <Editable as="inline">{summary}</Editable>
             </div>
           </CollapsibleContent>
         </Collapsible>

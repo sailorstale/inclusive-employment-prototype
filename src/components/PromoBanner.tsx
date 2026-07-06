@@ -2,6 +2,7 @@ import * as React from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { isExternalLink } from "@/lib/links";
 import { Button } from "./ui/button";
 
 // PromoBanner (00b §2.8) — акцентная врезка-призыв: заголовок + текст + кнопка.
@@ -24,7 +25,7 @@ export function PromoBanner({
   emphasis = "brand-fill",
   className,
 }: PromoBannerProps) {
-  const isExternal = /^https?:\/\//.test(to);
+  const isExternal = isExternalLink(to);
   const fill = emphasis === "brand-fill";
   return (
     <div
@@ -69,7 +70,7 @@ export function CtaButton({
   to: string;
   variant?: "brand" | "default" | "outline" | "secondary";
 }) {
-  const isExternal = /^https?:\/\//.test(to);
+  const isExternal = isExternalLink(to);
   return (
     <Button asChild variant={variant}>
       {isExternal ? (

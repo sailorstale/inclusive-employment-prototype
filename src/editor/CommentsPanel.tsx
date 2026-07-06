@@ -2,6 +2,7 @@ import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Check, MessageCirclePlus, MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FilterBtn } from "./adminUi";
 import { routeTitles } from "@/data/nav";
 import { useComments } from "./CommentsProvider";
 import type { Comment } from "./comments";
@@ -101,16 +102,17 @@ export function CommentsPanel() {
       </header>
 
       <div className="flex items-center gap-1.5 border-b px-4 py-2.5">
-        <FilterBtn active={filter === "open"} onClick={() => setFilter("open")}>
+        <FilterBtn size="sm" active={filter === "open"} onClick={() => setFilter("open")}>
           Открытые
         </FilterBtn>
         <FilterBtn
+          size="sm"
           active={filter === "resolved"}
           onClick={() => setFilter("resolved")}
         >
           Решённые
         </FilterBtn>
-        <FilterBtn active={filter === "all"} onClick={() => setFilter("all")}>
+        <FilterBtn size="sm" active={filter === "all"} onClick={() => setFilter("all")}>
           Все
         </FilterBtn>
         <button
@@ -215,27 +217,3 @@ function CommentRow({
   );
 }
 
-function FilterBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-md px-2 py-1 text-xs transition-colors",
-        active
-          ? "bg-[hsl(var(--brand)/0.1)] font-medium text-brand"
-          : "text-muted-foreground hover:bg-accent"
-      )}
-    >
-      {children}
-    </button>
-  );
-}

@@ -1,5 +1,6 @@
 import type { EditRecord, EditStatus } from "./types";
 import { apiFetch } from "./auth";
+import { createLocalMapStore } from "./localStore";
 
 // Слой доступа к правкам: пробует сервер (/api/edits), а если его нет
 // (быстрый просмотр через vite без бэкенда, статика без сервера) — уходит в
@@ -8,22 +9,10 @@ import { apiFetch } from "./auth";
 
 const LOCAL_KEY = "inclusion-editor-edits-v2";
 
-let mode: "server" | "local" = "local";
-export const getMode = () => mode;
-
-function readLocal(): Record<string, EditRecord> {
-  try {
-    const raw = localStorage.getItem(LOCAL_KEY);
-    const parsed = raw ? (JSON.parse(raw) as Record<string, EditRecord>) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeLocal(map: Record<string, EditRecord>) {
-  localStorage.setItem(LOCAL_KEY, JSON.stringify(map));
-}
+const store = createLocalMapStore<EditRecord>(LOCAL_KEY);
+export const getMode = store.getMode;
+const readLocal = store.read;
+const writeLocal = store.write;
 
 function byId(list: EditRecord[]): Record<string, EditRecord> {
   const m: Record<string, EditRecord> = {};
@@ -35,13 +24,13 @@ export async function loadEdits(): Promise<Record<string, EditRecord>> {
   try {
     const r = await apiFetch("/api/edits");
     if (r.ok) {
-      mode = "server";
+      store.setMode("server");
       return byId((await r.json()) as EditRecord[]);
     }
   } catch {
     /* сервера нет — работаем локально */
   }
-  mode = "local";
+  store.setMode("local");
   return readLocal();
 }
 
@@ -59,7 +48,7 @@ export type EditInput = {
 };
 
 export async function saveEdit(input: EditInput): Promise<EditRecord> {
-  if (mode === "server") {
+  if (store.getMode() === "server") {
     const r = await apiFetch(`/api/edits/${encodeURIComponent(input.id)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -83,7 +72,7 @@ export async function saveEdit(input: EditInput): Promise<EditRecord> {
 }
 
 export async function deleteEdit(id: string): Promise<void> {
-  if (mode === "server") {
+  if (store.getMode() === "server") {
     const r = await apiFetch(`/api/edits/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
@@ -99,7 +88,7 @@ export async function setStatusRemote(
   id: string,
   status: EditStatus
 ): Promise<EditRecord | null> {
-  if (mode === "server") {
+  if (store.getMode() === "server") {
     const r = await apiFetch(`/api/edits/${encodeURIComponent(id)}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

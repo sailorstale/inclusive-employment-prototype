@@ -1,6 +1,6 @@
 import { PageHero } from "@/components/PageHero";
 import { ContentSection } from "@/components/ContentSection";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { StatBlock } from "@/components/StatBlock";
 import { Blockquote } from "@/components/Blockquote";
@@ -37,7 +37,7 @@ export function YandexJobsPage() {
 
       <ImagePlaceholder caption="Практика инклюзивного найма в Яндексе: сервисы и адаптации по направлениям — офисы, доставка, склад, удалёнка." />
 
-      <TableOfContents
+      <PageToc
         items={[
           { label: "Яндекс в цифрах", anchor: "#yj-about" },
           { label: "Шесть направлений", anchor: "#yj-directions" },

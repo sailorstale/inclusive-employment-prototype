@@ -12,6 +12,7 @@ import {
   type SemanticType,
 } from "./inventory";
 import { inventoryGenerated } from "./content/inventory.generated";
+import { Stat, FilterBtn } from "./adminUi";
 
 // Служебная страница «Инвентарь контента» (/inventory) — для унификации оформления.
 // Группирует блоки по смысловому типу; в колонке «формат» виден разнобой
@@ -218,51 +219,3 @@ export function InventoryPage() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  warn,
-}: {
-  label: string;
-  value: number;
-  warn?: boolean;
-}) {
-  return (
-    <div className="rounded-md bg-muted/60 px-3 py-1.5">
-      <span
-        className={cn(
-          "text-base font-semibold",
-          warn && value > 0 && "text-[hsl(var(--warn))]"
-        )}
-      >
-        {value}
-      </span>
-      <span className="ml-1.5 text-xs text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
-function FilterBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-md border px-3 py-1.5 text-sm transition-colors",
-        active
-          ? "border-[hsl(var(--brand)/0.5)] bg-[hsl(var(--brand)/0.1)] font-medium text-brand"
-          : "text-muted-foreground hover:bg-accent"
-      )}
-    >
-      {children}
-    </button>
-  );
-}

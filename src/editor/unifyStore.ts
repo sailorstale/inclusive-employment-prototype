@@ -1,4 +1,5 @@
 import { apiFetch } from "./auth";
+import { createLocalMapStore } from "./localStore";
 import type { Approach } from "./unify";
 
 // Доступ к решениям по унификации: сервер (/api/unify), иначе localStorage.
@@ -12,22 +13,10 @@ export type UnifyDecision = {
 
 const LOCAL_KEY = "inclusion-unify-decisions-v1";
 
-let mode: "server" | "local" = "local";
-export const getUnifyMode = () => mode;
-
-function readLocal(): Record<string, UnifyDecision> {
-  try {
-    const raw = localStorage.getItem(LOCAL_KEY);
-    const parsed = raw ? (JSON.parse(raw) as Record<string, UnifyDecision>) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeLocal(map: Record<string, UnifyDecision>) {
-  localStorage.setItem(LOCAL_KEY, JSON.stringify(map));
-}
+const store = createLocalMapStore<UnifyDecision>(LOCAL_KEY);
+export const getUnifyMode = store.getMode;
+const readLocal = store.read;
+const writeLocal = store.write;
 
 function byType(list: UnifyDecision[]): Record<string, UnifyDecision> {
   const m: Record<string, UnifyDecision> = {};
@@ -39,13 +28,13 @@ export async function loadDecisions(): Promise<Record<string, UnifyDecision>> {
   try {
     const r = await apiFetch("/api/unify");
     if (r.ok) {
-      mode = "server";
+      store.setMode("server");
       return byType((await r.json()) as UnifyDecision[]);
     }
   } catch {
     /* сервера нет — локально */
   }
-  mode = "local";
+  store.setMode("local");
   return readLocal();
 }
 
@@ -53,7 +42,7 @@ export async function saveDecision(
   type: string,
   approach: Approach | null
 ): Promise<UnifyDecision> {
-  if (mode === "server") {
+  if (store.getMode() === "server") {
     const r = await apiFetch(`/api/unify/${encodeURIComponent(type)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -74,7 +63,7 @@ export async function saveDecision(
 }
 
 export async function clearDecision(type: string): Promise<void> {
-  if (mode === "server") {
+  if (store.getMode() === "server") {
     const r = await apiFetch(`/api/unify/${encodeURIComponent(type)}`, {
       method: "DELETE",
     });

@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isExternalLink, isMailHref } from "@/lib/links";
 
 type SmartLinkProps = {
   to: string;
@@ -26,10 +27,10 @@ export function SmartLink({
   hideExternalIcon,
   ...rest
 }: SmartLinkProps) {
-  const isExternal = /^https?:\/\//.test(to) || to.startsWith("mailto:");
+  const isExternal = isExternalLink(to);
 
   if (isExternal) {
-    const isMail = to.startsWith("mailto:");
+    const isMail = isMailHref(to);
     return (
       <a
         href={to}

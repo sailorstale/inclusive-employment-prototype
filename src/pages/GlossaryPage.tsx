@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { PageHero } from "@/components/PageHero";
 import { ContentSection } from "@/components/ContentSection";
-import { TableOfContents } from "@/components/TableOfContents";
+import { PageToc } from "@/components/PageToc";
 import { Callout } from "@/components/Callout";
 import { DefinitionList } from "@/components/DefinitionList";
 import { RelatedLinks } from "@/components/RelatedLinks";
@@ -30,7 +30,8 @@ export function GlossaryPage() {
         lead="Слова и аббревиатуры из материалов сайта, которые могут быть непонятны без HR- и юридического бэкграунда."
       />
 
-      <TableOfContents
+      <PageToc
+        minItems={2}
         items={[
           { label: "Аббревиатуры и сокращения", anchor: "#glossary-abbr" },
           { label: "Термины и понятия", anchor: "#glossary-terms" },

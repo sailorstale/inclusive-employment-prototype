@@ -1,5 +1,6 @@
 // Комментарии-пины: тип и слой доступа (сервер, иначе localStorage — как у правок).
 import { apiFetch } from "./auth";
+import { createLocalMapStore } from "./localStore";
 
 export type Comment = {
   id: string;
@@ -27,22 +28,10 @@ export type CommentInput = {
 
 const LOCAL_KEY = "inclusion-comments-v1";
 
-let mode: "server" | "local" = "local";
-export const getCommentsMode = () => mode;
-
-function readLocal(): Record<string, Comment> {
-  try {
-    const raw = localStorage.getItem(LOCAL_KEY);
-    const parsed = raw ? (JSON.parse(raw) as Record<string, Comment>) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeLocal(map: Record<string, Comment>) {
-  localStorage.setItem(LOCAL_KEY, JSON.stringify(map));
-}
+const store = createLocalMapStore<Comment>(LOCAL_KEY);
+export const getCommentsMode = store.getMode;
+const readLocal = store.read;
+const writeLocal = store.write;
 
 function newId(): string {
   try {
@@ -56,18 +45,18 @@ export async function loadComments(): Promise<Comment[]> {
   try {
     const r = await apiFetch("/api/comments");
     if (r.ok) {
-      mode = "server";
+      store.setMode("server");
       return (await r.json()) as Comment[];
     }
   } catch {
     /* нет сервера — локально */
   }
-  mode = "local";
+  store.setMode("local");
   return Object.values(readLocal());
 }
 
 export async function createComment(input: CommentInput): Promise<Comment> {
-  if (mode === "server") {
+  if (store.getMode() === "server") {
     const r = await apiFetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -93,7 +82,7 @@ export async function updateComment(
   id: string,
   patch: { text?: string; resolved?: boolean }
 ): Promise<Comment | null> {
-  if (mode === "server") {
+  if (store.getMode() === "server") {
     const r = await apiFetch(`/api/comments/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -116,7 +105,7 @@ export async function updateComment(
 }
 
 export async function deleteComment(id: string): Promise<void> {
-  if (mode === "server") {
+  if (store.getMode() === "server") {
     const r = await apiFetch(`/api/comments/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });

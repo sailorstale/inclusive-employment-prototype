@@ -16,6 +16,7 @@ import { useEditor } from "./EditorProvider";
 import { useComments } from "./CommentsProvider";
 import { apiFetch } from "./auth";
 import { stripMarkdown } from "./richText";
+import { Stat, FilterBtn } from "./adminUi";
 import type { EditRecord } from "./types";
 import type { Comment } from "./comments";
 
@@ -491,51 +492,3 @@ function EditCard({
   );
 }
 
-function Stat({
-  label,
-  value,
-  bad,
-}: {
-  label: string;
-  value: number;
-  bad?: boolean;
-}) {
-  return (
-    <div className="rounded-md bg-muted/60 px-3 py-1.5">
-      <span
-        className={cn(
-          "text-base font-semibold",
-          bad && value > 0 && "text-[hsl(var(--bad))]"
-        )}
-      >
-        {value}
-      </span>
-      <span className="ml-1.5 text-xs text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
-function FilterBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-md border px-3 py-1.5 text-sm transition-colors",
-        active
-          ? "border-[hsl(var(--brand)/0.5)] bg-[hsl(var(--brand)/0.1)] font-medium text-brand"
-          : "text-muted-foreground hover:bg-accent"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
