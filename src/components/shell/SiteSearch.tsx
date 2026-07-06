@@ -50,6 +50,7 @@ export function SiteSearch() {
             <input
               ref={inputRef}
               type="text"
+              aria-label="Поиск по страницам"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {

@@ -60,8 +60,3 @@ export function stripMarkdown(text: string): string {
     .replace(/_([^_]+)_/g, "$1");
 }
 
-/** Есть ли в тексте наша разметка. */
-export function hasMarkdown(text: string): boolean {
-  RE.lastIndex = 0;
-  return RE.test(text);
-}

@@ -37,6 +37,10 @@ type CommentsContextValue = {
   removeComment: (id: string) => void;
 
   openCount: number;
+
+  /** Ошибка операции с комментарием (сохранение/удаление). */
+  notice: string | null;
+  dismissNotice: () => void;
 };
 
 const CommentsContext = React.createContext<CommentsContextValue | null>(null);
@@ -48,6 +52,7 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
   const [adding, setAddingState] = React.useState(false);
   const [panelOpen, setPanelOpenState] = React.useState(false);
   const [focusId, setFocusId] = React.useState<string | null>(null);
+  const [notice, setNotice] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let alive = true;
@@ -99,7 +104,9 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
       .then((rec) => {
         if (rec) setComments((prev) => ({ ...prev, [id]: rec }));
       })
-      .catch(() => {});
+      .catch(() =>
+        setNotice("Не удалось сохранить комментарий — сервер недоступен.")
+      );
   }, []);
 
   const toggleResolved = React.useCallback((id: string, resolved: boolean) => {
@@ -107,7 +114,9 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
       .then((rec) => {
         if (rec) setComments((prev) => ({ ...prev, [id]: rec }));
       })
-      .catch(() => {});
+      .catch(() =>
+        setNotice("Не удалось изменить статус комментария — сервер недоступен.")
+      );
   }, []);
 
   const removeComment = React.useCallback((id: string) => {
@@ -119,8 +128,12 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
           return next;
         })
       )
-      .catch(() => {});
+      .catch(() =>
+        setNotice("Не удалось удалить комментарий — сервер недоступен.")
+      );
   }, []);
+
+  const dismissNotice = React.useCallback(() => setNotice(null), []);
 
   const list = React.useMemo(() => Object.values(comments), [comments]);
   const openCount = React.useMemo(
@@ -146,6 +159,8 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
       toggleResolved,
       removeComment,
       openCount,
+      notice,
+      dismissNotice,
     }),
     [
       list,
@@ -163,6 +178,8 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
       toggleResolved,
       removeComment,
       openCount,
+      notice,
+      dismissNotice,
     ]
   );
 

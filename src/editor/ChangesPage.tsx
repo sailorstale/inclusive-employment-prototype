@@ -57,6 +57,7 @@ export function ChangesPage() {
   const { comments, toggleResolved } = useComments();
   const [filter, setFilter] = React.useState<Filter>("all");
   const [copied, setCopied] = React.useState<string | null>(null);
+  const [backupNote, setBackupNote] = React.useState<string | null>(null);
 
   const list = React.useMemo(
     () =>
@@ -113,34 +114,50 @@ export function ChangesPage() {
   }, [comments]);
 
   const copy = (id: string, text: string) => {
-    navigator.clipboard?.writeText(text).then(() => {
-      setCopied(id);
-      setTimeout(() => setCopied((c) => (c === id ? null : c)), 1500);
-    });
+    navigator.clipboard
+      ?.writeText(text)
+      .then(() => {
+        setCopied(id);
+        setTimeout(() => setCopied((c) => (c === id ? null : c)), 1500);
+      })
+      .catch(() => setCopied(null));
+  };
+
+  const saveBackup = (data: unknown) => {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const downloadBackup = async () => {
+    setBackupNote(null);
     try {
       const [e, c] = await Promise.all([
         apiFetch("/api/edits"),
         apiFetch("/api/comments"),
       ]);
-      const data = {
+      saveBackup({
         exportedAt: new Date().toISOString(),
         edits: e.ok ? await e.json() : Object.values(edits),
-        comments: c.ok ? await c.json() : [],
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
+        comments: c.ok ? await c.json() : comments,
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `backup-${data.exportedAt.slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
     } catch {
-      /* ignore */
+      // Сервер недоступен — не молчим: сохраняем локальную копию из состояния
+      // и честно предупреждаем, что она может быть неполной.
+      saveBackup({
+        exportedAt: new Date().toISOString(),
+        edits: Object.values(edits),
+        comments,
+        note: "Локальная копия: сервер был недоступен, данные могут быть неполными.",
+      });
+      setBackupNote(
+        "Сервер недоступен — сохранена локальная копия (может быть неполной)."
+      );
     }
   };
 
@@ -175,6 +192,10 @@ export function ChangesPage() {
           Скачать бэкап
         </button>
       </div>
+
+      {backupNote ? (
+        <p className="text-xs text-[hsl(var(--warn))]">{backupNote}</p>
+      ) : null}
 
       <div className="flex flex-wrap gap-1.5">
         <FilterBtn active={filter === "all"} onClick={() => setFilter("all")}>

@@ -128,10 +128,16 @@ export function CommentsLayer() {
       setOpenId("__draft__");
       setAdding(false);
     };
+    // Esc отменяет режим добавления — как и обещает подсказка-прицел.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAdding(false);
+    };
     document.addEventListener("click", onClick, true);
+    window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.cursor = "";
       document.removeEventListener("click", onClick, true);
+      window.removeEventListener("keydown", onKey);
     };
   }, [adding, pathname, setAdding]);
 
@@ -257,9 +263,9 @@ function PinDot({
         onClick();
       }}
       className={cn(
-        "pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full rounded-bl-sm border-2 border-white shadow-md transition-transform hover:scale-110",
+        "pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full rounded-bl-sm border-2 border-background shadow-md transition-transform hover:scale-110",
         resolved
-          ? "bg-[hsl(var(--ok))] text-white"
+          ? "bg-[hsl(var(--ok))] text-background"
           : "bg-brand text-brand-foreground",
         lost && "opacity-50"
       )}
@@ -430,8 +436,10 @@ function Popover({
     <div
       data-comments-ui
       data-comment-popover
-      style={flipX ? { right: 36 } : { left: 36 }}
-      className="pointer-events-auto absolute top-0 w-[min(18rem,86vw)] rounded-lg border bg-card p-3 text-card-foreground shadow-xl"
+      className={cn(
+        "pointer-events-auto absolute top-0 w-[min(18rem,86vw)] rounded-lg border bg-card p-3 text-card-foreground shadow-xl",
+        flipX ? "right-9" : "left-9"
+      )}
     >
       {children}
     </div>

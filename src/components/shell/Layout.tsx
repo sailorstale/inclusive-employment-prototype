@@ -14,7 +14,11 @@ import { EditorInspector } from "@/editor/EditorInspector";
 import { CommentsLayer } from "@/editor/CommentsLayer";
 import { CommentsPanel } from "@/editor/CommentsPanel";
 import { EditorDock } from "@/editor/EditorDock";
-import { EditorToast, StoreModeBanner } from "@/editor/EditorNotices";
+import {
+  EditorToast,
+  CommentsToast,
+  StoreModeBanner,
+} from "@/editor/EditorNotices";
 
 // Общая оболочка (00 — Карта сайта и навигация): шапка везде; боковое меню трека
 // (десктоп — рейл, узкий экран — раскрывашка); крошки кроме главной; оглавление
@@ -35,6 +39,7 @@ export function Layout() {
         <CommentsPanel />
         <EditorDock />
         <EditorToast />
+        <CommentsToast />
         <ComponentTagsToggle />
       </div>
     </TocProvider>

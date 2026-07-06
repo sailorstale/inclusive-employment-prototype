@@ -32,13 +32,15 @@ export function DefinitionList({
 }) {
   const groups = groupByLetter(entries);
   return (
-    <dl data-component="DefinitionList" className={cn("space-y-6", className)}>
-      {groups.map((group) => (
-        <div key={group.letter} className="space-y-3">
-          <h4 className="text-base font-semibold text-foreground">
+    <div data-component="DefinitionList" className={cn("space-y-6", className)}>
+      {groups.map((group, gi) => (
+        // Буква может повторяться (глоссарий не отсортирован — сохраняем
+        // исходный порядок), поэтому в ключ добавляем индекс группы.
+        <div key={`${group.letter}-${gi}`} className="space-y-3">
+          <h3 className="text-base font-semibold text-foreground">
             {group.letter}
-          </h4>
-          <div className="space-y-4 border-t pt-3">
+          </h3>
+          <dl className="space-y-4 border-t pt-3">
             {group.items.map((entry) => {
               const id = glossaryAnchorId(entry);
               return (
@@ -59,9 +61,9 @@ export function DefinitionList({
                 </div>
               );
             })}
-          </div>
+          </dl>
         </div>
       ))}
-    </dl>
+    </div>
   );
 }

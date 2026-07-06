@@ -14,15 +14,12 @@ import { Callout } from "@/components/Callout";
 type ExampleProps = {
   /** Заголовок врезки. Канон — «Пример»; можно переопределить или опустить. */
   title?: React.ReactNode;
-  /** @deprecated псевдоним title — совместимость со старыми вызовами. */
-  label?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
 };
 
-export function Example({ title, label, children, className }: ExampleProps) {
-  const heading =
-    title !== undefined ? title : label !== undefined ? label : "Пример";
+export function Example({ title, children, className }: ExampleProps) {
+  const heading = title !== undefined ? title : "Пример";
   return (
     <Callout
       variant="highlight"

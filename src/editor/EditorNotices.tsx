@@ -1,18 +1,25 @@
 import * as React from "react";
 import { AlertTriangle, HardDrive, X } from "lucide-react";
 import { useEditor } from "./EditorProvider";
+import { useComments } from "./CommentsProvider";
 
-// Тост ошибки сохранения и баннер «локальный режим». Закрывают риски:
-// тихий сбой сохранения (C3) и размытость «где правда» (локально vs сервер).
+// Тост ошибки и баннер «локальный режим». Закрывают риски: тихий сбой
+// сохранения (C3) и размытость «где правда» (локально vs сервер). Тост
+// переиспользуется провайдерами правок и комментариев (Toast).
 
-export function EditorToast() {
-  const { notice, dismissNotice } = useEditor();
-
+/** Общее тело тоста ошибки: показывает notice, сам гаснет через 7 с. */
+function Toast({
+  notice,
+  onDismiss,
+}: {
+  notice: string | null;
+  onDismiss: () => void;
+}) {
   React.useEffect(() => {
     if (!notice) return;
-    const t = setTimeout(dismissNotice, 7000);
+    const t = setTimeout(onDismiss, 7000);
     return () => clearTimeout(t);
-  }, [notice, dismissNotice]);
+  }, [notice, onDismiss]);
 
   if (!notice) return null;
   return (
@@ -22,7 +29,7 @@ export function EditorToast() {
         <span className="flex-1 leading-snug">{notice}</span>
         <button
           type="button"
-          onClick={dismissNotice}
+          onClick={onDismiss}
           aria-label="Закрыть"
           className="rounded-md p-0.5 text-muted-foreground hover:bg-accent"
         >
@@ -31,6 +38,16 @@ export function EditorToast() {
       </div>
     </div>
   );
+}
+
+export function EditorToast() {
+  const { notice, dismissNotice } = useEditor();
+  return <Toast notice={notice} onDismiss={dismissNotice} />;
+}
+
+export function CommentsToast() {
+  const { notice, dismissNotice } = useComments();
+  return <Toast notice={notice} onDismiss={dismissNotice} />;
 }
 
 export function StoreModeBanner() {

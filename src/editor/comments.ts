@@ -99,7 +99,8 @@ export async function updateComment(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
     });
-    return r.ok ? ((await r.json()) as Comment) : null;
+    if (!r.ok) throw new Error(`Комментарий не обновлён: ${r.status}`);
+    return (await r.json()) as Comment;
   }
   const map = readLocal();
   const rec = map[id];
@@ -116,7 +117,10 @@ export async function updateComment(
 
 export async function deleteComment(id: string): Promise<void> {
   if (mode === "server") {
-    await apiFetch(`/api/comments/${encodeURIComponent(id)}`, { method: "DELETE" });
+    const r = await apiFetch(`/api/comments/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (!r.ok) throw new Error(`Комментарий не удалён: ${r.status}`);
     return;
   }
   const map = readLocal();

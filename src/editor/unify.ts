@@ -189,5 +189,3 @@ export const CANON: CanonProposal[] = [
   },
 ];
 
-export const canonByType = (t: string): CanonProposal | undefined =>
-  CANON.find((c) => c.type === t);

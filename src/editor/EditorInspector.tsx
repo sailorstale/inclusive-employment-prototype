@@ -141,7 +141,7 @@ export function EditorInspector() {
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/20 lg:hidden"
+        className="fixed inset-0 z-40 bg-foreground/40 lg:hidden"
         onClick={closeInspector}
         aria-hidden
       />

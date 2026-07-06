@@ -70,6 +70,7 @@ export function QuizItem({
   multiple,
   className,
 }: QuizItemProps) {
+  const questionId = React.useId();
   const correctCount = options.filter((o) => o.verdict === "correct").length;
   const multi = multiple ?? correctCount > 1;
 
@@ -96,7 +97,9 @@ export function QuizItem({
   return (
     <div className={cn("space-y-3 rounded-lg border bg-card p-4", className)}>
       {context ? <div className="space-y-2 text-sm">{context}</div> : null}
-      <p className="text-lg font-semibold text-foreground">{question}</p>
+      <p id={questionId} className="text-lg font-semibold text-foreground">
+        {question}
+      </p>
       {!revealed ? (
         <p className="text-[0.8125rem] text-muted-foreground">
           {multi
@@ -108,6 +111,7 @@ export function QuizItem({
       <div
         className="space-y-2"
         role={multi ? "group" : "radiogroup"}
+        aria-labelledby={questionId}
       >
         {options.map((o, i) => {
           const cfg = VERDICT[o.verdict];

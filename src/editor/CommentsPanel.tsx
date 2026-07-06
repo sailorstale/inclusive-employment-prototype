@@ -203,7 +203,7 @@ function CommentRow({
         title={comment.resolved ? "Вернуть в открытые" : "Отметить решённым"}
         aria-label={comment.resolved ? "Вернуть в открытые" : "Отметить решённым"}
         className={cn(
-          "absolute right-2 top-2 rounded-md p-1 transition-opacity",
+          "absolute right-2 top-2 rounded-md p-1 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           comment.resolved
             ? "text-[hsl(var(--ok))]"
             : "text-muted-foreground opacity-0 hover:bg-accent group-hover:opacity-100"

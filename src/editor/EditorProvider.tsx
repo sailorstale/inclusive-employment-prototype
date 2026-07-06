@@ -70,7 +70,11 @@ const MODE_KEY = "inclusion-editor-mode";
 
 function readMode(): boolean {
   if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(MODE_KEY) === "1";
+  try {
+    return window.localStorage.getItem(MODE_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 const PENDING_KEY = "inclusion-editor-pending";
@@ -118,7 +122,11 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   React.useEffect(() => {
-    window.localStorage.setItem(MODE_KEY, editorMode ? "1" : "0");
+    try {
+      window.localStorage.setItem(MODE_KEY, editorMode ? "1" : "0");
+    } catch {
+      /* настройка не критична — молча пропускаем (например, quota/private mode) */
+    }
   }, [editorMode]);
 
   const setEditorMode = React.useCallback((v: boolean) => {
