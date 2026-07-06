@@ -89,15 +89,29 @@ export function Blockquote({
   note,
   moreTo,
   moreLabel = "Подробнее",
-  clampLines = 6,
+  clampLines = 12,
   className,
 }: BlockquoteProps) {
+  // Legacy-подпись «Имя, должность» разбираем по первой запятой: имя — своей
+  // строкой, должность — строкой ниже с большой буквы. Без запятой — только имя.
+  let legacyName: React.ReactNode = attribution;
+  let legacyRole: React.ReactNode = null;
+  if (authorName == null && typeof attribution === "string") {
+    const comma = attribution.indexOf(",");
+    if (comma > 0) {
+      legacyName = attribution.slice(0, comma).trim();
+      const role = attribution.slice(comma + 1).trim();
+      legacyRole = role.charAt(0).toUpperCase() + role.slice(1);
+    }
+  }
+
   // Имя: структурное authorName → legacy attribution → заглушка.
-  const nameContent = authorName ?? attribution;
-  // Должность показываем структурно; заглушку — только если нет ни имени, ни
-  // legacy-подписи (в attribution должность обычно уже внутри строки).
+  const nameContent = authorName ?? legacyName;
+  // Должность: структурная → из legacy-подписи → заглушка, если нет вообще ничего.
   const roleContent =
-    authorRole ?? (nameContent == null ? placeholder("Должность") : null);
+    authorRole ??
+    legacyRole ??
+    (nameContent == null ? placeholder("Должность") : null);
 
   // Сворачивание длинной цитаты. «Далее» показываем, только если текст реально
   // не влезает в clampLines строк (меряем по факту, а не на глаз).
