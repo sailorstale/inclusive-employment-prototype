@@ -32,10 +32,22 @@ export function useToc() {
   return React.useContext(TocContext);
 }
 
+// Короткий детерминированный хэш метки → стабильный id для h3-секции без якоря
+// (FNV-1a 32-бит → base36). Нужен, чтобы scrollspy подсвечивал подзаголовок.
+function subId(label: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < label.length; i++) {
+    h ^= label.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return "sub-" + (h >>> 0).toString(36);
+}
+
 /**
- * Подзаголовки активной секции (h3-подсекции с якорями) — читаются из DOM,
- * поэтому страницы не размечают их в оглавлении руками. Возвращает [] когда
- * активной секции нет или в ней нет якорных h3.
+ * Подзаголовки активной секции (h3-подсекции) — читаются из DOM, поэтому
+ * страницы не размечают их в оглавлении руками. Секциям без собственного якоря
+ * проставляем стабильный id по тексту заголовка (иначе scrollspy не за что
+ * зацепиться). Возвращает [] когда активной секции нет или в ней нет h3.
  */
 export function useSubSections(activeId: string | null): TocSubItem[] {
   const [subs, setSubs] = React.useState<TocSubItem[]>([]);
@@ -50,12 +62,19 @@ export function useSubSections(activeId: string | null): TocSubItem[] {
       return;
     }
     const found: TocSubItem[] = [];
-    root.querySelectorAll("section[id]").forEach((sec) => {
+    root.querySelectorAll("section").forEach((sec) => {
       const h = sec.querySelector("h3");
       // Берём только собственный заголовок подсекции (не из вложенных).
-      if (h && h.closest("section[id]") === sec) {
+      if (h && h.closest("section") === sec) {
         const label = (h.textContent || "").trim();
-        if (sec.id && label) found.push({ id: sec.id, label });
+        if (!label) return;
+        // Якорь секции, если задан; иначе — стабильный id по тексту заголовка.
+        let id = sec.id;
+        if (!id) {
+          id = subId(label);
+          sec.id = id;
+        }
+        found.push({ id, label });
       }
     });
     setSubs(found);
