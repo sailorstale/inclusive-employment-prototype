@@ -7,6 +7,8 @@ import { Disclosure } from "@/components/Disclosure";
 import { Badge } from "@/components/ui/badge";
 import { Blockquote } from "@/components/Blockquote";
 import { CompareColumns } from "@/components/CompareColumns";
+import { Example } from "@/components/Example";
+import { Warning } from "@/components/Warning";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import {
@@ -295,13 +297,13 @@ export function CompaniesStartPage() {
             или травмы осознать, что больше не может или не хочет работать в
             прежнем режиме.
           </Paragraph>
-          <Callout variant="briefing" title="Пример. Опыт сохранился, а темп работы изменился">
+          <Example title="Пример. Опыт сохранился, а темп работы изменился">
             Человек был руководителем подразделения, но после перенесённого
             онкологического заболевания ему требуется регулярная <GlossaryTerm term="Реабилитация">реабилитация</GlossaryTerm>, —
             работать в прежнем темпе он уже не может. В такой ситуации он ищет не
             просто новую вакансию, а место, где сможет применить накопленный опыт
             и экспертизу в более гибком и щадящем графике.
-          </Callout>
+          </Example>
           <Paragraph>
             У людей, переживших тяжёлый опыт — физический или эмоциональный,
             могут появиться посттравматические последствия: трудности с
@@ -399,12 +401,12 @@ export function CompaniesStartPage() {
             Если инвалидность предполагает особые условия труда, не всегда нужны
             сложные или дорогостоящие изменения.
           </Paragraph>
-          <Callout variant="briefing" title="Пример. Адаптация — вопрос внимания, а не бюджета">
+          <Example title="Пример. Адаптация — вопрос внимания, а не бюджета">
             Слабослышащий сотрудник может пользоваться слуховым аппаратом и
             эффективно выполнять свои задачи. На онлайн‑встречах можно
             договориться включать камеры — так он сможет читать по губам. Такие
             меры требуют не бюджета, а внимания к деталям.
-          </Callout>
+          </Example>
           <Paragraph>
             Наём человека с инвалидностью — это не про масштабные инвестиции, а
             про настройку рабочих процессов.
@@ -528,9 +530,9 @@ export function CompaniesStartPage() {
                       увольнение разрешено.
                     </li>
                   </OrderedList>
-                  <Paragraph>
-                    Важно: все шаги должны быть документально подтверждены.
-                  </Paragraph>
+                  <Warning title="Важно">
+                    все шаги должны быть документально подтверждены.
+                  </Warning>
                 </>
               ),
             },
