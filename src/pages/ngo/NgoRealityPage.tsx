@@ -555,7 +555,7 @@ export function NgoRealityPage() {
                     помог кандидату устроиться на должность со сменным графиком,
                     включающим ночные смены. Для этого:
                   </Paragraph>
-                  <BulletList>
+                  <OrderedList>
                     <li>
                       убедились, что в индивидуальной программе реабилитации или
                       абилитации (<GlossaryTerm term="ИПРА">ИПРА</GlossaryTerm>)
@@ -566,7 +566,7 @@ export function NgoRealityPage() {
                       время с правом отказаться от такого графика в любой момент,
                     </li>
                     <li>работодатель оформил приказ.</li>
-                  </BulletList>
+                  </OrderedList>
                   <Paragraph>
                     Процедура простая и прозрачная — важно соблюсти этапы.
                   </Paragraph>

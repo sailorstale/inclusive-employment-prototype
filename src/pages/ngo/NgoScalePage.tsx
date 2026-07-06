@@ -603,10 +603,10 @@ export function NgoScalePage() {
           потребностям конкретных участников.
         </Paragraph>
         <Paragraph>Мы рекомендуем двигаться по следующим этапам:</Paragraph>
-        <BulletList>
+        <OrderedList>
           <li>анализ новой территории;</li>
           <li>выбор формата работы.</li>
-        </BulletList>
+        </OrderedList>
 
         <ContentSection level="h3" title="Анализ новой территории">
           <Paragraph>
@@ -1220,10 +1220,10 @@ export function NgoScalePage() {
           качеству сопровождения.
         </Paragraph>
         <Paragraph>Мы рекомендуем двигаться по следующим этапам:</Paragraph>
-        <BulletList>
+        <OrderedList>
           <li>оценка готовности команды и ресурсов;</li>
           <li>адаптация методологии под новую форму инвалидности.</li>
-        </BulletList>
+        </OrderedList>
 
         <ContentSection level="h3" title="Оценка готовности команды и ресурсов">
           <Paragraph>
