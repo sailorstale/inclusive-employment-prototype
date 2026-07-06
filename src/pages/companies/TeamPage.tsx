@@ -50,9 +50,7 @@ export function TeamPage() {
 
       <Callout variant="briefing" title="В этом разделе вы узнаете">
         <Paragraph>
-          <strong>
-            Что говорят компании и <GlossaryTerm term="НКО">НКО</GlossaryTerm>
-          </strong>
+          Что говорят компании и <GlossaryTerm term="НКО">НКО</GlossaryTerm>
         </Paragraph>
         <BulletList>
           <li>
@@ -187,9 +185,6 @@ export function TeamPage() {
             Не нужно долго оправдываться или объяснять свои намерения.
             Открытость, уважение и готовность слушать всегда будут важнее, чем
             идеальное знание терминологии.
-          </Paragraph>
-          <Paragraph>
-            <SmartLink to="/glossary">Подробнее в глоссарии</SmartLink>.
           </Paragraph>
         </ContentSection>
       </ContentSection>

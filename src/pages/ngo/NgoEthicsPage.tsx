@@ -55,9 +55,7 @@ export function NgoEthicsPage() {
       />
 
       <Callout variant="briefing" title="В этом разделе вы узнаете">
-        <Paragraph>
-          <strong>Что говорят компании и НКО</strong>
-        </Paragraph>
+        <Paragraph>Что говорят компании и НКО</Paragraph>
         <BulletList>
           <li>
             как общаться с людьми с инвалидностью без неловкости и лишних
@@ -175,9 +173,6 @@ export function NgoEthicsPage() {
             Не нужно долго оправдываться или объяснять свои намерения.
             Открытость, уважение и готовность слушать всегда будут важнее, чем
             идеальное знание терминологии.
-          </Paragraph>
-          <Paragraph>
-            <SmartLink to="/glossary">Подробнее в глоссарии</SmartLink>.
           </Paragraph>
         </ContentSection>
 
