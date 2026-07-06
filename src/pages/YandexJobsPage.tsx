@@ -11,6 +11,7 @@ import { ContactSection } from "@/components/ContactSection";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { Paragraph, BulletList, LinkList } from "@/components/Prose";
 import { SmartLink } from "@/components/SmartLink";
+import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { Badge } from "@/components/ui/badge";
 import {
   Mail,
@@ -69,8 +70,8 @@ export function YandexJobsPage() {
         />
 
         <Paragraph>
-          <strong>2024</strong> — победа в номинации «Равные возможности» премии
-          HR-бренд.
+          <strong>2024</strong> — победа в номинации «Равные возможности» премии{" "}
+          <GlossaryTerm term="HR-бренд">HR-бренд</GlossaryTerm>.
         </Paragraph>
       </ContentSection>
 
@@ -98,7 +99,7 @@ export function YandexJobsPage() {
                   колясках.
                 </li>
                 <li>
-                  Подписи шрифтом Брайля и кнопки вызова помощи на кофепойнтах
+                  Подписи <GlossaryTerm term="Шрифт Брайля">шрифтом Брайля</GlossaryTerm> и кнопки вызова помощи на кофепойнтах
                   для незрячих сотрудников.
                 </li>
               </BulletList>
@@ -111,8 +112,9 @@ export function YandexJobsPage() {
             >
               <BulletList>
                 <li>
-                  Собеседование и обучение — с переводом на РЖЯ, обучающие
-                  ролики с субтитрами.
+                  Собеседование и обучение — с переводом на{" "}
+                  <GlossaryTerm term="РЖЯ">РЖЯ</GlossaryTerm>, обучающие
+                  ролики с <GlossaryTerm term="Субтитры">субтитрами</GlossaryTerm>.
                 </li>
                 <li>
                   Гайд по коммуникации с неслышащими коллегами для команды.
@@ -144,8 +146,11 @@ export function YandexJobsPage() {
                   особенности.
                 </li>
                 <li>
-                  Запущено сопровождаемое трудоустройство совместно с
-                  фондами-партнёрами.
+                  Запущено{" "}
+                  <GlossaryTerm term="Сопровождаемое трудоустройство">
+                    сопровождаемое трудоустройство
+                  </GlossaryTerm>{" "}
+                  совместно с фондами-партнёрами.
                 </li>
               </BulletList>
             </Card>
@@ -214,7 +219,11 @@ export function YandexJobsPage() {
                   данных.
                 </li>
                 <li>
-                  Интерфейсы и шаблоны заданий совместимы со скринридерами.
+                  Интерфейсы и шаблоны заданий совместимы со{" "}
+                  <GlossaryTerm term="Программа экранного доступа">
+                    скринридерами
+                  </GlossaryTerm>
+                  .
                 </li>
                 <li>
                   Внутренние сервисы доработаны по обратной связи незрячих

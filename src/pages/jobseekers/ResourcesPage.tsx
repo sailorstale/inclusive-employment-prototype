@@ -8,6 +8,7 @@ import { Callout } from "@/components/Callout";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { Paragraph } from "@/components/Prose";
 import { SmartLink } from "@/components/SmartLink";
+import { GlossaryTerm } from "@/components/GlossaryTerm";
 
 // 28 — Полезные материалы (справочник/хаб внешних ссылок трека «Для соискателей»). Контент дословно.
 export function ResourcesPage() {
@@ -129,9 +130,11 @@ export function ResourcesPage() {
         <SmartLink to="https://inclusion.yandex.ru/">
           inclusion.yandex.ru
         </SmartLink>
-        . В этом разделе — только то, что прямо полезно соискателю. Часть
-        материалов адресована шире — командам компаний и НКО — для них есть
-        отдельные разделы.
+        . В этом разделе — только то, что прямо полезно{" "}
+        <GlossaryTerm term="Соискатель">соискателю</GlossaryTerm>. Часть
+        материалов адресована шире — командам компаний и{" "}
+        <GlossaryTerm term="НКО">НКО</GlossaryTerm> — для них есть отдельные
+        разделы.
       </Callout>
 
       <Callout variant="info" title="Если не нашли нужного">

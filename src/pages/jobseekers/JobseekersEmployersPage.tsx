@@ -4,6 +4,7 @@ import { Card, CardGrid } from "@/components/Card";
 import { Callout } from "@/components/Callout";
 import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { Paragraph, Footnote } from "@/components/Prose";
+import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { SmartLink } from "@/components/SmartLink";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { Building2, Car, Package, ShoppingBag, Laptop, Store } from "lucide-react";
@@ -82,7 +83,11 @@ export function JobseekersEmployersPage() {
         <Paragraph>
           Открытые вакансии Яндекса публикуются на{" "}
           <SmartLink to="https://yandex.ru/jobs">yandex.ru/jobs</SmartLink>. Для
-          контакта по инклюзивному трудоустройству —{" "}
+          контакта по{" "}
+          <GlossaryTerm term="Инклюзивное трудоустройство">
+            инклюзивному трудоустройству
+          </GlossaryTerm>{" "}
+          —{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">
             <SmartLink to="mailto:jobs-inclusion@yandex-team.ru">
               jobs-inclusion@yandex-team.ru
