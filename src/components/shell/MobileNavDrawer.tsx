@@ -57,7 +57,7 @@ export function MobileNavDrawer({
     const focusables = () =>
       panel
         ? Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-            (el) => el.offsetParent !== null
+            (el) => el.offsetParent !== null,
           )
         : [];
 
@@ -111,7 +111,7 @@ export function MobileNavDrawer({
       "block rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       active
         ? "bg-accent font-medium text-brand"
-        : "text-foreground/80 hover:bg-accent hover:text-foreground"
+        : "text-foreground/80 hover:bg-accent hover:text-foreground",
     );
 
   return createPortal(
@@ -251,6 +251,6 @@ export function MobileNavDrawer({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

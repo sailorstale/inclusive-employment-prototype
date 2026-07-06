@@ -35,7 +35,7 @@ export function PromoBanner({
         fill
           ? "border-[hsl(var(--brand)/0.4)] bg-[hsl(var(--brand)/0.07)]"
           : "bg-secondary/50",
-        className
+        className,
       )}
     >
       <div className="space-y-1">
@@ -46,7 +46,11 @@ export function PromoBanner({
           </p>
         ) : null}
       </div>
-      <Button asChild variant={fill ? "brand" : "secondary"} className="shrink-0">
+      <Button
+        asChild
+        variant={fill ? "brand" : "secondary"}
+        className="shrink-0"
+      >
         {isExternal ? (
           <a href={to} target="_blank" rel="noopener noreferrer">
             {ctaLabel}

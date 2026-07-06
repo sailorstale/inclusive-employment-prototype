@@ -20,8 +20,8 @@ export function StatBlock({
     stats.length >= 4
       ? "sm:grid-cols-2 lg:grid-cols-4"
       : stats.length === 3
-      ? "sm:grid-cols-3"
-      : "sm:grid-cols-2";
+        ? "sm:grid-cols-3"
+        : "sm:grid-cols-2";
   return (
     <div
       data-component="StatBlock"
@@ -29,7 +29,7 @@ export function StatBlock({
         "grid grid-cols-1 gap-4",
         cols,
         context === "hero-hook" && "mt-2",
-        className
+        className,
       )}
     >
       {stats.map((s, i) => (

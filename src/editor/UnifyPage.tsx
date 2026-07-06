@@ -57,8 +57,8 @@ function renderPreview(type: CanonProposal["type"]): React.ReactNode {
     case "кейс":
       return (
         <Blockquote attribution="Денис, оператор колл-центра">
-          В «Уфанете» я проработал 9 лет: CRM доработали под слабовидящих — и всё
-          заработало.
+          В «Уфанете» я проработал 9 лет: CRM доработали под слабовидящих — и
+          всё заработало.
         </Blockquote>
       );
     case "цитата":
@@ -184,7 +184,9 @@ export function UnifyPage() {
     });
   }, []);
 
-  const decidedCount = Object.values(decisions).filter((d) => d.approach).length;
+  const decidedCount = Object.values(decisions).filter(
+    (d) => d.approach,
+  ).length;
 
   const approachOf = (type: string): Approach =>
     picks[type] ?? decisions[type]?.approach ?? "convention";
@@ -194,7 +196,7 @@ export function UnifyPage() {
     saveDecision(type, approach)
       .then((rec) => setDecisions((prev) => ({ ...prev, [type]: rec })))
       .catch(() =>
-        setNotice("Не удалось сохранить решение — проверьте соединение.")
+        setNotice("Не удалось сохранить решение — проверьте соединение."),
       );
   };
 
@@ -243,7 +245,7 @@ export function UnifyPage() {
             key={c.type}
             className={cn(
               "space-y-4 rounded-lg border p-4",
-              decided && "border-[hsl(var(--ok)/0.4)] bg-[hsl(var(--ok)/0.04)]"
+              decided && "border-[hsl(var(--ok)/0.4)] bg-[hsl(var(--ok)/0.04)]",
             )}
           >
             <div className="flex flex-wrap items-baseline gap-2">
@@ -323,7 +325,9 @@ export function UnifyPage() {
                 title="Семантический компонент"
                 code={c.componentCode}
                 active={approach === "component"}
-                onPick={() => setPicks((p) => ({ ...p, [c.type]: "component" }))}
+                onPick={() =>
+                  setPicks((p) => ({ ...p, [c.type]: "component" }))
+                }
               />
             </div>
 
@@ -335,7 +339,7 @@ export function UnifyPage() {
                   "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium",
                   decided === approach
                     ? "border bg-muted text-muted-foreground"
-                    : "bg-brand text-brand-foreground hover:bg-[hsl(var(--brand)/0.9)]"
+                    : "bg-brand text-brand-foreground hover:bg-[hsl(var(--brand)/0.9)]",
                 )}
               >
                 <Check className="h-4 w-4" />
@@ -372,14 +376,14 @@ function AuthoringOption({
         "flex flex-col gap-2 rounded-md border p-3 text-left transition-colors",
         active
           ? "border-[hsl(var(--brand)/0.5)] bg-[hsl(var(--brand)/0.06)]"
-          : "hover:bg-accent"
+          : "hover:bg-accent",
       )}
     >
       <span className="flex items-center gap-2 text-sm font-medium text-foreground">
         <span
           className={cn(
             "flex h-3.5 w-3.5 items-center justify-center rounded-full border",
-            active ? "border-brand bg-brand" : "border-muted-foreground"
+            active ? "border-brand bg-brand" : "border-muted-foreground",
           )}
         >
           {active ? (

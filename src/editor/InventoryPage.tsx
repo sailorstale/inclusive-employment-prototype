@@ -89,8 +89,8 @@ export function InventoryPage() {
         <p className="max-w-prose text-muted-foreground">
           Все содержательные блоки Компаний и НКО, сгруппированные по смысловому
           типу. В колонке «формат» видно, чем блок оформлен сейчас — так заметен
-          разнобой (например, «пример» где-то во врезке, где-то в карточке, где-то
-          просто абзацем). Ссылка ведёт на страницу с блоком.
+          разнобой (например, «пример» где-то во врезке, где-то в карточке,
+          где-то просто абзацем). Ссылка ведёт на страницу с блоком.
         </p>
       </header>
 
@@ -179,7 +179,7 @@ export function InventoryPage() {
                     key={i}
                     className={cn(
                       "grid grid-cols-[10rem_minmax(0,1fr)_auto] items-start gap-3 px-3 py-2.5 text-sm",
-                      outlier && "bg-[hsl(var(--warn)/0.06)]"
+                      outlier && "bg-[hsl(var(--warn)/0.06)]",
                     )}
                   >
                     <span
@@ -187,9 +187,11 @@ export function InventoryPage() {
                         "inline-flex w-fit items-center rounded-md px-2 py-0.5 font-mono text-xs",
                         outlier
                           ? "bg-[hsl(var(--warn)/0.15)] text-[hsl(var(--warn))]"
-                          : "bg-muted text-muted-foreground"
+                          : "bg-muted text-muted-foreground",
                       )}
-                      title={outlier ? "Отличается от большинства в группе" : ""}
+                      title={
+                        outlier ? "Отличается от большинства в группе" : ""
+                      }
                     >
                       {formatLabel(b)}
                     </span>
@@ -198,7 +200,11 @@ export function InventoryPage() {
                     </span>
                     <Link
                       to={b.route}
-                      state={b.sectionAnchor ? { anchor: b.sectionAnchor } : undefined}
+                      state={
+                        b.sectionAnchor
+                          ? { anchor: b.sectionAnchor }
+                          : undefined
+                      }
                       className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-brand hover:underline"
                       title={
                         (routeLabel(b.route) || b.route) +
@@ -218,4 +224,3 @@ export function InventoryPage() {
     </div>
   );
 }
-

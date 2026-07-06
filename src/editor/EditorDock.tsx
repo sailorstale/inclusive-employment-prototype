@@ -1,6 +1,12 @@
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Boxes, Combine, ListChecks, MessageCircle, PencilLine } from "lucide-react";
+import {
+  Boxes,
+  Combine,
+  ListChecks,
+  MessageCircle,
+  PencilLine,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./EditorProvider";
 import { useComments } from "./CommentsProvider";
@@ -16,7 +22,7 @@ export function EditorDock() {
   const { pathname } = useLocation();
 
   const pending = Object.values(edits).filter(
-    (e) => e.status === "new" || e.status === "rollback"
+    (e) => e.status === "new" || e.status === "rollback",
   ).length;
 
   return (
@@ -82,7 +88,7 @@ function DockItem({
     "relative flex h-9 w-9 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
     active
       ? "bg-[hsl(var(--brand)/0.15)] text-brand"
-      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+      : "text-muted-foreground hover:bg-accent hover:text-foreground",
   );
   const content = (
     <>

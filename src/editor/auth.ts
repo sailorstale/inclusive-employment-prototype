@@ -57,7 +57,7 @@ export async function checkAuth(token = getToken()): Promise<AuthState> {
 /** Fetch с паролем; при 401 сбрасывает токен и перезагружает (вернёт экран входа). */
 export async function apiFetch(
   input: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
 ): Promise<Response> {
   const headers = { ...(init.headers || {}), ...authHeaders() };
   const r = await fetch(input, { ...init, headers });

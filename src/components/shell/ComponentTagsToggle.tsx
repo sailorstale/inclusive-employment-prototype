@@ -39,7 +39,7 @@ export function ComponentTagsToggle() {
         "fixed bottom-4 left-1/2 z-40 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background print:hidden",
         on
           ? "border-transparent bg-brand text-brand-foreground"
-          : "border-border bg-background text-muted-foreground hover:text-foreground"
+          : "border-border bg-background text-muted-foreground hover:text-foreground",
       )}
     >
       <Tag className="h-3.5 w-3.5" />

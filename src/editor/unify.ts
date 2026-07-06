@@ -188,4 +188,3 @@ export const CANON: CanonProposal[] = [
       '<Faq items={[{ q: "Можно ли уволить?", a: "Да, по общим основаниям…" }]} />',
   },
 ];
-

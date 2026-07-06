@@ -61,7 +61,7 @@ function DetailRow({
         <ChevronDown
           className={cn(
             "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
-            open && "rotate-180"
+            open && "rotate-180",
           )}
         />
       </summary>
@@ -99,8 +99,7 @@ export function Disclosure({
   };
 
   const allOpen = total > 0 && openSet.size >= total;
-  const toggleAll = () =>
-    setOpenSet(allOpen ? new Set() : new Set(keys));
+  const toggleAll = () => setOpenSet(allOpen ? new Set() : new Set(keys));
 
   const withExpandAll = showExpandAll ?? total > 1;
 

@@ -65,7 +65,9 @@ export function AppHeader() {
             Я
           </span>
           <Accessibility className="h-5 w-5 text-brand" />
-          <span className="font-semibold leading-tight">Инклюзия в Яндексе</span>
+          <span className="font-semibold leading-tight">
+            Инклюзия в Яндексе
+          </span>
         </Link>
 
         {/* Главное меню — три трека (десктоп) */}
@@ -76,7 +78,7 @@ export function AppHeader() {
               to={t.path}
               className={cn(
                 "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                activeTrack === t.track ? "text-brand" : "text-foreground/80"
+                activeTrack === t.track ? "text-brand" : "text-foreground/80",
               )}
               aria-current={activeTrack === t.track ? "page" : undefined}
             >
@@ -91,7 +93,7 @@ export function AppHeader() {
             to="/yandex-jobs"
             className={cn(
               "hidden rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:block",
-              yandexActive ? "text-brand" : "text-foreground/80"
+              yandexActive ? "text-brand" : "text-foreground/80",
             )}
             aria-current={yandexActive ? "page" : undefined}
           >

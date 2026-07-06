@@ -36,7 +36,7 @@ export function BackToTop() {
         "fixed bottom-6 right-6 z-30 inline-flex items-center gap-2 rounded-full border bg-background/95 px-4 py-2.5 text-sm font-medium text-foreground shadow-md backdrop-blur transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         visible
           ? "translate-y-0 opacity-100"
-          : "pointer-events-none translate-y-3 opacity-0"
+          : "pointer-events-none translate-y-3 opacity-0",
       )}
     >
       <ArrowUp className="h-4 w-4" />

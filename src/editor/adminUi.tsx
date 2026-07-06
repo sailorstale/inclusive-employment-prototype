@@ -24,7 +24,7 @@ export function Stat({
         className={cn(
           "text-base font-semibold",
           bad && value > 0 && "text-[hsl(var(--bad))]",
-          warn && value > 0 && "text-[hsl(var(--warn))]"
+          warn && value > 0 && "text-[hsl(var(--warn))]",
         )}
       >
         {value}
@@ -58,7 +58,7 @@ export function FilterBtn({
           ? sm
             ? "bg-[hsl(var(--brand)/0.1)] font-medium text-brand"
             : "border-[hsl(var(--brand)/0.5)] bg-[hsl(var(--brand)/0.1)] font-medium text-brand"
-          : "text-muted-foreground hover:bg-accent"
+          : "text-muted-foreground hover:bg-accent",
       )}
     >
       {children}

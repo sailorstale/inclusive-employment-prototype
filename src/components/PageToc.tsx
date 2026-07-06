@@ -37,7 +37,8 @@ export function TocLinks({
       {items.map((item) => {
         const id = anchorId(item.anchor);
         const active = activeId === id;
-        const subs = active && subItems && subItems.length > 0 ? subItems : null;
+        const subs =
+          active && subItems && subItems.length > 0 ? subItems : null;
         return (
           <li key={id}>
             <button
@@ -48,7 +49,7 @@ export function TocLinks({
                 "rounded-sm text-left text-sm underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 active
                   ? "font-medium text-brand underline"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {headingTextOf(pathname, item.label, item.anchor)}
@@ -59,7 +60,9 @@ export function TocLinks({
                   <li key={s.id}>
                     <button
                       type="button"
-                      onClick={() => (onSelect ? onSelect(s.id) : scrollToId(s.id))}
+                      onClick={() =>
+                        onSelect ? onSelect(s.id) : scrollToId(s.id)
+                      }
                       aria-current={
                         activeSubId === s.id ? "location" : undefined
                       }
@@ -67,7 +70,7 @@ export function TocLinks({
                         "rounded-sm text-left text-[0.8125rem] leading-snug underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                         activeSubId === s.id
                           ? "font-medium text-brand"
-                          : "text-muted-foreground hover:text-foreground"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {s.label}

@@ -29,16 +29,17 @@ export function ContactSection({
   className?: string;
 }) {
   return (
-    <section data-component="ContactSection" className={cn("space-y-4", className)}>
+    <section
+      data-component="ContactSection"
+      className={cn("space-y-4", className)}
+    >
       {title ? (
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           {title}
         </h2>
       ) : null}
       {intro ? (
-        <p className="max-w-prose leading-relaxed text-foreground">
-          {intro}
-        </p>
+        <p className="max-w-prose leading-relaxed text-foreground">{intro}</p>
       ) : null}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {contacts.map((c, i) => {

@@ -8,13 +8,7 @@ import { cn } from "@/lib/utils";
 
 type StepLink = { label: string; to: string };
 
-export function StepNav({
-  prev,
-  next,
-}: {
-  prev?: StepLink;
-  next?: StepLink;
-}) {
+export function StepNav({ prev, next }: { prev?: StepLink; next?: StepLink }) {
   const cardBase =
     "group flex flex-1 flex-col gap-1 rounded-lg border p-4 transition-colors hover:border-ring hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 

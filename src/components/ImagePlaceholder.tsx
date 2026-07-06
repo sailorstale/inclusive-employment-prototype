@@ -15,18 +15,27 @@ export function ImagePlaceholder({
   className?: string;
 }) {
   const aspect =
-    ratio === "4/3" ? "aspect-[4/3]" : ratio === "1/1" ? "aspect-square" : "aspect-video";
+    ratio === "4/3"
+      ? "aspect-[4/3]"
+      : ratio === "1/1"
+        ? "aspect-square"
+        : "aspect-video";
   return (
-    <figure data-component="ImagePlaceholder" className={cn("max-w-prose", className)}>
+    <figure
+      data-component="ImagePlaceholder"
+      className={cn("max-w-prose", className)}
+    >
       <div
         className={cn(
           "flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 p-6 text-muted-foreground",
-          aspect
+          aspect,
         )}
       >
         <ImageIcon className="h-6 w-6" />
         {caption ? (
-          <figcaption className="px-4 text-center text-[0.8125rem] text-muted-foreground">{caption}</figcaption>
+          <figcaption className="px-4 text-center text-[0.8125rem] text-muted-foreground">
+            {caption}
+          </figcaption>
         ) : null}
       </div>
     </figure>

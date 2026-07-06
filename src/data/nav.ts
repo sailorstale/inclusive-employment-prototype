@@ -93,9 +93,18 @@ export const sidebars: Record<Track, SidebarSpec> = {
             label: "Правовые основы",
             path: "/companies/legal",
             children: [
-              { label: "Договор и оформление", path: "/companies/legal/contract" },
-              { label: "Льготы и формы занятости", path: "/companies/legal/benefits" },
-              { label: "Квоты и господдержка", path: "/companies/legal/quotas" },
+              {
+                label: "Договор и оформление",
+                path: "/companies/legal/contract",
+              },
+              {
+                label: "Льготы и формы занятости",
+                path: "/companies/legal/benefits",
+              },
+              {
+                label: "Квоты и господдержка",
+                path: "/companies/legal/quotas",
+              },
               { label: "Особые ситуации", path: "/companies/legal/status" },
               { label: "Вопросы и ответы", path: "/companies/legal/faq" },
             ],
@@ -104,10 +113,22 @@ export const sidebars: Record<Track, SidebarSpec> = {
             label: "Наём по шагам",
             path: "/companies/hire",
             children: [
-              { label: "Шаг 1. Выбор вакансии", path: "/companies/hire/step-1" },
-              { label: "Шаг 2. Аудит готовности", path: "/companies/hire/step-2" },
-              { label: "Шаг 3. Создание среды", path: "/companies/hire/step-3" },
-              { label: "Шаг 4. Поиск и оформление", path: "/companies/hire/step-4" },
+              {
+                label: "Шаг 1. Выбор вакансии",
+                path: "/companies/hire/step-1",
+              },
+              {
+                label: "Шаг 2. Аудит готовности",
+                path: "/companies/hire/step-2",
+              },
+              {
+                label: "Шаг 3. Создание среды",
+                path: "/companies/hire/step-3",
+              },
+              {
+                label: "Шаг 4. Поиск и оформление",
+                path: "/companies/hire/step-4",
+              },
               { label: "Шаг 5. Онбординг", path: "/companies/hire/step-5" },
               { label: "Шаг 6. Затраты", path: "/companies/hire/step-6" },
             ],

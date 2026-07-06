@@ -149,14 +149,22 @@ export function Card({
   }
   if (isLink && isMail) {
     return (
-      <a href={to} data-component="Card" className={cn(base, interactive, "group", className)}>
+      <a
+        href={to}
+        data-component="Card"
+        className={cn(base, interactive, "group", className)}
+      >
         {inner}
       </a>
     );
   }
   if (isLink) {
     return (
-      <Link to={to!} data-component="Card" className={cn(base, interactive, "group", className)}>
+      <Link
+        to={to!}
+        data-component="Card"
+        className={cn(base, interactive, "group", className)}
+      >
         {inner}
       </Link>
     );

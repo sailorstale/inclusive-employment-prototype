@@ -76,7 +76,8 @@ export function FeedbackForm({
               </h2>
               <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
                 Если у вас есть предложения по поводу нашего контента или работы
-                платформы — напишите нам, пожалуйста. Это поможет нам стать лучше.
+                платформы — напишите нам, пожалуйста. Это поможет нам стать
+                лучше.
               </p>
             </div>
           </div>
@@ -98,7 +99,7 @@ export function FeedbackForm({
                     "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                     role === value
                       ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {label}

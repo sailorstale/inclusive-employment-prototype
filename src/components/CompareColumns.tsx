@@ -38,16 +38,15 @@ function ComparePanel({ col }: { col: Column }) {
     col.tone === "good"
       ? "border-[hsl(var(--ok)/0.4)]"
       : col.tone === "bad"
-      ? "border-[hsl(var(--bad)/0.4)]"
-      : "border-border";
-  const Marker =
-    col.tone === "good" ? Check : col.tone === "bad" ? X : null;
+        ? "border-[hsl(var(--bad)/0.4)]"
+        : "border-border";
+  const Marker = col.tone === "good" ? Check : col.tone === "bad" ? X : null;
   const markerColor =
     col.tone === "good"
       ? "text-[hsl(var(--ok))]"
       : col.tone === "bad"
-      ? "text-[hsl(var(--bad))]"
-      : "text-muted-foreground";
+        ? "text-[hsl(var(--bad))]"
+        : "text-muted-foreground";
 
   return (
     <div className={cn("rounded-lg border bg-card p-5", toneRing)}>

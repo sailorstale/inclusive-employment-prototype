@@ -73,7 +73,7 @@ export function Callout({
       className={cn(
         "max-w-prose rounded-lg border p-4 text-sm leading-relaxed",
         box,
-        className
+        className,
       )}
     >
       <div className="flex gap-3">

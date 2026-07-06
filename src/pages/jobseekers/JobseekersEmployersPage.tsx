@@ -7,7 +7,14 @@ import { Paragraph, Footnote } from "@/components/Prose";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 import { SmartLink } from "@/components/SmartLink";
 import { RelatedLinks } from "@/components/RelatedLinks";
-import { Building2, Car, Package, ShoppingBag, Laptop, Store } from "lucide-react";
+import {
+  Building2,
+  Car,
+  Package,
+  ShoppingBag,
+  Laptop,
+  Store,
+} from "lucide-react";
 
 // 26 — Куда устроиться в Яндекс (справочник трека «Для соискателей»). Контент дословно.
 export function JobseekersEmployersPage() {
@@ -24,8 +31,9 @@ export function JobseekersEmployersPage() {
       <ContentSection title="Шесть направлений">
         <Footnote>
           Это краткая выжимка направлений (по одной строке на карточку). Полный
-          разбор каждого направления — кто работает, развёрнутый список адаптаций
-          по каждой карточке и связанные материалы Яндекса — на странице{" "}
+          разбор каждого направления — кто работает, развёрнутый список
+          адаптаций по каждой карточке и связанные материалы Яндекса — на
+          странице{" "}
           <SmartLink to="/yandex-jobs">«Трудоустройство в Яндексе»</SmartLink>,
           секция «Шесть направлений». Здесь параллельную полную копию не держим.
         </Footnote>
@@ -70,13 +78,16 @@ export function JobseekersEmployersPage() {
         </CardGrid>
       </ContentSection>
 
-      <Callout variant="info" title="Пример. Яндекс — не единственный работодатель">
+      <Callout
+        variant="info"
+        title="Пример. Яндекс — не единственный работодатель"
+      >
         Яндекс — не единственный работодатель, который нанимает людей с
         инвалидностью. В{" "}
         <SmartLink to="/companies">разделе «Для компаний»</SmartLink> мы
-        показываем, как такая работа устроена в принципе — там логика, применимая
-        к любой компании. Здесь — конкретные шесть направлений у одного из
-        работодателей.
+        показываем, как такая работа устроена в принципе — там логика,
+        применимая к любой компании. Здесь — конкретные шесть направлений у
+        одного из работодателей.
       </Callout>
 
       <Callout variant="info" title="Как откликнуться">

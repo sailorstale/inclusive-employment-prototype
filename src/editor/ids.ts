@@ -22,7 +22,7 @@ export function autoId(
   page: string,
   type: string,
   text: string,
-  anchor = ""
+  anchor = "",
 ): string {
   return `${page}::${anchor || "-"}::${type}::${hashStr(normalizeText(text))}`;
 }

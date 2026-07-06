@@ -1,9 +1,4 @@
-import {
-  usePassedSpy,
-  useScrollSpy,
-  useSubSections,
-  useToc,
-} from "@/lib/toc";
+import { usePassedSpy, useScrollSpy, useSubSections, useToc } from "@/lib/toc";
 import { TocLinks } from "../PageToc";
 
 // TocRail (00 — оглавление «На этой странице», десктоп) — липкий рейл справа со

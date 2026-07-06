@@ -125,23 +125,21 @@ export function Blockquote({
     if (expanded) return;
     const el = quoteRef.current;
     if (!el) return;
-    const measure = () =>
-      setOverflowing(el.scrollHeight - el.clientHeight > 1);
+    const measure = () => setOverflowing(el.scrollHeight - el.clientHeight > 1);
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
   }, [children, expanded, clampLines]);
 
-  const clampStyle: React.CSSProperties | undefined =
-    expanded
-      ? undefined
-      : {
-          display: "-webkit-box",
-          WebkitBoxOrient: "vertical",
-          WebkitLineClamp: clampLines,
-          overflow: "hidden",
-        };
+  const clampStyle: React.CSSProperties | undefined = expanded
+    ? undefined
+    : {
+        display: "-webkit-box",
+        WebkitBoxOrient: "vertical",
+        WebkitLineClamp: clampLines,
+        overflow: "hidden",
+      };
 
   return (
     <figure
@@ -167,7 +165,7 @@ export function Blockquote({
           <ChevronDown
             className={cn(
               "h-4 w-4 transition-transform",
-              expanded && "rotate-180"
+              expanded && "rotate-180",
             )}
           />
         </button>

@@ -20,11 +20,12 @@ const badgeVariants = cva(
     defaultVariants: {
       tone: "neutral",
     },
-  }
+  },
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
+  extends
+    React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, tone, ...props }: BadgeProps) {

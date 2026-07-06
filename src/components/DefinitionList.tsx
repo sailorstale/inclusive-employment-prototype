@@ -1,9 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Editable } from "@/editor/Editable";
-import {
-  type GlossaryEntry,
-  glossaryAnchorId,
-} from "@/data/glossary";
+import { type GlossaryEntry, glossaryAnchorId } from "@/data/glossary";
 
 // DefinitionList (00b §2.9) — алфавитный «термин — определение» с H4-группами
 // по букве. Каждый термин имеет id-якорь — цель для GlossaryTerm.

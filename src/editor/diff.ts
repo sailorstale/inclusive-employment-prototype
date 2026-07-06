@@ -17,7 +17,7 @@ export function wordDiff(original: string, revised: string): DiffSeg[] {
 
   // lcs[i][j] — длина НОП суффиксов a[i..] и b[j..]
   const lcs: number[][] = Array.from({ length: n + 1 }, () =>
-    new Array<number>(m + 1).fill(0)
+    new Array<number>(m + 1).fill(0),
   );
   for (let i = n - 1; i >= 0; i--) {
     for (let j = m - 1; j >= 0; j--) {

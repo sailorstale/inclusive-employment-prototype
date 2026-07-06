@@ -40,7 +40,7 @@ export async function loadDecisions(): Promise<Record<string, UnifyDecision>> {
 
 export async function saveDecision(
   type: string,
-  approach: Approach | null
+  approach: Approach | null,
 ): Promise<UnifyDecision> {
   if (store.getMode() === "server") {
     const r = await apiFetch(`/api/unify/${encodeURIComponent(type)}`, {

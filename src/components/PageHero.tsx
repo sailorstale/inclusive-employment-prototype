@@ -28,11 +28,7 @@ export function PageHero({
   return (
     <header
       data-component="PageHero"
-      className={cn(
-        "space-y-4",
-        isLanding ? "py-4" : "",
-        className
-      )}
+      className={cn("space-y-4", isLanding ? "py-4" : "", className)}
     >
       {eyebrow ? (
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -43,7 +39,9 @@ export function PageHero({
         as="h1"
         className={cn(
           "font-bold tracking-tight text-foreground",
-          isLanding ? "text-4xl leading-tight md:text-5xl" : "text-4xl leading-tight"
+          isLanding
+            ? "text-4xl leading-tight md:text-5xl"
+            : "text-4xl leading-tight",
         )}
       >
         {title}

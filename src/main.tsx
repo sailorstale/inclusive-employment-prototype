@@ -21,5 +21,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </EditorProvider>
       </AuthGate>
     </ThemeProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

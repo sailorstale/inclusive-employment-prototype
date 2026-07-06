@@ -69,7 +69,7 @@ export function SiteSearch() {
                         type="button"
                         onClick={() => goTo(r.path)}
                         className={cn(
-                          "block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          "block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                       >
                         {r.title}

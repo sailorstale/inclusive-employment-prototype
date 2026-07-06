@@ -1,6 +1,12 @@
 import * as React from "react";
 import { useLocation } from "react-router-dom";
-import { Pencil, Sparkles, Check, AlertTriangle, RotateCcw } from "lucide-react";
+import {
+  Pencil,
+  Sparkles,
+  Check,
+  AlertTriangle,
+  RotateCcw,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PROSE_CLASSES, type ProseKind } from "@/components/proseClasses";
 import { getVariantsFor } from "./registry";
@@ -37,7 +43,10 @@ const hasMarkupChildren = (node: React.ReactNode): boolean =>
 
 const fmtShort = (iso?: string | null) =>
   iso
-    ? new Date(iso).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })
+    ? new Date(iso).toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+      })
     : "";
 const fmtFull = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleDateString("ru-RU") : "";
@@ -54,7 +63,9 @@ function Visual({
   mark?: boolean;
   children: React.ReactNode;
 }) {
-  const markCls = mark ? "-ml-3 border-l-2 border-[hsl(var(--ok)/0.35)] pl-3" : "";
+  const markCls = mark
+    ? "-ml-3 border-l-2 border-[hsl(var(--ok)/0.35)] pl-3"
+    : "";
   if (isHeading(as)) {
     const Tag = as;
     return <Tag className={cn(className, markCls)}>{children}</Tag>;
@@ -62,7 +73,9 @@ function Visual({
   if (as === "li" || as === "inline") {
     return <span className={cn(markCls)}>{children}</span>;
   }
-  return <p className={cn(PROSE_CLASSES[as], className, markCls)}>{children}</p>;
+  return (
+    <p className={cn(PROSE_CLASSES[as], className, markCls)}>{children}</p>
+  );
 }
 
 export function Editable({
@@ -83,8 +96,11 @@ export function Editable({
   // заголовка прорастала в навигацию (крошки/меню знают путь, но не текст h1).
   // Остальные блоки — по хэшу текста.
   const id = React.useMemo(
-    () => (as === "h1" ? routeId(pathname) : autoId(pathname, as, originalText, anchor)),
-    [as, pathname, originalText, anchor]
+    () =>
+      as === "h1"
+        ? routeId(pathname)
+        : autoId(pathname, as, originalText, anchor),
+    [as, pathname, originalText, anchor],
   );
 
   // Регистрируем отрисованный блок — дашборд так находит осиротевшие правки.
@@ -107,14 +123,14 @@ export function Editable({
   // Показываем правку, если она есть, непустая и по ней не запрошен откат;
   // иначе — оригинал.
   const showEdit = Boolean(
-    record && record.text.trim() && record.status !== "rollback"
+    record && record.text.trim() && record.status !== "rollback",
   );
   const displayText: React.ReactNode = showEdit
     ? renderInline(record!.text)
     : children;
   const stale = Boolean(
     record?.original &&
-      normalizeText(record.original) !== normalizeText(originalText)
+    normalizeText(record.original) !== normalizeText(originalText),
   );
 
   // Обычный режим: текст; изменённый блок — с тонкой пометкой слева (кроме li).
@@ -126,7 +142,9 @@ export function Editable({
       </Visual>
     );
     if (mark) {
-      return <div title={`Изменено ${fmtFull(record!.editedAt)}`}>{visual}</div>;
+      return (
+        <div title={`Изменено ${fmtFull(record!.editedAt)}`}>{visual}</div>
+      );
     }
     return visual;
   }
@@ -213,13 +231,13 @@ export function Editable({
         shellCls,
         "transition-colors ring-1 ring-transparent hover:bg-[hsl(var(--brand)/0.05)] hover:ring-[hsl(var(--brand)/0.25)]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        isActive && "bg-[hsl(var(--brand)/0.07)] ring-[hsl(var(--brand)/0.45)]"
+        isActive && "bg-[hsl(var(--brand)/0.07)] ring-[hsl(var(--brand)/0.45)]",
       )}
     >
       <span
         className={cn(
           "pointer-events-none absolute -top-2 right-2 z-10 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition-opacity",
-          badge.cls
+          badge.cls,
         )}
       >
         {badge.icon}

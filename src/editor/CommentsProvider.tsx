@@ -105,7 +105,7 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
         if (rec) setComments((prev) => ({ ...prev, [id]: rec }));
       })
       .catch(() =>
-        setNotice("Не удалось сохранить комментарий — сервер недоступен.")
+        setNotice("Не удалось сохранить комментарий — сервер недоступен."),
       );
   }, []);
 
@@ -115,7 +115,9 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
         if (rec) setComments((prev) => ({ ...prev, [id]: rec }));
       })
       .catch(() =>
-        setNotice("Не удалось изменить статус комментария — сервер недоступен.")
+        setNotice(
+          "Не удалось изменить статус комментария — сервер недоступен.",
+        ),
       );
   }, []);
 
@@ -126,10 +128,10 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
           const next = { ...prev };
           delete next[id];
           return next;
-        })
+        }),
       )
       .catch(() =>
-        setNotice("Не удалось удалить комментарий — сервер недоступен.")
+        setNotice("Не удалось удалить комментарий — сервер недоступен."),
       );
   }, []);
 
@@ -138,7 +140,7 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
   const list = React.useMemo(() => Object.values(comments), [comments]);
   const openCount = React.useMemo(
     () => list.filter((c) => !c.resolved).length,
-    [list]
+    [list],
   );
 
   const value = React.useMemo<CommentsContextValue>(
@@ -180,11 +182,13 @@ export function CommentsProvider({ children }: { children: React.ReactNode }) {
       openCount,
       notice,
       dismissNotice,
-    ]
+    ],
   );
 
   return (
-    <CommentsContext.Provider value={value}>{children}</CommentsContext.Provider>
+    <CommentsContext.Provider value={value}>
+      {children}
+    </CommentsContext.Provider>
   );
 }
 

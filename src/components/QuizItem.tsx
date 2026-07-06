@@ -91,7 +91,7 @@ export function QuizItem({
   }
 
   const gotRight = options.filter(
-    (o, i) => o.verdict === "correct" && selected.has(i)
+    (o, i) => o.verdict === "correct" && selected.has(i),
   ).length;
 
   return (
@@ -132,11 +132,11 @@ export function QuizItem({
                     : cn(
                         "border-border hover:bg-accent hover:border-[hsl(var(--brand)/0.4)]",
                         isChosen &&
-                          "border-[hsl(var(--brand)/0.6)] bg-[hsl(var(--brand)/0.06)]"
+                          "border-[hsl(var(--brand)/0.6)] bg-[hsl(var(--brand)/0.06)]",
                       ),
                   revealed &&
                     isChosen &&
-                    "ring-2 ring-[hsl(var(--brand)/0.35)] ring-offset-1 ring-offset-background"
+                    "ring-2 ring-[hsl(var(--brand)/0.35)] ring-offset-1 ring-offset-background",
                 )}
               >
                 <span
@@ -147,7 +147,7 @@ export function QuizItem({
                       ? cfg.color
                       : isChosen
                         ? "border-[hsl(var(--brand))] text-[hsl(var(--brand))]"
-                        : "border-muted-foreground"
+                        : "border-muted-foreground",
                   )}
                 >
                   {revealed ? (
@@ -158,7 +158,9 @@ export function QuizItem({
                 </span>
                 <span className="min-w-0 text-foreground">{o.text}</span>
                 {revealed ? (
-                  <span className={cn("ml-auto text-xs font-medium", cfg.color)}>
+                  <span
+                    className={cn("ml-auto text-xs font-medium", cfg.color)}
+                  >
                     {cfg.tag}
                   </span>
                 ) : null}

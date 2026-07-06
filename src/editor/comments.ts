@@ -80,7 +80,7 @@ export async function createComment(input: CommentInput): Promise<Comment> {
 
 export async function updateComment(
   id: string,
-  patch: { text?: string; resolved?: boolean }
+  patch: { text?: string; resolved?: boolean },
 ): Promise<Comment | null> {
   if (store.getMode() === "server") {
     const r = await apiFetch(`/api/comments/${encodeURIComponent(id)}`, {

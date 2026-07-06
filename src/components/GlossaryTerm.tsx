@@ -28,7 +28,7 @@ export function GlossaryTerm({ term, children }: GlossaryTermProps) {
           tabIndex={0}
           className={cn(
             "cursor-help underline decoration-dotted decoration-from-font underline-offset-2",
-            "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           )}
         >
           {label}

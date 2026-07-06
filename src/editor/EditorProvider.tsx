@@ -92,7 +92,10 @@ function stashPending(input: unknown) {
 }
 
 /** Заголовки и пункты списка — однострочные: переносы строк → пробел. */
-function sanitizeText(blockType: string | null | undefined, text: string): string {
+function sanitizeText(
+  blockType: string | null | undefined,
+  text: string,
+): string {
   if (blockType && /^(h[1-4]|li)$/.test(blockType)) {
     return text.replace(/\s*\n+\s*/g, " ").trim();
   }
@@ -136,7 +139,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   const toggleEditorMode = React.useCallback(
     () => setEditorMode(!editorMode),
-    [editorMode, setEditorMode]
+    [editorMode, setEditorMode],
   );
 
   const openBlock = React.useCallback((ctx: BlockCtx) => setActive(ctx), []);
@@ -193,7 +196,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
             if (updated) setEdits((prev) => ({ ...prev, [id]: updated }));
           })
           .catch(() =>
-            setNotice("Не удалось запросить откат — сервер недоступен.")
+            setNotice("Не удалось запросить откат — сервер недоступен."),
           );
         return;
       }
@@ -204,11 +207,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
             const next = { ...prev };
             delete next[id];
             return next;
-          })
+          }),
         )
-        .catch(() => setNotice("Не удалось вернуть оригинал — сервер недоступен."));
+        .catch(() =>
+          setNotice("Не удалось вернуть оригинал — сервер недоступен."),
+        );
     },
-    [edits]
+    [edits],
   );
 
   const setStatus = React.useCallback((id: string, status: EditStatus) => {
@@ -216,7 +221,9 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       .then((rec) => {
         if (rec) setEdits((prev) => ({ ...prev, [id]: rec }));
       })
-      .catch(() => setNotice("Не удалось изменить статус — сервер недоступен."));
+      .catch(() =>
+        setNotice("Не удалось изменить статус — сервер недоступен."),
+      );
   }, []);
 
   const dismissNotice = React.useCallback(() => setNotice(null), []);
@@ -229,7 +236,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       }
       return original;
     },
-    [edits]
+    [edits],
   );
 
   const navLabel = React.useCallback(
@@ -238,7 +245,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       if (rec && rec.text.trim() && rec.status !== "rollback") return rec.text;
       return fallback;
     },
-    [edits]
+    [edits],
   );
 
   // Отслеживаем отрисованные id блоков и посещённые страницы — чтобы дашборд мог
@@ -254,7 +261,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       if (!page || !visitedPagesRef.current.has(page)) return "unchecked";
       return seenIdsRef.current.has(id) ? "ok" : "orphan";
     },
-    []
+    [],
   );
 
   const editedCount = Object.keys(edits).length;
@@ -303,7 +310,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       orphanStatus,
       notice,
       dismissNotice,
-    ]
+    ],
   );
 
   return (

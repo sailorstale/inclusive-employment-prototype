@@ -34,7 +34,10 @@ export function ToolsPage() {
       <PageToc
         items={[
           { label: "Откликнуться на вакансию", anchor: "#tools-apply" },
-          { label: "Подготовиться к собеседованию", anchor: "#tools-interview" },
+          {
+            label: "Подготовиться к собеседованию",
+            anchor: "#tools-interview",
+          },
           { label: "Разобраться в документах", anchor: "#tools-documents" },
           { label: "Доехать до работы", anchor: "#tools-commute" },
           { label: "Работать в команде", anchor: "#tools-teamwork" },
@@ -63,8 +66,8 @@ export function ToolsPage() {
             />
           </CardGrid>
           <Footnote>
-            Алиса не «напишет за вас» — она помогает структурировать то, что у вас
-            уже есть.
+            Алиса не «напишет за вас» — она помогает структурировать то, что у
+            вас уже есть.
           </Footnote>
         </ContentSection>
       </ContentSection>
@@ -96,10 +99,7 @@ export function ToolsPage() {
         </ContentSection>
       </ContentSection>
 
-      <ContentSection
-        anchor="tools-documents"
-        title="Разобраться в документах"
-      >
+      <ContentSection anchor="tools-documents" title="Разобраться в документах">
         <Paragraph>
           <strong>Что нужно сделать:</strong> прочитать договор, понять
           незнакомые формулировки, распознать текст с бумажного носителя.
@@ -154,8 +154,8 @@ export function ToolsPage() {
 
       <ContentSection anchor="tools-teamwork" title="Работать в команде">
         <Paragraph>
-          <strong>Что нужно сделать:</strong> писать письма и сообщения, понимать
-          видеоконтент, разбираться во внутренних инструкциях.
+          <strong>Что нужно сделать:</strong> писать письма и сообщения,
+          понимать видеоконтент, разбираться во внутренних инструкциях.
         </Paragraph>
         <ContentSection level="h3" title="Чем пользоваться">
           <CardGrid cols={3}>

@@ -13,7 +13,7 @@ function wrapEditableItems(children: React.ReactNode): React.ReactNode {
       return React.cloneElement(
         child as React.ReactElement,
         undefined,
-        <Editable as="li">{props.children}</Editable>
+        <Editable as="li">{props.children}</Editable>,
       );
     }
     return child;
@@ -93,7 +93,7 @@ export function BulletList({
     <ul
       className={cn(
         "max-w-prose list-disc space-y-2 pl-5 leading-relaxed marker:text-muted-foreground",
-        className
+        className,
       )}
     >
       {wrapEditableItems(children)}
@@ -112,7 +112,7 @@ export function OrderedList({
     <ol
       className={cn(
         "max-w-prose list-decimal space-y-2 pl-5 leading-relaxed marker:text-muted-foreground",
-        className
+        className,
       )}
     >
       {wrapEditableItems(children)}
@@ -170,7 +170,7 @@ export function LinkList({
       className={cn(
         "max-w-prose space-y-2.5 leading-relaxed",
         ordered ? "list-decimal pl-5 marker:text-muted-foreground" : "",
-        className
+        className,
       )}
     >
       {items.map((item, i) => (

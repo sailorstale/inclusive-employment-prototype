@@ -6,11 +6,7 @@ import { Callout } from "@/components/Callout";
 import { Disclosure } from "@/components/Disclosure";
 import { RelatedLinks } from "@/components/RelatedLinks";
 import { FeedbackForm } from "@/components/FeedbackForm";
-import {
-  Paragraph,
-  BulletList,
-  OrderedList,
-} from "@/components/Prose";
+import { Paragraph, BulletList, OrderedList } from "@/components/Prose";
 import { SmartLink } from "@/components/SmartLink";
 import { GlossaryTerm } from "@/components/GlossaryTerm";
 
@@ -60,7 +56,10 @@ export function QuotasPage() {
           </li>
         </BulletList>
 
-        <Callout variant="highlight" title="Пример. Расчёт квоты для компании из 208 человек">
+        <Callout
+          variant="highlight"
+          title="Пример. Расчёт квоты для компании из 208 человек"
+        >
           <Paragraph>
             В компании по производству корпусной мебели среднесписочная
             численность за предыдущий квартал — 208 человек. В Москве квота
@@ -72,14 +71,18 @@ export function QuotasPage() {
           <Paragraph>208 / 100 × 2 = 4 человека.</Paragraph>
           <Paragraph>
             <em>Примечание:</em> сотрудник с{" "}
-            <GlossaryTerm term="группа инвалидности">I группой инвалидности</GlossaryTerm>{" "}
+            <GlossaryTerm term="группа инвалидности">
+              I группой инвалидности
+            </GlossaryTerm>{" "}
             засчитывается за два квотируемых места.
           </Paragraph>
         </Callout>
       </ContentSection>
 
       <ContentSection anchor="how-to-fill" title="Как выполнить квоту">
-        <Paragraph>Работодатель может выполнить квоту тремя способами:</Paragraph>
+        <Paragraph>
+          Работодатель может выполнить квоту тремя способами:
+        </Paragraph>
 
         <ContentSection
           anchor="how-to-fill-1"
@@ -88,7 +91,10 @@ export function QuotasPage() {
         >
           <Paragraph>
             Работодатель принимает нового сотрудника, который предоставил{" "}
-            <GlossaryTerm term="справка об инвалидности">справку об инвалидности</GlossaryTerm>, и заключает с ним трудовой договор.
+            <GlossaryTerm term="справка об инвалидности">
+              справку об инвалидности
+            </GlossaryTerm>
+            , и заключает с ним трудовой договор.
           </Paragraph>
           <Paragraph>
             Для этого не нужно создавать специальную должность. В счёт квоты
@@ -127,8 +133,9 @@ export function QuotasPage() {
         >
           <Paragraph>
             Работодатель подписывает соглашение с организацией (компанией или{" "}
-            <GlossaryTerm term="НКО">НКО</GlossaryTerm>), которая трудоустраивает людей с инвалидностью. Квота считается
-            выполненной, если:
+            <GlossaryTerm term="НКО">НКО</GlossaryTerm>), которая
+            трудоустраивает людей с инвалидностью. Квота считается выполненной,
+            если:
           </Paragraph>
           <BulletList>
             <li>
@@ -147,7 +154,10 @@ export function QuotasPage() {
           </Paragraph>
         </ContentSection>
 
-        <Callout variant="highlight" title="Пример. Аренда квотируемых рабочих мест у НКО">
+        <Callout
+          variant="highlight"
+          title="Пример. Аренда квотируемых рабочих мест у НКО"
+        >
           <Paragraph>
             Логистическая компания “Ромашка” по закону, из-за численности штата
             обязана создать несколько рабочих мест для людей с инвалидностью.
@@ -168,8 +178,8 @@ export function QuotasPage() {
           </BulletList>
           <Paragraph>
             Люди будут трудоустроены и оформлены именно в НКО, будут выполнять
-            задачи и функционал позиции НКО. А оплачивать эти рабочие места будет
-            компания «Ромашка».
+            задачи и функционал позиции НКО. А оплачивать эти рабочие места
+            будет компания «Ромашка».
           </Paragraph>
           <Paragraph>
             НКО передаёт в компанию «Ромашка» отчёты о выплатах, зарплатные
@@ -188,7 +198,9 @@ export function QuotasPage() {
             через портал{" "}
             <SmartLink to="https://trudvsem.ru/">«Работа в России»</SmartLink>,
           </li>
-          <li>в <GlossaryTerm term="ЦЗН">Центр занятости населения</GlossaryTerm>.</li>
+          <li>
+            в <GlossaryTerm term="ЦЗН">Центр занятости населения</GlossaryTerm>.
+          </li>
         </BulletList>
         <Paragraph>
           Сроки устанавливаются региональными властями — чаще всего ежемесячно.
@@ -209,8 +221,9 @@ export function QuotasPage() {
             Работодатель выполнил необходимые действия: сообщил о вакансиях в
             Центр занятости населения и разместил их на сайтах по поиску работы.
             Если при этом кандидаты с инвалидностью не откликнулись или{" "}
-            <GlossaryTerm term="соискатель">соискатели</GlossaryTerm> не подходили по требованиям, опыту или другим критериям,
-            хотя вины работодателя нет, его тем не менее могут привлечь к{" "}
+            <GlossaryTerm term="соискатель">соискатели</GlossaryTerm> не
+            подходили по требованиям, опыту или другим критериям, хотя вины
+            работодателя нет, его тем не менее могут привлечь к{" "}
             <SmartLink to="https://www.consultant.ru/document/cons_doc_LAW_34661/cad4aa5910c6425ab417a26eee12946efa6df1bb?utm_content=url--chto-takoe-kvotirovanie-rabochih-mest">
               административной ответственности
             </SmartLink>
@@ -236,8 +249,8 @@ export function QuotasPage() {
         </Paragraph>
         <Paragraph>
           При этом виды, размеры и порядок получения поддержки зависят от
-          региона. Чтобы узнать актуальные условия, обратитесь за консультацией в
-          территориальный Центр занятости населения (ЦЗН).
+          региона. Чтобы узнать актуальные условия, обратитесь за консультацией
+          в территориальный Центр занятости населения (ЦЗН).
         </Paragraph>
         <Paragraph>Давайте рассмотрим основные типы поддержки.</Paragraph>
 
@@ -263,10 +276,15 @@ export function QuotasPage() {
                   </BulletList>
                   <Paragraph>Что компенсируется:</Paragraph>
                   <BulletList>
-                    <li>приобретение, монтаж и установка оборудования и <GlossaryTerm term="ПО">ПО</GlossaryTerm>,</li>
+                    <li>
+                      приобретение, монтаж и установка оборудования и{" "}
+                      <GlossaryTerm term="ПО">ПО</GlossaryTerm>,
+                    </li>
                     <li>
                       примеры: специализированное кресло, регулируемый стол,{" "}
-                      <GlossaryTerm term="программа экранного доступа">программа экранного доступа</GlossaryTerm>{" "}
+                      <GlossaryTerm term="программа экранного доступа">
+                        программа экранного доступа
+                      </GlossaryTerm>{" "}
                       (для незрячих), тактильная плитка (для слабовидящих).
                     </li>
                   </BulletList>
@@ -277,8 +295,8 @@ export function QuotasPage() {
                   <Paragraph>Как получить:</Paragraph>
                   <OrderedList>
                     <li>
-                      проконсультироваться с ЦЗН по месту регистрации компании об
-                      актуальных условиях этой поддержки,
+                      проконсультироваться с ЦЗН по месту регистрации компании
+                      об актуальных условиях этой поддержки,
                     </li>
                     <li>
                       подать заявление в ЦЗН по месту регистрации компании,
@@ -316,7 +334,10 @@ export function QuotasPage() {
                       трудоустройство по трудовому договору на неопределённый
                       срок, на условиях полного рабочего дня,
                     </li>
-                    <li>заработная плата не ниже 1,5 <GlossaryTerm term="МРОТ">МРОТ</GlossaryTerm>,</li>
+                    <li>
+                      заработная плата не ниже 1,5{" "}
+                      <GlossaryTerm term="МРОТ">МРОТ</GlossaryTerm>,
+                    </li>
                     <li>
                       работодатель не находится в процессе ликвидации,
                       банкротства или реорганизации,
@@ -356,8 +377,10 @@ export function QuotasPage() {
               content: (
                 <>
                   <Paragraph>
-                    Суть: целевые субсидии для социальных предприятий на развитие{" "}
-                    <GlossaryTerm term="инклюзия">инклюзии</GlossaryTerm> и бизнеса.
+                    Суть: целевые субсидии для социальных предприятий на
+                    развитие{" "}
+                    <GlossaryTerm term="инклюзия">инклюзии</GlossaryTerm> и
+                    бизнеса.
                   </Paragraph>
                   <Paragraph>
                     Кто может получить: компании со статусом социального
@@ -414,9 +437,9 @@ export function QuotasPage() {
                       работников, фонд оплаты их труда - не менее 25%,
                     </li>
                     <li>
-                      по налогу на имущество: освобождение от уплаты налога, если
-                      уставный капитал компании полностью сформирован из вкладов
-                      общественных организаций инвалидов.
+                      по налогу на имущество: освобождение от уплаты налога,
+                      если уставный капитал компании полностью сформирован из
+                      вкладов общественных организаций инвалидов.
                     </li>
                   </BulletList>
                   <Paragraph>Что важно помнить:</Paragraph>

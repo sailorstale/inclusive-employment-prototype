@@ -16,7 +16,12 @@ type CodeSnippetProps = {
   className?: string;
 };
 
-export function CodeSnippet({ tag, text, header, className }: CodeSnippetProps) {
+export function CodeSnippet({
+  tag,
+  text,
+  header,
+  className,
+}: CodeSnippetProps) {
   const [copied, setCopied] = React.useState(false);
 
   const copy = async () => {
@@ -34,7 +39,7 @@ export function CodeSnippet({ tag, text, header, className }: CodeSnippetProps) 
       data-component="CodeSnippet"
       className={cn(
         "max-w-prose overflow-hidden rounded-lg border bg-muted/40",
-        className
+        className,
       )}
     >
       <div className="flex items-center justify-between gap-3 border-b bg-muted/60 px-4 py-2">

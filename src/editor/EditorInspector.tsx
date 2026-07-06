@@ -75,11 +75,14 @@ export function EditorInspector() {
       const e = ta.selectionEnd;
       setDraft((d) => {
         const sel = d.slice(s, e) || placeholder;
-        pendingSel.current = [s + before.length, s + before.length + sel.length];
+        pendingSel.current = [
+          s + before.length,
+          s + before.length + sel.length,
+        ];
         return d.slice(0, s) + before + sel + after + d.slice(e);
       });
     },
-    []
+    [],
   );
 
   const insertLink = React.useCallback(() => {
@@ -100,8 +103,7 @@ export function EditorInspector() {
   React.useEffect(() => {
     if (!active) return;
     const rec = edits[active.id];
-    const recommended =
-      variants?.find((v) => v.recommended) ?? variants?.[0];
+    const recommended = variants?.find((v) => v.recommended) ?? variants?.[0];
     if (rec?.kind === "custom") setTab("custom");
     else if (rec?.kind === "variant") setTab(rec.variantKey ?? "a");
     else if (recommended) setTab(recommended.key);
@@ -128,11 +130,16 @@ export function EditorInspector() {
       ? variants?.find((v) => v.key === tab)
       : undefined;
   const shownText =
-    tab === "orig" ? original : tab === "custom" ? draft : variant?.text ?? original;
+    tab === "orig"
+      ? original
+      : tab === "custom"
+        ? draft
+        : (variant?.text ?? original);
   const plainShown = stripMarkdown(shownText);
   const showsMetrics = tab !== "orig" && shownText.trim().length > 0;
 
-  const customChanged = draft.trim().length > 0 && draft.trim() !== original.trim();
+  const customChanged =
+    draft.trim().length > 0 && draft.trim() !== original.trim();
   const appliedNow =
     record &&
     ((record.kind === "custom" && tab === "custom" && record.text === draft) ||
@@ -188,7 +195,11 @@ export function EditorInspector() {
               Оригинал
             </SegBtn>
             {variants?.map((v) => (
-              <SegBtn key={v.key} active={tab === v.key} onClick={() => setTab(v.key)}>
+              <SegBtn
+                key={v.key}
+                active={tab === v.key}
+                onClick={() => setTab(v.key)}
+              >
                 {v.label}
               </SegBtn>
             ))}
@@ -201,10 +212,16 @@ export function EditorInspector() {
           {tab === "custom" ? (
             <div className="mb-3">
               <div className="mb-1.5 flex items-center gap-1">
-                <FmtBtn label="Жирный" onClick={() => wrapSel("**", "**", "текст")}>
+                <FmtBtn
+                  label="Жирный"
+                  onClick={() => wrapSel("**", "**", "текст")}
+                >
                   <Bold className="h-3.5 w-3.5" />
                 </FmtBtn>
-                <FmtBtn label="Курсив" onClick={() => wrapSel("*", "*", "текст")}>
+                <FmtBtn
+                  label="Курсив"
+                  onClick={() => wrapSel("*", "*", "текст")}
+                >
                   <Italic className="h-3.5 w-3.5" />
                 </FmtBtn>
                 <FmtBtn label="Ссылка" onClick={insertLink}>
@@ -260,7 +277,10 @@ export function EditorInspector() {
                   value={`${countSentences(original)} → ${countSentences(plainShown)}`}
                   label="предложения"
                 />
-                <Metric value={`≈${readSeconds(plainShown)} сек`} label="чтение" />
+                <Metric
+                  value={`≈${readSeconds(plainShown)} сек`}
+                  label="чтение"
+                />
               </div>
 
               <div className="mb-2 flex items-center justify-between">
@@ -284,7 +304,8 @@ export function EditorInspector() {
                       className={cn(
                         seg.type === "del" &&
                           "text-[hsl(var(--bad))] line-through decoration-1",
-                        seg.type === "ins" && "font-medium text-[hsl(var(--ok))]"
+                        seg.type === "ins" &&
+                          "font-medium text-[hsl(var(--ok))]",
                       )}
                     >
                       {seg.text}{" "}
@@ -296,11 +317,14 @@ export function EditorInspector() {
               {variant ? (
                 <div className="space-y-2">
                   {variant.rationale.map((r, i) => (
-                    <div key={i} className="flex gap-2 text-[13px] leading-snug">
+                    <div
+                      key={i}
+                      className="flex gap-2 text-[13px] leading-snug"
+                    >
                       <span
                         className={cn(
                           "h-fit shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium",
-                          KIND_CLASSES[r.kind]
+                          KIND_CLASSES[r.kind],
                         )}
                       >
                         {RATIONALE_LABELS[r.kind]}
@@ -323,7 +347,7 @@ export function EditorInspector() {
               className={cn(
                 "inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium",
                 "bg-brand text-brand-foreground transition-colors hover:bg-[hsl(var(--brand)/0.9)]",
-                "disabled:cursor-not-allowed disabled:opacity-40"
+                "disabled:cursor-not-allowed disabled:opacity-40",
               )}
             >
               <Check className="h-4 w-4" />
@@ -337,7 +361,7 @@ export function EditorInspector() {
               className={cn(
                 "inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium",
                 "bg-brand text-brand-foreground transition-colors hover:bg-[hsl(var(--brand)/0.9)]",
-                "disabled:cursor-not-allowed disabled:opacity-40"
+                "disabled:cursor-not-allowed disabled:opacity-40",
               )}
             >
               <Check className="h-4 w-4" />
@@ -354,7 +378,7 @@ export function EditorInspector() {
             onClick={() => revert(active.id)}
             className={cn(
               "inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-              "disabled:cursor-not-allowed disabled:opacity-40"
+              "disabled:cursor-not-allowed disabled:opacity-40",
             )}
           >
             <RotateCcw className="h-4 w-4" />
@@ -393,7 +417,7 @@ function SegBtn({
         "rounded-md border px-3 py-1.5 text-[12.5px] transition-colors",
         active
           ? "border-[hsl(var(--brand)/0.5)] bg-[hsl(var(--brand)/0.1)] font-medium text-brand"
-          : "border-border text-muted-foreground hover:bg-accent"
+          : "border-border text-muted-foreground hover:bg-accent",
       )}
     >
       {children}

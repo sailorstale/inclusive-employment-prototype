@@ -86,7 +86,7 @@ export async function deleteEdit(id: string): Promise<void> {
 
 export async function setStatusRemote(
   id: string,
-  status: EditStatus
+  status: EditStatus,
 ): Promise<EditRecord | null> {
   if (store.getMode() === "server") {
     const r = await apiFetch(`/api/edits/${encodeURIComponent(id)}/status`, {
@@ -103,7 +103,11 @@ export async function setStatusRemote(
   const now = new Date().toISOString();
   rec.status = status;
   rec.appliedAt =
-    status === "applied" ? now : status === "verified" ? rec.appliedAt || now : null;
+    status === "applied"
+      ? now
+      : status === "verified"
+        ? rec.appliedAt || now
+        : null;
   rec.verifiedAt = status === "verified" ? now : null;
   m[id] = rec;
   writeLocal(m);

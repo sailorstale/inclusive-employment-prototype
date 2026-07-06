@@ -70,7 +70,7 @@ export function StepsShelf({
             to={step.to}
             className={cn(
               base,
-              "block transition-colors hover:border-ring hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              "block transition-colors hover:border-ring hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
             )}
           >
             <StepBody step={step} />
@@ -79,7 +79,7 @@ export function StepsShelf({
           <div key={i} className={base}>
             <StepBody step={step} />
           </div>
-        )
+        ),
       )}
     </div>
   );

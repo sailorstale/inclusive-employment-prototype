@@ -50,10 +50,14 @@ export function CommentsPanel() {
     () =>
       comments
         .filter((c) =>
-          filter === "all" ? true : filter === "open" ? !c.resolved : c.resolved
+          filter === "all"
+            ? true
+            : filter === "open"
+              ? !c.resolved
+              : c.resolved,
         )
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-    [comments, filter]
+    [comments, filter],
   );
 
   // Группировка по странице; текущая страница — первой.
@@ -102,7 +106,11 @@ export function CommentsPanel() {
       </header>
 
       <div className="flex items-center gap-1.5 border-b px-4 py-2.5">
-        <FilterBtn size="sm" active={filter === "open"} onClick={() => setFilter("open")}>
+        <FilterBtn
+          size="sm"
+          active={filter === "open"}
+          onClick={() => setFilter("open")}
+        >
           Открытые
         </FilterBtn>
         <FilterBtn
@@ -112,7 +120,11 @@ export function CommentsPanel() {
         >
           Решённые
         </FilterBtn>
-        <FilterBtn size="sm" active={filter === "all"} onClick={() => setFilter("all")}>
+        <FilterBtn
+          size="sm"
+          active={filter === "all"}
+          onClick={() => setFilter("all")}
+        >
           Все
         </FilterBtn>
         <button
@@ -176,7 +188,7 @@ function CommentRow({
     <div
       className={cn(
         "group relative rounded-lg border bg-background p-2.5 transition-colors hover:border-[hsl(var(--brand)/0.4)]",
-        comment.resolved && "opacity-60"
+        comment.resolved && "opacity-60",
       )}
     >
       <button
@@ -203,12 +215,14 @@ function CommentRow({
         type="button"
         onClick={() => onResolve(!comment.resolved)}
         title={comment.resolved ? "Вернуть в открытые" : "Отметить решённым"}
-        aria-label={comment.resolved ? "Вернуть в открытые" : "Отметить решённым"}
+        aria-label={
+          comment.resolved ? "Вернуть в открытые" : "Отметить решённым"
+        }
         className={cn(
           "absolute right-2 top-2 rounded-md p-1 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           comment.resolved
             ? "text-[hsl(var(--ok))]"
-            : "text-muted-foreground opacity-0 hover:bg-accent group-hover:opacity-100"
+            : "text-muted-foreground opacity-0 hover:bg-accent group-hover:opacity-100",
         )}
       >
         <Check className="h-3.5 w-3.5" />
@@ -216,4 +230,3 @@ function CommentRow({
     </div>
   );
 }
-

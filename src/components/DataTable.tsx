@@ -59,7 +59,7 @@ export function DataTable({
         <figcaption
           className={cn(
             "mt-3 text-[0.8125rem] text-muted-foreground",
-            captionHidden && "sr-only"
+            captionHidden && "sr-only",
           )}
         >
           <Editable as="inline">{caption}</Editable>

@@ -38,7 +38,7 @@ export function renderInline(text: string): React.ReactNode {
           </a>
         ) : (
           m[1]
-        )
+        ),
       );
     } else if (m[3] !== undefined) {
       nodes.push(<strong key={key}>{m[3]}</strong>);
@@ -59,4 +59,3 @@ export function stripMarkdown(text: string): string {
     .replace(/\*([^*]+)\*/g, "$1")
     .replace(/_([^_]+)_/g, "$1");
 }
-

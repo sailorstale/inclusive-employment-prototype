@@ -37,7 +37,7 @@ function LeafItem({
         nested && "ml-3",
         active
           ? "border-l-2 border-brand bg-accent font-medium text-brand"
-          : "text-foreground/75 hover:bg-accent hover:text-foreground"
+          : "text-foreground/75 hover:bg-accent hover:text-foreground",
       )}
     >
       {navLabel(path, label)}
@@ -77,7 +77,7 @@ function GroupItem({
             "flex-1",
             parentActive
               ? "border-l-2 border-brand bg-accent font-medium text-brand"
-              : "font-medium text-foreground/85 hover:bg-accent hover:text-foreground"
+              : "font-medium text-foreground/85 hover:bg-accent hover:text-foreground",
           )}
         >
           {navLabel(item.path, item.label)}
@@ -153,7 +153,7 @@ export function SidebarNav({
                 active={pathname === item.path}
                 onNavigate={onNavigate}
               />
-            )
+            ),
           )}
         </div>
       ))}

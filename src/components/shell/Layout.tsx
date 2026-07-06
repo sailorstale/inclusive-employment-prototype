@@ -64,7 +64,7 @@ function LayoutBody() {
           className={cn(
             "mx-auto grid max-w-7xl grid-cols-1 gap-x-10 gap-y-6 px-6 py-8",
             "lg:grid-cols-[16rem_minmax(0,1fr)]",
-            hasToc && "xl:grid-cols-[16rem_minmax(0,1fr)_14rem]"
+            hasToc && "xl:grid-cols-[16rem_minmax(0,1fr)_14rem]",
           )}
         >
           {/* Боковое меню трека — десктоп: липкий рейл */}

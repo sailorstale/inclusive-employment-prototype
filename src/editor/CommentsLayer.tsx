@@ -61,17 +61,18 @@ export function CommentsLayer() {
 
   const pagePins = React.useMemo(
     () => comments.filter((c) => c.page === pathname),
-    [comments, pathname]
+    [comments, pathname],
   );
 
   // Перепозиционирование пинов при скролле/ресайзе.
   React.useEffect(() => {
     let frame = 0;
     const onMove = () => {
-      if (!frame) frame = requestAnimationFrame(() => {
-        frame = 0;
-        force();
-      });
+      if (!frame)
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          force();
+        });
     };
     window.addEventListener("scroll", onMove, { passive: true });
     window.addEventListener("resize", onMove);
@@ -114,14 +115,19 @@ export function CommentsLayer() {
       if (!main || !main.contains(t) || t.closest("[data-comments-ui]")) return;
       e.preventDefault();
       e.stopPropagation();
-      const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const el = document.elementFromPoint(
+        e.clientX,
+        e.clientY,
+      ) as HTMLElement | null;
       const block = el?.closest<HTMLElement>(BLOCK_SEL) ?? null;
       const anchor = block ?? mainEl();
       if (!anchor) return;
       const rect = anchor.getBoundingClientRect();
       setDraft({
         page: pathname,
-        anchorText: block ? normalizeText(block.textContent || "").slice(0, 400) : "",
+        anchorText: block
+          ? normalizeText(block.textContent || "").slice(0, 400)
+          : "",
         dx: e.clientX - rect.left,
         dy: e.clientY - rect.top,
       });
@@ -167,7 +173,10 @@ export function CommentsLayer() {
       }
       const rect = base.getBoundingClientRect();
       window.scrollTo({
-        top: Math.max(0, rect.top + window.scrollY + target.dy - window.innerHeight / 3),
+        top: Math.max(
+          0,
+          rect.top + window.scrollY + target.dy - window.innerHeight / 3,
+        ),
         behavior: "smooth",
       });
       setOpenId(target.id);
@@ -184,7 +193,11 @@ export function CommentsLayer() {
     const base = el ?? mainEl();
     if (!base) return null;
     const rect = base.getBoundingClientRect();
-    return { left: rect.left + dx, top: rect.top + dy, lost: Boolean(anchorText) && !el };
+    return {
+      left: rect.left + dx,
+      top: rect.top + dy,
+      lost: Boolean(anchorText) && !el,
+    };
   };
 
   return (
@@ -267,7 +280,7 @@ function PinDot({
         resolved
           ? "bg-[hsl(var(--ok))] text-background"
           : "bg-brand text-brand-foreground",
-        lost && "opacity-50"
+        lost && "opacity-50",
       )}
       title={lost ? "Текст блока изменился — пин примерно здесь" : undefined}
       aria-label="Комментарий"
@@ -323,7 +336,7 @@ function Pin({
                   "rounded-md px-2 py-0.5 text-[11px] font-medium",
                   comment.resolved
                     ? "bg-[hsl(var(--ok)/0.15)] text-[hsl(var(--ok))]"
-                    : "hover:bg-accent"
+                    : "hover:bg-accent",
                 )}
               >
                 {comment.resolved ? "Решён" : "Отметить решённым"}
@@ -386,7 +399,10 @@ function DraftPin({
 
   if (!position) return null;
   return (
-    <div className="absolute" style={{ left: position.left, top: position.top }}>
+    <div
+      className="absolute"
+      style={{ left: position.left, top: position.top }}
+    >
       <PinDot onClick={() => {}} />
       <Popover flipX={position.left + 330 > rightEdge}>
         <textarea
@@ -438,7 +454,7 @@ function Popover({
       data-comment-popover
       className={cn(
         "pointer-events-auto absolute top-0 w-[min(18rem,86vw)] rounded-lg border bg-card p-3 text-card-foreground shadow-xl",
-        flipX ? "right-9" : "left-9"
+        flipX ? "right-9" : "left-9",
       )}
     >
       {children}

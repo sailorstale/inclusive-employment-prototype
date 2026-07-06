@@ -62,10 +62,10 @@ export function ChangesPage() {
 
   const list = React.useMemo(
     () =>
-      Object.values(edits).sort(
-        (a, b) => (b.editedAt || "").localeCompare(a.editedAt || "")
+      Object.values(edits).sort((a, b) =>
+        (b.editedAt || "").localeCompare(a.editedAt || ""),
       ),
-    [edits]
+    [edits],
   );
 
   const counts = React.useMemo(() => {
@@ -75,10 +75,10 @@ export function ChangesPage() {
   }, [list]);
 
   const orphanCount = list.filter(
-    (e) => orphanStatus(e.id, e.page ?? "") === "orphan"
+    (e) => orphanStatus(e.id, e.page ?? "") === "orphan",
   ).length;
   const uncheckedCount = list.filter(
-    (e) => orphanStatus(e.id, e.page ?? "") === "unchecked"
+    (e) => orphanStatus(e.id, e.page ?? "") === "unchecked",
   ).length;
 
   const shown = list.filter((e) =>
@@ -86,7 +86,7 @@ export function ChangesPage() {
       ? true
       : filter === "orphan"
         ? orphanStatus(e.id, e.page ?? "") === "orphan"
-        : e.status === filter
+        : e.status === filter,
   );
 
   // Группировка по странице (с сохранением сортировки по дате).
@@ -103,7 +103,7 @@ export function ChangesPage() {
   const openComments = comments.filter((c) => !c.resolved).length;
   const commentsByPage = React.useMemo(() => {
     const sorted = [...comments].sort((a, b) =>
-      (b.createdAt || "").localeCompare(a.createdAt || "")
+      (b.createdAt || "").localeCompare(a.createdAt || ""),
     );
     const m = new Map<string, Comment[]>();
     for (const c of sorted) {
@@ -157,7 +157,7 @@ export function ChangesPage() {
         note: "Локальная копия: сервер был недоступен, данные могут быть неполными.",
       });
       setBackupNote(
-        "Сервер недоступен — сохранена локальная копия (может быть неполной)."
+        "Сервер недоступен — сохранена локальная копия (может быть неполной).",
       );
     }
   };
@@ -169,8 +169,9 @@ export function ChangesPage() {
           Изменения
         </h1>
         <p className="max-w-prose text-muted-foreground">
-          Правки текста, ожидающие переноса в реальный сайт. Разработчик копирует
-          новый текст, вносит и отмечает «внесено»; затем заказчик проверяет.
+          Правки текста, ожидающие переноса в реальный сайт. Разработчик
+          копирует новый текст, вносит и отмечает «внесено»; затем заказчик
+          проверяет.
         </p>
       </header>
 
@@ -225,10 +226,9 @@ export function ChangesPage() {
 
       {uncheckedCount > 0 ? (
         <p className="rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-          {uncheckedCount}{" "}
-          {uncheckedCount === 1 ? "правка" : "правок"} на ещё не открытых
-          страницах. Откройте их страницы, чтобы проверить, что блоки на месте
-          (иначе «осиротевшие» не вычислить).
+          {uncheckedCount} {uncheckedCount === 1 ? "правка" : "правок"} на ещё
+          не открытых страницах. Откройте их страницы, чтобы проверить, что
+          блоки на месте (иначе «осиротевшие» не вычислить).
         </p>
       ) : null}
 
@@ -262,7 +262,7 @@ export function ChangesPage() {
                 onCopy={() =>
                   copy(
                     e.id,
-                    e.status === "rollback" ? e.original || "" : e.text
+                    e.status === "rollback" ? e.original || "" : e.text,
                   )
                 }
                 onApply={() => setStatus(e.id, "applied")}
@@ -331,7 +331,7 @@ function CommentCard({
             "rounded-full px-2 py-0.5 font-medium",
             comment.resolved
               ? "bg-[hsl(var(--ok)/0.12)] text-[hsl(var(--ok))]"
-              : "bg-[hsl(var(--warn)/0.12)] text-[hsl(var(--warn))]"
+              : "bg-[hsl(var(--warn)/0.12)] text-[hsl(var(--warn))]",
           )}
         >
           {comment.resolved ? "решён" : "открыт"}
@@ -402,16 +402,16 @@ function EditCard({
   return (
     <div className="rounded-lg border bg-card p-3.5 text-card-foreground">
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
-        <span
-          className={cn("rounded-full px-2 py-0.5 font-medium", meta.cls)}
-        >
+        <span className={cn("rounded-full px-2 py-0.5 font-medium", meta.cls)}>
           {meta.label}
         </span>
         <span className="text-muted-foreground">{typeLabel}</span>
         {edit.blockType ? (
           <span className="text-muted-foreground">· {edit.blockType}</span>
         ) : null}
-        <span className="ml-auto text-muted-foreground">{fmt(edit.editedAt)}</span>
+        <span className="ml-auto text-muted-foreground">
+          {fmt(edit.editedAt)}
+        </span>
       </div>
 
       <div className="space-y-1.5 text-sm leading-relaxed">
@@ -491,4 +491,3 @@ function EditCard({
     </div>
   );
 }
-

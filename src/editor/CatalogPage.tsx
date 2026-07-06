@@ -38,7 +38,10 @@ type Primitive = {
 // Карта: смысловой тип → примитив (вариант/режим).
 const SEMANTIC_MAP: { meaning: string; maps: string }[] = [
   { meaning: "Совет / рекомендация", maps: "Callout · highlight" },
-  { meaning: "Предупреждение / риск", maps: "Callout · warning (обёртка Warning)" },
+  {
+    meaning: "Предупреждение / риск",
+    maps: "Callout · warning (обёртка Warning)",
+  },
   { meaning: "Практическое задание", maps: "Callout · briefing" },
   { meaning: "Определение (развёрнутое)", maps: "Callout · info" },
   { meaning: "Определение (в тексте)", maps: "GlossaryTerm (инлайн)" },
@@ -49,7 +52,10 @@ const SEMANTIC_MAP: { meaning: string; maps: string }[] = [
   { meaning: "Кейс (портрет)", maps: "PersonaCard" },
   { meaning: "Вопрос-ответ (faq)", maps: "Disclosure" },
   { meaning: "Миф / факт", maps: "Disclosure (режим-квиз, Badge)" },
-  { meaning: "Тест / тренажёр (кейс → варианты → разбор)", maps: "QuizItem (новый)" },
+  {
+    meaning: "Тест / тренажёр (кейс → варианты → разбор)",
+    maps: "QuizItem (новый)",
+  },
   { meaning: "ИИ-промпт / шаблон", maps: "CodeSnippet" },
   { meaning: "Пошаговый список (в тексте)", maps: "OrderedList" },
   { meaning: "Шаги-ссылки", maps: "StepsShelf" },
@@ -63,9 +69,9 @@ const PRIMITIVES: Primitive[] = [
     tagline: "Условие → варианты с вердиктом → разбор. Интерактивный.",
     meanings: ["тест", "тренажёр", "кейс-вопрос"],
     when: "Кейс/вопрос с вариантами ответа, где важно показать верный и разобрать почему. Условие видно всегда, скрыт только разбор.",
-    notWhen: "Просто вопрос-ответ без выбора → Disclosure. Перечень задач для галочек → Checklist.",
-    code:
-      '<QuizItem question="…" options={[{ text, verdict: "correct|wrong|partial" }]} explanation={<>…</>} />',
+    notWhen:
+      "Просто вопрос-ответ без выбора → Disclosure. Перечень задач для галочек → Checklist.",
+    code: '<QuizItem question="…" options={[{ text, verdict: "correct|wrong|partial" }]} explanation={<>…</>} />',
     preview: (
       <QuizItem
         context={
@@ -90,10 +96,10 @@ const PRIMITIVES: Primitive[] = [
         ]}
         explanation={
           <p>
-            Монтаж требует зрительной концентрации и работы со звуковой
-            дорожкой — кандидатам с инвалидностью по зрению и слуху он подойдёт
-            хуже. Наиболее подходят соискатели с инвалидностью
-            опорно-двигательного аппарата (с учётом доступности помещения).
+            Монтаж требует зрительной концентрации и работы со звуковой дорожкой
+            — кандидатам с инвалидностью по зрению и слуху он подойдёт хуже.
+            Наиболее подходят соискатели с инвалидностью опорно-двигательного
+            аппарата (с учётом доступности помещения).
           </p>
         }
       />
@@ -104,9 +110,9 @@ const PRIMITIVES: Primitive[] = [
     tagline: "Редакционная плашка с закрытым списком вариантов.",
     meanings: ["совет", "предупреждение", "задание", "определение", "пример"],
     when: "Короткая выделенная мысль в стороне от основного текста: совет (highlight), риск (warning), задание (briefing), справка (info).",
-    notWhen: "Не для длинных абзацев, не для цитат людей (→ Blockquote) и не для крупных чисел-крючков (→ StatBlock).",
-    code:
-      '<Callout variant="highlight" title="Совет">…</Callout>\n<Warning>…</Warning>   // = Callout · warning',
+    notWhen:
+      "Не для длинных абзацев, не для цитат людей (→ Blockquote) и не для крупных чисел-крючков (→ StatBlock).",
+    code: '<Callout variant="highlight" title="Совет">…</Callout>\n<Warning>…</Warning>   // = Callout · warning',
     preview: (
       <div className="space-y-3">
         <Callout variant="highlight" title="Совет">
@@ -124,7 +130,8 @@ const PRIMITIVES: Primitive[] = [
     tagline: "Прямая речь одного человека с атрибуцией.",
     meanings: ["цитата", "кейс (короткий)"],
     when: "Цитата эксперта или короткая история от первого лица.",
-    notWhen: "Развёрнутый портрет с раскрытием → PersonaCard. Не для обычного текста.",
+    notWhen:
+      "Развёрнутый портрет с раскрытием → PersonaCard. Не для обычного текста.",
     code: '<Blockquote attribution="Денис, оператор">…</Blockquote>',
     preview: (
       <Blockquote attribution="Денис, оператор колл-центра">
@@ -139,8 +146,7 @@ const PRIMITIVES: Primitive[] = [
     meanings: ["кейс (портрет)"],
     when: "Развёрнутая история человека, которую хочется свернуть/раскрыть.",
     notWhen: "Короткая цитата без портрета → Blockquote.",
-    code:
-      '<PersonaCard name="Денис" role="оператор" summary="…">…</PersonaCard>',
+    code: '<PersonaCard name="Денис" role="оператор" summary="…">…</PersonaCard>',
     preview: (
       <PersonaCard
         name="Денис"
@@ -160,8 +166,7 @@ const PRIMITIVES: Primitive[] = [
     meanings: ["faq", "миф-факт"],
     when: "Частые вопросы; «миф или правда» как квиз (утверждение + бейдж → разбор).",
     notWhen: "Не для линейного чтения, где всё важно сразу.",
-    code:
-      '<Disclosure entries={[{ trigger, badge?, content }]} />',
+    code: "<Disclosure entries={[{ trigger, badge?, content }]} />",
     preview: (
       <Disclosure
         entries={[
@@ -185,8 +190,7 @@ const PRIMITIVES: Primitive[] = [
     meanings: ["шаги"],
     when: "Шаги в тексте → OrderedList. Шаги, ведущие на отдельные страницы → StepsShelf.",
     notWhen: "Не для несвязанного перечня (→ BulletList).",
-    code:
-      "<OrderedList><li>…</li></OrderedList>\n<StepsShelf steps={[…]} link=\"each-step-link\" />",
+    code: '<OrderedList><li>…</li></OrderedList>\n<StepsShelf steps={[…]} link="each-step-link" />',
     preview: (
       <div className="space-y-4">
         <OrderedList>
@@ -212,19 +216,24 @@ const PRIMITIVES: Primitive[] = [
     meanings: ["сравнение"],
     when: "Противопоставление двух подходов или состояний.",
     notWhen: "Больше двух колонок или табличные данные → DataTable.",
-    code:
-      '<CompareColumns left={{title, tone, items}} right={{…}} />',
+    code: "<CompareColumns left={{title, tone, items}} right={{…}} />",
     preview: (
       <CompareColumns
         left={{
           title: "Разумная адаптация",
           tone: "good",
-          items: ["Гибкий график по договорённости", "Наставник на первый месяц"],
+          items: [
+            "Гибкий график по договорённости",
+            "Наставник на первый месяц",
+          ],
         }}
         right={{
           title: "Гиперопека",
           tone: "bad",
-          items: ["Решать всё за сотрудника", "Освобождать от задач «на всякий случай»"],
+          items: [
+            "Решать всё за сотрудника",
+            "Освобождать от задач «на всякий случай»",
+          ],
         }}
       />
     ),
@@ -235,11 +244,14 @@ const PRIMITIVES: Primitive[] = [
     meanings: ["факт-цифра"],
     when: "Число-крючок, которое должно бросаться в глаза.",
     notWhen: "Не для расчётов и таблиц с числами (→ DataTable).",
-    code: '<StatBlock stats={[{ value, label }]} />',
+    code: "<StatBlock stats={[{ value, label }]} />",
     preview: (
       <StatBlock
         stats={[
-          { value: "4,3 млн", label: "человек трудоспособного возраста с инвалидностью в России" },
+          {
+            value: "4,3 млн",
+            label: "человек трудоспособного возраста с инвалидностью в России",
+          },
           { value: "~30%", label: "из них работают" },
         ]}
       />
@@ -270,8 +282,8 @@ const PRIMITIVES: Primitive[] = [
     code: '…в основе — <GlossaryTerm term="ИПРА">ИПРА</GlossaryTerm>…',
     preview: (
       <Paragraph>
-        В основе — <GlossaryTerm term="ИПРА">ИПРА</GlossaryTerm>: убрать барьер —
-        человек работает наравне.
+        В основе — <GlossaryTerm term="ИПРА">ИПРА</GlossaryTerm>: убрать барьер
+        — человек работает наравне.
       </Paragraph>
     ),
   },
@@ -345,7 +357,9 @@ export function CatalogPage() {
               <div className="space-y-3">
                 <div className="space-y-1 text-sm">
                   <p>
-                    <span className="font-medium text-foreground">Когда брать. </span>
+                    <span className="font-medium text-foreground">
+                      Когда брать.{" "}
+                    </span>
                     <span className="text-muted-foreground">{p.when}</span>
                   </p>
                   <p>
