@@ -54,13 +54,24 @@ export const routeTitles: Record<string, string> = {
   "/a11y": "Доступность",
 };
 
-/** Разделы для главного меню в шапке: общая база + два ролевых трека + соискатели. */
-export const tracks: { track: Track; label: string; path: string }[] = [
-  { track: "general", label: "Общая информация", path: "/general" },
-  { track: "companies", label: "Для компаний", path: "/companies" },
-  { track: "ngo", label: "Для НКО", path: "/ngo" },
-  { track: "jobseekers", label: "Для соискателей", path: "/jobseekers" },
+/** Главное меню в шапке (плоское): 4 общие темы М1–М4 подняты в верхний уровень
+ *  как отдельные пункты, затем ролевые треки и сквозная ссылка на Яндекс. Темы
+ *  М1–М4 при этом сохраняют общий боковой сайдбар (трек `general`). */
+export const mainMenu: { label: string; path: string }[] = [
+  { label: "Реалии и мифы", path: "/general/start" },
+  { label: "Как устроен наём", path: "/general/how" },
+  { label: "Правовые основы", path: "/general/legal" },
+  { label: "Команда и коммуникация", path: "/general/team" },
+  { label: "Для компаний", path: "/companies" },
+  { label: "Для НКО", path: "/ngo" },
+  { label: "Для соискателей", path: "/jobseekers" },
+  { label: "Трудоустройство в Яндексе", path: "/yandex-jobs" },
 ];
+
+/** Активен ли пункт меню для текущего пути (сам путь либо его вложенность). */
+export function isMenuActive(itemPath: string, pathname: string): boolean {
+  return pathname === itemPath || pathname.startsWith(itemPath + "/");
+}
 
 export type SidebarItem = {
   label: string;

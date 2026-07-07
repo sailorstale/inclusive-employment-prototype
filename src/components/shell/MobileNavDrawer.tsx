@@ -2,7 +2,7 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { X, Search } from "lucide-react";
-import { tracks, getTrack } from "@/data/nav";
+import { mainMenu, isMenuActive, getTrack } from "@/data/nav";
 import { searchPages } from "@/lib/search";
 import { scrollToId } from "@/lib/scroll";
 import { useToc } from "@/lib/toc";
@@ -219,25 +219,20 @@ export function MobileNavDrawer({
               Разделы сайта
             </p>
             <div className="space-y-1">
-              {tracks.map((t) => (
-                <Link
-                  key={t.track}
-                  to={t.path}
-                  onClick={onClose}
-                  aria-current={track === t.track ? "page" : undefined}
-                  className={globalLinkClass(track === t.track)}
-                >
-                  {t.label}
-                </Link>
-              ))}
-              <Link
-                to="/yandex-jobs"
-                onClick={onClose}
-                aria-current={pathname === "/yandex-jobs" ? "page" : undefined}
-                className={globalLinkClass(pathname === "/yandex-jobs")}
-              >
-                Трудоустройство в Яндексе
-              </Link>
+              {mainMenu.map((item) => {
+                const active = isMenuActive(item.path, pathname);
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={onClose}
+                    aria-current={active ? "page" : undefined}
+                    className={globalLinkClass(active)}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
               <Link
                 to="/glossary"
                 onClick={onClose}
