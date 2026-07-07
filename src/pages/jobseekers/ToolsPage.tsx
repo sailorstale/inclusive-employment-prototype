@@ -121,7 +121,7 @@ export function ToolsPage() {
           </CardGrid>
           <Footnote>
             Если разбираетесь с трудовым договором — параллельно посмотрите{" "}
-            <SmartLink to="/companies/legal/contract">
+            <SmartLink to="/general/legal/contract">
               «Договор и оформление»
             </SmartLink>{" "}
             в разделе «Для компаний»; там — что должно быть в правильном ТД.

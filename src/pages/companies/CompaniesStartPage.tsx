@@ -621,7 +621,7 @@ export function CompaniesStartPage() {
                   <Paragraph>
                     Подробнее о юридических нюансах трудоустройства людей с
                     инвалидностью — в{" "}
-                    <SmartLink to="/companies/legal">Модуле 2</SmartLink>.
+                    <SmartLink to="/general/legal">Модуле 2</SmartLink>.
                   </Paragraph>
                 </>
               ),
@@ -661,7 +661,7 @@ export function CompaniesStartPage() {
                     предлагать помощь и какие слова использовать. Например, не
                     все знают, как корректно обратиться к человеку на инвалидной
                     коляске («проходите» или «проезжайте»). В нашем гиде есть{" "}
-                    <SmartLink to="/companies/team">
+                    <SmartLink to="/general/team">
                       модуль про этику общения
                     </SmartLink>{" "}
                     — там вы найдёте ответы на такие вопросы.
@@ -1472,13 +1472,13 @@ export function CompaniesStartPage() {
         items={[
           {
             title: "Правила оформления",
-            to: "/companies/legal",
+            to: "/general/legal",
             description:
               "Юридические нюансы: договор, ИПРА, нормы рабочего времени, льготы и квоты (Модуль 2).",
           },
           {
             title: "Команда и коммуникация",
-            to: "/companies/team",
+            to: "/general/team",
             description: "Этика общения и подготовка команды к новому коллеге.",
           },
           {

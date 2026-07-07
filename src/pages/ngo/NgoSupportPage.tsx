@@ -477,7 +477,7 @@ export function NgoSupportPage() {
         </BulletList>
         <Paragraph>
           Подробнее о формах занятости читайте в разделе{" "}
-          <SmartLink to="/ngo/legal">
+          <SmartLink to="/general/legal">
             «Документы, льготы и квоты: правовые основы трудоустройства»
           </SmartLink>
           .

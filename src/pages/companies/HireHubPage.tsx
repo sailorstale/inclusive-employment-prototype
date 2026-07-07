@@ -141,19 +141,19 @@ export function HireHubPage() {
         items={[
           {
             title: "Реалии и мифы",
-            to: "/companies/start",
+            to: "/general/start",
             description:
               "если по дороге возникли сомнения, объяснение «зачем» лежит здесь.",
           },
           {
             title: "Правила оформления",
-            to: "/companies/legal",
+            to: "/general/legal",
             description:
               "справочник по юридическим вопросам, который понадобится на Шаге 4 (оформление) и в течение всего найма.",
           },
           {
             title: "Команда и коммуникация",
-            to: "/companies/team",
+            to: "/general/team",
             description:
               "как подготовить руководителя и команду к выходу сотрудника; дополняет Шаг 3.",
           },

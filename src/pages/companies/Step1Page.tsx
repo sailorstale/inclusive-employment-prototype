@@ -988,13 +988,13 @@ export function Step1Page() {
           },
           {
             title: "Договор и оформление",
-            to: "/companies/legal/contract",
+            to: "/general/legal/contract",
             description:
               "справочник по юридическому оформлению сотрудника с инвалидностью, понадобится дальше по треку.",
           },
           {
             title: "Реалии и мифы",
-            to: "/companies/start",
+            to: "/general/start",
             description:
               "если по дороге возникли сомнения, объяснение «зачем компании инклюзивный наём» лежит здесь.",
           },

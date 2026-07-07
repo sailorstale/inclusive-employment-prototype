@@ -107,25 +107,25 @@ export function NgoHubPage() {
         <CardGrid cols={2}>
           <Card
             link="internal"
-            to="/ngo/reality"
+            to="/general/start"
             title="Реалии и мифы"
             description="Реалии инклюзивного трудоустройства, плюсы для бизнеса, риски и короткая проверка мифов."
           />
           <Card
             link="internal"
-            to="/ngo/how"
+            to="/general/how"
             title="Как устроен наём"
             description="Кто участвует в инклюзивном найме, какими путями люди находят работу, где искать кандидатов и зачем нужна НКО."
           />
           <Card
             link="internal"
-            to="/ngo/legal"
+            to="/general/legal"
             title="Правовые основы"
             description="Договор, ИПРА, льготы, квоты, формы занятости. По конкретному правовому вопросу."
           />
           <Card
             link="internal"
-            to="/ngo/ethics"
+            to="/general/team"
             title="Команда и коммуникация"
             description="Как говорить о людях с инвалидностью и с ними. Корректные слова, ситуации, памятки."
           />

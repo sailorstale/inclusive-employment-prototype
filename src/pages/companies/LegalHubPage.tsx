@@ -35,7 +35,7 @@ export function LegalHubPage() {
           », но в этом гиде мы говорим «человек с инвалидностью». Так мы делаем
           акцент на личности и профессиональных качествах, а не на ограничениях.
           О корректной терминологии — в следующем{" "}
-          <SmartLink to="/companies/team">модуле</SmartLink>.
+          <SmartLink to="/general/team">модуле</SmartLink>.
         </Paragraph>
 
         <Paragraph>
@@ -114,31 +114,31 @@ export function LegalHubPage() {
         <CardGrid cols={2}>
           <Card
             link="internal"
-            to="/companies/legal/contract"
+            to="/general/legal/contract"
             title="Договор и оформление"
             description="Как оформить сотрудника по трудовому договору. Справка об инвалидности, группы, ИПРА."
           />
           <Card
             link="internal"
-            to="/companies/legal/benefits"
+            to="/general/legal/benefits"
             title="Льготы"
             description="Какие льготы положены сотрудникам с инвалидностью и какие формы занятости доступны."
           />
           <Card
             link="internal"
-            to="/companies/legal/quotas"
+            to="/general/legal/quotas"
             title="Квоты"
             description="Что такое квоты, как их выполнить, на какие субсидии и меры господдержки рассчитывать."
           />
           <Card
             link="internal"
-            to="/companies/legal/status"
+            to="/general/legal/status"
             title="Особые ситуации"
             description="Недееспособность, сохранение пособий при трудовом договоре, основания увольнения."
           />
           <Card
             link="internal"
-            to="/companies/legal/faq"
+            to="/general/legal/faq"
             title="Вопросы и ответы"
             description="Итоговый тест и частые вопросы по правовым нюансам трудоустройства."
           />
@@ -151,13 +151,13 @@ export function LegalHubPage() {
         items={[
           {
             title: "Команда и коммуникация",
-            to: "/companies/team",
+            to: "/general/team",
             description:
               "Как корректно говорить о терминах и общаться с сотрудниками.",
           },
           {
             title: "С чего начать",
-            to: "/companies/start",
+            to: "/general/start",
             description:
               "Общий обзор для компании перед погружением в правовые детали.",
           },

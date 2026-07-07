@@ -57,17 +57,17 @@ export function GlossaryPage() {
         items={[
           {
             title: "Договор и оформление",
-            to: "/companies/legal/contract",
+            to: "/general/legal/contract",
             description: "Как правильно оформить сотрудника с инвалидностью.",
           },
           {
             title: "Команда и коммуникация",
-            to: "/companies/team",
+            to: "/general/team",
             description: "Как подготовить коллектив и наладить общение.",
           },
           {
             title: "Вопросы и ответы",
-            to: "/companies/legal/faq",
+            to: "/general/legal/faq",
             description: "Короткие ответы на частые юридические вопросы.",
           },
         ]}

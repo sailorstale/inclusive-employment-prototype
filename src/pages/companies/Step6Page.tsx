@@ -732,7 +732,7 @@ export function Step6Page() {
           </Paragraph>
           <Paragraph>
             При планировании фонда оплаты труда важно учитывать особенности{" "}
-            <SmartLink to="/companies/legal">
+            <SmartLink to="/general/legal">
               трудового законодательства
             </SmartLink>
             , о которых мы подробно рассказывали в модуле 2.
@@ -999,7 +999,7 @@ export function Step6Page() {
           },
           {
             title: "Правила оформления",
-            to: "/companies/legal",
+            to: "/general/legal",
             description:
               "Особенности трудового законодательства, важные при планировании ФОТ и налогов (Модуль 2).",
           },

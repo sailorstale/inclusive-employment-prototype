@@ -1,22 +1,27 @@
 // Единый источник навигации (00 — Карта сайта и навигация, v2). Из него строятся
 // крошки, активные пункты, боковое меню и подписи. Страницы не хардкодят навигацию.
 
-export type Track = "companies" | "ngo" | "jobseekers";
+export type Track = "general" | "companies" | "ngo" | "jobseekers";
 
 /** Заголовок-крошка для каждого маршрута (Главная › … › текущая). */
 export const routeTitles: Record<string, string> = {
   "/": "Главная",
 
-  // Трек «Для компаний» (М1–М5)
+  // Раздел «Общая информация» — общая база М1–М4 (один комплект страниц, оба
+  // ролевых трека ведут сюда).
+  "/general": "Общая информация",
+  "/general/start": "Реалии и мифы",
+  "/general/how": "Как устроен наём",
+  "/general/legal": "Правовые основы",
+  "/general/legal/contract": "Договор и оформление",
+  "/general/legal/benefits": "Льготы и формы занятости",
+  "/general/legal/quotas": "Квоты и господдержка",
+  "/general/legal/status": "Особые ситуации",
+  "/general/legal/faq": "Вопросы и ответы",
+  "/general/team": "Команда и коммуникация",
+
+  // Трек «Для компаний» (М5 — Наём по шагам)
   "/companies": "Для компаний",
-  "/companies/start": "Реалии и мифы",
-  "/companies/how": "Как устроен наём",
-  "/companies/legal": "Правовые основы",
-  "/companies/legal/contract": "Договор и оформление",
-  "/companies/legal/benefits": "Льготы и формы занятости",
-  "/companies/legal/quotas": "Квоты и господдержка",
-  "/companies/legal/status": "Особые ситуации",
-  "/companies/legal/faq": "Вопросы и ответы",
   "/companies/hire": "Наём по шагам",
   "/companies/hire/step-1": "Шаг 1. Выбор вакансии",
   "/companies/hire/step-2": "Шаг 2. Аудит готовности",
@@ -24,14 +29,9 @@ export const routeTitles: Record<string, string> = {
   "/companies/hire/step-4": "Шаг 4. Поиск и оформление",
   "/companies/hire/step-5": "Шаг 5. Онбординг",
   "/companies/hire/step-6": "Шаг 6. Затраты",
-  "/companies/team": "Команда и коммуникация",
 
-  // Трек «Для НКО» — Основы (дубль общего слоя М1–М4) + Программа НКО (М6)
+  // Трек «Для НКО» — Программа НКО (М6)
   "/ngo": "Для НКО",
-  "/ngo/reality": "Реалии и мифы",
-  "/ngo/how": "Как устроен наём",
-  "/ngo/legal": "Правовые основы",
-  "/ngo/ethics": "Команда и коммуникация",
   "/ngo/start": "Запустить программу",
   "/ngo/candidates": "Работать с соискателем",
   "/ngo/employers": "Выходить на работодателей",
@@ -54,8 +54,9 @@ export const routeTitles: Record<string, string> = {
   "/a11y": "Доступность",
 };
 
-/** Три ролевых трека для главного меню в шапке. */
+/** Разделы для главного меню в шапке: общая база + два ролевых трека + соискатели. */
 export const tracks: { track: Track; label: string; path: string }[] = [
+  { track: "general", label: "Общая информация", path: "/general" },
   { track: "companies", label: "Для компаний", path: "/companies" },
   { track: "ngo", label: "Для НКО", path: "/ngo" },
   { track: "jobseekers", label: "Для соискателей", path: "/jobseekers" },
@@ -81,34 +82,45 @@ export type SidebarSpec = {
 };
 
 export const sidebars: Record<Track, SidebarSpec> = {
+  general: {
+    title: "Общая информация",
+    track: "general",
+    groups: [
+      {
+        items: [
+          { label: "Реалии и мифы", path: "/general/start" },
+          { label: "Как устроен наём", path: "/general/how" },
+          {
+            label: "Правовые основы",
+            path: "/general/legal",
+            children: [
+              {
+                label: "Договор и оформление",
+                path: "/general/legal/contract",
+              },
+              {
+                label: "Льготы и формы занятости",
+                path: "/general/legal/benefits",
+              },
+              {
+                label: "Квоты и господдержка",
+                path: "/general/legal/quotas",
+              },
+              { label: "Особые ситуации", path: "/general/legal/status" },
+              { label: "Вопросы и ответы", path: "/general/legal/faq" },
+            ],
+          },
+          { label: "Команда и коммуникация", path: "/general/team" },
+        ],
+      },
+    ],
+  },
   companies: {
     title: "Для компаний",
     track: "companies",
     groups: [
       {
         items: [
-          { label: "Реалии и мифы", path: "/companies/start" },
-          { label: "Как устроен наём", path: "/companies/how" },
-          {
-            label: "Правовые основы",
-            path: "/companies/legal",
-            children: [
-              {
-                label: "Договор и оформление",
-                path: "/companies/legal/contract",
-              },
-              {
-                label: "Льготы и формы занятости",
-                path: "/companies/legal/benefits",
-              },
-              {
-                label: "Квоты и господдержка",
-                path: "/companies/legal/quotas",
-              },
-              { label: "Особые ситуации", path: "/companies/legal/status" },
-              { label: "Вопросы и ответы", path: "/companies/legal/faq" },
-            ],
-          },
           {
             label: "Наём по шагам",
             path: "/companies/hire",
@@ -133,7 +145,6 @@ export const sidebars: Record<Track, SidebarSpec> = {
               { label: "Шаг 6. Затраты", path: "/companies/hire/step-6" },
             ],
           },
-          { label: "Команда и коммуникация", path: "/companies/team" },
         ],
       },
     ],
@@ -143,16 +154,6 @@ export const sidebars: Record<Track, SidebarSpec> = {
     track: "ngo",
     groups: [
       {
-        label: "Основы",
-        items: [
-          { label: "Реалии и мифы", path: "/ngo/reality" },
-          { label: "Как устроен наём", path: "/ngo/how" },
-          { label: "Правовые основы", path: "/ngo/legal" },
-          { label: "Команда и коммуникация", path: "/ngo/ethics" },
-        ],
-      },
-      {
-        label: "Программа НКО",
         items: [
           { label: "Запустить программу", path: "/ngo/start" },
           { label: "Работать с соискателем", path: "/ngo/candidates" },
@@ -183,6 +184,8 @@ export const sidebars: Record<Track, SidebarSpec> = {
 
 /** Трек, к которому относится путь (для активного пункта шапки + бокового меню). */
 export function getTrack(pathname: string): Track | null {
+  if (pathname === "/general" || pathname.startsWith("/general/"))
+    return "general";
   if (pathname === "/companies" || pathname.startsWith("/companies/"))
     return "companies";
   if (pathname === "/ngo" || pathname.startsWith("/ngo/")) return "ngo";

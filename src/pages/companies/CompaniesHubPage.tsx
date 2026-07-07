@@ -14,19 +14,19 @@ export function CompaniesHubPage() {
       <CardGrid cols={2}>
         <Card
           link="internal"
-          to="/companies/start"
+          to="/general/start"
           title="Реалии и мифы"
           description="Реалии, мифы, плюсы и риски. Для тех, кто ещё не решил."
         />
         <Card
           link="internal"
-          to="/companies/how"
+          to="/general/how"
           title="Как устроен наём"
           description="Кто участвует в инклюзивном найме, какими путями люди находят работу, где искать кандидатов и зачем нужна НКО. Общая картина процесса."
         />
         <Card
           link="internal"
-          to="/companies/legal"
+          to="/general/legal"
           title="Правовые основы"
           description="Договор, ИПРА, льготы, квоты, формы занятости. По конкретному вопросу."
         />
@@ -38,7 +38,7 @@ export function CompaniesHubPage() {
         />
         <Card
           link="internal"
-          to="/companies/team"
+          to="/general/team"
           title="Команда и коммуникация"
           description="Как говорить с коллегой с инвалидностью. Карточки, ситуации, памятки."
         />

@@ -1093,7 +1093,7 @@ export function Step3Page() {
             или внутренний курс по пониманию инвалидности, — это хороший старт.
             Если таких материалов нет, предложите сотрудникам ознакомиться с
             рекомендациями по взаимодействию с людьми с инвалидностью в{" "}
-            <SmartLink to="/companies/team">«Команде и коммуникации»</SmartLink>
+            <SmartLink to="/general/team">«Команде и коммуникации»</SmartLink>
             .
           </Paragraph>
           <Paragraph>
@@ -1241,7 +1241,7 @@ export function Step3Page() {
           },
           {
             title: "Команда и коммуникация",
-            to: "/companies/team",
+            to: "/general/team",
             description:
               "Как подготовить руководителя и команду и наладить общение (Модуль 3).",
           },

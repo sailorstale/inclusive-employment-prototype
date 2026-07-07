@@ -1718,13 +1718,13 @@ export function CompaniesHowPage() {
           },
           {
             title: "Что говорит закон",
-            to: "/companies/legal",
+            to: "/general/legal",
             description:
               "Правовые нюансы найма: нормы по часам и группам, квоты, льготы, оформление в трудовом договоре.",
           },
           {
             title: "Команда и общение",
-            to: "/companies/team",
+            to: "/general/team",
             description:
               "Как выстроить коммуникацию и доступную среду в команде, этика взаимодействия.",
           },

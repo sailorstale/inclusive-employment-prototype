@@ -1369,7 +1369,7 @@ export function Step2Page() {
           },
           {
             title: "Команда и коммуникация",
-            to: "/companies/team",
+            to: "/general/team",
             description: "Как подготовить коллектив и наладить общение.",
           },
         ]}

@@ -507,19 +507,19 @@ export function QuotasPage() {
         items={[
           {
             title: "Льготы и формы занятости",
-            to: "/companies/legal/benefits",
+            to: "/general/legal/benefits",
             description:
               "Какие льготы положены сотрудникам с инвалидностью и какие формы занятости доступны.",
           },
           {
             title: "Договор и оформление",
-            to: "/companies/legal/contract",
+            to: "/general/legal/contract",
             description:
               "Как оформить сотрудника с инвалидностью по трудовому договору.",
           },
           {
             title: "Вопросы и ответы",
-            to: "/companies/legal/faq",
+            to: "/general/legal/faq",
             description: "Короткие ответы на частые юридические вопросы.",
           },
         ]}

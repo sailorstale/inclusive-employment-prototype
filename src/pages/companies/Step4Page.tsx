@@ -477,7 +477,7 @@ export function Step4Page() {
           <Paragraph>
             Основные каналы поиска кандидатов с инвалидностью мы подробно
             разбирали в модуле 4{" "}
-            <SmartLink to="/companies/legal">
+            <SmartLink to="/general/legal">
               «Как работает инклюзивный наём: от поиска до партнёрства»
             </SmartLink>
             .
@@ -1373,7 +1373,7 @@ export function Step4Page() {
           отличается от любого другого трудоустройства. Подробно о документах,{" "}
           <GlossaryTerm term="ИПРА">ИПРА</GlossaryTerm>, льготах и требованиях
           законодательства мы уже рассказывали в модуле 2{" "}
-          <SmartLink to="/companies/legal">
+          <SmartLink to="/general/legal">
             «Документы, льготы и квоты: правовые основы трудоустройства»
           </SmartLink>
           .
@@ -1672,7 +1672,7 @@ export function Step4Page() {
           },
           {
             title: "Правила оформления",
-            to: "/companies/legal",
+            to: "/general/legal",
             description:
               "Правовые детали оформления, документов, ИПРА, льгот и квот (Модуль 2), на которые ссылается раздел оформления.",
           },

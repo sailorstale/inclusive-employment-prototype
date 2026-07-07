@@ -8,10 +8,10 @@ const columns: { title: string; links: { label: string; to: string }[] }[] = [
   {
     title: "Для компаний",
     links: [
-      { label: "Реалии и мифы", to: "/companies/start" },
-      { label: "Правила оформления", to: "/companies/legal" },
+      { label: "Реалии и мифы", to: "/general/start" },
+      { label: "Правила оформления", to: "/general/legal" },
       { label: "Наём по шагам", to: "/companies/hire" },
-      { label: "Команда", to: "/companies/team" },
+      { label: "Команда", to: "/general/team" },
     ],
   },
   {

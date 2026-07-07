@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { Layout } from "./components/shell/Layout";
 import { ScrollToTop } from "./components/shell/ScrollToTop";
@@ -15,7 +15,9 @@ import { YandexJobsPage } from "./pages/YandexJobsPage";
 import { FeedbackPage } from "./pages/FeedbackPage";
 import { A11yPage } from "./pages/A11yPage";
 
-// Трек «Для компаний» (М1–М5)
+// Общая база М1–М4 (раздел «Общая информация») + трек «Для компаний» (М5).
+// Страницы общей базы физически лежат в pages/companies/ (исторически), но
+// монтируются под /general/* и служат обоим ролевым трекам.
 import { CompaniesHubPage } from "./pages/companies/CompaniesHubPage";
 import { CompaniesStartPage } from "./pages/companies/CompaniesStartPage";
 import { CompaniesHowPage } from "./pages/companies/CompaniesHowPage";
@@ -34,12 +36,9 @@ import { Step5Page } from "./pages/companies/Step5Page";
 import { Step6Page } from "./pages/companies/Step6Page";
 import { TeamPage } from "./pages/companies/TeamPage";
 
-// Трек «Для НКО» — Основы (дубль М1–М4) + Программа НКО (М6)
+// Трек «Для НКО» — Программа НКО (М6). Общая база М1–М4 — в разделе
+// «Общая информация» (/general/*), НКО-дубли удалены.
 import { NgoHubPage } from "./pages/ngo/NgoHubPage";
-import { NgoRealityPage } from "./pages/ngo/NgoRealityPage";
-import { NgoHowPage } from "./pages/ngo/NgoHowPage";
-import { NgoLegalPage } from "./pages/ngo/NgoLegalPage";
-import { NgoEthicsPage } from "./pages/ngo/NgoEthicsPage";
 import { NgoStartPage } from "./pages/ngo/NgoStartPage";
 import { NgoCandidatesPage } from "./pages/ngo/NgoCandidatesPage";
 import { NgoEmployersPage } from "./pages/ngo/NgoEmployersPage";
@@ -63,16 +62,23 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
 
-          {/* Для компаний */}
+          {/* Общая информация — общая база М1–М4 (один комплект страниц) */}
+          <Route
+            path="/general"
+            element={<Navigate to="/general/start" replace />}
+          />
+          <Route path="/general/start" element={<CompaniesStartPage />} />
+          <Route path="/general/how" element={<CompaniesHowPage />} />
+          <Route path="/general/legal" element={<LegalHubPage />} />
+          <Route path="/general/legal/contract" element={<ContractPage />} />
+          <Route path="/general/legal/benefits" element={<BenefitsPage />} />
+          <Route path="/general/legal/quotas" element={<QuotasPage />} />
+          <Route path="/general/legal/status" element={<StatusPage />} />
+          <Route path="/general/legal/faq" element={<FaqPage />} />
+          <Route path="/general/team" element={<TeamPage />} />
+
+          {/* Для компаний (М5 — Наём по шагам) */}
           <Route path="/companies" element={<CompaniesHubPage />} />
-          <Route path="/companies/start" element={<CompaniesStartPage />} />
-          <Route path="/companies/how" element={<CompaniesHowPage />} />
-          <Route path="/companies/legal" element={<LegalHubPage />} />
-          <Route path="/companies/legal/contract" element={<ContractPage />} />
-          <Route path="/companies/legal/benefits" element={<BenefitsPage />} />
-          <Route path="/companies/legal/quotas" element={<QuotasPage />} />
-          <Route path="/companies/legal/status" element={<StatusPage />} />
-          <Route path="/companies/legal/faq" element={<FaqPage />} />
           <Route path="/companies/hire" element={<HireHubPage />} />
           <Route path="/companies/hire/step-1" element={<Step1Page />} />
           <Route path="/companies/hire/step-2" element={<Step2Page />} />
@@ -80,14 +86,9 @@ export default function App() {
           <Route path="/companies/hire/step-4" element={<Step4Page />} />
           <Route path="/companies/hire/step-5" element={<Step5Page />} />
           <Route path="/companies/hire/step-6" element={<Step6Page />} />
-          <Route path="/companies/team" element={<TeamPage />} />
 
-          {/* Для НКО */}
+          {/* Для НКО (М6 — Программа НКО) */}
           <Route path="/ngo" element={<NgoHubPage />} />
-          <Route path="/ngo/reality" element={<NgoRealityPage />} />
-          <Route path="/ngo/how" element={<NgoHowPage />} />
-          <Route path="/ngo/legal" element={<NgoLegalPage />} />
-          <Route path="/ngo/ethics" element={<NgoEthicsPage />} />
           <Route path="/ngo/start" element={<NgoStartPage />} />
           <Route path="/ngo/candidates" element={<NgoCandidatesPage />} />
           <Route path="/ngo/employers" element={<NgoEmployersPage />} />

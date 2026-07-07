@@ -42,7 +42,7 @@ export function FeedbackPage() {
           },
           {
             title: "Реалии и мифы",
-            to: "/companies/start",
+            to: "/general/start",
             description: "Зачем компании инклюзивный наём и с чего начать.",
           },
         ]}
