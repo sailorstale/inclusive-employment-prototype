@@ -8,9 +8,9 @@ import { ThemeToggle } from "./ThemeToggle";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 
 // AppHeader (00 — глобальная навигация) — бренд-лого → #/; на десктопе (lg+)
-// плоское главное меню (4 общие темы М1–М4 + ролевые треки + «Трудоустройство
-// в Яндексе», активный подсвечен); поиск; тема. До lg меню уходит в бургер →
-// MobileNavDrawer.
+// главное меню из крупных разделов (Общая информация + ролевые треки +
+// «Трудоустройство в Яндексе», активный подсвечен); поиск; тема. До lg меню
+// уходит в бургер → MobileNavDrawer. Темы М1–М4 — в боковом меню, не здесь.
 
 export function AppHeader() {
   const { pathname } = useLocation();
@@ -41,44 +41,36 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto max-w-7xl px-6">
-        {/* Верхний ярус — бренд + поиск + тема */}
-        <div className="flex h-16 items-center gap-3 sm:gap-6">
-          {/* Бургер — мобильная/планшетная навигация (до lg) */}
-          <button
-            ref={burgerRef}
-            type="button"
-            onClick={() => setNavOpen(true)}
-            aria-label="Открыть навигацию"
-            aria-expanded={navOpen}
-            aria-controls={navOpen ? "mobile-nav" : undefined}
-            className="-ml-1 rounded-md p-2.5 text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-6 sm:gap-6">
+        {/* Бургер — мобильная/планшетная навигация (до lg) */}
+        <button
+          ref={burgerRef}
+          type="button"
+          onClick={() => setNavOpen(true)}
+          aria-label="Открыть навигацию"
+          aria-expanded={navOpen}
+          aria-controls={navOpen ? "mobile-nav" : undefined}
+          className="-ml-1 rounded-md p-2.5 text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
 
-          {/* Бренд */}
-          <Link
-            to="/"
-            className="flex shrink-0 items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary font-bold text-primary-foreground">
-              Я
-            </span>
-            <Accessibility className="h-5 w-5 text-brand" />
-            <span className="font-semibold leading-tight">
-              Инклюзия в Яндексе
-            </span>
-          </Link>
+        {/* Бренд */}
+        <Link
+          to="/"
+          className="flex shrink-0 items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary font-bold text-primary-foreground">
+            Я
+          </span>
+          <Accessibility className="h-5 w-5 text-brand" />
+          <span className="font-semibold leading-tight">
+            Инклюзия в Яндексе
+          </span>
+        </Link>
 
-          <div className="flex flex-1 items-center justify-end gap-1">
-            <SiteSearch />
-            <ThemeToggle />
-          </div>
-        </div>
-
-        {/* Нижний ярус — плоское главное меню на всю ширину (десктоп) */}
-        <nav className="hidden flex-wrap items-center gap-x-0.5 gap-y-1 border-t pb-2 pt-1.5 lg:flex">
+        {/* Главное меню — крупные разделы (десктоп) */}
+        <nav className="hidden items-center gap-0.5 lg:flex">
           {mainMenu.map((item) => {
             const active = isMenuActive(item.path, pathname);
             return (
@@ -96,6 +88,11 @@ export function AppHeader() {
             );
           })}
         </nav>
+
+        <div className="flex flex-1 items-center justify-end gap-1">
+          <SiteSearch />
+          <ThemeToggle />
+        </div>
       </div>
 
       <MobileNavDrawer open={navOpen} onClose={closeNav} />
