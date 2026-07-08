@@ -31,7 +31,6 @@ export function MobileNavDrawer({
 }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const track = getTrack(pathname);
   const { items } = useToc();
   const panelRef = React.useRef<HTMLDivElement>(null);
   const [query, setQuery] = React.useState("");
@@ -206,22 +205,22 @@ export function MobileNavDrawer({
             </nav>
           ) : null}
 
-          {/* 3. Разделы текущего трека (локальная навигация, «вы здесь»). */}
-          {track ? (
-            <div className="border-t pt-5">
-              <SidebarNav track={track} onNavigate={onClose} />
-            </div>
-          ) : null}
+          {/* 3. Полная навигация по всем разделам сайта («вы здесь» + раскрытие). */}
+          <div className="border-t pt-5">
+            <SidebarNav onNavigate={onClose} />
+          </div>
 
-          {/* 4. Все разделы сайта (глобальная навигация между треками). */}
-          <nav aria-label="Разделы сайта" className="border-t pt-5">
+          {/* 4. Сквозные страницы вне разделов (Трудоустройство в Яндексе и т.п.). */}
+          <nav aria-label="Ещё" className="border-t pt-5">
             <p className="mb-3 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Разделы сайта
+              Ещё
             </p>
             <div className="space-y-1">
-              {mainMenu.map((item) => {
-                const active = isMenuActive(item.path, pathname);
-                return (
+              {mainMenu
+                .filter((item) => getTrack(item.path) === null)
+                .map((item) => {
+                  const active = isMenuActive(item.path, pathname);
+                  return (
                   <Link
                     key={item.path}
                     to={item.path}
