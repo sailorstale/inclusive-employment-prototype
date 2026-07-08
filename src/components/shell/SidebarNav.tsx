@@ -226,9 +226,16 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation();
   const current = getTrack(pathname);
 
+  // Показываем только «Общую информацию» (всегда) и раздел, в котором читатель
+  // сейчас. Другие ролевые разделы скрыты — они пользователю не нужны, а
+  // переключение между ролями идёт через верхнее меню в шапке.
+  const visible = SECTION_ORDER.filter(
+    (track) => track === "general" || track === current,
+  );
+
   return (
     <nav aria-label="Навигация по сайту" className="space-y-2.5">
-      {SECTION_ORDER.map((track) => (
+      {visible.map((track) => (
         <SectionGroup
           key={track}
           spec={sidebars[track]}
