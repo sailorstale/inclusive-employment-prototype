@@ -7,9 +7,9 @@ export type Track = "general" | "companies" | "ngo" | "jobseekers";
 export const routeTitles: Record<string, string> = {
   "/": "Главная",
 
-  // Раздел «Общая информация» — общая база М1–М4 (один комплект страниц, оба
+  // Раздел «Основы» — общая база М1–М4 (один комплект страниц, оба
   // ролевых трека ведут сюда).
-  "/general": "Общая информация",
+  "/general": "Основы",
   "/general/start": "Реалии и мифы",
   "/general/how": "Как устроен наём",
   "/general/legal": "Правовые основы",
@@ -58,7 +58,7 @@ export const routeTitles: Record<string, string> = {
  *  + общая база + сквозная витрина). Темы М1–М4 живут не здесь, а в боковом меню
  *  раздела «Общая информация» — верх отвечает на вопрос «куда я», а не «что почитать». */
 export const mainMenu: { label: string; path: string }[] = [
-  { label: "Общая информация", path: "/general" },
+  { label: "Основы", path: "/general" },
   { label: "Для компаний", path: "/companies" },
   { label: "Для НКО", path: "/ngo" },
   { label: "Для соискателей", path: "/jobseekers" },
@@ -91,7 +91,7 @@ export type SidebarSpec = {
 
 export const sidebars: Record<Track, SidebarSpec> = {
   general: {
-    title: "Общая информация",
+    title: "Основы",
     track: "general",
     groups: [
       {
