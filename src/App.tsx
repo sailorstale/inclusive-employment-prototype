@@ -8,6 +8,10 @@ import { InventoryPage } from "./editor/InventoryPage";
 import { UnifyPage } from "./editor/UnifyPage";
 import { CatalogPage } from "./editor/CatalogPage";
 import { KitchenSinkPage } from "./pages/figma/KitchenSinkPage";
+// Инструмент «Редактура источника» — перенесён из ветки-песочницы островом
+// (собственная копия движка правок в editor-source/, сайтовый редактор не задет).
+import { SourceLayout } from "./editor-source/source/SourceLayout";
+import { SourcePage } from "./editor-source/source/SourcePage";
 
 // Сквозные / лендинг (следующий заход — оставлены как есть)
 import { HomePage } from "./pages/HomePage";
@@ -66,6 +70,17 @@ export default function App() {
           системы. Описание — КОМПОНЕНТЫ.md в корне проекта.
         */}
         <Route path="/figma" element={<KitchenSinkPage />} />
+
+        {/*
+          Инструмент «Редактура источника» — три колонки (Google-док клиента,
+          спарсенный источник, инспектор правок). Вне общего Layout: своя
+          обвязка (SourceLayout с провайдерами правок в скоупе source).
+        */}
+        <Route element={<SourceLayout />}>
+          <Route path="/source" element={<SourcePage />} />
+          <Route path="/source/:moduleId" element={<SourcePage />} />
+        </Route>
+
 
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
