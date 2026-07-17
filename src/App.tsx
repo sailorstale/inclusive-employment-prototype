@@ -7,6 +7,7 @@ import { ChangesPage } from "./editor/ChangesPage";
 import { InventoryPage } from "./editor/InventoryPage";
 import { UnifyPage } from "./editor/UnifyPage";
 import { CatalogPage } from "./editor/CatalogPage";
+import { KitchenSinkPage } from "./pages/figma/KitchenSinkPage";
 
 // Сквозные / лендинг (следующий заход — оставлены как есть)
 import { HomePage } from "./pages/HomePage";
@@ -59,6 +60,13 @@ export default function App() {
     <TooltipProvider delayDuration={150}>
       <ScrollToTop />
       <Routes>
+        {/*
+          Витрина компонентов дизайн-системы из Figma. Вне общего Layout:
+          у неё своя обвязка (Hero, сайдбар, оглавление, футер) из той же
+          системы. Описание — КОМПОНЕНТЫ.md в корне проекта.
+        */}
+        <Route path="/figma" element={<KitchenSinkPage />} />
+
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
 

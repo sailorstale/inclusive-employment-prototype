@@ -1,0 +1,153 @@
+/*
+  Токены дизайн-системы «Трудоустройство ДС» — выгружены из Figma
+  (файл k5eUmzpvQR96XrwBxUfGgS, секция «Шаблон») инструментом get_variable_defs.
+  Значения менять только вслед за Figma: здесь Figma — источник правды.
+
+  Имена переменных повторяют имена в Figma один в один, только «/» → «-»:
+  Figma space/2xl → --space-2xl. Так шильдик в прототипе, слой в Figma и токен
+  в конструкторе лендингов называются одинаково.
+*/
+
+.figma-scope {
+  /* --- Цвет: текст --- */
+  --text-primary: #1b1f2d;
+  --text-secondary: #5e6476;
+  --text-inverse-primary: #ffffff;
+  --text-inverse-secondary: #bbc1d1;
+
+  /* --- Цвет: нейтрали --- */
+  --neutral-0: #ffffff;
+  --neutral-400: #969db3;
+  --neutral-800: #2e3342;
+  --neutral-1000: #0000001a;
+
+  /* --- Цвет: бренд --- */
+  --brand-yandex: #fc3f1d;
+
+  /* --- Цвет: поверхности --- */
+  --surface-primary: #ffffff;
+  --surface-footer: #1b1f2d;
+
+  /* --- Цвет: фоны карточек --- */
+  --card-bg-white: #ffffff;
+  --card-bg-blue: #f0f4ff;
+  --card-bg-green: #dbf0e7;
+  --card-bg-yellow: #fff5d7;
+  --card-bg-pink: #fff0f6;
+  --card-bg-beige: #f7f2eb;
+  --card-bg-gray: #f1f3fa;
+
+  /* --- Цвет: границы --- */
+  --border-default: #d8dbe6;
+  --border-divider: #d8dbe6;
+
+  /* --- Цвет: действия --- */
+  --action-primary-bg: #1b1f2d;
+  --action-primary-fg: #ffffff;
+  --action-primary-bg-disabled: #e7eaf3;
+  --action-primary-fg-disabled: #969db3;
+  --action-secondary-bg: #f1f3fa;
+  --action-secondary-fg: #2e3342;
+  --action-outline-bg: #ffffff;
+  --action-outline-fg: #1b1f2d;
+  --action-outline-border: #d8dbe6;
+  --action-ghost-fg: #2e3342;
+
+  /* --- Цвет: контролы --- */
+  --control-bg: #ffffff;
+  --control-border: #d8dbe6;
+  --control-active: #1b1f2d;
+  --control-active-fg: #ffffff;
+  --control-fg-placeholder: #969db3;
+
+  /* --- Цвет: семафор --- */
+  --green-700: #287a44;
+  --green-500: #40aa69;
+  --green-300: #72c89f;
+  --green-200: #9ad7ba;
+  --red-600: #c22424;
+  --red-500: #db3535;
+  --red-300: #f47e7e;
+  --red-200: #ffa8a8;
+  --orange-500: #ff971f;
+  --yellow-300: #ffdf75;
+
+  /* --- Цвет: ссылка --- */
+  --link-default: #2754ca;
+
+  /* --- Отступы --- */
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-s: 10px;
+  --space-sm: 12px;
+  --space-m: 16px;
+  --space-ml: 20px;
+  --space-l: 24px;
+  --space-xl: 32px;
+  --space-2xl: 40px;
+  --space-3xl: 48px;
+  --space-56: 56px;
+  --space-4xl: 64px;
+  --space-5xl: 96px;
+  --space-6xl: 128px;
+
+  /* --- Скругления --- */
+  --radius-2xs: 4px;
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+  --radius-xl: 32px;
+  --radius-3xl: 48px;
+  --radius-56: 56px;
+  --radius-100: 100px;
+  --radius-152: 152px;
+
+  /* --- Шрифтовые семейства ---
+     YS Geo — заголовочная, YS Text — текстовая. Установлены локально у дизайнера;
+     на чужой машине подменятся системными. По решению заказчика шрифты
+     не приоритет — важна иерархия размеров и весов, она задана ниже. */
+  --font-heading: "YS Geo", "YS Display", ui-sans-serif, system-ui, sans-serif;
+  --font-text: "YS Text", ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Ширина колонки контента (десктоп) --- */
+  --page-width: 1440px;
+  --column-width: 768px;
+  --sidebar-width: 336px;
+  --toc-width: 336px;
+}
+
+/*
+  Типографика. Каждый класс = один стиль из Figma (Desktop/H2, Desktop/Body L…).
+  Отрицательный letterSpacing в Figma задан в пикселях при конкретном кегле,
+  поэтому здесь переведён в em, чтобы не разъезжался.
+*/
+.figma-scope .ds-h1 { font-family: var(--font-heading); font-weight: 500; font-size: 60px; line-height: 0.9; letter-spacing: 0; }
+.figma-scope .ds-h2 { font-family: var(--font-heading); font-weight: 500; font-size: 40px; line-height: 1; letter-spacing: 0; }
+.figma-scope .ds-h3 { font-family: var(--font-heading); font-weight: 500; font-size: 26px; line-height: 1.05; letter-spacing: -0.038em; }
+.figma-scope .ds-h4 { font-family: var(--font-heading); font-weight: 500; font-size: 22px; line-height: 1.1; letter-spacing: -0.045em; }
+.figma-scope .ds-h5 { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 1.1; letter-spacing: 0; }
+
+.figma-scope .ds-body-xxl { font-family: var(--font-text); font-weight: 400; font-size: 28px; line-height: 1.3; letter-spacing: -0.036em; }
+.figma-scope .ds-body-l { font-family: var(--font-text); font-weight: 400; font-size: 18px; line-height: 1.4; letter-spacing: 0; }
+.figma-scope .ds-body-l-bold { font-family: var(--font-text); font-weight: 500; font-size: 18px; line-height: 1.4; letter-spacing: 0; }
+.figma-scope .ds-body-l-italic { font-family: var(--font-text); font-weight: 400; font-style: italic; font-size: 18px; line-height: 1.4; }
+.figma-scope .ds-body-m { font-family: var(--font-text); font-weight: 400; font-size: 16px; line-height: 1.3; letter-spacing: 0; }
+.figma-scope .ds-body-m-bold { font-family: var(--font-text); font-weight: 500; font-size: 16px; line-height: 1.3; letter-spacing: 0; }
+.figma-scope .ds-body-m-italic { font-family: var(--font-text); font-weight: 400; font-style: italic; font-size: 16px; line-height: 1.3; }
+.figma-scope .ds-body-s { font-family: var(--font-text); font-weight: 400; font-size: 14px; line-height: 1.3; letter-spacing: 0; }
+.figma-scope .ds-body-s-bold { font-family: var(--font-text); font-weight: 500; font-size: 14px; line-height: 1.3; letter-spacing: 0; }
+
+.figma-scope .ds-caps-m { font-family: var(--font-heading); font-weight: 500; font-size: 17px; line-height: 1.3; letter-spacing: 0.176em; text-transform: uppercase; }
+
+.figma-scope .ds-button-l { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 1.3; }
+.figma-scope .ds-button-m { font-family: var(--font-heading); font-weight: 500; font-size: 16px; line-height: 1.3; }
+.figma-scope .ds-button-s { font-family: var(--font-heading); font-weight: 500; font-size: 14px; line-height: 1.3; }
+
+/* Базовый цвет и шрифт всего, что внутри системы */
+.figma-scope {
+  color: var(--text-primary);
+  font-family: var(--font-text);
+  background: var(--surface-primary);
+}
