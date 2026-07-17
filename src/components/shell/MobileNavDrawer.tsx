@@ -219,19 +219,34 @@ export function MobileNavDrawer({
               {mainMenu
                 .filter((item) => getTrack(item.path) === null)
                 .map((item) => {
+                  // Внешняя ссылка (отдельное приложение) — обычный <a>.
+                  if (item.external) {
+                    return (
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={onClose}
+                        className={globalLinkClass(false)}
+                      >
+                        {item.label}
+                      </a>
+                    );
+                  }
                   const active = isMenuActive(item.path, pathname);
                   return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={onClose}
-                    aria-current={active ? "page" : undefined}
-                    className={globalLinkClass(active)}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={onClose}
+                      aria-current={active ? "page" : undefined}
+                      className={globalLinkClass(active)}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
               <Link
                 to="/glossary"
                 onClick={onClose}

@@ -72,15 +72,31 @@ export function AppHeader() {
         {/* Главное меню — крупные разделы (десктоп) */}
         <nav className="hidden items-center gap-0.5 lg:flex">
           {mainMenu.map((item) => {
+            const cls =
+              "whitespace-nowrap rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+            // Внешняя ссылка (отдельное приложение-редактор) — обычный <a>,
+            // открывается в новой вкладке; активного состояния у неё нет.
+            if (item.external) {
+              return (
+                <a
+                  key={item.path}
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(cls, "text-foreground/80")}
+                >
+                  {item.label}
+                </a>
+              );
+            }
+
             const active = isMenuActive(item.path, pathname);
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={cn(
-                  "whitespace-nowrap rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  active ? "text-brand" : "text-foreground/80",
-                )}
+                className={cn(cls, active ? "text-brand" : "text-foreground/80")}
                 aria-current={active ? "page" : undefined}
               >
                 {item.label}
