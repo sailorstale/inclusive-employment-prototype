@@ -1,4 +1,3 @@
-import { apiFetch } from "./auth";
 import { createLocalMapStore } from "./localStore";
 import type { Approach } from "./unify";
 
@@ -26,7 +25,7 @@ function byType(list: UnifyDecision[]): Record<string, UnifyDecision> {
 
 export async function loadDecisions(): Promise<Record<string, UnifyDecision>> {
   try {
-    const r = await apiFetch("/api/unify");
+    const r = await fetch("/api/unify");
     if (r.ok) {
       store.setMode("server");
       return byType((await r.json()) as UnifyDecision[]);
@@ -43,7 +42,7 @@ export async function saveDecision(
   approach: Approach | null,
 ): Promise<UnifyDecision> {
   if (store.getMode() === "server") {
-    const r = await apiFetch(`/api/unify/${encodeURIComponent(type)}`, {
+    const r = await fetch(`/api/unify/${encodeURIComponent(type)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ approach }),
@@ -64,7 +63,7 @@ export async function saveDecision(
 
 export async function clearDecision(type: string): Promise<void> {
   if (store.getMode() === "server") {
-    const r = await apiFetch(`/api/unify/${encodeURIComponent(type)}`, {
+    const r = await fetch(`/api/unify/${encodeURIComponent(type)}`, {
       method: "DELETE",
     });
     if (!r.ok) throw new Error(`Не удалось снять решение: ${r.status}`);

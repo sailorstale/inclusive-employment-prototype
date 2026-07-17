@@ -30,24 +30,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.json({ limit: "64kb" }));
 
-// Общий пароль (доступ по ссылке + пароль). Если APP_PASSWORD не задан —
-// доступ открыт (удобно для локальной разработки). На Railway задаётся в env.
-const PASSWORD = process.env.APP_PASSWORD || "";
-
+// Доступ открыт: пароля нет. Правки и комментарии может читать, менять и
+// удалять любой, кто знает адрес. Страховка от потери данных — только
+// ежедневный бэкап data/.
 const api = express.Router();
-
-// Проверка пароля (публичный эндпоинт — нужен экрану входа).
-api.get("/auth", (req, res) => {
-  const token = req.get("X-Auth") || "";
-  res.json({ required: Boolean(PASSWORD), ok: !PASSWORD || token === PASSWORD });
-});
-
-// Дальше всё под паролем (если он задан).
-api.use((req, res, next) => {
-  if (!PASSWORD) return next();
-  if ((req.get("X-Auth") || "") === PASSWORD) return next();
-  res.status(401).json({ error: "Требуется пароль" });
-});
 
 api.get("/edits", async (_req, res) => {
   res.json(await store.getAll());

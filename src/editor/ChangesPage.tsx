@@ -14,7 +14,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useEditor } from "./EditorProvider";
 import { useComments } from "./CommentsProvider";
-import { apiFetch } from "./auth";
 import { stripMarkdown } from "./richText";
 import { Stat, FilterBtn } from "./adminUi";
 import type { EditRecord } from "./types";
@@ -139,8 +138,8 @@ export function ChangesPage() {
     setBackupNote(null);
     try {
       const [e, c] = await Promise.all([
-        apiFetch("/api/edits"),
-        apiFetch("/api/comments"),
+        fetch("/api/edits"),
+        fetch("/api/comments"),
       ]);
       saveBackup({
         exportedAt: new Date().toISOString(),

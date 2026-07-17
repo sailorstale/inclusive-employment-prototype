@@ -1,5 +1,4 @@
 // Комментарии-пины: тип и слой доступа (сервер, иначе localStorage — как у правок).
-import { apiFetch } from "./auth";
 import { createLocalMapStore } from "./localStore";
 
 export type Comment = {
@@ -43,7 +42,7 @@ function newId(): string {
 
 export async function loadComments(): Promise<Comment[]> {
   try {
-    const r = await apiFetch("/api/comments");
+    const r = await fetch("/api/comments");
     if (r.ok) {
       store.setMode("server");
       return (await r.json()) as Comment[];
@@ -57,7 +56,7 @@ export async function loadComments(): Promise<Comment[]> {
 
 export async function createComment(input: CommentInput): Promise<Comment> {
   if (store.getMode() === "server") {
-    const r = await apiFetch("/api/comments", {
+    const r = await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -83,7 +82,7 @@ export async function updateComment(
   patch: { text?: string; resolved?: boolean },
 ): Promise<Comment | null> {
   if (store.getMode() === "server") {
-    const r = await apiFetch(`/api/comments/${encodeURIComponent(id)}`, {
+    const r = await fetch(`/api/comments/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
@@ -106,7 +105,7 @@ export async function updateComment(
 
 export async function deleteComment(id: string): Promise<void> {
   if (store.getMode() === "server") {
-    const r = await apiFetch(`/api/comments/${encodeURIComponent(id)}`, {
+    const r = await fetch(`/api/comments/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
     if (!r.ok) throw new Error(`Комментарий не удалён: ${r.status}`);

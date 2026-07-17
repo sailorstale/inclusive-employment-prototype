@@ -1,5 +1,4 @@
 import type { EditRecord, EditStatus } from "./types";
-import { apiFetch } from "./auth";
 import { createLocalMapStore } from "./localStore";
 
 // Слой доступа к правкам: пробует сервер (/api/edits), а если его нет
@@ -22,7 +21,7 @@ function byId(list: EditRecord[]): Record<string, EditRecord> {
 
 export async function loadEdits(): Promise<Record<string, EditRecord>> {
   try {
-    const r = await apiFetch("/api/edits");
+    const r = await fetch("/api/edits");
     if (r.ok) {
       store.setMode("server");
       return byId((await r.json()) as EditRecord[]);
@@ -49,7 +48,7 @@ export type EditInput = {
 
 export async function saveEdit(input: EditInput): Promise<EditRecord> {
   if (store.getMode() === "server") {
-    const r = await apiFetch(`/api/edits/${encodeURIComponent(input.id)}`, {
+    const r = await fetch(`/api/edits/${encodeURIComponent(input.id)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -73,7 +72,7 @@ export async function saveEdit(input: EditInput): Promise<EditRecord> {
 
 export async function deleteEdit(id: string): Promise<void> {
   if (store.getMode() === "server") {
-    const r = await apiFetch(`/api/edits/${encodeURIComponent(id)}`, {
+    const r = await fetch(`/api/edits/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
     if (!r.ok) throw new Error(`Удаление не удалось: ${r.status}`);
@@ -89,7 +88,7 @@ export async function setStatusRemote(
   status: EditStatus,
 ): Promise<EditRecord | null> {
   if (store.getMode() === "server") {
-    const r = await apiFetch(`/api/edits/${encodeURIComponent(id)}/status`, {
+    const r = await fetch(`/api/edits/${encodeURIComponent(id)}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),

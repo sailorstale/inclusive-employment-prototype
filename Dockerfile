@@ -1,6 +1,6 @@
 # Сборка и запуск прототипа: фронт (Vite) + мини-сервер (Express) в одном образе.
 # На Railway: Root Directory = prototype, том примонтирован в /data (DATA_DIR=/data),
-# пароль и порт задаются переменными окружения (APP_PASSWORD, PORT — Railway сам).
+# порт задаётся переменной окружения (PORT — Railway сам). Пароля нет: доступ открыт.
 FROM node:20-alpine
 WORKDIR /app
 
