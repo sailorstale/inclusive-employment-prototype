@@ -83,11 +83,10 @@ export function ReadMoreItem({
       data-component="Read More Item"
       href={href}
       className={cn(
-        "group flex flex-1 flex-col justify-between",
-        // высота 288 — жёсткое значение из Figma, токена под неё нет.
-        // Длинное описание в неё может не поместиться — правило по длине
-        // текста в макете не задано, вопрос дизайнеру.
-        "h-[288px] rounded-[var(--radius-l)] bg-[color:var(--card-bg-gray)] p-[var(--space-l)]",
+        "group flex flex-1 flex-col justify-between gap-[var(--space-2xl)]",
+        // Высоту не фиксируем (в Figma было 288) — в стиле прототипа карточка
+        // растёт по содержимому. min-h держит ряд ровным при коротком тексте.
+        "min-h-[10rem] rounded-[var(--radius-l)] border border-[color:var(--border-default)] bg-[color:var(--card-bg-gray)] p-[var(--space-l)]",
         "ring-1 ring-transparent transition-[box-shadow] hover:ring-[color:var(--border-default)]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--text-primary)]",
         className,

@@ -31,16 +31,16 @@ const TYPE_CLASS: Record<ButtonType, string> = {
   Ghost: "bg-transparent text-[color:var(--action-ghost-fg)]",
 };
 
-// Высоты из набора вариантов: L 58 / M 45 / S 38.
+// Высоты уведены к масштабу прототипа (в Figma L 58 / M 45 / S 38 — крупнее).
 const SIZE_CLASS: Record<ButtonSize, string> = {
-  L: "h-[58px] px-[var(--space-l)] rounded-[var(--radius-m)] ds-button-l",
-  M: "h-[45px] px-[var(--space-l)] rounded-[var(--radius-sm)] ds-button-m",
-  S: "h-[38px] px-[var(--space-m)] rounded-[var(--radius-xs)] ds-button-s",
+  L: "h-11 px-5 rounded-[var(--radius-m)] ds-button-l",
+  M: "h-10 px-4 rounded-[var(--radius-m)] ds-button-m",
+  S: "h-9 px-3 rounded-[var(--radius-sm)] ds-button-s",
 };
 
 const ICON_SIZE: Record<ButtonSize, string> = {
-  L: "size-6",
-  M: "size-5",
+  L: "size-5",
+  M: "size-4",
   S: "size-4",
 };
 

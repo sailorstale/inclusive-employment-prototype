@@ -69,7 +69,7 @@ export function Hero({ title, menuItems = [], eyebrow, className }: Props) {
         // Высота 344 — из живого шаблона. В Figma она НЕ зафиксирована вариантом:
         // на «Для соискателей Desktop» (6702:8553) тот же Hero растянут до 392.
         // Тянут руками — вопрос дизайнеру. Поэтому min-h, а не жёсткая высота.
-        "relative flex min-h-[344px] w-full flex-col",
+        "relative flex min-h-[13rem] w-full flex-col",
         className,
       )}
     >
@@ -82,7 +82,7 @@ export function Hero({ title, menuItems = [], eyebrow, className }: Props) {
           Низ Hero: сверху space/4xl 64, по бокам space/2xl 40, промежуток space/m 16.
           Снизу в Figma padding/112 — токена на 112 нет, поэтому значение прямое.
         */}
-        <div className="mt-auto flex flex-col gap-[var(--space-m)] px-[var(--space-2xl)] pb-[112px] pt-[var(--space-4xl)]">
+        <div className="mt-auto flex flex-col gap-[var(--space-m)] px-[var(--space-2xl)] pb-[var(--space-3xl)] pt-[var(--space-4xl)]">
           {eyebrow ? (
             <p className="ds-caps-m text-[color:var(--text-secondary)]">
               {eyebrow}

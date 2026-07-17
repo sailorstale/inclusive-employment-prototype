@@ -1,34 +1,59 @@
 /*
-  Токены дизайн-системы «Трудоустройство ДС» — выгружены из Figma
-  (файл k5eUmzpvQR96XrwBxUfGgS, секция «Шаблон») инструментом get_variable_defs.
-  Значения менять только вслед за Figma: здесь Figma — источник правды.
+  Слой токенов компонентов Figma — «мост» в стиль прототипа.
 
-  Имена переменных повторяют имена в Figma один в один, только «/» → «-»:
-  Figma space/2xl → --space-2xl. Так шильдик в прототипе, слой в Figma и токен
-  в конструкторе лендингов называются одинаково.
+  Компоненты в src/figma/ обращаются к токенам по именам Figma
+  (var(--space-l), var(--text-primary), классы ds-h2 …). Здесь эти ИМЕНА
+  сохранены, но ЗНАЧЕНИЯ уведены на палитру прототипа (shadcn/zinc + синий
+  --brand). Так вся дизайн-система разом живёт в стиле прототипа, а не
+  копирует внешний вид Figma — при этом менять сопоставление можно в одном
+  файле.
+
+  Что осознанно оставлено «как в Figma»:
+  - ЦВЕТА КАРТОЧЕК (пастельные фоны card/bg-*) — единственная удержанная деталь стиля;
+  - ИЕРАРХИЯ ШРИФТОВ (уровни H2>H3>H4>H5 и Body XXL>L>M>S) — но в системном
+    шрифте прототипа и в его шкале размеров, без фирменных YS.
+
+  Область витрины закреплена в СВЕТЛОЙ теме: пастельные карточки светлые, и в
+  тёмном режиме прототипа текст на них не должен становиться нечитаемым.
 */
 
 .figma-scope {
-  /* --- Цвет: текст --- */
-  --text-primary: #1b1f2d;
-  --text-secondary: #5e6476;
-  --text-inverse-primary: #ffffff;
-  --text-inverse-secondary: #bbc1d1;
+  /* --- Палитра прототипа, закреплённая на светлую (значения из globals.css :root) --- */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --brand: 221 70% 48%;
+  --ok: 142 40% 42%;
+  --warn: 38 60% 45%;
+  --bad: 0 60% 50%;
 
-  /* --- Цвет: нейтрали --- */
-  --neutral-0: #ffffff;
-  --neutral-400: #969db3;
-  --neutral-800: #2e3342;
-  --neutral-1000: #0000001a;
+  /* --- Текст --- */
+  --text-primary: hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
+  --text-inverse-primary: hsl(0 0% 100%);
+  --text-inverse-secondary: hsl(0 0% 100% / 0.65);
 
-  /* --- Цвет: бренд --- */
-  --brand-yandex: #fc3f1d;
+  /* --- Нейтрали --- */
+  --neutral-0: hsl(var(--background));
+  --neutral-400: hsl(var(--muted-foreground));
+  --neutral-800: hsl(240 6% 12%); /* тёмный пузырь тултипа */
+  --neutral-1000: hsl(var(--foreground) / 0.1);
 
-  /* --- Цвет: поверхности --- */
-  --surface-primary: #ffffff;
-  --surface-footer: #1b1f2d;
+  /* --- Бренд / логотип-плашка --- */
+  --brand-yandex: hsl(var(--brand));
 
-  /* --- Цвет: фоны карточек --- */
+  /* --- Поверхности --- */
+  --surface-primary: hsl(var(--background));
+  --surface-footer: hsl(240 6% 10%); /* футер тёмный в обеих темах */
+
+  /* --- ЦВЕТА КАРТОЧЕК — удержаны из Figma (единственная деталь стиля) --- */
   --card-bg-white: #ffffff;
   --card-bg-blue: #f0f4ff;
   --card-bg-green: #dbf0e7;
@@ -37,45 +62,45 @@
   --card-bg-beige: #f7f2eb;
   --card-bg-gray: #f1f3fa;
 
-  /* --- Цвет: границы --- */
-  --border-default: #d8dbe6;
-  --border-divider: #d8dbe6;
+  /* --- Границы --- */
+  --border-default: hsl(var(--border));
+  --border-divider: hsl(var(--border));
 
-  /* --- Цвет: действия --- */
-  --action-primary-bg: #1b1f2d;
-  --action-primary-fg: #ffffff;
-  --action-primary-bg-disabled: #e7eaf3;
-  --action-primary-fg-disabled: #969db3;
-  --action-secondary-bg: #f1f3fa;
-  --action-secondary-fg: #2e3342;
-  --action-outline-bg: #ffffff;
-  --action-outline-fg: #1b1f2d;
-  --action-outline-border: #d8dbe6;
-  --action-ghost-fg: #2e3342;
+  /* --- Действия --- */
+  --action-primary-bg: hsl(var(--primary));
+  --action-primary-fg: hsl(var(--primary-foreground));
+  --action-primary-bg-disabled: hsl(var(--muted));
+  --action-primary-fg-disabled: hsl(var(--muted-foreground));
+  --action-secondary-bg: hsl(var(--secondary));
+  --action-secondary-fg: hsl(var(--secondary-foreground));
+  --action-outline-bg: transparent;
+  --action-outline-fg: hsl(var(--foreground));
+  --action-outline-border: hsl(var(--border));
+  --action-ghost-fg: hsl(var(--foreground));
 
-  /* --- Цвет: контролы --- */
-  --control-bg: #ffffff;
-  --control-border: #d8dbe6;
-  --control-active: #1b1f2d;
-  --control-active-fg: #ffffff;
-  --control-fg-placeholder: #969db3;
+  /* --- Контролы --- */
+  --control-bg: hsl(var(--background));
+  --control-border: hsl(var(--input));
+  --control-active: hsl(var(--primary));
+  --control-active-fg: hsl(var(--primary-foreground));
+  --control-fg-placeholder: hsl(var(--muted-foreground));
 
-  /* --- Цвет: семафор --- */
-  --green-700: #287a44;
-  --green-500: #40aa69;
-  --green-300: #72c89f;
-  --green-200: #9ad7ba;
-  --red-600: #c22424;
-  --red-500: #db3535;
-  --red-300: #f47e7e;
-  --red-200: #ffa8a8;
-  --orange-500: #ff971f;
-  --yellow-300: #ffdf75;
+  /* --- Вердикты (семафор → статусные оттенки прототипа) --- */
+  --green-700: hsl(var(--ok));
+  --green-500: hsl(var(--ok));
+  --green-300: hsl(var(--ok) / 0.5);
+  --green-200: hsl(var(--ok) / 0.3);
+  --red-600: hsl(var(--bad));
+  --red-500: hsl(var(--bad));
+  --red-300: hsl(var(--bad) / 0.6);
+  --red-200: hsl(var(--bad) / 0.3);
+  --orange-500: hsl(var(--warn));
+  --yellow-300: hsl(var(--warn) / 0.6);
 
-  /* --- Цвет: ссылка --- */
-  --link-default: #2754ca;
+  /* --- Ссылка --- */
+  --link-default: hsl(var(--brand));
 
-  /* --- Отступы --- */
+  /* --- Отступы (шкала сохранена: на ней держится ритм «отступ только сверху») --- */
   --space-3xs: 2px;
   --space-2xs: 4px;
   --space-xs: 8px;
@@ -91,63 +116,58 @@
   --space-4xl: 64px;
   --space-5xl: 96px;
   --space-6xl: 128px;
+  --padding-3: 3px;
+  --padding-6: 6px;
 
-  /* --- Скругления --- */
+  /* --- Скругления (уведены к масштабу прототипа: rounded-lg = 8px) --- */
   --radius-2xs: 4px;
-  --radius-xs: 8px;
-  --radius-sm: 12px;
-  --radius-m: 16px;
-  --radius-l: 24px;
-  --radius-xl: 32px;
-  --radius-3xl: 48px;
-  --radius-56: 56px;
-  --radius-100: 100px;
-  --radius-152: 152px;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --radius-xl: 14px;
+  --radius-3xl: 16px;
+  --radius-56: 9999px;
+  --radius-100: 9999px;
+  --radius-152: 9999px;
 
-  /* --- Шрифтовые семейства ---
-     YS Geo — заголовочная, YS Text — текстовая. Установлены локально у дизайнера;
-     на чужой машине подменятся системными. По решению заказчика шрифты
-     не приоритет — важна иерархия размеров и весов, она задана ниже. */
-  --font-heading: "YS Geo", "YS Display", ui-sans-serif, system-ui, sans-serif;
-  --font-text: "YS Text", ui-sans-serif, system-ui, sans-serif;
+  /* --- Шрифт: системный из прототипа (фирменные YS убраны) --- */
+  --font-heading: inherit;
+  --font-text: inherit;
 
-  /* --- Ширина колонки контента (десктоп) --- */
+  /* --- Ширины колонок десктопного макета --- */
   --page-width: 1440px;
   --column-width: 768px;
   --sidebar-width: 336px;
   --toc-width: 336px;
+
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
 }
 
 /*
-  Типографика. Каждый класс = один стиль из Figma (Desktop/H2, Desktop/Body L…).
-  Отрицательный letterSpacing в Figma задан в пикселях при конкретном кегле,
-  поэтому здесь переведён в em, чтобы не разъезжался.
+  Типографика. Иерархия уровней сохранена (H2>H3>H4>H5, Body XXL>L>M>S), но
+  в системном шрифте прототипа и в его шкале размеров — без фирменных кеглей
+  Figma (60/40/26…). Менять шкалу — здесь, в одном месте.
 */
-.figma-scope .ds-h1 { font-family: var(--font-heading); font-weight: 500; font-size: 60px; line-height: 0.9; letter-spacing: 0; }
-.figma-scope .ds-h2 { font-family: var(--font-heading); font-weight: 500; font-size: 40px; line-height: 1; letter-spacing: 0; }
-.figma-scope .ds-h3 { font-family: var(--font-heading); font-weight: 500; font-size: 26px; line-height: 1.05; letter-spacing: -0.038em; }
-.figma-scope .ds-h4 { font-family: var(--font-heading); font-weight: 500; font-size: 22px; line-height: 1.1; letter-spacing: -0.045em; }
-.figma-scope .ds-h5 { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 1.1; letter-spacing: 0; }
+.figma-scope .ds-h1 { font-weight: 700; font-size: 2.25rem; line-height: 1.1; letter-spacing: -0.02em; }
+.figma-scope .ds-h2 { font-weight: 600; font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.01em; }
+.figma-scope .ds-h3 { font-weight: 600; font-size: 1.375rem; line-height: 1.2; }
+.figma-scope .ds-h4 { font-weight: 600; font-size: 1.125rem; line-height: 1.3; }
+.figma-scope .ds-h5 { font-weight: 600; font-size: 1rem; line-height: 1.4; }
 
-.figma-scope .ds-body-xxl { font-family: var(--font-text); font-weight: 400; font-size: 28px; line-height: 1.3; letter-spacing: -0.036em; }
-.figma-scope .ds-body-l { font-family: var(--font-text); font-weight: 400; font-size: 18px; line-height: 1.4; letter-spacing: 0; }
-.figma-scope .ds-body-l-bold { font-family: var(--font-text); font-weight: 500; font-size: 18px; line-height: 1.4; letter-spacing: 0; }
-.figma-scope .ds-body-l-italic { font-family: var(--font-text); font-weight: 400; font-style: italic; font-size: 18px; line-height: 1.4; }
-.figma-scope .ds-body-m { font-family: var(--font-text); font-weight: 400; font-size: 16px; line-height: 1.3; letter-spacing: 0; }
-.figma-scope .ds-body-m-bold { font-family: var(--font-text); font-weight: 500; font-size: 16px; line-height: 1.3; letter-spacing: 0; }
-.figma-scope .ds-body-m-italic { font-family: var(--font-text); font-weight: 400; font-style: italic; font-size: 16px; line-height: 1.3; }
-.figma-scope .ds-body-s { font-family: var(--font-text); font-weight: 400; font-size: 14px; line-height: 1.3; letter-spacing: 0; }
-.figma-scope .ds-body-s-bold { font-family: var(--font-text); font-weight: 500; font-size: 14px; line-height: 1.3; letter-spacing: 0; }
+.figma-scope .ds-body-xxl { font-weight: 400; font-size: 1.125rem; line-height: 1.6; }
+.figma-scope .ds-body-l { font-weight: 400; font-size: 1rem; line-height: 1.6; }
+.figma-scope .ds-body-l-bold { font-weight: 600; font-size: 1rem; line-height: 1.6; }
+.figma-scope .ds-body-l-italic { font-weight: 400; font-style: italic; font-size: 1rem; line-height: 1.6; }
+.figma-scope .ds-body-m { font-weight: 400; font-size: 0.9375rem; line-height: 1.55; }
+.figma-scope .ds-body-m-bold { font-weight: 600; font-size: 0.9375rem; line-height: 1.55; }
+.figma-scope .ds-body-m-italic { font-weight: 400; font-style: italic; font-size: 0.9375rem; line-height: 1.55; }
+.figma-scope .ds-body-s { font-weight: 400; font-size: 0.8125rem; line-height: 1.5; }
+.figma-scope .ds-body-s-bold { font-weight: 600; font-size: 0.8125rem; line-height: 1.5; }
 
-.figma-scope .ds-caps-m { font-family: var(--font-heading); font-weight: 500; font-size: 17px; line-height: 1.3; letter-spacing: 0.176em; text-transform: uppercase; }
+.figma-scope .ds-caps-m { font-weight: 600; font-size: 0.6875rem; line-height: 1.3; letter-spacing: 0.08em; text-transform: uppercase; }
 
-.figma-scope .ds-button-l { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 1.3; }
-.figma-scope .ds-button-m { font-family: var(--font-heading); font-weight: 500; font-size: 16px; line-height: 1.3; }
-.figma-scope .ds-button-s { font-family: var(--font-heading); font-weight: 500; font-size: 14px; line-height: 1.3; }
-
-/* Базовый цвет и шрифт всего, что внутри системы */
-.figma-scope {
-  color: var(--text-primary);
-  font-family: var(--font-text);
-  background: var(--surface-primary);
-}
+.figma-scope .ds-button-l { font-weight: 500; font-size: 0.9375rem; line-height: 1.3; }
+.figma-scope .ds-button-m { font-weight: 500; font-size: 0.875rem; line-height: 1.3; }
+.figma-scope .ds-button-s { font-weight: 500; font-size: 0.8125rem; line-height: 1.3; }
