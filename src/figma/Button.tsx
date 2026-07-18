@@ -2,40 +2,57 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /*
-  Figma: component set «Button» (набор из 144 вариантов), свойства Type × Size × Icon.
+  Figma: component set «Button» из раздела Controls (6010:79000), свойства
+  Type × Size × State × Icon.
 
-  Кнопка — действие: скачать, отправить, проверить. По описанию в Figma для
-  простого перехода по ссылке кнопку брать не нужно — но компонента Link
-  в системе нет (зафиксировано как пробел).
+  Кнопка — действие: скачать, отправить, проверить. Для перехода по ссылке
+  кнопку не берут — но компонента Link в системе нет (зафиксировано как пробел).
 
-  Правила из описания в Figma: один Primary на смысловой блок; Outline —
-  для опасных действий; подпись — глагол с объектом («Скачать шаблон»).
+  Правила из описания в Figma: один Primary на смысловой блок; подпись — глагол
+  с объектом («Скачать шаблон»); Outline — для действий с низкой нагрузкой.
 
-  ОСТОРОЖНО, расхождение в Figma: текстовое описание компонента говорит про
-  5 типов (включая Accent) и 2 размера, а сам набор вариантов даёт 4 типа
-  (Accent нет) и 3 размера. Здесь сделано по набору вариантов — он новее.
-  Вопрос дизайнеру открыт.
+  НЕ ЛЕГАСИ. Текстовое описание в Figma ведёт на старую shadcn-кнопку
+  (src/components/ui/button.tsx) и обещает 5-й тип Accent (жёлтый Яндекс) — это
+  наследие старого сайта, его НЕ берём. Актуальный набор вариантов: 4 типа без
+  Accent, нейтральный тёмно-синий Primary #1b1f2d, состояния hover/disabled.
+  Значения — в tokens.css (action/*).
+
+  State в Figma (Default/Hover/Disabled) здесь — это CSS-псевдоклассы
+  (:hover, :disabled), а не проп: так работает живая кнопка.
 */
 
 export type ButtonType = "Primary" | "Secondary" | "Outline" | "Ghost";
 export type ButtonSize = "L" | "M" | "S";
 export type ButtonIcon = "None" | "Left" | "Right" | "Only";
 
+// Фон/текст + наведение. Disabled вынесен отдельно (свой на каждый тип).
 const TYPE_CLASS: Record<ButtonType, string> = {
   Primary:
-    "bg-[color:var(--action-primary-bg)] text-[color:var(--action-primary-fg)]",
+    "bg-[color:var(--action-primary-bg)] text-[color:var(--action-primary-fg)] hover:bg-[color:var(--action-primary-bg-hover)]",
   Secondary:
-    "bg-[color:var(--action-secondary-bg)] text-[color:var(--action-secondary-fg)]",
+    "bg-[color:var(--action-secondary-bg)] text-[color:var(--action-secondary-fg)] hover:bg-[color:var(--action-secondary-bg-hover)]",
   Outline:
-    "bg-[color:var(--action-outline-bg)] text-[color:var(--action-outline-fg)] border-2 border-[color:var(--action-outline-border)]",
-  Ghost: "bg-transparent text-[color:var(--action-ghost-fg)]",
+    "bg-[color:var(--action-outline-bg)] text-[color:var(--action-outline-fg)] border border-[color:var(--action-outline-border)] hover:bg-[color:var(--action-outline-bg-hover)]",
+  Ghost:
+    "bg-transparent text-[color:var(--action-ghost-fg)] hover:bg-[color:var(--action-ghost-bg-hover)]",
 };
 
-// Высоты уведены к масштабу прототипа (в Figma L 58 / M 45 / S 38 — крупнее).
+const DISABLED_CLASS: Record<ButtonType, string> = {
+  Primary:
+    "disabled:bg-[color:var(--action-primary-bg-disabled)] disabled:text-[color:var(--action-primary-fg-disabled)]",
+  Secondary:
+    "disabled:bg-[color:var(--action-secondary-bg-disabled)] disabled:text-[color:var(--action-secondary-fg-disabled)]",
+  Outline:
+    "disabled:text-[color:var(--action-outline-fg-disabled)] disabled:border-[color:var(--control-border-disabled)]",
+  Ghost: "disabled:text-[color:var(--action-ghost-fg-disabled)]",
+};
+
+// Высоты уведены к масштабу прототипа (в Figma L 61 / S 55 — крупнее).
+// Скругление — radius/l, чтобы кнопка читалась как DS, а не как боксовое легаси.
 const SIZE_CLASS: Record<ButtonSize, string> = {
-  L: "h-11 px-5 rounded-[var(--radius-m)] ds-button-l",
-  M: "h-10 px-4 rounded-[var(--radius-m)] ds-button-m",
-  S: "h-9 px-3 rounded-[var(--radius-sm)] ds-button-s",
+  L: "h-11 px-5 rounded-[var(--radius-l)] ds-button-l",
+  M: "h-10 px-4 rounded-[var(--radius-l)] ds-button-m",
+  S: "h-9 px-3 rounded-[var(--radius-m)] ds-button-s",
 };
 
 const ICON_SIZE: Record<ButtonSize, string> = {
@@ -87,8 +104,10 @@ export function Button({
         TYPE_CLASS[type],
         SIZE_CLASS[size],
         icon === "Only" && "aspect-square px-0",
-        disabled &&
-          "cursor-not-allowed bg-[color:var(--action-primary-bg-disabled)] text-[color:var(--action-primary-fg-disabled)] border-transparent",
+        // Выключенная: свой набор цветов на каждый тип (вариант disabled: в
+        // Tailwind идёт после hover: и сам гасит наведение).
+        disabled && "cursor-not-allowed",
+        disabled && DISABLED_CLASS[type],
         className,
       )}
       {...rest}

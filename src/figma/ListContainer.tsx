@@ -18,8 +18,8 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   children?: React.ReactNode;
-  /** ul — когда внутри List Item; div — когда внутри произвольные блоки. */
-  as?: "ul" | "div";
+  /** ul — список пунктов; ol — нумерованный список; div — произвольные блоки. */
+  as?: "ul" | "ol" | "div";
   className?: string;
 };
 
@@ -31,8 +31,8 @@ export function ListContainer({ children, as = "ul", className }: Props) {
       data-component="List Container"
       className={cn("w-full pt-[var(--space-m)]", className)}
     >
-      {/* Slot */}
-      <Tag className="flex w-full list-none flex-col gap-[var(--space-xs)] p-0">
+      {/* Slot. counter-reset обнуляет нумерацию для List Item · Number внутри. */}
+      <Tag className="flex w-full list-none flex-col gap-[var(--space-xs)] p-0 [counter-reset:ds-num]">
         {children}
       </Tag>
     </div>

@@ -7,6 +7,7 @@ import {
   ButtonsSection,
   CardsSection,
   CompareSection,
+  ControlsSection,
   ListsSection,
   MediaSection,
   PromptSection,
@@ -33,6 +34,7 @@ const TOC = [
   { anchor: "typography", label: "Типографика" },
   { anchor: "lists", label: "Списки" },
   { anchor: "buttons", label: "Кнопки" },
+  { anchor: "controls", label: "Контролы форм" },
   { anchor: "cards", label: "Карточки" },
   { anchor: "quotes", label: "Цитаты" },
   { anchor: "compare", label: "Сравнение «за / против»" },
@@ -80,6 +82,7 @@ export function ComponentsPage() {
         <TypographySection />
         <ListsSection />
         <ButtonsSection />
+        <ControlsSection />
         <CardsSection />
         <QuotesSection />
         <CompareSection />

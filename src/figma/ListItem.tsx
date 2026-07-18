@@ -4,17 +4,19 @@ import { cn } from "@/lib/utils";
 
 /*
   Figma: component set «List Item» (6384:4339), свойства Platform × Size × Type.
-  8 вариантов; десктопных — 4 (Size L|M × Type Dot|Icon).
 
-  Пункт списка. Маркер — либо точка (Dot), либо галочка (Icon).
-  Нумерованного типа в системе НЕТ (см. «Чего в системе нет» в описании).
+  Пункт списка. Маркер — точка (Dot), галочка (Icon) или номер (Number).
+
+  Number добавлен в Figma: номер считает CSS-счётчик (см. ds-num в tokens.css),
+  сброс — на List Container. Нумеровать руками не нужно: несколько Number-пунктов
+  подряд получат 1, 2, 3… сами.
 
   Size задаёт кегль: L — 18/1.4, M — 16/1.3.
-  Точка красится в text/secondary, текст — в text/primary.
+  Точка и номер красятся в text/secondary, текст — в text/primary.
 */
 
 export type ListItemSize = "L" | "M";
-export type ListItemType = "Dot" | "Icon";
+export type ListItemType = "Dot" | "Icon" | "Number";
 
 type Props = {
   size?: ListItemSize;
@@ -37,6 +39,8 @@ export function ListItem({
       className={cn(
         "relative flex w-full list-none items-start gap-[var(--space-xs)] pt-[var(--space-2xs)]",
         type === "Icon" && "pr-[var(--space-l)]",
+        // Каждый номерной пункт увеличивает счётчик; печать номера — в ds-num.
+        type === "Number" && "[counter-increment:ds-num]",
         className,
       )}
     >
@@ -50,6 +54,14 @@ export function ListItem({
         >
           •
         </span>
+      ) : type === "Number" ? (
+        <span
+          aria-hidden
+          className={cn(
+            textStyle,
+            "ds-num shrink-0 whitespace-nowrap tabular-nums text-[color:var(--text-secondary)]",
+          )}
+        />
       ) : (
         <span className="flex shrink-0 items-center pt-[var(--padding-3,3px)]">
           <Check aria-hidden className="size-5 text-[color:var(--text-primary)]" />

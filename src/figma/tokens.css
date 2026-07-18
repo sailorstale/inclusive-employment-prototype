@@ -9,7 +9,10 @@
   файле.
 
   Что осознанно оставлено «как в Figma»:
-  - ЦВЕТА КАРТОЧЕК (пастельные фоны card/bg-*) — единственная удержанная деталь стиля;
+  - ЦВЕТА КАРТОЧЕК (пастельные фоны card/bg-*);
+  - НЕЙТРАЛИ КНОПОК И КОНТРОЛОВ (action/* и control/*) — закреплены на значениях
+    DS из Controls-набора Figma (тёмно-синий #1b1f2d и т.п.), чтобы кнопки шли
+    от дизайн-системы, а не от shadcn-легаси старого сайта;
   - ИЕРАРХИЯ ШРИФТОВ (уровни H2>H3>H4>H5 и Body XXL>L>M>S) — но в системном
     шрифте прототипа и в его шкале размеров, без фирменных YS.
 
@@ -66,24 +69,39 @@
   --border-default: hsl(var(--border));
   --border-divider: hsl(var(--border));
 
-  /* --- Действия --- */
-  --action-primary-bg: hsl(var(--primary));
-  --action-primary-fg: hsl(var(--primary-foreground));
-  --action-primary-bg-disabled: hsl(var(--muted));
-  --action-primary-fg-disabled: hsl(var(--muted-foreground));
-  --action-secondary-bg: hsl(var(--secondary));
-  --action-secondary-fg: hsl(var(--secondary-foreground));
+  /* --- Действия (кнопки) --- Закреплены на НЕЙТРАЛЬНОЙ палитре DS (значения
+     из Controls-набора Figma), а не на shadcn-цепочке старого сайта: тёмно-синий
+     #1b1f2d вместо фирменной кнопки-легаси. Плюс состояния hover/disabled. */
+  --action-primary-bg: #1b1f2d;
+  --action-primary-fg: #ffffff;
+  --action-primary-bg-hover: #2e3342;
+  --action-primary-bg-disabled: #e7eaf3;
+  --action-primary-fg-disabled: #969db3;
+  --action-secondary-bg: #f1f3fa;
+  --action-secondary-fg: #2e3342;
+  --action-secondary-bg-hover: #e7eaf3;
+  --action-secondary-bg-disabled: #f1f3fa;
+  --action-secondary-fg-disabled: #969db3;
   --action-outline-bg: transparent;
-  --action-outline-fg: hsl(var(--foreground));
-  --action-outline-border: hsl(var(--border));
-  --action-ghost-fg: hsl(var(--foreground));
+  --action-outline-fg: #1b1f2d;
+  --action-outline-border: #d8dbe6;
+  --action-outline-bg-hover: #f1f3fa;
+  --action-outline-fg-disabled: #969db3;
+  --action-ghost-fg: #2e3342;
+  --action-ghost-bg-hover: #f1f3fa;
+  --action-ghost-fg-disabled: #969db3;
 
-  /* --- Контролы --- */
-  --control-bg: hsl(var(--background));
-  --control-border: hsl(var(--input));
-  --control-active: hsl(var(--primary));
-  --control-active-fg: hsl(var(--primary-foreground));
-  --control-fg-placeholder: hsl(var(--muted-foreground));
+  /* --- Контролы форм (Input/Dropdown/Textarea/Search/Checkbox/Radio) --- */
+  --control-bg: #ffffff;
+  --control-border: #d8dbe6;
+  --control-fg: #2e3342;
+  --control-fg-placeholder: #969db3;
+  --control-bg-disabled: #f1f3fa;
+  --control-border-disabled: #e7eaf3;
+  --control-fg-disabled: #969db3;
+  --control-border-error: #db3535;
+  --control-active: #1b1f2d;
+  --control-active-fg: #ffffff;
 
   /* --- Вердикты (семафор → статусные оттенки прототипа) --- */
   --green-700: hsl(var(--ok));
@@ -171,3 +189,10 @@
 .figma-scope .ds-button-l { font-weight: 500; font-size: 0.9375rem; line-height: 1.3; }
 .figma-scope .ds-button-m { font-weight: 500; font-size: 0.875rem; line-height: 1.3; }
 .figma-scope .ds-button-s { font-weight: 500; font-size: 0.8125rem; line-height: 1.3; }
+
+/*
+  Маркер нумерованного списка (List Item · Number). Номер считает CSS-счётчик:
+  List Container сбрасывает ds-num, каждый Number-пункт увеличивает его, а этот
+  ::before печатает «1.», «2.» … — нумеровать руками не нужно.
+*/
+.figma-scope .ds-num::before { content: counter(ds-num) "."; }

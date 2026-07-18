@@ -20,6 +20,7 @@ import {
   ButtonsSection,
   CardsSection,
   CompareSection,
+  ControlsSection,
   ListsSection,
   MediaSection,
   PromptSection,
@@ -56,6 +57,7 @@ const TOC = [
   { href: "#typography", label: "Типографика" },
   { href: "#lists", label: "Списки" },
   { href: "#buttons", label: "Кнопки" },
+  { href: "#controls", label: "Контролы форм" },
   { href: "#cards", label: "Карточки" },
   { href: "#quotes", label: "Цитаты" },
   { href: "#compare", label: "Сравнение «за / против»" },
@@ -138,6 +140,7 @@ export function KitchenSinkPage() {
           <TypographySection />
           <ListsSection />
           <ButtonsSection />
+          <ControlsSection />
           <CardsSection />
           <QuotesSection />
           <CompareSection />

@@ -2,11 +2,14 @@ import {
   Accordion,
   Button,
   CardContainer,
+  Checkbox,
   CompareCard,
+  Dropdown,
   ExternalLink,
   GeneralCard,
   Heading,
   Image,
+  Input,
   ListContainer,
   ListItem,
   Prompt,
@@ -14,6 +17,8 @@ import {
   QuizBadge,
   QuizItems,
   Quote,
+  Radio,
+  Search,
   SectionContainer,
   SmallImage,
   Table,
@@ -21,11 +26,18 @@ import {
   TableRow,
   Text,
   TextButton,
+  Textarea,
   Tooltip,
   Video,
   type SmallImageName,
 } from "@/figma";
-import { Copy, Download, FileText, Search, ShieldCheck } from "lucide-react";
+import {
+  Copy,
+  Download,
+  FileText,
+  Search as SearchIcon,
+  ShieldCheck,
+} from "lucide-react";
 
 /*
   Разделы витрины компонентов. Каждый раздел показывает и сам компонент,
@@ -115,6 +127,23 @@ export function ListsSection() {
           List Item · M · Dot — точка, кегль 16
         </ListItem>
       </ListContainer>
+
+      <Text size="L">
+        Новый маркер Number — нумерованный список. Номера считает CSS-счётчик,
+        руками их проставлять не нужно. Тег контейнера — ol, чтобы разметка была
+        честной:
+      </Text>
+      <ListContainer as="ol">
+        <ListItem size="L" type="Number">
+          List Item · L · Number — первый шаг, номер печатается сам
+        </ListItem>
+        <ListItem size="L" type="Number">
+          Второй шаг — счётчик увеличивается автоматически
+        </ListItem>
+        <ListItem size="L" type="Number">
+          Третий шаг — теперь «Наём по шагам» можно нумеровать по-настоящему
+        </ListItem>
+      </ListContainer>
     </SectionContainer>
   );
 }
@@ -126,9 +155,11 @@ export function ButtonsSection() {
         Кнопки
       </Heading>
       <Text size="L">
-        Один Primary на смысловой блок. Подпись — глагол с объектом. В системе
-        два способа поставить кнопку в поток: Text · Button и Card Container с
-        одиночной кнопкой внутри — оба показаны ниже.
+        Кнопки — из набора Controls дизайн-системы: нейтральный тёмно-синий
+        Primary (не жёлтая кнопка-легаси старого сайта), с наведением и
+        выключенным состоянием. Один Primary на смысловой блок, подпись — глагол
+        с объектом. Два способа поставить кнопку в поток: Text · Button и Card
+        Container с одиночной кнопкой — оба ниже.
       </Text>
 
       {/* Card Container с одиночной кнопкой — так сделано в живом шаблоне */}
@@ -158,7 +189,7 @@ export function ButtonsSection() {
           type="Secondary"
           size="M"
           icon="Only"
-          iconNode={<Search />}
+          iconNode={<SearchIcon />}
           aria-label="Поиск"
         />
         <Button type="Primary" size="M" disabled>
@@ -226,20 +257,27 @@ export function CardsSection() {
       </CardContainer>
 
       <Text size="L">
-        Цвет фона в Figma не вынесен в свойство: семь токенов card/bg-*, а
-        вариантов цвета нет — красят руками. Есть ли у цвета смысл, вопрос
-        открытый.
+        Цвет фона — свойство bgColor со смыслом. По умолчанию синий; жёлтый —
+        важное; розовый — опасное или предупреждающее; зелёный — позитивное.
+        Белый, бежевый и серый — нейтральные, без закреплённого значения.
       </Text>
 
       <CardContainer orientation="Horizontal">
-        {(["yellow", "pink", "beige", "gray"] as const).map((bg) => (
+        {(
+          [
+            { bg: "blue", note: "по умолчанию — обычная карточка" },
+            { bg: "yellow", note: "важный контент" },
+            { bg: "pink", note: "опасное, предупреждение" },
+            { bg: "green", note: "радостное, позитивное" },
+          ] as const
+        ).map(({ bg, note }) => (
           <GeneralCard
             key={bg}
             className="min-w-[180px] flex-1"
             title={`card/bg-${bg}`}
             bgColor={bg}
           >
-            <Text size="S">Фон задан вручную</Text>
+            <Text size="S">{note}</Text>
           </GeneralCard>
         ))}
       </CardContainer>
@@ -604,6 +642,86 @@ export function MediaSection() {
           title="Юлия Ермилова"
           author="Руководитель программ, БФ «Помощь рядом»"
         />
+      </CardContainer>
+    </SectionContainer>
+  );
+}
+
+export function ControlsSection() {
+  return (
+    <SectionContainer>
+      <Heading level="H2" id="controls">
+        Контролы форм
+      </Heading>
+      <Text size="L">
+        Поля ввода и переключатели из набора Controls. Три состояния у полей:
+        обычное, недоступное (серое) и ошибка (красная рамка). Все — настоящие
+        элементы формы: доступны с клавиатуры и читалкой.
+      </Text>
+
+      <Heading level="H3">Поля ввода</Heading>
+      <CardContainer>
+        <Input placeholder="Введите текст" />
+        <Input state="Disabled" placeholder="Недоступно" />
+        <Input state="Error" defaultValue="неверный@email" />
+      </CardContainer>
+
+      <Heading level="H3">Выпадающий список</Heading>
+      <CardContainer>
+        <Dropdown>
+          <option>Удалённая работа</option>
+          <option>Гибрид</option>
+          <option>Офис</option>
+        </Dropdown>
+        <Dropdown state="Disabled" placeholder="Недоступно" />
+        <Dropdown state="Error" placeholder="Не выбрано" />
+      </CardContainer>
+
+      <Heading level="H3">Поиск</Heading>
+      <CardContainer>
+        <Search />
+        <Search defaultValue="Удалённая работа" />
+        <Search state="Error" />
+      </CardContainer>
+
+      <Heading level="H3">Многострочное поле</Heading>
+      <CardContainer>
+        <Textarea placeholder="Расскажите о вашем опыте" />
+        <Textarea state="Error" placeholder="Поле обязательно для заполнения" />
+      </CardContainer>
+
+      <Heading level="H3">Флажки и переключатели</Heading>
+      <Text size="M">
+        Checkbox — независимые пункты (можно отметить несколько), Radio — выбор
+        одного из группы. Размеры L и S, отмеченный цвет — тёмно-синий DS.
+      </Text>
+      <CardContainer orientation="Horizontal">
+        <label className="flex items-center gap-[var(--space-xs)]">
+          <Checkbox defaultChecked aria-label="Удалённая работа" />
+          <Text size="M">Удалённая работа</Text>
+        </label>
+        <label className="flex items-center gap-[var(--space-xs)]">
+          <Checkbox aria-label="Гибкий график" />
+          <Text size="M">Гибкий график</Text>
+        </label>
+        <label className="flex items-center gap-[var(--space-xs)]">
+          <Checkbox disabled aria-label="Недоступно" />
+          <Text size="M">Недоступно</Text>
+        </label>
+      </CardContainer>
+      <CardContainer orientation="Horizontal">
+        <label className="flex items-center gap-[var(--space-xs)]">
+          <Radio name="demo-format" defaultChecked aria-label="Полный день" />
+          <Text size="M">Полный день</Text>
+        </label>
+        <label className="flex items-center gap-[var(--space-xs)]">
+          <Radio name="demo-format" aria-label="Частичная занятость" />
+          <Text size="M">Частичная занятость</Text>
+        </label>
+        <label className="flex items-center gap-[var(--space-xs)]">
+          <Radio name="demo-format" disabled aria-label="Недоступно" />
+          <Text size="M">Недоступно</Text>
+        </label>
       </CardContainer>
     </SectionContainer>
   );
