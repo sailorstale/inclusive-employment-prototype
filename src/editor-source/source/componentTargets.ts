@@ -80,6 +80,16 @@ export const TARGET_GROUPS: TargetGroup[] = [
         label: "General Card",
         modifiers: [
           {
+            key: "orient",
+            label: "Ориентация",
+            type: "select",
+            options: [
+              { value: "Vertical", label: "Вертикально" },
+              { value: "Horizontal", label: "Горизонтально — 2 в ряд" },
+            ],
+            default: "Vertical",
+          },
+          {
             key: "bg",
             label: "Фон",
             type: "select",

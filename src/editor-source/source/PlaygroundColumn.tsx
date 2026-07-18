@@ -30,6 +30,13 @@ const KIND_LABEL: Record<SourceBlock["kind"], string> = {
   image: "Картинка",
 };
 
+// Модификатор блока для шильдика: у заголовка — уровень, у списка — тип.
+function blockModifier(b: SourceBlock): string | null {
+  if (b.kind === "heading") return `H${b.level}`;
+  if (b.kind === "list") return b.ordered ? "нумер." : "маркир.";
+  return null;
+}
+
 type Box = { top: number; left: number; width: number; height: number };
 
 // Пересекаются ли два прямоугольника (в клиентских координатах).
@@ -223,17 +230,17 @@ export function PlaygroundColumn({
                     key={key}
                     data-pk={key}
                     className={[
-                      "rounded-md border px-3 py-2 transition-colors",
+                      "relative rounded-md border px-3 py-2 transition-colors",
                       on
                         ? "border-brand/60 bg-brand/10"
                         : "border-transparent hover:border-border",
                     ].join(" ")}
                   >
-                    <div className="mb-1 flex items-center gap-2">
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        {KIND_LABEL[b.kind]}
-                      </span>
-                    </div>
+                    {/* Шильдик — справа, поверх контента; тип блока + модификатор. */}
+                    <span className="pointer-events-none absolute right-1.5 top-1.5 z-10 rounded bg-muted/90 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                      {KIND_LABEL[b.kind]}
+                      {blockModifier(b) ? ` · ${blockModifier(b)}` : ""}
+                    </span>
                     <BlockPreview block={b} anchor={sec.anchor} resolve={resolve} />
                   </div>
                 );
