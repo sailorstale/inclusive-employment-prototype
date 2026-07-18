@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Trash2 } from "lucide-react";
+import "@/figma/tokens.css";
 import { renderInline } from "@/editor-source/richText";
 import { DirectiveCard, type DirectiveDraft } from "./DirectiveCard";
 import { useMdResolver, blockType, type ResolveMd } from "./blockResolve";
@@ -210,7 +211,10 @@ export function PlaygroundColumn({
         onMouseDown={onMouseDown}
         className="relative min-h-0 flex-1 cursor-crosshair select-none overflow-y-auto"
       >
-        <div ref={contentRef} className="relative mx-auto max-w-prose px-6 py-8">
+        <div
+          ref={contentRef}
+          className="figma-scope relative mx-auto max-w-prose px-6 py-8"
+        >
           {groupBox && (
             <div
               aria-hidden
@@ -421,7 +425,11 @@ function DirectiveRow({
   );
 }
 
-/** Компактный предпросмотр блока в плейграунде — с учётом внесённых правок. */
+/*
+  Компактный предпросмотр блока — теми же типографскими стилями DS, что у наших
+  компонентов (ds-h2/h3/h4, ds-body-l …, внутри figma-scope). Так в плейграунде
+  видна реальная иерархия: H2 крупнее H3, цитата курсивом и т.д. С учётом правок.
+*/
 function BlockPreview({
   block,
   anchor,
@@ -434,39 +442,50 @@ function BlockPreview({
   switch (block.kind) {
     case "heading":
       return (
-        <div className="font-semibold text-foreground">
+        <div className={`ds-h${block.level} text-[color:var(--text-primary)]`}>
           {renderInline(
             resolve(`h${block.level}`, block.text, block.md, anchor),
           )}
         </div>
       );
     case "paragraph":
-    case "quote":
       return (
-        <div className="text-sm leading-snug text-foreground">
+        <div className="ds-body-l text-[color:var(--text-primary)]">
           {renderInline(resolve("paragraph", block.text, block.md, anchor))}
         </div>
       );
-    case "list":
+    case "quote":
       return (
-        <ul className="list-inside list-disc text-sm text-foreground">
+        <div className="ds-body-l-italic text-[color:var(--text-primary)]">
+          {renderInline(resolve("paragraph", block.text, block.md, anchor))}
+        </div>
+      );
+    case "list": {
+      const List = block.ordered ? "ol" : "ul";
+      return (
+        <List
+          className={`ds-body-l list-inside text-[color:var(--text-primary)] ${
+            block.ordered ? "list-decimal" : "list-disc"
+          }`}
+        >
           {block.items.slice(0, 4).map((it, i) => (
             <li key={i}>{renderInline(resolve("li", it.text, it.md, anchor))}</li>
           ))}
           {block.items.length > 4 && (
-            <li className="list-none text-muted-foreground">…</li>
+            <li className="list-none text-[color:var(--text-secondary)]">…</li>
           )}
-        </ul>
+        </List>
       );
+    }
     case "table":
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="ds-body-s text-[color:var(--text-secondary)]">
           Таблица · {block.rows.length} строк
         </div>
       );
     case "image":
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="ds-body-s text-[color:var(--text-secondary)]">
           Картинка{block.alt ? ` · ${block.alt}` : ""}
         </div>
       );
