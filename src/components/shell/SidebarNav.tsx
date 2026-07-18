@@ -152,6 +152,9 @@ function SectionGroup({
   const hubPath = `/${spec.track}`;
   const title = navLabel(hubPath, spec.title);
   const hubActive = pathname === hubPath;
+  // Раздел-заглушка без подпунктов — рисуем простой ссылкой: ни шеврона,
+  // ни пустого раскрытия.
+  const hasItems = spec.groups.some((g) => g.items.length > 0);
 
   return (
     <div>
@@ -169,7 +172,7 @@ function SectionGroup({
         >
           {title}
         </Link>
-        {alwaysOpen ? null : (
+        {alwaysOpen || !hasItems ? null : (
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
@@ -186,7 +189,7 @@ function SectionGroup({
           </button>
         )}
       </div>
-      {isOpen ? (
+      {isOpen && hasItems ? (
         <div className="mt-1 space-y-1 border-l border-border/70 pl-2">
           {spec.groups.map((group, gi) => (
             <div key={gi} className="space-y-1">

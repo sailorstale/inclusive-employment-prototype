@@ -51,13 +51,8 @@ import { NgoSupportPage } from "./pages/ngo/NgoSupportPage";
 import { NgoScalePage } from "./pages/ngo/NgoScalePage";
 import { NgoFundingPage } from "./pages/ngo/NgoFundingPage";
 
-// Трек «Для соискателей» (следующий заход — оставлен как есть)
-import { JobseekersHubPage } from "./pages/jobseekers/JobseekersHubPage";
-import { GuidePage } from "./pages/jobseekers/GuidePage";
-import { ToolsPage } from "./pages/jobseekers/ToolsPage";
-import { JobseekersEmployersPage } from "./pages/jobseekers/JobseekersEmployersPage";
-import { StoriesPage } from "./pages/jobseekers/StoriesPage";
-import { ResourcesPage } from "./pages/jobseekers/ResourcesPage";
+// Трек «Для соискателей» — заглушка (раздел не проработан, без подразделов).
+import { JobseekersStubPage } from "./pages/jobseekers/JobseekersStubPage";
 
 export default function App() {
   return (
@@ -124,16 +119,13 @@ export default function App() {
           <Route path="/ngo/scale" element={<NgoScalePage />} />
           <Route path="/ngo/funding" element={<NgoFundingPage />} />
 
-          {/* Для соискателей */}
-          <Route path="/jobseekers" element={<JobseekersHubPage />} />
-          <Route path="/jobseekers/guide" element={<GuidePage />} />
-          <Route path="/jobseekers/tools" element={<ToolsPage />} />
+          {/* Для соискателей — заглушка. Подразделов нет; старые адреса
+              /jobseekers/* ведут на заглушку, чтобы не было битых ссылок. */}
+          <Route path="/jobseekers" element={<JobseekersStubPage />} />
           <Route
-            path="/jobseekers/employers"
-            element={<JobseekersEmployersPage />}
+            path="/jobseekers/*"
+            element={<Navigate to="/jobseekers" replace />}
           />
-          <Route path="/jobseekers/stories" element={<StoriesPage />} />
-          <Route path="/jobseekers/resources" element={<ResourcesPage />} />
 
           {/* Сквозные */}
           <Route path="/changes" element={<ChangesPage />} />

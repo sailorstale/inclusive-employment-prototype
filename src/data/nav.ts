@@ -39,13 +39,8 @@ export const routeTitles: Record<string, string> = {
   "/ngo/scale": "Развивать и масштабировать",
   "/ngo/funding": "Финансировать программу",
 
-  // Трек «Для соискателей» (следующий заход — оставлен как есть)
+  // Трек «Для соискателей» — заглушка, без подразделов
   "/jobseekers": "Для соискателей",
-  "/jobseekers/guide": "Гид по удалённым профессиям",
-  "/jobseekers/tools": "Инструменты для работы",
-  "/jobseekers/employers": "Куда устроиться в Яндекс",
-  "/jobseekers/stories": "Истории коллег",
-  "/jobseekers/resources": "Полезные материалы",
 
   // Сквозные (следующий заход — оставлены как есть)
   "/unify": "Компоненты",
@@ -182,19 +177,10 @@ export const sidebars: Record<Track, SidebarSpec> = {
     ],
   },
   jobseekers: {
+    // Заглушка: без подразделов. В сайдбаре показывается простой ссылкой.
     title: "Для соискателей",
     track: "jobseekers",
-    groups: [
-      {
-        items: [
-          { label: "Гид по удалённым профессиям", path: "/jobseekers/guide" },
-          { label: "Инструменты для работы", path: "/jobseekers/tools" },
-          { label: "Куда устроиться в Яндекс", path: "/jobseekers/employers" },
-          { label: "Истории коллег", path: "/jobseekers/stories" },
-          { label: "Полезные материалы", path: "/jobseekers/resources" },
-        ],
-      },
-    ],
+    groups: [],
   },
 };
 

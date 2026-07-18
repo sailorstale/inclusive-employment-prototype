@@ -27,13 +27,8 @@ const columns: { title: string; links: { label: string; to: string }[] }[] = [
   },
   {
     title: "Для соискателей",
-    links: [
-      { label: "Гид по профессиям", to: "/jobseekers/guide" },
-      { label: "Инструменты", to: "/jobseekers/tools" },
-      { label: "Куда устроиться", to: "/jobseekers/employers" },
-      { label: "Истории", to: "/jobseekers/stories" },
-      { label: "Материалы", to: "/jobseekers/resources" },
-    ],
+    // Раздел-заглушка — без подразделов, одна ссылка на раздел.
+    links: [{ label: "Обзор раздела", to: "/jobseekers" }],
   },
 ];
 
