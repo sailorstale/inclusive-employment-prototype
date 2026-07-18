@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
-import { Paragraph, BulletList, OrderedList } from "@/components/Prose";
+import { Paragraph, BulletList, OrderedList } from "@/editor-source/Prose";
 import { Editable } from "@/editor-source/Editable";
 import { AnchorScope } from "@/editor/AnchorContext";
 import { renderInline } from "@/editor-source/richText";
