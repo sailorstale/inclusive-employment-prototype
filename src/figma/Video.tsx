@@ -6,28 +6,22 @@ import { cn } from "@/lib/utils";
   Figma: component «Video» (6958:5065), свойство Platform (Desktop | Mobile).
 
   Видео в теле страницы — например, интервью героя. Раньше в системе не было ни
-  компонента, ни плейсхолдера; теперь есть. Соотношение ~16:9 (848×474),
-  скругление 24, верхний отступ 40. Живёт в слоте Card Container.
+  компонента, ни плейсхолдера; теперь есть. Соотношение ~16:9, живёт в слоте
+  Card Container.
 
-  В Figma поверх постера — кнопка play по центру и титры автора слева вверху.
-  Прототип реального ролика не показывает (нейтральный стиль): по умолчанию
-  пастельный бокс card/bg-green с кнопкой play. Если передать poster — покажем
-  кадр; title/author рисуются поверх как титры.
+  Поверх постера — кнопка play по центру. Прототип реального ролика не показывает
+  (нейтральный стиль): по умолчанию пастельный бокс card/bg-green с кнопкой play.
+  Если передать poster — покажем кадр. Титры автора в компонент не выносим: в
+  Figma они часть самого кадра, а не отдельный слой.
 */
 
 type Props = {
   /** Кадр-постер. Без него — пастельный зелёный фон. */
   poster?: string;
-  /** Имя автора/спикера — титр слева вверху. */
-  title?: string;
-  /** Роль/организация автора — вторая строка титра. */
-  author?: string;
   className?: string;
 };
 
-export function Video({ poster, title, author, className }: Props) {
-  const hasCaption = Boolean(title || author);
-
+export function Video({ poster, className }: Props) {
   return (
     <div
       data-component="Video"
@@ -41,17 +35,6 @@ export function Video({ poster, title, author, className }: Props) {
             aria-hidden
             className="absolute inset-0 size-full object-cover"
           />
-        ) : null}
-
-        {/* Титры автора — слева вверху, на тёмной подложке, чтобы читались
-            и на кадре, и на пастельном фоне. */}
-        {hasCaption ? (
-          <div className="absolute left-[var(--space-l)] top-[var(--space-l)] max-w-[70%] rounded-[var(--radius-m)] bg-black/40 px-[var(--space-sm)] py-[var(--space-xs)] backdrop-blur-sm">
-            {title ? (
-              <p className="ds-body-m-bold text-white">{title}</p>
-            ) : null}
-            {author ? <p className="ds-body-s text-white/85">{author}</p> : null}
-          </div>
         ) : null}
 
         {/* Кнопка play по центру. */}
