@@ -55,6 +55,8 @@ type Props = {
   onSelectedChange: (next: Set<string>) => void;
   /** Клик «Создать директиву» — переключить правую панель на «Разметку». */
   onCreateDirective: () => void;
+  /** Внешний ref на скролл-область — для синхронизации скролла с колонкой 1. */
+  scrollRef?: React.Ref<HTMLDivElement>;
 };
 
 export function PlaygroundColumn({
@@ -62,6 +64,7 @@ export function PlaygroundColumn({
   selected,
   onSelectedChange,
   onCreateDirective,
+  scrollRef,
 }: Props) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const resolve = useMdResolver();
@@ -203,6 +206,7 @@ export function PlaygroundColumn({
       </div>
 
       <div
+        ref={scrollRef}
         onMouseDown={onMouseDown}
         className="relative min-h-0 flex-1 cursor-crosshair select-none overflow-y-auto"
       >
