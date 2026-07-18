@@ -6,12 +6,17 @@ import { Editable } from "@/editor-source/Editable";
 import { AnchorScope } from "@/editor/AnchorContext";
 import { renderInline } from "@/editor-source/richText";
 import { EditorInspector } from "@/editor-source/EditorInspector";
+import { PlaygroundColumn } from "@/editor-source/source/PlaygroundColumn";
 import {
   sourceModulesMeta,
   moduleLoaders,
   type SourceBlock,
   type SourceModuleMeta,
 } from "@/editor-source/content/source.generated";
+
+// Колонку с Google-доком пока прячем (по исходнику у нас консистентность).
+// Вернуть — поменять на true: раскладка снова станет четырёхколоночной.
+const SHOW_DOC: boolean = false;
 
 // Страница модуля в инструменте «Редактура источника»: две колонки —
 // СЛЕВА реальный клиентский Google-док (iframe, чтобы клиент видел свой файл),
@@ -205,15 +210,21 @@ export function SourcePage() {
 
   const sections = blocks ? toSections(blocks) : [];
 
-  return (
-    <div className="grid h-full min-h-0 grid-cols-1 md:grid-cols-2 xl:grid-cols-[1fr_1fr_minmax(360px,400px)]">
-      {/* Левая колонка — реальный док клиента */}
-      <div className="hidden min-h-0 border-r md:block">
-        <DocFrame meta={meta} />
-      </div>
+  const gridCols = SHOW_DOC
+    ? "xl:grid-cols-[1fr_1fr_1fr_minmax(360px,400px)]"
+    : "xl:grid-cols-[1fr_1fr_minmax(360px,400px)]";
 
-      {/* Средняя колонка — наш редактируемый источник */}
-      <div className="min-h-0 overflow-y-auto">
+  return (
+    <div className={`grid h-full min-h-0 grid-cols-1 md:grid-cols-2 ${gridCols}`}>
+      {/* Google-док клиента — пока скрыт (SHOW_DOC). */}
+      {SHOW_DOC && (
+        <div className="hidden min-h-0 border-r md:block">
+          <DocFrame meta={meta} />
+        </div>
+      )}
+
+      {/* Первая колонка — наша копия источника (эталон, читаем) */}
+      <div className="min-h-0 overflow-y-auto border-r">
         <div className="border-b bg-muted/40 px-6 py-1.5">
           <span className="text-xs font-medium text-muted-foreground">
             Наша редакция · источник для сайта
@@ -240,6 +251,11 @@ export function SourcePage() {
             ))
           )}
         </div>
+      </div>
+
+      {/* Вторая колонка — плейграунд (раскладка на компоненты) */}
+      <div className="hidden min-h-0 border-r md:block">
+        <PlaygroundColumn sections={sections} />
       </div>
 
       {/* Третья колонка — редактор блока, всегда на месте (не поверх текста) */}
