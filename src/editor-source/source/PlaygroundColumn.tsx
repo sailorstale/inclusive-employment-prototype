@@ -1,6 +1,41 @@
 import * as React from "react";
+import { useLocation } from "react-router-dom";
 import { renderInline } from "@/editor-source/richText";
+import { autoId } from "@/editor-source/ids";
+import { useEditor } from "@/editor-source/EditorProvider";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
+
+/*
+  Резолвер редакции: возвращает АКТУАЛЬНЫЙ текст блока — с внесённой правкой,
+  если она есть (и не откат), иначе оригинал. Повторяет ту же подстановку, что
+  делает Editable в первой колонке, — чтобы плейграунд показывал ту же редакцию,
+  что «Наша редакция», а не сырой исходник. id блока считается так же:
+  autoId(страница, тип, текст, раздел).
+*/
+type ResolveMd = (
+  type: string,
+  text: string,
+  md: string,
+  anchor?: string,
+) => string;
+
+function useMdResolver(): ResolveMd {
+  const { edits } = useEditor();
+  const { pathname } = useLocation();
+  return React.useCallback(
+    (type, text, md, anchor) => {
+      const rec = edits[autoId(pathname, type, text, anchor)];
+      if (rec && rec.text.trim() && rec.status !== "rollback") return rec.text;
+      return md;
+    },
+    [edits, pathname],
+  );
+}
+
+// Тип блока в адресе (id): как в Editable — цитата адресуется как paragraph.
+function blockType(b: SourceBlock): string {
+  return b.kind === "heading" ? `h${b.level}` : "paragraph";
+}
 
 /*
   Плейграунд — вторая колонка инструмента «Редактура источника». Здесь контент
@@ -53,6 +88,7 @@ export function PlaygroundColumn({
   onCreateDirective,
 }: Props) {
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const resolve = useMdResolver();
 
   const [marquee, setMarquee] = React.useState<Box | null>(null);
   const [groupBox, setGroupBox] = React.useState<Box | null>(null);
@@ -229,7 +265,7 @@ export function PlaygroundColumn({
                         {KIND_LABEL[b.kind]}
                       </span>
                     </div>
-                    <BlockPreview block={b} />
+                    <BlockPreview block={b} anchor={sec.anchor} resolve={resolve} />
                   </div>
                 );
               }),
@@ -290,10 +326,11 @@ export function MarkupPanel({
   sections: Section[];
   selected: Set<string>;
 }) {
-  const picked: SourceBlock[] = [];
+  const resolve = useMdResolver();
+  const picked: { block: SourceBlock; anchor?: string }[] = [];
   sections.forEach((sec, si) =>
     sec.blocks.forEach((b, bi) => {
-      if (selected.has(`${si}:${bi}`)) picked.push(b);
+      if (selected.has(`${si}:${bi}`)) picked.push({ block: b, anchor: sec.anchor });
     }),
   );
 
@@ -311,7 +348,7 @@ export function MarkupPanel({
         Выбрано блоков: {picked.length}
       </div>
       <ul className="mt-3 space-y-1">
-        {picked.map((b, i) => (
+        {picked.map(({ block: b, anchor }, i) => (
           <li
             key={i}
             className="flex items-center gap-2 text-sm text-muted-foreground"
@@ -326,7 +363,7 @@ export function MarkupPanel({
                   ? `${b.rows.length} строк`
                   : b.kind === "image"
                     ? b.alt || "картинка"
-                    : b.text}
+                    : resolve(blockType(b), b.text, b.text, anchor)}
             </span>
           </li>
         ))}
@@ -339,27 +376,37 @@ export function MarkupPanel({
   );
 }
 
-/** Компактный предпросмотр блока в плейграунде. */
-function BlockPreview({ block }: { block: SourceBlock }) {
+/** Компактный предпросмотр блока в плейграунде — с учётом внесённых правок. */
+function BlockPreview({
+  block,
+  anchor,
+  resolve,
+}: {
+  block: SourceBlock;
+  anchor?: string;
+  resolve: ResolveMd;
+}) {
   switch (block.kind) {
     case "heading":
       return (
         <div className="font-semibold text-foreground">
-          {renderInline(block.md)}
+          {renderInline(
+            resolve(`h${block.level}`, block.text, block.md, anchor),
+          )}
         </div>
       );
     case "paragraph":
     case "quote":
       return (
         <div className="text-sm leading-snug text-foreground">
-          {renderInline(block.md)}
+          {renderInline(resolve("paragraph", block.text, block.md, anchor))}
         </div>
       );
     case "list":
       return (
         <ul className="list-inside list-disc text-sm text-foreground">
           {block.items.slice(0, 4).map((it, i) => (
-            <li key={i}>{renderInline(it.md)}</li>
+            <li key={i}>{renderInline(resolve("li", it.text, it.md, anchor))}</li>
           ))}
           {block.items.length > 4 && (
             <li className="list-none text-muted-foreground">…</li>
