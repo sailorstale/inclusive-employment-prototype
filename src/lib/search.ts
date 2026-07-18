@@ -1,8 +1,7 @@
 import { routeTitles } from "@/data/nav";
 
 // Единый источник простого клиентского поиска по страницам (по заголовкам).
-// Используется и в шапке (SiteSearch), и в мобильном меню (MobileNavDrawer),
-// чтобы логика фильтра не расходилась.
+// Используется в шапке (SiteSearch).
 
 export type PageHit = { path: string; title: string };
 
