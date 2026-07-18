@@ -5,7 +5,6 @@ import { TocProvider, useToc } from "@/lib/toc";
 import { AppHeader } from "./AppHeader";
 import { AppFooter } from "./AppFooter";
 import { SidebarNav } from "./SidebarNav";
-import { Breadcrumbs } from "./Breadcrumbs";
 import { TocRail } from "./TocRail";
 import { BackToTop } from "./BackToTop";
 import { SkipLink } from "./SkipLink";
@@ -49,7 +48,6 @@ export function Layout() {
 function LayoutBody() {
   const { pathname } = useLocation();
   const track = getTrack(pathname);
-  const isHome = pathname === "/";
   const { items } = useToc();
   const hasToc = items.length > 0;
   // Витрина компонентов (/unify) — не трек, но показываем её в полном
@@ -79,7 +77,6 @@ function LayoutBody() {
 
           {/* Контентная колонка */}
           <div className="min-w-0">
-            <Breadcrumbs />
             <div className="space-y-12">
               <Outlet />
             </div>
@@ -94,7 +91,6 @@ function LayoutBody() {
         </div>
       ) : (
         <div className="mx-auto max-w-5xl px-6 py-8">
-          {!isHome && <Breadcrumbs />}
           <div className="space-y-12">
             <Outlet />
           </div>

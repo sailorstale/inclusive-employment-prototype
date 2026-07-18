@@ -196,23 +196,3 @@ export function getTrack(pathname: string): Track | null {
   return null;
 }
 
-export type Crumb = { label: string; path: string; current: boolean };
-
-/** Крошки: Главная › все предки по пути › текущая (без ссылки). */
-export function getBreadcrumbs(pathname: string): Crumb[] {
-  if (pathname === "/" || !routeTitles[pathname]) return [];
-  const segments = pathname.split("/").filter(Boolean);
-  const crumbs: Crumb[] = [{ label: "Главная", path: "/", current: false }];
-  let acc = "";
-  segments.forEach((seg, i) => {
-    acc += "/" + seg;
-    const title = routeTitles[acc];
-    if (!title) return;
-    crumbs.push({
-      label: title,
-      path: acc,
-      current: i === segments.length - 1,
-    });
-  });
-  return crumbs;
-}
