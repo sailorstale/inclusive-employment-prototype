@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import * as store from "./store.js";
 import * as comments from "./comments.js";
 import * as unify from "./unify.js";
+import * as sourceStore from "./sourceStore.js";
+import * as sourceComments from "./sourceComments.js";
 
 // Локально читаем prototype/.env (пароль и т.п.). На хостинге переменные задаёт
 // сам хостинг — там .env нет, и это нормально. Реальные env-переменные имеют
@@ -98,6 +100,54 @@ api.delete("/unify/:type", async (req, res) => {
   await unify.clearDecision(req.params.type);
   res.json({ ok: true });
 });
+
+// Инструмент «Редактура источника» — скоуп /api/source (свои файлы
+// source-edits.json / source-comments.json, не пересекается с сайтовыми).
+// Роуты те же, что у сайтовых правок и комментариев.
+const sourceApi = express.Router();
+sourceApi.get("/edits", async (_req, res) => {
+  res.json(await sourceStore.getAll());
+});
+sourceApi.put("/edits/:id", async (req, res) => {
+  const body = req.body || {};
+  if (typeof body.text !== "string" || !body.kind) {
+    return res.status(400).json({ error: "kind и text обязательны" });
+  }
+  res.json(await sourceStore.upsert(req.params.id, body));
+});
+sourceApi.delete("/edits/:id", async (req, res) => {
+  await sourceStore.remove(req.params.id);
+  res.json({ ok: true });
+});
+sourceApi.patch("/edits/:id/status", async (req, res) => {
+  const status = req.body?.status;
+  if (!["new", "applied", "verified", "rollback"].includes(status)) {
+    return res.status(400).json({ error: "status: new|applied|verified|rollback" });
+  }
+  const rec = await sourceStore.setStatus(req.params.id, status);
+  if (!rec) return res.status(404).json({ error: "не найдено" });
+  res.json(rec);
+});
+sourceApi.get("/comments", async (_req, res) => {
+  res.json(await sourceComments.getAll());
+});
+sourceApi.post("/comments", async (req, res) => {
+  const body = req.body || {};
+  if (typeof body.text !== "string") {
+    return res.status(400).json({ error: "text обязателен" });
+  }
+  res.json(await sourceComments.create(body));
+});
+sourceApi.patch("/comments/:id", async (req, res) => {
+  const rec = await sourceComments.update(req.params.id, req.body || {});
+  if (!rec) return res.status(404).json({ error: "не найдено" });
+  res.json(rec);
+});
+sourceApi.delete("/comments/:id", async (req, res) => {
+  await sourceComments.remove(req.params.id);
+  res.json({ ok: true });
+});
+api.use("/source", sourceApi);
 
 // Честный 404 на неизвестные /api/* (иначе SPA-фоллбэк отдаёт HTML со статусом
 // 200, и клиент принимает опечатку за «сервер есть»).
