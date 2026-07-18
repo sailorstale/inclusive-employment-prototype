@@ -185,8 +185,8 @@ export function PlaygroundColumn({
   }, [selected, sections, blockEls]);
 
   return (
-    <div className="flex min-h-0 flex-col">
-      <div className="flex items-center justify-between border-b bg-muted/40 px-4 py-1.5">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 items-center justify-between border-b bg-muted/40 px-4 py-1.5">
         <span className="text-xs font-medium text-muted-foreground">
           Плейграунд · раскладка на компоненты
         </span>
@@ -257,7 +257,7 @@ export function PlaygroundColumn({
       </div>
 
       {selected.size > 0 && (
-        <div className="flex items-center justify-between gap-3 border-t bg-background px-4 py-2">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t bg-background px-4 py-2">
           <span className="text-sm text-foreground">
             Выбрано блоков: <b>{selected.size}</b>
           </span>

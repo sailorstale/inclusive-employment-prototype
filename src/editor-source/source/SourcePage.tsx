@@ -313,13 +313,13 @@ export function SourcePage() {
       )}
 
       {/* Первая колонка — наша копия источника (эталон, читаем) */}
-      <div className="min-h-0 overflow-y-auto border-r">
-        <div className="border-b bg-muted/40 px-6 py-1.5">
+      <div className="flex min-h-0 flex-col overflow-hidden border-r">
+        <div className="shrink-0 border-b bg-muted/40 px-6 py-1.5">
           <span className="text-xs font-medium text-muted-foreground">
             Наша редакция · источник для сайта
           </span>
         </div>
-        <div className="mx-auto max-w-prose space-y-6 px-6 py-8">
+        <div className="mx-auto min-h-0 w-full max-w-prose flex-1 space-y-6 overflow-y-auto px-6 py-8">
           {/* Заголовок модуля рендерится в самом потоке блоков (как в доке) —
               отдельную «шапку» не рисуем, чтобы не дублировать и не «переносить». */}
           {blocks === null ? (
@@ -343,7 +343,7 @@ export function SourcePage() {
       </div>
 
       {/* Вторая колонка — плейграунд (раскладка на компоненты) */}
-      <div className="hidden min-h-0 border-r md:block">
+      <div className="hidden min-h-0 overflow-hidden border-r md:block">
         <PlaygroundColumn
           sections={sections}
           selected={selected}
@@ -353,7 +353,7 @@ export function SourcePage() {
       </div>
 
       {/* Третья колонка — панель с табами: старый редактор + новый инструмент */}
-      <div className="hidden min-h-0 flex-col xl:flex">
+      <div className="hidden min-h-0 flex-col overflow-hidden xl:flex">
         <div className="flex shrink-0 items-center gap-1 border-b bg-muted/40 px-2 py-1.5">
           <TabBtn active={rightTab === "editor"} onClick={() => setRightTab("editor")}>
             Редактор
