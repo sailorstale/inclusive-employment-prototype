@@ -21,6 +21,7 @@ import {
   CardsSection,
   CompareSection,
   ListsSection,
+  MediaSection,
   PromptSection,
   QuizSection,
   SmallImageSection,
@@ -63,6 +64,7 @@ const TOC = [
   { href: "#prompt", label: "Врезка с заготовкой" },
   { href: "#quiz", label: "Квиз" },
   { href: "#small-image", label: "Иллюстрации" },
+  { href: "#media", label: "Медиа: картинка и видео" },
 ];
 
 const SIDEBAR = [
@@ -144,6 +146,7 @@ export function KitchenSinkPage() {
           <PromptSection />
           <QuizSection />
           <SmallImageSection />
+          <MediaSection />
 
           <Feedback />
         </main>

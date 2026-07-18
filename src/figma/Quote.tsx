@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /*
@@ -17,6 +18,11 @@ import { cn } from "@/lib/utils";
   - S (6369:11193) — БЕЗ подложки, прямо на фоне страницы, цитата курсивом 16.
     Спокойная цитата в потоке, не перебивает чтение.
 
+  «Кат» (проп cut, по умолчанию включён): длинная цитата обрезается до пяти
+  строк с многоточием, под ней — строка «Далее ⌄», раскрывающая остальное.
+  Так задано в Figma для обоих размеров. Если цитата короткая и в пять строк
+  укладывается — «Далее» не мешает: текст просто не обрезается.
+
   ЧЕМ МЫ РАСХОДИМСЯ С FIGMA (честно):
   1) В строке авторства у Figma три графических элемента подряд: логотип-
      «таблетка» организации, круглый аватар и фото человека. Свойств «вкл/выкл»
@@ -31,6 +37,9 @@ import { cn } from "@/lib/utils";
 
 export type QuoteSize = "L" | "S";
 
+// Сколько строк видно под катом до «Далее». В Figma обрезка ~5 строк.
+const CUT_LINES = 5;
+
 type Props = {
   size?: QuoteSize;
   /** Текст цитаты. Рисуется курсивом. */
@@ -41,6 +50,8 @@ type Props = {
   role?: string;
   /** Сколько кружков-плейсхолдеров показать в строке авторства (0–3). */
   avatars?: number;
+  /** «Кат»: обрезать длинную цитату до пяти строк со ссылкой «Далее». */
+  cut?: boolean;
   className?: string;
 };
 
@@ -50,11 +61,40 @@ export function Quote({
   author,
   role,
   avatars = 0,
+  cut = true,
   className,
 }: Props) {
   const hasCredit = Boolean(author || role || avatars > 0);
   // Кружки-плейсхолдеры: не больше трёх, как в Figma, и не меньше нуля.
   const dots = Math.max(0, Math.min(3, Math.trunc(avatars)));
+
+  const [expanded, setExpanded] = React.useState(false);
+  // «Далее» показываем только если текст реально не влез в пять строк —
+  // короткую цитату кат не трогает.
+  const [overflows, setOverflows] = React.useState(false);
+  const quoteRef = React.useRef<HTMLQuoteElement>(null);
+
+  React.useLayoutEffect(() => {
+    const el = quoteRef.current;
+    if (!cut || !el) {
+      setOverflows(false);
+      return;
+    }
+    // line-clamp (-webkit-box) схлопывает scrollHeight до высоты обрезки,
+    // поэтому натуральную высоту меряем, временно сняв обрезку.
+    const prev = el.style.cssText;
+    el.style.display = "block";
+    el.style.webkitLineClamp = "unset";
+    const natural = el.scrollHeight;
+    el.style.cssText = prev;
+    const cs = getComputedStyle(el);
+    const lineHeight =
+      parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5;
+    setOverflows(natural > lineHeight * CUT_LINES + 1);
+  }, [cut, children, size]);
+
+  const clamped = cut && !expanded;
+  const showToggle = cut && (overflows || expanded);
 
   return (
     <figure
@@ -67,13 +107,37 @@ export function Quote({
       )}
     >
       <blockquote
+        ref={quoteRef}
         className={cn(
           size === "L" ? "ds-body-l-italic" : "ds-body-m-italic",
           "text-[color:var(--text-primary)]",
+          // Кат: обрезаем до пяти строк (line-clamp-5 сам ставит overflow).
+          clamped && "line-clamp-5",
         )}
       >
         {children}
       </blockquote>
+
+      {showToggle ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className={cn(
+            "mt-[var(--space-2xs)] inline-flex items-center gap-[var(--space-3xs)]",
+            "ds-body-m-bold text-[color:var(--text-primary)]",
+          )}
+          aria-expanded={expanded}
+        >
+          {expanded ? "Свернуть" : "Далее"}
+          <ChevronDown
+            className={cn(
+              "size-5 transition-transform",
+              expanded && "rotate-180",
+            )}
+            aria-hidden
+          />
+        </button>
+      ) : null}
 
       {hasCredit ? (
         <figcaption

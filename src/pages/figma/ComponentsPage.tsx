@@ -8,6 +8,7 @@ import {
   CardsSection,
   CompareSection,
   ListsSection,
+  MediaSection,
   PromptSection,
   QuizSection,
   SmallImageSection,
@@ -40,6 +41,7 @@ const TOC = [
   { anchor: "prompt", label: "Врезка с заготовкой" },
   { anchor: "quiz", label: "Квиз" },
   { anchor: "small-image", label: "Иллюстрации" },
+  { anchor: "media", label: "Медиа: картинка и видео" },
 ];
 
 export function ComponentsPage() {
@@ -86,6 +88,7 @@ export function ComponentsPage() {
         <PromptSection />
         <QuizSection />
         <SmallImageSection />
+        <MediaSection />
 
         <Feedback />
       </div>

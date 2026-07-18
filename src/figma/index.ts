@@ -61,6 +61,10 @@ export { Feedback } from "./Feedback";
 export type { FeedbackState } from "./Feedback";
 export { ReadMore, ReadMoreItem } from "./ReadMore";
 
+// --- Медиа ---
+export { Image } from "./Image";
+export { Video } from "./Video";
+
 // --- Листья ---
 export { Button } from "./Button";
 export type { ButtonType, ButtonSize, ButtonIcon } from "./Button";
