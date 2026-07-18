@@ -7,6 +7,7 @@ import { ChangesPage } from "./editor/ChangesPage";
 import { InventoryPage } from "./editor/InventoryPage";
 import { CatalogPage } from "./editor/CatalogPage";
 import { KitchenSinkPage } from "./pages/figma/KitchenSinkPage";
+import { ComponentsPage } from "./pages/figma/ComponentsPage";
 // Инструмент «Редактура источника» — перенесён из ветки-песочницы островом
 // (собственная копия движка правок в editor-source/, сайтовый редактор не задет).
 import { SourceLayout } from "./editor-source/source/SourceLayout";
@@ -69,12 +70,11 @@ export default function App() {
           системы. Описание — КОМПОНЕНТЫ.md в корне проекта.
         */}
         {/*
-          Витрина новых компонентов — доступна и как /figma, и как /unify
-          (страница «Унификация» переназначена на неё). Вне общего Layout:
-          у витрины своя обвязка (Hero, сайдбар, футер), иначе двойная шапка.
+          Витрина компонентов, standalone — своя обвязка (Hero, сайдбар, футер),
+          вне общего Layout. /unify — та же витрина, но ВНУТРИ обвязки сайта
+          (см. ниже, в группе Layout): там только средняя колонка.
         */}
         <Route path="/figma" element={<KitchenSinkPage />} />
-        <Route path="/unify" element={<KitchenSinkPage />} />
 
         {/*
           Инструмент «Редактура источника» — три колонки (Google-док клиента,
@@ -138,6 +138,8 @@ export default function App() {
           {/* Сквозные */}
           <Route path="/changes" element={<ChangesPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
+          {/* Витрина компонентов внутри обвязки сайта (только средняя колонка) */}
+          <Route path="/unify" element={<ComponentsPage />} />
           <Route path="/catalog" element={<CatalogPage />} />
           <Route path="/yandex-jobs" element={<YandexJobsPage />} />
           <Route path="/glossary" element={<GlossaryPage />} />

@@ -48,6 +48,7 @@ export const routeTitles: Record<string, string> = {
   "/jobseekers/resources": "Полезные материалы",
 
   // Сквозные (следующий заход — оставлены как есть)
+  "/unify": "Компоненты",
   "/yandex-jobs": "Трудоустройство в Яндексе",
   "/glossary": "Глоссарий",
   "/feedback": "Обратная связь",

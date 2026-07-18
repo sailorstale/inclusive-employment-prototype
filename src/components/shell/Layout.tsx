@@ -52,6 +52,9 @@ function LayoutBody() {
   const isHome = pathname === "/";
   const { items } = useToc();
   const hasToc = items.length > 0;
+  // Витрина компонентов (/unify) — не трек, но показываем её в полном
+  // трёхколоночном каркасе сайта (левое меню + контент + оглавление).
+  const framed = track !== null || pathname === "/unify";
 
   return (
     <main
@@ -59,7 +62,7 @@ function LayoutBody() {
       tabIndex={-1}
       className="flex-1 scroll-mt-20 focus:outline-none"
     >
-      {track ? (
+      {framed ? (
         <div
           className={cn(
             "mx-auto grid max-w-7xl grid-cols-1 gap-x-10 gap-y-6 px-6 py-8",
@@ -98,7 +101,7 @@ function LayoutBody() {
         </div>
       )}
 
-      {track ? <BackToTop /> : null}
+      {framed ? <BackToTop /> : null}
     </main>
   );
 }
