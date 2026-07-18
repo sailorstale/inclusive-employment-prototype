@@ -2,37 +2,28 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /*
-  Таблица. Собрана из трёх компонентов Figma + одной нашей надстройки.
+  Таблица — компонент-сборка из трёх готовых ячеек Figma. Компонента «Таблица»
+  в Figma нет (в шаблоне её собирали руками из безымянного фрейма), поэтому
+  сборку `Table` завели у себя: она берёт наши ячейки и складывает их в
+  настоящую <table>, чтобы раскладчик контента не плодил свои фреймы.
 
-  Из Figma один в один:
+  Ячейки, из которых собрано (один в один с Figma):
   - «Table cell» (6138:9727) — ячейка тела. Свойства Alignment (Left|Center|Right)
-    × Weight (Regular|Medium). Внутри один текст, отступы 24 по бокам (space/l)
-    и 16 сверху-снизу (space/m). Ни фона, ни рамок у ячейки нет.
-  - «Table header cell» (6010:77729) — ячейка шапки. Свойство Alignment.
-    Отступы те же, текст всегда полужирный и приглушённый (text/secondary).
-    Свойства Weight у неё НЕТ — заголовок всегда Medium.
-  - «Table Row» (6392:3174) — строка. Всю разлиновку таблицы даёт она:
-    одна серая линия (border/divider), вертикальных линий между колонками нет.
+    × Weight (Regular|Medium). Внутри один текст, без фона и рамок.
+  - «Table header cell» (6010:77729) — ячейка шапки. Свойство Alignment. Текст
+    всегда полужирный и приглушённый (text/secondary). Свойства Weight нет.
+  - «Table Row» (6392:3174) — строка. Всю разлиновку даёт она: одна серая линия
+    (border/divider), вертикальных линий между колонками нет.
 
-  НАШИ ДОПОЛНЕНИЯ — честно перечисляю, чтобы дизайнер их видел:
+  Как собирать: шапку — строкой `<TableRow header>` из `TableHeaderCell`, тело —
+  строками `<TableRow>` из `TableCell`. Table сам разложит их в <thead>/<tbody>.
+  Для короткой записи шапку можно задать пропом `headers`.
 
-  1) Компонента «Таблица» в Figma НЕТ. В шаблоне таблица собрана руками из
-     безымянного фрейма «Table · Instances» (0:1839). Мы завели компонент-сборку
-     `Table`, иначе каждый, кто раскладывает контент, будет плодить свои фреймы.
-     Это ПРЕДЛОЖЕНИЕ дизайнеру, а не факт из библиотеки. Шильдик у него — просто
-     "Table", без node id, потому что подтверждать нечем.
-
-  2) Число колонок. В Figma Table Row приколочена к двум колонкам (первая 300 px,
-     вторая — остаток). Наш Table умеет любое число колонок: ширины не задаём,
-     их раскидывает браузер. Вопрос дизайнеру: нужен ли вариант строки на 3+
-     колонки, или все таблицы на сайте двухколоночные?
-
-  3) Линия под шапкой. У «Table header cell» своей нижней линии нет, и у шапки
-     в шаблоне — тоже. ОТКРЫТЫЙ ВОПРОС: мы вешаем линию на ВЕРХНЮЮ границу каждой
-     строки (border-top). Тогда линия под шапкой появляется сама собой — её рисует
-     первая строка тела. Побочный эффект: под последней строкой линии нет.
-     Если дизайнер хотел замыкающую линию снизу — это надо переносить на border-bottom
-     и отдельно рисовать линию под шапкой.
+  Заказчик: внешний вид таблицы не критичен — главное, чтобы читалось как таблица
+  и использовались её ячейки. Поэтому мелочи оформления не докручиваем:
+  - число колонок любое (ширины раскидывает браузер), не только две из Figma;
+  - линия под шапкой появляется сама — её рисует border-top первой строки тела
+    (у строки-шапки верхней линии нет); под последней строкой линии нет.
 */
 
 export type TableAlignment = "Left" | "Center" | "Right";
@@ -111,18 +102,21 @@ export function TableHeaderCell({
 }
 
 type TableRowProps = {
+  /** Строка-шапка (ячейки TableHeaderCell). У неё нет верхней линии. */
+  header?: boolean;
   children?: React.ReactNode;
   className?: string;
 };
 
-export function TableRow({ children, className }: TableRowProps) {
+export function TableRow({ header = false, children, className }: TableRowProps) {
   return (
     <tr
       data-component="Table Row"
       className={cn(
         // Вся разлиновка таблицы — эта одна линия. Вертикальных нет.
         // Ни зебры, ни подсветки при наведении в системе тоже нет.
-        "border-t border-[color:var(--border-divider)]",
+        // У строки-шапки линии нет: её роль играет border-top первой строки тела.
+        !header && "border-t border-[color:var(--border-divider)]",
         className,
       )}
     >
@@ -137,29 +131,46 @@ export type TableHeader = {
 };
 
 type TableProps = {
+  /** Короткая запись шапки. Иначе шапку задают строкой <TableRow header>. */
   headers?: readonly TableHeader[];
   children?: React.ReactNode;
   className?: string;
 };
 
+// Строка-шапка? — та, у которой проп header (TableRow header).
+function isHeaderRow(node: React.ReactNode): boolean {
+  return (
+    React.isValidElement(node) && Boolean((node.props as TableRowProps).header)
+  );
+}
+
 export function Table({ headers, children, className }: TableProps) {
+  const rows = React.Children.toArray(children);
+  const headerRows = rows.filter(isHeaderRow);
+  const bodyRows = rows.filter((r) => !isHeaderRow(r));
+  const hasHead = Boolean(headers?.length) || headerRows.length > 0;
+
   return (
     <table
       data-component="Table"
       className={cn("w-full border-collapse", className)}
     >
-      {headers && headers.length > 0 && (
+      {hasHead && (
         <thead>
-          <tr>
-            {headers.map((header, index) => (
-              <TableHeaderCell key={index} align={header.align}>
-                {header.text}
-              </TableHeaderCell>
-            ))}
-          </tr>
+          {headers?.length ? (
+            <TableRow header>
+              {headers.map((header, index) => (
+                <TableHeaderCell key={index} align={header.align}>
+                  {header.text}
+                </TableHeaderCell>
+              ))}
+            </TableRow>
+          ) : (
+            headerRows
+          )}
         </thead>
       )}
-      <tbody>{children}</tbody>
+      <tbody>{bodyRows}</tbody>
     </table>
   );
 }

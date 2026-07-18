@@ -24,6 +24,7 @@ import {
   SmallImage,
   Table,
   TableCell,
+  TableHeaderCell,
   TableRow,
   Text,
   TextButton,
@@ -412,28 +413,28 @@ export function TableSection() {
         Таблица
       </Heading>
       <Text size="L">
-        Компонента-сборки «Таблица» в Figma нет — в шаблоне она собрана руками из
-        безымянного фрейма. Table здесь — наше предложение дизайнеру.
+        Готовой «Таблицы» в Figma нет, поэтому Table — наша сборка из уже
+        существующих ячеек: шапку собирают строкой из Table header cell, тело —
+        строками из Table cell.
       </Text>
 
       <CardContainer>
-        <Table
-          headers={[
-            { text: "Что сравниваем", align: "Left" },
-            { text: "Как устроено", align: "Left" },
-          ]}
-        >
+        <Table>
+          <TableRow header>
+            <TableHeaderCell>Контейнер</TableHeaderCell>
+            <TableHeaderCell>Зачем нужен</TableHeaderCell>
+          </TableRow>
           <TableRow>
             <TableCell weight="Medium">Section Container</TableCell>
-            <TableCell>Каркас раздела, отступ сверху 56</TableCell>
+            <TableCell>Каркас смыслового раздела страницы</TableCell>
           </TableRow>
           <TableRow>
             <TableCell weight="Medium">Card Container</TableCell>
-            <TableCell>Конверт для всего, что не проза, отступ 32</TableCell>
+            <TableCell>Конверт для всего, что не проза</TableCell>
           </TableRow>
           <TableRow>
             <TableCell weight="Medium">List Container</TableCell>
-            <TableCell>Вертикальный стек с шагом 8, отступ 16</TableCell>
+            <TableCell>Вертикальный стек с равным шагом</TableCell>
           </TableRow>
         </Table>
       </CardContainer>
