@@ -6,7 +6,10 @@ import { Editable } from "@/editor-source/Editable";
 import { AnchorScope } from "@/editor/AnchorContext";
 import { renderInline } from "@/editor-source/richText";
 import { EditorInspector } from "@/editor-source/EditorInspector";
-import { PlaygroundColumn } from "@/editor-source/source/PlaygroundColumn";
+import {
+  PlaygroundColumn,
+  MarkupPanel,
+} from "@/editor-source/source/PlaygroundColumn";
 import {
   sourceModulesMeta,
   moduleLoaders,
@@ -189,10 +192,16 @@ export function SourcePage() {
   );
 
   const [blocks, setBlocks] = React.useState<SourceBlock[] | null>(null);
+  // Выделение блоков в плейграунде живёт здесь — им пользуется и правая панель.
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  // Правая колонка: таб «Редактор» (правки текста) или «Разметка» (новый инструмент).
+  const [rightTab, setRightTab] = React.useState<"editor" | "markup">("editor");
+
   React.useEffect(() => {
     if (!moduleId || !moduleLoaders[moduleId]) return;
     let alive = true;
     setBlocks(null);
+    setSelected(new Set()); // при смене модуля выделение сбрасываем
     moduleLoaders[moduleId]().then((m) => {
       if (alive) setBlocks(m.blocks);
     });
@@ -255,13 +264,57 @@ export function SourcePage() {
 
       {/* Вторая колонка — плейграунд (раскладка на компоненты) */}
       <div className="hidden min-h-0 border-r md:block">
-        <PlaygroundColumn sections={sections} />
+        <PlaygroundColumn
+          sections={sections}
+          selected={selected}
+          onSelectedChange={setSelected}
+          onCreateDirective={() => setRightTab("markup")}
+        />
       </div>
 
-      {/* Третья колонка — редактор блока, всегда на месте (не поверх текста) */}
-      <div className="hidden min-h-0 xl:block">
-        <EditorInspector docked />
+      {/* Третья колонка — панель с табами: старый редактор + новый инструмент */}
+      <div className="hidden min-h-0 flex-col xl:flex">
+        <div className="flex shrink-0 items-center gap-1 border-b bg-muted/40 px-2 py-1.5">
+          <TabBtn active={rightTab === "editor"} onClick={() => setRightTab("editor")}>
+            Редактор
+          </TabBtn>
+          <TabBtn active={rightTab === "markup"} onClick={() => setRightTab("markup")}>
+            Разметка
+          </TabBtn>
+        </div>
+        <div className="min-h-0 flex-1">
+          {rightTab === "editor" ? (
+            <EditorInspector docked />
+          ) : (
+            <MarkupPanel sections={sections} selected={selected} />
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+function TabBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "rounded-md px-3 py-1 text-sm font-medium transition-colors",
+        active
+          ? "bg-background text-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground",
+      ].join(" ")}
+    >
+      {children}
+    </button>
   );
 }

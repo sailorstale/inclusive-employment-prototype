@@ -4,19 +4,18 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 
 /*
   Плейграунд — вторая колонка инструмента «Редактура источника». Здесь контент
-  раскладывается на наши компоненты. Первый модуль — только ФУНДАМЕНТ ВЫДЕЛЕНИЯ:
-  блоки можно выделять рамкой мышью (как в Иллюстраторе), выделенное собирается
-  в бокс, снизу — плашка действий. Директивную карточку («во что превратить +
-  модификаторы + комментарий») вешаем следующим модулем.
+  раскладывается на наши компоненты. Первый модуль — ФУНДАМЕНТ ВЫДЕЛЕНИЯ: блоки
+  выделяются рамкой мышью (как в Иллюстраторе), выделенное собирается в бокс.
 
-  Ничего не сохраняет и текст не трогает: показывает те же блоки источника, что
-  и средняя колонка, и даёт их выделять. Ключ блока — позиционный (секция:индекс),
+  Выделение управляется СНАРУЖИ (из SourcePage), чтобы им пользовалась и правая
+  панель («Разметка»): выделил тут → карточка-директива появляется там. Директиву
+  «во что превратить + модификаторы + комментарий» вешаем следующим модулем.
+
+  Ничего не сохраняет и текст не трогает. Ключ блока — позиционный (секция:индекс),
   стабильный id по хешу подключим, когда появятся директивы.
 */
 
-type Section = { anchor?: string; blocks: SourceBlock[] };
-
-type Props = { sections: Section[] };
+export type Section = { anchor?: string; blocks: SourceBlock[] };
 
 const KIND_LABEL: Record<SourceBlock["kind"], string> = {
   heading: "Заголовок",
@@ -39,17 +38,29 @@ function intersects(a: DOMRect, b: Box): boolean {
   );
 }
 
-export function PlaygroundColumn({ sections }: Props) {
-  const scrollRef = React.useRef<HTMLDivElement>(null);
+type Props = {
+  sections: Section[];
+  selected: Set<string>;
+  onSelectedChange: (next: Set<string>) => void;
+  /** Клик «Создать директиву» — переключить правую панель на «Разметку». */
+  onCreateDirective: () => void;
+};
+
+export function PlaygroundColumn({
+  sections,
+  selected,
+  onSelectedChange,
+  onCreateDirective,
+}: Props) {
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const [selected, setSelected] = React.useState<Set<string>>(new Set());
-  // Рамка в клиентских координатах — для отрисовки и проверки пересечений.
   const [marquee, setMarquee] = React.useState<Box | null>(null);
-  // Рамка вокруг выделения в координатах контента (скроллится вместе с ним).
   const [groupBox, setGroupBox] = React.useState<Box | null>(null);
 
-  // Состояние текущего перетаскивания (в ref, чтобы не гонять ре-рендеры).
+  // Текущее выделение в ref — чтобы обработчики видели свежее значение.
+  const selRef = React.useRef(selected);
+  selRef.current = selected;
+
   const drag = React.useRef<{
     x: number;
     y: number;
@@ -58,22 +69,78 @@ export function PlaygroundColumn({ sections }: Props) {
     base: Set<string>;
   } | null>(null);
 
-  // Все блоки в DOM с их ключами — для проверки попадания в рамку.
-  const blockEls = () =>
-    Array.from(
-      contentRef.current?.querySelectorAll<HTMLElement>("[data-pk]") ?? [],
-    );
+  const blockEls = React.useCallback(
+    () =>
+      Array.from(
+        contentRef.current?.querySelectorAll<HTMLElement>("[data-pk]") ?? [],
+      ),
+    [],
+  );
 
-  const keysInRect = (rect: Box): string[] => {
-    const hit: string[] = [];
-    for (const el of blockEls()) {
-      if (intersects(el.getBoundingClientRect(), rect)) {
-        const k = el.dataset.pk;
-        if (k) hit.push(k);
+  const keysInRect = React.useCallback(
+    (rect: Box): string[] => {
+      const hit: string[] = [];
+      for (const el of blockEls()) {
+        if (intersects(el.getBoundingClientRect(), rect)) {
+          const k = el.dataset.pk;
+          if (k) hit.push(k);
+        }
       }
-    }
-    return hit;
-  };
+      return hit;
+    },
+    [blockEls],
+  );
+
+  const onMove = React.useCallback(
+    (e: MouseEvent) => {
+      const d = drag.current;
+      if (!d) return;
+      if (Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 4)
+        d.moved = true;
+      if (!d.moved) return;
+      const rect: Box = {
+        left: Math.min(d.x, e.clientX),
+        top: Math.min(d.y, e.clientY),
+        width: Math.abs(e.clientX - d.x),
+        height: Math.abs(e.clientY - d.y),
+      };
+      setMarquee(rect);
+      const hit = keysInRect(rect);
+      onSelectedChange(d.additive ? new Set([...d.base, ...hit]) : new Set(hit));
+    },
+    [keysInRect, onSelectedChange],
+  );
+
+  const onUp = React.useCallback(
+    (e: MouseEvent) => {
+      const d = drag.current;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      drag.current = null;
+      setMarquee(null);
+      if (!d) return;
+      // Не тащили — клик: переключить блок под курсором либо снять выделение.
+      if (!d.moved) {
+        const point: Box = {
+          left: e.clientX,
+          top: e.clientY,
+          width: 0,
+          height: 0,
+        };
+        const [key] = keysInRect(point);
+        const cur = selRef.current;
+        if (key) {
+          const next = d.additive ? new Set(cur) : new Set<string>();
+          if (d.additive && cur.has(key)) next.delete(key);
+          else next.add(key);
+          onSelectedChange(next);
+        } else if (!d.additive) {
+          onSelectedChange(new Set());
+        }
+      }
+    },
+    [onMove, keysInRect, onSelectedChange],
+  );
 
   const onMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -82,50 +149,10 @@ export function PlaygroundColumn({ sections }: Props) {
       y: e.clientY,
       additive: e.shiftKey,
       moved: false,
-      base: new Set(selected),
+      base: new Set(selRef.current),
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  };
-
-  const onMove = (e: MouseEvent) => {
-    const d = drag.current;
-    if (!d) return;
-    if (Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 4) d.moved = true;
-    if (!d.moved) return;
-    const rect: Box = {
-      left: Math.min(d.x, e.clientX),
-      top: Math.min(d.y, e.clientY),
-      width: Math.abs(e.clientX - d.x),
-      height: Math.abs(e.clientY - d.y),
-    };
-    setMarquee(rect);
-    const hit = keysInRect(rect);
-    setSelected(d.additive ? new Set([...d.base, ...hit]) : new Set(hit));
-  };
-
-  const onUp = (e: MouseEvent) => {
-    const d = drag.current;
-    window.removeEventListener("mousemove", onMove);
-    window.removeEventListener("mouseup", onUp);
-    drag.current = null;
-    setMarquee(null);
-    if (!d) return;
-    // Не тащили — это клик: переключить блок под курсором либо снять выделение.
-    if (!d.moved) {
-      const point: Box = { left: e.clientX, top: e.clientY, width: 0, height: 0 };
-      const [key] = keysInRect(point);
-      if (key) {
-        setSelected((prev) => {
-          const next = d.additive ? new Set(prev) : new Set<string>();
-          if (d.additive && prev.has(key)) next.delete(key);
-          else next.add(key);
-          return next;
-        });
-      } else if (!d.additive) {
-        setSelected(new Set());
-      }
-    }
   };
 
   // Бокс вокруг выделения — в координатах контента, чтобы скроллился с ним.
@@ -150,9 +177,7 @@ export function PlaygroundColumn({ sections }: Props) {
     }
     if (top === Infinity) setGroupBox(null);
     else setGroupBox({ top, left, width: right - left, height: bottom - top });
-  }, [selected, sections]);
-
-  const clear = () => setSelected(new Set());
+  }, [selected, sections, blockEls]);
 
   return (
     <div className="flex min-h-0 flex-col">
@@ -165,14 +190,11 @@ export function PlaygroundColumn({ sections }: Props) {
         </span>
       </div>
 
-      {/* Область выделения: mousedown по фону начинает рамку. */}
       <div
-        ref={scrollRef}
         onMouseDown={onMouseDown}
         className="relative min-h-0 flex-1 cursor-crosshair select-none overflow-y-auto"
       >
         <div ref={contentRef} className="relative mx-auto max-w-prose px-6 py-8">
-          {/* Бокс вокруг выделения (в координатах контента). */}
           {groupBox && (
             <div
               aria-hidden
@@ -215,7 +237,6 @@ export function PlaygroundColumn({ sections }: Props) {
           </div>
         </div>
 
-        {/* Рамка выделения — фикс. позиционирование в клиентских координатах. */}
         {marquee && (
           <div
             aria-hidden
@@ -230,7 +251,6 @@ export function PlaygroundColumn({ sections }: Props) {
         )}
       </div>
 
-      {/* Плашка действий над выделением. */}
       {selected.size > 0 && (
         <div className="flex items-center justify-between gap-3 border-t bg-background px-4 py-2">
           <span className="text-sm text-foreground">
@@ -239,22 +259,82 @@ export function PlaygroundColumn({ sections }: Props) {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={clear}
+              onClick={() => onSelectedChange(new Set())}
               className="rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
               Сбросить
             </button>
             <button
               type="button"
-              disabled
-              title="Появится в следующем модуле"
-              className="cursor-not-allowed rounded-md bg-brand/40 px-3 py-1.5 text-sm font-medium text-brand-foreground"
+              onClick={onCreateDirective}
+              className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground hover:bg-brand/90"
             >
               Создать директиву →
             </button>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/*
+  Правая вкладка «Разметка» — новый инструмент. Первый модуль: показывает, что
+  сейчас выделено в плейграунде. Сама карточка-директива (во что превратить +
+  модификаторы + комментарий) — следующий модуль, здесь её место.
+*/
+export function MarkupPanel({
+  sections,
+  selected,
+}: {
+  sections: Section[];
+  selected: Set<string>;
+}) {
+  const picked: SourceBlock[] = [];
+  sections.forEach((sec, si) =>
+    sec.blocks.forEach((b, bi) => {
+      if (selected.has(`${si}:${bi}`)) picked.push(b);
+    }),
+  );
+
+  if (picked.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
+        Выделите блоки в плейграунде рамкой — здесь появится карточка-директива.
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-0 flex-col overflow-y-auto p-4">
+      <div className="text-sm font-medium text-foreground">
+        Выбрано блоков: {picked.length}
+      </div>
+      <ul className="mt-3 space-y-1">
+        {picked.map((b, i) => (
+          <li
+            key={i}
+            className="flex items-center gap-2 text-sm text-muted-foreground"
+          >
+            <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+              {KIND_LABEL[b.kind]}
+            </span>
+            <span className="truncate">
+              {b.kind === "list"
+                ? `${b.items.length} пунктов`
+                : b.kind === "table"
+                  ? `${b.rows.length} строк`
+                  : b.kind === "image"
+                    ? b.alt || "картинка"
+                    : b.text}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-4 rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+        Здесь появится карточка-директива: во что превратить · модификаторы ·
+        комментарий. Это следующий модуль.
+      </div>
     </div>
   );
 }
