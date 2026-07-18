@@ -3,6 +3,7 @@ import {
   Button,
   CardContainer,
   Checkbox,
+  Compare,
   CompareCard,
   Dropdown,
   ExternalLink,
@@ -369,42 +370,36 @@ export function CompareSection() {
         Сравнение «за / против»
       </Heading>
       <Text size="L">
-        Пара Compare Card собирается вручную через Card Container · Horizontal —
-        компонент Compare в живом шаблоне не использован ни разу.
+        Пара собирается компонентом Compare — он держит две Compare Card в ряд,
+        бок о бок, и не переносит их одна под другую.
       </Text>
 
-      <CardContainer orientation="Horizontal">
-        <CompareCard
-          className="min-w-[380px] flex-1"
-          tone="positive"
-          txt="Так правильно"
-        >
-          <Text size="M">В слот половинки кладут текст и список:</Text>
-          <ListContainer>
-            <ListItem size="M" type="Icon">
-              Понятная формулировка вакансии
-            </ListItem>
-            <ListItem size="M" type="Icon">
-              Указаны условия и доступность офиса
-            </ListItem>
-          </ListContainer>
-        </CompareCard>
+      <CardContainer>
+        <Compare>
+          <CompareCard tone="positive" txt="Так правильно">
+            <Text size="M">В слот половинки кладут текст и список:</Text>
+            <ListContainer>
+              <ListItem size="M" type="Icon">
+                Понятная формулировка вакансии
+              </ListItem>
+              <ListItem size="M" type="Icon">
+                Указаны условия и доступность офиса
+              </ListItem>
+            </ListContainer>
+          </CompareCard>
 
-        <CompareCard
-          className="min-w-[380px] flex-1"
-          tone="negative"
-          txt="Так неправильно"
-        >
-          <Text size="M">Смысл задаётся только цветом — свойства нет:</Text>
-          <ListContainer>
-            <ListItem size="M" type="Dot">
-              Требования без объяснения
-            </ListItem>
-            <ListItem size="M" type="Dot">
-              Про доступность ни слова
-            </ListItem>
-          </ListContainer>
-        </CompareCard>
+          <CompareCard tone="negative" txt="Так неправильно">
+            <Text size="M">Смысл задаётся только цветом — свойства нет:</Text>
+            <ListContainer>
+              <ListItem size="M" type="Dot">
+                Требования без объяснения
+              </ListItem>
+              <ListItem size="M" type="Dot">
+                Про доступность ни слова
+              </ListItem>
+            </ListContainer>
+          </CompareCard>
+        </Compare>
       </CardContainer>
     </SectionContainer>
   );

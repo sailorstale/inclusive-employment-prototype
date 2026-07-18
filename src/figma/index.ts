@@ -41,6 +41,7 @@ export { GeneralCard } from "./GeneralCard";
 export type { GeneralCardOrient, GeneralCardBg } from "./GeneralCard";
 export { Quote } from "./Quote";
 export type { QuoteSize } from "./Quote";
+export { Compare } from "./Compare";
 export { CompareCard } from "./CompareCard";
 export type { CompareCardTone } from "./CompareCard";
 export { Accordion } from "./Accordion";
