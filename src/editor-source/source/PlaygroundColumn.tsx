@@ -1,41 +1,10 @@
 import * as React from "react";
-import { useLocation } from "react-router-dom";
+import { Trash2 } from "lucide-react";
 import { renderInline } from "@/editor-source/richText";
-import { autoId } from "@/editor-source/ids";
-import { useEditor } from "@/editor-source/EditorProvider";
+import { DirectiveCard, type DirectiveDraft } from "./DirectiveCard";
+import { useMdResolver, blockType, type ResolveMd } from "./blockResolve";
+import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
-
-/*
-  Резолвер редакции: возвращает АКТУАЛЬНЫЙ текст блока — с внесённой правкой,
-  если она есть (и не откат), иначе оригинал. Повторяет ту же подстановку, что
-  делает Editable в первой колонке, — чтобы плейграунд показывал ту же редакцию,
-  что «Наша редакция», а не сырой исходник. id блока считается так же:
-  autoId(страница, тип, текст, раздел).
-*/
-type ResolveMd = (
-  type: string,
-  text: string,
-  md: string,
-  anchor?: string,
-) => string;
-
-function useMdResolver(): ResolveMd {
-  const { edits } = useEditor();
-  const { pathname } = useLocation();
-  return React.useCallback(
-    (type, text, md, anchor) => {
-      const rec = edits[autoId(pathname, type, text, anchor)];
-      if (rec && rec.text.trim() && rec.status !== "rollback") return rec.text;
-      return md;
-    },
-    [edits, pathname],
-  );
-}
-
-// Тип блока в адресе (id): как в Editable — цитата адресуется как paragraph.
-function blockType(b: SourceBlock): string {
-  return b.kind === "heading" ? `h${b.level}` : "paragraph";
-}
 
 /*
   Плейграунд — вторая колонка инструмента «Редактура источника». Здесь контент
@@ -322,57 +291,122 @@ export function PlaygroundColumn({
 export function MarkupPanel({
   sections,
   selected,
+  directives,
+  onSaveDraft,
+  onDelete,
 }: {
   sections: Section[];
   selected: Set<string>;
+  directives: Directive[];
+  onSaveDraft: (draft: DirectiveDraft) => void;
+  onDelete: (id: string) => void;
 }) {
   const resolve = useMdResolver();
   const picked: { block: SourceBlock; anchor?: string }[] = [];
   sections.forEach((sec, si) =>
     sec.blocks.forEach((b, bi) => {
-      if (selected.has(`${si}:${bi}`)) picked.push({ block: b, anchor: sec.anchor });
+      if (selected.has(`${si}:${bi}`))
+        picked.push({ block: b, anchor: sec.anchor });
     }),
   );
 
-  if (picked.length === 0) {
-    return (
-      <div className="flex h-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
-        Выделите блоки в плейграунде рамкой — здесь появится карточка-директива.
-      </div>
-    );
-  }
+  return (
+    <div className="flex min-h-0 flex-col gap-4 overflow-y-auto p-4">
+      {picked.length > 0 ? (
+        <div>
+          <div className="text-sm font-medium text-foreground">
+            Выбрано блоков: {picked.length}
+          </div>
+          <ul className="mt-2 space-y-1">
+            {picked.map(({ block: b, anchor }, i) => (
+              <li
+                key={i}
+                className="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+                  {KIND_LABEL[b.kind]}
+                </span>
+                <span className="truncate">
+                  {b.kind === "list"
+                    ? `${b.items.length} пунктов`
+                    : b.kind === "table"
+                      ? `${b.rows.length} строк`
+                      : b.kind === "image"
+                        ? b.alt || "картинка"
+                        : resolve(blockType(b), b.text, b.text, anchor)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3">
+            <DirectiveCard count={picked.length} onSave={onSaveDraft} />
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-md border border-dashed bg-muted/30 p-4 text-center text-xs text-muted-foreground">
+          Выделите блоки в плейграунде рамкой — здесь появится карточка-директива.
+        </div>
+      )}
+
+      {directives.length > 0 && (
+        <div>
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Сохранённые директивы · {directives.length}
+          </div>
+          <ul className="mt-2 space-y-2">
+            {directives.map((d) => (
+              <DirectiveRow key={d.id} d={d} onDelete={onDelete} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const STATUS_LABEL: Record<Directive["status"], string> = {
+  new: "новая",
+  applied: "применена",
+  verified: "проверена",
+};
+
+function DirectiveRow({
+  d,
+  onDelete,
+}: {
+  d: Directive;
+  onDelete: (id: string) => void;
+}) {
+  const mods = Object.entries(d.modifiers)
+    .filter(([, v]) => v !== false && v !== "" && v != null)
+    .map(([k, v]) => (v === true ? k : `${k}: ${v}`))
+    .join(" · ");
 
   return (
-    <div className="flex min-h-0 flex-col overflow-y-auto p-4">
-      <div className="text-sm font-medium text-foreground">
-        Выбрано блоков: {picked.length}
+    <li className="rounded-md border bg-card p-2.5 text-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <span className="font-medium text-foreground">
+            {d.targetLabel ?? "Комментарий"}
+          </span>
+          <span className="ml-2 text-xs text-muted-foreground">
+            {d.blocks.length} блок(ов) · {STATUS_LABEL[d.status]}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onDelete(d.id)}
+          aria-label="Удалить директиву"
+          className="shrink-0 text-muted-foreground hover:text-[hsl(var(--bad))]"
+        >
+          <Trash2 className="size-4" />
+        </button>
       </div>
-      <ul className="mt-3 space-y-1">
-        {picked.map(({ block: b, anchor }, i) => (
-          <li
-            key={i}
-            className="flex items-center gap-2 text-sm text-muted-foreground"
-          >
-            <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
-              {KIND_LABEL[b.kind]}
-            </span>
-            <span className="truncate">
-              {b.kind === "list"
-                ? `${b.items.length} пунктов`
-                : b.kind === "table"
-                  ? `${b.rows.length} строк`
-                  : b.kind === "image"
-                    ? b.alt || "картинка"
-                    : resolve(blockType(b), b.text, b.text, anchor)}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-4 rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
-        Здесь появится карточка-директива: во что превратить · модификаторы ·
-        комментарий. Это следующий модуль.
-      </div>
-    </div>
+      {mods && <div className="mt-0.5 text-xs text-muted-foreground">{mods}</div>}
+      {d.comment && (
+        <div className="mt-1 text-sm text-foreground/80">{d.comment}</div>
+      )}
+    </li>
   );
 }
 

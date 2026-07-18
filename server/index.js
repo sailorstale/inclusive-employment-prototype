@@ -7,6 +7,7 @@ import * as comments from "./comments.js";
 import * as unify from "./unify.js";
 import * as sourceStore from "./sourceStore.js";
 import * as sourceComments from "./sourceComments.js";
+import * as sourceDirectives from "./sourceDirectives.js";
 
 // Локально читаем prototype/.env (пароль и т.п.). На хостинге переменные задаёт
 // сам хостинг — там .env нет, и это нормально. Реальные env-переменные имеют
@@ -147,6 +148,32 @@ sourceApi.delete("/comments/:id", async (req, res) => {
   await sourceComments.remove(req.params.id);
   res.json({ ok: true });
 });
+
+// Директивы раскладки на компоненты (плейграунд → «Разметка»).
+sourceApi.get("/directives", async (_req, res) => {
+  res.json(await sourceDirectives.getAll());
+});
+sourceApi.put("/directives/:id", async (req, res) => {
+  const body = req.body || {};
+  if (!Array.isArray(body.blocks) || body.blocks.length === 0) {
+    return res.status(400).json({ error: "blocks обязательны" });
+  }
+  res.json(await sourceDirectives.upsert(req.params.id, body));
+});
+sourceApi.delete("/directives/:id", async (req, res) => {
+  await sourceDirectives.remove(req.params.id);
+  res.json({ ok: true });
+});
+sourceApi.patch("/directives/:id/status", async (req, res) => {
+  const status = req.body?.status;
+  if (!["new", "applied", "verified"].includes(status)) {
+    return res.status(400).json({ error: "status: new|applied|verified" });
+  }
+  const rec = await sourceDirectives.setStatus(req.params.id, status);
+  if (!rec) return res.status(404).json({ error: "не найдено" });
+  res.json(rec);
+});
+
 api.use("/source", sourceApi);
 
 // Честный 404 на неизвестные /api/* (иначе SPA-фоллбэк отдаёт HTML со статусом

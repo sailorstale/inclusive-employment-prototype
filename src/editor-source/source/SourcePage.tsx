@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, useLocation, Navigate } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
 import { Paragraph, BulletList, OrderedList } from "@/editor-source/Prose";
 import { Editable } from "@/editor-source/Editable";
@@ -10,6 +10,20 @@ import {
   PlaygroundColumn,
   MarkupPanel,
 } from "@/editor-source/source/PlaygroundColumn";
+import {
+  useMdResolver,
+  blockRefId,
+  blockSnippet,
+} from "@/editor-source/source/blockResolve";
+import type { DirectiveDraft } from "@/editor-source/source/DirectiveCard";
+import {
+  loadDirectives,
+  saveDirective,
+  deleteDirective,
+  newId,
+  type Directive,
+  type DirectiveBlock,
+} from "@/editor-source/directives";
 import {
   sourceModulesMeta,
   moduleLoaders,
@@ -196,6 +210,12 @@ export function SourcePage() {
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   // Правая колонка: таб «Редактор» (правки текста) или «Разметка» (новый инструмент).
   const [rightTab, setRightTab] = React.useState<"editor" | "markup">("editor");
+  // Сохранённые директивы (все модули; для текущего фильтруем при показе).
+  const [directives, setDirectives] = React.useState<Directive[]>([]);
+  const [err, setErr] = React.useState<string | null>(null);
+
+  const { pathname } = useLocation();
+  const resolve = useMdResolver();
 
   React.useEffect(() => {
     if (!moduleId || !moduleLoaders[moduleId]) return;
@@ -210,6 +230,17 @@ export function SourcePage() {
     };
   }, [moduleId]);
 
+  // Директивы грузим один раз (общие для всех модулей).
+  React.useEffect(() => {
+    let alive = true;
+    loadDirectives().then((d) => {
+      if (alive) setDirectives(d);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   if (!moduleId) return <Navigate to="/source/m1" replace />;
   if (!meta) {
     return (
@@ -218,6 +249,55 @@ export function SourcePage() {
   }
 
   const sections = blocks ? toSections(blocks) : [];
+  const moduleDirectives = directives.filter((d) => d.module === moduleId);
+
+  // Собрать ссылки на выделенные блоки (стабильный id + тип + подпись). Текст в
+  // директиве не хранится — только id-ссылки, снипет лишь для показа.
+  const buildBlocks = (): DirectiveBlock[] => {
+    const out: DirectiveBlock[] = [];
+    sections.forEach((sec, si) =>
+      sec.blocks.forEach((b, bi) => {
+        if (selected.has(`${si}:${bi}`))
+          out.push({
+            id: blockRefId(b, pathname, sec.anchor),
+            kind: b.kind,
+            snippet: blockSnippet(b, resolve, sec.anchor),
+          });
+      }),
+    );
+    return out;
+  };
+
+  const handleSaveDraft = async (draft: DirectiveDraft) => {
+    const blocksRef = buildBlocks();
+    if (blocksRef.length === 0) return;
+    try {
+      const saved = await saveDirective({
+        id: newId(),
+        module: moduleId,
+        blocks: blocksRef,
+        target: draft.target,
+        targetLabel: draft.targetLabel,
+        modifiers: draft.modifiers,
+        comment: draft.comment,
+      });
+      setDirectives((prev) => [...prev.filter((x) => x.id !== saved.id), saved]);
+      setSelected(new Set());
+      setErr(null);
+    } catch {
+      setErr("Не удалось сохранить директиву — сервер недоступен.");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDirective(id);
+      setDirectives((prev) => prev.filter((x) => x.id !== id));
+      setErr(null);
+    } catch {
+      setErr("Не удалось удалить директиву — сервер недоступен.");
+    }
+  };
 
   const gridCols = SHOW_DOC
     ? "xl:grid-cols-[1fr_1fr_1fr_minmax(360px,400px)]"
@@ -282,11 +362,22 @@ export function SourcePage() {
             Разметка
           </TabBtn>
         </div>
+        {err && (
+          <div className="shrink-0 border-b bg-[hsl(var(--bad)/0.1)] px-3 py-1.5 text-xs text-[hsl(var(--bad))]">
+            {err}
+          </div>
+        )}
         <div className="min-h-0 flex-1">
           {rightTab === "editor" ? (
             <EditorInspector docked />
           ) : (
-            <MarkupPanel sections={sections} selected={selected} />
+            <MarkupPanel
+              sections={sections}
+              selected={selected}
+              directives={moduleDirectives}
+              onSaveDraft={handleSaveDraft}
+              onDelete={handleDelete}
+            />
           )}
         </div>
       </div>
