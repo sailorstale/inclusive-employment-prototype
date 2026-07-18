@@ -23,16 +23,13 @@ import { cn } from "@/lib/utils";
   Так задано в Figma для обоих размеров. Если цитата короткая и в пять строк
   укладывается — «Далее» не мешает: текст просто не обрезается.
 
-  ЧЕМ МЫ РАСХОДИМСЯ С FIGMA (честно):
-  1) В строке авторства у Figma три графических элемента подряд: логотип-
-     «таблетка» организации, круглый аватар и фото человека. Свойств «вкл/выкл»
-     у них не видно, и непонятно, как быть с цитатой человека без компании.
-     Пока это ОТКРЫТЫЙ ВОПРОС к дизайнеру, поэтому здесь они сделаны
-     необязательными плейсхолдерами (кружок на card/bg-gray): проп avatars
-     говорит, сколько кружков показать, 0 — ни одного.
-  2) Точные отступы внутри Quote из Figma не выгружены (агент-разборщик упёрся
-     в лимит запросов). Взяты по общей физике карточек: паддинг 24, промежуток
-     до строки авторства 16 (space/m). Перепроверить при следующем проходе.
+  СТРОКА АВТОРСТВА (решение заказчика). Три графических элемента слева направо:
+  1) логотип организации/фонда автора — плашка. Показывается для внешнего
+     спикера; для сотрудника Яндекса НЕ показывается (проп org, скрыт при yandex);
+  2) знак Яндекса — отдельно, когда говорит сотрудник Яндекса (проп yandex);
+  3) аватар/фото человека (проп photo, по умолчанию есть).
+  Имя и должность показываются ВСЕГДА. Логотипов у нас нет (нейтральный стиль) —
+  плашка организации и аватар нарисованы плейсхолдерами, знак Яндекса — «Я».
 */
 
 export type QuoteSize = "L" | "S";
@@ -44,12 +41,16 @@ type Props = {
   size?: QuoteSize;
   /** Текст цитаты. Рисуется курсивом. */
   children?: React.ReactNode;
-  /** Имя автора, стиль Body M Bold. */
+  /** Имя автора, стиль Body M Bold. Показывается всегда. */
   author?: string;
-  /** Должность автора, стиль Body S, цвет text/secondary. */
+  /** Должность автора, стиль Body S. Показывается всегда. */
   role?: string;
-  /** Сколько кружков-плейсхолдеров показать в строке авторства (0–3). */
-  avatars?: number;
+  /** Организация/фонд автора — плашка-логотип слева. Скрыта, если автор из Яндекса. */
+  org?: string;
+  /** Автор — сотрудник Яндекса: вместо логотипа организации показываем знак «Я». */
+  yandex?: boolean;
+  /** Показать аватар-плейсхолдер человека. По умолчанию да. */
+  photo?: boolean;
   /** «Кат»: обрезать длинную цитату до пяти строк со ссылкой «Далее». */
   cut?: boolean;
   className?: string;
@@ -60,13 +61,13 @@ export function Quote({
   children,
   author,
   role,
-  avatars = 0,
+  org,
+  yandex = false,
+  photo = true,
   cut = true,
   className,
 }: Props) {
-  const hasCredit = Boolean(author || role || avatars > 0);
-  // Кружки-плейсхолдеры: не больше трёх, как в Figma, и не меньше нуля.
-  const dots = Math.max(0, Math.min(3, Math.trunc(avatars)));
+  const hasCredit = Boolean(author || role || org || yandex);
 
   const [expanded, setExpanded] = React.useState(false);
   // «Далее» показываем только если текст реально не влез в пять строк —
@@ -140,38 +141,45 @@ export function Quote({
       ) : null}
 
       {hasCredit ? (
-        <figcaption
-          className={cn(
-            "flex flex-wrap items-center gap-[var(--space-xs)] pt-[var(--space-m)]",
-          )}
-        >
-          {dots > 0 ? (
-            <span className="flex items-center gap-[var(--space-2xs)]">
-              {Array.from({ length: dots }, (_, i) => (
-                <span
-                  key={i}
-                  aria-hidden
-                  // Плейсхолдер вместо логотипа / аватара / фото — см. шапку файла.
-                  className={cn(
-                    "size-8 shrink-0 rounded-[var(--radius-100)]",
-                    "bg-[color:var(--card-bg-gray)]",
-                  )}
-                />
-              ))}
+        <figcaption className="flex flex-wrap items-center gap-[var(--space-xs)] pt-[var(--space-m)]">
+          {/* Аффилиация: знак Яндекса (сотрудник) ИЛИ логотип организации. */}
+          {yandex ? (
+            <span
+              aria-hidden
+              title="Яндекс"
+              className="ds-body-m-bold flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-m)] bg-[color:var(--text-primary)] text-[color:var(--text-inverse-primary)]"
+            >
+              Я
             </span>
+          ) : org ? (
+            <span
+              aria-hidden
+              title={org}
+              // Плейсхолдер логотипа организации — плашка (логотипов у нас нет).
+              className="h-8 w-16 shrink-0 rounded-[var(--radius-m)] bg-[color:var(--card-bg-gray)]"
+            />
           ) : null}
 
-          {author ? (
-            <span className="ds-body-m-bold text-[color:var(--text-primary)]">
-              {author}
-            </span>
+          {photo ? (
+            <span
+              aria-hidden
+              // Плейсхолдер фото человека.
+              className="size-8 shrink-0 rounded-[var(--radius-100)] bg-[color:var(--card-bg-gray)]"
+            />
           ) : null}
 
-          {role ? (
-            <span className="ds-body-s text-[color:var(--text-secondary)]">
-              {role}
-            </span>
-          ) : null}
+          <span className="flex min-w-0 flex-col">
+            {author ? (
+              <span className="ds-body-m-bold text-[color:var(--text-primary)]">
+                {author}
+              </span>
+            ) : null}
+            {role ? (
+              <span className="ds-body-s text-[color:var(--text-secondary)]">
+                {role}
+              </span>
+            ) : null}
+          </span>
         </figcaption>
       ) : null}
     </figure>
