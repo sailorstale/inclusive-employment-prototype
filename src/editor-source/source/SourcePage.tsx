@@ -287,6 +287,19 @@ export function SourcePage() {
     };
   }, [moduleId]);
 
+  // Карта «стабильный id блока → директива» для текущего модуля — чтобы плейграунд
+  // помечал блоки, у которых уже есть директива. Первая директива на блок (если их
+  // несколько — маловероятно, но берём верхнюю). Хук — до ранних return.
+  const directiveFor = React.useMemo(() => {
+    const map = new Map<string, Directive>();
+    for (const d of directives) {
+      if (d.module !== moduleId) continue;
+      for (const b of d.blocks) if (!map.has(b.id)) map.set(b.id, d);
+    }
+    return (b: SourceBlock, anchor?: string) =>
+      map.get(blockRefId(b, pathname, anchor));
+  }, [directives, moduleId, pathname]);
+
   if (!moduleId) return <Navigate to="/source/m1" replace />;
   if (!meta) {
     return (
@@ -416,6 +429,7 @@ export function SourcePage() {
           onSelectedChange={setSelected}
           onCreateDirective={() => setRightTab("markup")}
           scrollRef={playScrollRef}
+          directiveFor={directiveFor}
         />
       </div>
 

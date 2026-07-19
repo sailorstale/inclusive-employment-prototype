@@ -64,6 +64,8 @@ type Props = {
   onCreateDirective: () => void;
   /** Внешний ref на скролл-область — для синхронизации скролла с колонкой 1. */
   scrollRef?: React.Ref<HTMLDivElement>;
+  /** Директива блока, если она есть — чтобы пометить блок прямо в теле страницы. */
+  directiveFor?: (b: SourceBlock, anchor?: string) => Directive | undefined;
 };
 
 export function PlaygroundColumn({
@@ -72,6 +74,7 @@ export function PlaygroundColumn({
   onSelectedChange,
   onCreateDirective,
   scrollRef,
+  directiveFor,
 }: Props) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const resolve = useMdResolver();
@@ -239,6 +242,7 @@ export function PlaygroundColumn({
               sec.blocks.map((b, bi) => {
                 const key = `${si}:${bi}`;
                 const on = selected.has(key);
+                const dir = directiveFor?.(b, sec.anchor);
                 return (
                   <div
                     key={key}
@@ -247,15 +251,35 @@ export function PlaygroundColumn({
                       "relative rounded-md border px-3 py-2 transition-colors",
                       on
                         ? "border-brand/60 bg-brand/10"
-                        : "border-transparent hover:border-border",
+                        : dir
+                          ? "border-brand/30 hover:border-brand/50"
+                          : "border-transparent hover:border-border",
                     ].join(" ")}
                   >
+                    {/* Левый акцент — блок уже размечен директивой. */}
+                    {dir && (
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-brand/70"
+                      />
+                    )}
                     {/* Шильдик — справа, поверх контента; тип блока + модификатор. */}
                     <span className="pointer-events-none absolute right-1.5 top-1.5 z-10 rounded bg-muted/90 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                       {KIND_LABEL[b.kind]}
                       {blockModifier(b) ? ` · ${blockModifier(b)}` : ""}
                     </span>
                     <BlockPreview block={b} anchor={sec.anchor} resolve={resolve} />
+                    {/* Метка директивы — во что превращаем + статус. */}
+                    {dir && (
+                      <div className="pointer-events-none mt-1.5 flex flex-wrap items-center gap-1">
+                        <span className="inline-flex items-center gap-1 rounded bg-brand/15 px-1.5 py-0.5 text-[10px] font-medium text-brand">
+                          → {dir.targetLabel ?? "директива"}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {STATUS_LABEL[dir.status]}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               }),
