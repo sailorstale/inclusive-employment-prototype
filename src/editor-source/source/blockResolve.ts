@@ -66,6 +66,27 @@ export function blockRefId(
   }
 }
 
+/** Полный текст блока (с учётом правок) — для подбора иконки по смыслу. */
+export function iconTextOf(
+  b: SourceBlock,
+  anchor: string | undefined,
+  resolve: ResolveMd,
+): string {
+  switch (b.kind) {
+    case "heading":
+      return resolve(`h${b.level}`, b.text, b.text, anchor);
+    case "paragraph":
+    case "quote":
+      return resolve("paragraph", b.text, b.text, anchor);
+    case "list":
+      return b.items.map((i) => i.text).join(" ");
+    case "table":
+      return [...b.header, ...b.rows.flat()].join(" ");
+    case "image":
+      return b.alt || "";
+  }
+}
+
 /** Короткий текст блока для подписи в директиве (с учётом правок). */
 export function blockSnippet(
   b: SourceBlock,

@@ -1,9 +1,15 @@
 import * as React from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Check, Eye, Undo2 } from "lucide-react";
 import "@/figma/tokens.css";
 import { renderInline } from "@/editor-source/richText";
 import { DirectiveCard, type DirectiveDraft } from "./DirectiveCard";
-import { useMdResolver, blockType, type ResolveMd } from "./blockResolve";
+import { iconByName } from "./iconForText";
+import {
+  useMdResolver,
+  blockType,
+  iconTextOf,
+  type ResolveMd,
+} from "./blockResolve";
 import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 
@@ -309,12 +315,14 @@ export function MarkupPanel({
   directives,
   onSaveDraft,
   onDelete,
+  onSetStatus,
 }: {
   sections: Section[];
   selected: Set<string>;
   directives: Directive[];
   onSaveDraft: (draft: DirectiveDraft) => void;
   onDelete: (id: string) => void;
+  onSetStatus: (id: string, status: Directive["status"]) => void;
 }) {
   const resolve = useMdResolver();
   const picked: { block: SourceBlock; anchor?: string }[] = [];
@@ -354,7 +362,13 @@ export function MarkupPanel({
             ))}
           </ul>
           <div className="mt-3">
-            <DirectiveCard count={picked.length} onSave={onSaveDraft} />
+            <DirectiveCard
+              count={picked.length}
+              blockTexts={picked.map(({ block, anchor }) =>
+                iconTextOf(block, anchor, resolve),
+              )}
+              onSave={onSaveDraft}
+            />
           </div>
         </div>
       ) : (
@@ -370,7 +384,12 @@ export function MarkupPanel({
           </div>
           <ul className="mt-2 space-y-2">
             {directives.map((d) => (
-              <DirectiveRow key={d.id} d={d} onDelete={onDelete} />
+              <DirectiveRow
+                key={d.id}
+                d={d}
+                onDelete={onDelete}
+                onSetStatus={onSetStatus}
+              />
             ))}
           </ul>
         </div>
@@ -385,13 +404,23 @@ const STATUS_LABEL: Record<Directive["status"], string> = {
   verified: "проверена",
 };
 
+// Шаг статуса назад — на случай ошибочного клика (панель — единственная поверхность).
+const PREV_STATUS: Record<Directive["status"], Directive["status"] | null> = {
+  new: null,
+  applied: "new",
+  verified: "applied",
+};
+
 function DirectiveRow({
   d,
   onDelete,
+  onSetStatus,
 }: {
   d: Directive;
   onDelete: (id: string) => void;
+  onSetStatus: (id: string, status: Directive["status"]) => void;
 }) {
+  const prev = PREV_STATUS[d.status];
   const mods = Object.entries(d.modifiers)
     .filter(([, v]) => v !== false && v !== "" && v != null)
     .map(([k, v]) => (v === true ? k : `${k}: ${v}`))
@@ -418,9 +447,58 @@ function DirectiveRow({
         </button>
       </div>
       {mods && <div className="mt-0.5 text-xs text-muted-foreground">{mods}</div>}
+      {d.blocks.some((b) => b.icon) && (
+        <div className="mt-1 flex flex-wrap gap-1.5">
+          {d.blocks
+            .filter((b) => b.icon)
+            .map((b, i) => {
+              const Icon = iconByName(b.icon);
+              return (
+                <Icon
+                  key={i}
+                  className="size-4 text-muted-foreground"
+                  aria-label={b.snippet}
+                />
+              );
+            })}
+        </div>
+      )}
       {d.comment && (
         <div className="mt-1 text-sm text-foreground/80">{d.comment}</div>
       )}
+
+      {/* Статус: новая → применена → проверена. Разработчик отмечает по мере
+          переноса в конструктор; шаг назад — на случай ошибки. */}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {d.status === "new" && (
+          <button
+            type="button"
+            onClick={() => onSetStatus(d.id, "applied")}
+            className="inline-flex items-center gap-1 rounded-md bg-brand px-2 py-1 text-xs font-medium text-brand-foreground hover:bg-brand/90"
+          >
+            <Check className="size-3.5" /> Применена
+          </button>
+        )}
+        {d.status === "applied" && (
+          <button
+            type="button"
+            onClick={() => onSetStatus(d.id, "verified")}
+            className="inline-flex items-center gap-1 rounded-md border border-brand/40 px-2 py-1 text-xs font-medium text-brand hover:bg-brand/10"
+          >
+            <Eye className="size-3.5" /> Проверена
+          </button>
+        )}
+        {prev && (
+          <button
+            type="button"
+            onClick={() => onSetStatus(d.id, prev)}
+            aria-label="Вернуть статус на шаг назад"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <Undo2 className="size-3.5" /> вернуть
+          </button>
+        )}
+      </div>
     </li>
   );
 }

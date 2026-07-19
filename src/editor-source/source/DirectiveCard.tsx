@@ -4,6 +4,7 @@ import {
   findTarget,
   defaultModifiers,
 } from "./componentTargets";
+import { iconForText } from "./iconForText";
 
 /*
   Карточка-директива: для выделенных блоков задаёт «во что превратить +
@@ -21,9 +22,12 @@ export type DirectiveDraft = {
 
 export function DirectiveCard({
   count,
+  blockTexts = [],
   onSave,
 }: {
   count: number;
+  /** Тексты выделенных блоков — для превью подобранных иконок. */
+  blockTexts?: string[];
   onSave: (draft: DirectiveDraft) => void;
 }) {
   const [target, setTarget] = React.useState("");
@@ -109,6 +113,28 @@ export function DirectiveCard({
               )}
             </div>
           ))}
+        </div>
+      ) : null}
+
+      {target === "GeneralCard" && modifiers.icon ? (
+        <div className="mt-3 rounded-md border bg-muted/30 p-2">
+          <div className="text-xs font-medium text-muted-foreground">
+            Иконки по тексту (Lucide)
+          </div>
+          <ul className="mt-1.5 space-y-1">
+            {blockTexts.map((txt, i) => {
+              const { Icon } = iconForText(txt);
+              return (
+                <li
+                  key={i}
+                  className="flex items-center gap-2 text-xs text-muted-foreground"
+                >
+                  <Icon className="size-4 shrink-0 text-foreground" />
+                  <span className="truncate">{txt}</span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       ) : null}
 

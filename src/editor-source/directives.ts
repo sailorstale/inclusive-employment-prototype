@@ -5,7 +5,13 @@ import { apiFetch } from "./auth";
 // разметка «какие блоки → во что + модификаторы + комментарий». Текст блоков
 // здесь не хранится и не меняется: только ссылки на блоки по стабильным id.
 
-export type DirectiveBlock = { id: string; kind: string; snippet: string };
+export type DirectiveBlock = {
+  id: string;
+  kind: string;
+  snippet: string;
+  /** Имя иконки Lucide, подобранной по тексту (для General Card с иконкой). */
+  icon?: string;
+};
 export type DirectiveStatus = "new" | "applied" | "verified";
 
 export type Directive = {

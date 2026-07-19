@@ -14,12 +14,15 @@ import {
   useMdResolver,
   blockRefId,
   blockSnippet,
+  iconTextOf,
 } from "@/editor-source/source/blockResolve";
+import { iconForText } from "@/editor-source/source/iconForText";
 import type { DirectiveDraft } from "@/editor-source/source/DirectiveCard";
 import {
   loadDirectives,
   saveDirective,
   deleteDirective,
+  setDirectiveStatus,
   newId,
   type Directive,
   type DirectiveBlock,
@@ -296,23 +299,29 @@ export function SourcePage() {
 
   // Собрать ссылки на выделенные блоки (стабильный id + тип + подпись). Текст в
   // директиве не хранится — только id-ссылки, снипет лишь для показа.
-  const buildBlocks = (): DirectiveBlock[] => {
+  const buildBlocks = (withIcon: boolean): DirectiveBlock[] => {
     const out: DirectiveBlock[] = [];
     sections.forEach((sec, si) =>
       sec.blocks.forEach((b, bi) => {
-        if (selected.has(`${si}:${bi}`))
-          out.push({
-            id: blockRefId(b, pathname, sec.anchor),
-            kind: b.kind,
-            snippet: blockSnippet(b, resolve, sec.anchor),
-          });
+        if (!selected.has(`${si}:${bi}`)) return;
+        const block: DirectiveBlock = {
+          id: blockRefId(b, pathname, sec.anchor),
+          kind: b.kind,
+          snippet: blockSnippet(b, resolve, sec.anchor),
+        };
+        // General Card с иконкой — подбираем релевантную иконку по тексту блока.
+        if (withIcon)
+          block.icon = iconForText(iconTextOf(b, sec.anchor, resolve)).name;
+        out.push(block);
       }),
     );
     return out;
   };
 
   const handleSaveDraft = async (draft: DirectiveDraft) => {
-    const blocksRef = buildBlocks();
+    const withIcon =
+      draft.target === "GeneralCard" && Boolean(draft.modifiers.icon);
+    const blocksRef = buildBlocks(withIcon);
     if (blocksRef.length === 0) return;
     try {
       const saved = await saveDirective({
@@ -339,6 +348,17 @@ export function SourcePage() {
       setErr(null);
     } catch {
       setErr("Не удалось удалить директиву — сервер недоступен.");
+    }
+  };
+
+  const handleSetStatus = async (id: string, status: Directive["status"]) => {
+    try {
+      const saved = await setDirectiveStatus(id, status);
+      if (saved)
+        setDirectives((prev) => prev.map((x) => (x.id === id ? saved : x)));
+      setErr(null);
+    } catch {
+      setErr("Не удалось сменить статус директивы — сервер недоступен.");
     }
   };
 
@@ -424,6 +444,7 @@ export function SourcePage() {
               directives={moduleDirectives}
               onSaveDraft={handleSaveDraft}
               onDelete={handleDelete}
+              onSetStatus={handleSetStatus}
             />
           )}
         </div>
