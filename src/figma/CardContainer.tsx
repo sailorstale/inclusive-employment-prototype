@@ -44,7 +44,16 @@ export function CardContainer({
           "flex w-full gap-[var(--space-xs)]",
           orientation === "Vertical"
             ? "flex-col"
-            : "flex-row flex-wrap items-stretch",
+            : // Ряд карточек: каждая занимает ПОЛОВИНУ колонки, третья переносится
+              // на следующую строку. Без этого дети остаются w-full, и «ряд»
+              // раскладывался бы в столбик — каждая карточка на своей строке.
+              // Растягивать не даём: нечётная последняя карточка должна остаться
+              // половиной, а не разъезжаться на всю колонку.
+              [
+                "flex-row flex-wrap items-stretch",
+                "[&>*]:min-w-0 [&>*]:grow-0",
+                "[&>*]:basis-[calc((100%-var(--space-xs))/2)]",
+              ].join(" "),
         )}
       >
         {children}
