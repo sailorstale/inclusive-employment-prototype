@@ -96,7 +96,7 @@ type Props = {
   /** Внешний ref на скролл-область — для синхронизации скролла с колонкой 1. */
   scrollRef?: React.Ref<HTMLDivElement>;
   /** Директива блока, если она есть — чтобы пометить блок прямо в теле страницы. */
-  directiveFor?: (b: SourceBlock, anchor?: string) => Directive | undefined;
+  directiveAt?: (si: number, bi: number) => Directive | undefined;
 };
 
 export function PlaygroundColumn({
@@ -105,7 +105,7 @@ export function PlaygroundColumn({
   onSelectedChange,
   onCreateDirective,
   scrollRef,
-  directiveFor,
+  directiveAt,
 }: Props) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const resolve = useMdResolver();
@@ -358,7 +358,7 @@ export function PlaygroundColumn({
         {mode === "result" ? (
           <ResultView
             sections={sections}
-            directiveFor={directiveFor}
+            directiveAt={directiveAt}
             resolve={resolve}
           />
         ) : (
@@ -384,7 +384,7 @@ export function PlaygroundColumn({
               sec.blocks.map((b, bi) => {
                 const key = `${si}:${bi}`;
                 const on = selected.has(key);
-                const dir = directiveFor?.(b, sec.anchor);
+                const dir = directiveAt?.(si, bi);
                 return (
                   <div
                     key={key}

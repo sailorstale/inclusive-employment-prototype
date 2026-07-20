@@ -99,12 +99,13 @@ const stripBold = (md: string) => md.replace(/\*\*(.+?)\*\*/g, "$1");
 /** Группы внутри ОДНОЙ секции: подряд идущие блоки одной директивы — вместе. */
 function groupsOf(
   sec: Section,
-  directiveFor?: (b: SourceBlock, anchor?: string) => Directive | undefined,
+  si: number,
+  directiveAt?: (si: number, bi: number) => Directive | undefined,
 ): Group[] {
   const groups: Group[] = [];
   let cur: Group | null = null;
-  for (const b of sec.blocks) {
-    const d = directiveFor?.(b, sec.anchor);
+  sec.blocks.forEach((b, bi) => {
+    const d = directiveAt?.(si, bi);
     const active = isActive(d) ? d : undefined;
     if (active && cur?.dir?.id === active.id) {
       cur.items.push({ b, anchor: sec.anchor });
@@ -112,7 +113,7 @@ function groupsOf(
       cur = { dir: active, items: [{ b, anchor: sec.anchor }] };
       groups.push(cur);
     }
-  }
+  });
   return groups;
 }
 
@@ -141,11 +142,11 @@ function needsCard(g: Group): boolean {
 
 export function ResultView({
   sections,
-  directiveFor,
+  directiveAt,
   resolve,
 }: {
   sections: Section[];
-  directiveFor?: (b: SourceBlock, anchor?: string) => Directive | undefined;
+  directiveAt?: (si: number, bi: number) => Directive | undefined;
   resolve: ResolveMd;
 }) {
   /** Актуальная разметка блока (с правками), при необходимости без жирного. */
@@ -163,7 +164,7 @@ export function ResultView({
     <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pb-16">
       {sections.map((sec, i) => (
         <SectionContainer key={sec.anchor ?? `s-${i}`}>
-          {groupsOf(sec, directiveFor).map((g, j) => {
+          {groupsOf(sec, i, directiveAt).map((g, j) => {
             const body = <GroupView group={g} md={md} resolve={resolve} />;
             // Не-проза живёт в Card Container — он же даёт нужный воздух.
             return needsCard(g) ? (
@@ -270,7 +271,17 @@ function GroupView({
     }
 
     case "Accordion": {
-      // Каждый заголовок начинает новый аккордеон; блоки до первого — как есть.
+      /*
+        Новый аккордеон начинает заголовок ВЕРХНЕГО в этой группе уровня —
+        обычно h3 с формулировкой мифа. Более мелкие заголовки («Кейс из
+        практики», h4) — часть ответа, они уходят внутрь тела: иначе кусок
+        объяснения отрывался в отдельный вопрос-ответ.
+      */
+      const topLevel = Math.min(
+        ...items
+          .filter((it) => it.b.kind === "heading")
+          .map((it) => (it.b as { level: number }).level),
+      );
       const out: React.ReactNode[] = [];
       let q: string | null = null;
       let body: Item[] = [];
@@ -291,7 +302,9 @@ function GroupView({
         body = [];
       };
       items.forEach((it, i) => {
-        if (it.b.kind === "heading") {
+        const isTopHeading =
+          it.b.kind === "heading" && (it.b as { level: number }).level === topLevel;
+        if (isTopHeading) {
           flush(i);
           q = md(it);
         } else if (q !== null) {

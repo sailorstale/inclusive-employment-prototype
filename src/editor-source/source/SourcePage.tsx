@@ -287,18 +287,75 @@ export function SourcePage() {
     };
   }, [moduleId]);
 
-  // Карта «стабильный id блока → директива» для текущего модуля — чтобы плейграунд
-  // помечал блоки, у которых уже есть директива. Первая директива на блок (если их
-  // несколько — маловероятно, но берём верхнюю). Хук — до ранних return.
-  const directiveFor = React.useMemo(() => {
+  /*
+    Директива → КОНКРЕТНЫЕ блоки документа, по позиции, а не по тексту.
+
+    Почему не по тексту: id блока считается от его текста и якоря раздела, а
+    повторяющиеся строки («**Миф**», «**Пояснение**») стоят в каждом из девяти
+    мифов ОДНОГО раздела — id у них совпадает. Если отдавать такой блок «первой
+    попавшейся» директиве, группа рвётся: заголовок остаётся в одной группе,
+    хвост мифа — в другой, и аккордеон собирается пустым, с одним вопросом.
+
+    Поэтому директиву прикладываем к документу целиком: ищем непрерывный
+    участок, где подряд идущие id совпадают с её списком блоков. Уникальные
+    соседи (заголовок мифа, его абзацы) однозначно пришпиливают участок к
+    нужному месту. Занятые позиции помечаем, чтобы две директивы не
+    претендовали на одни и те же блоки.
+
+    Два прохода: сначала директивы с ЕДИНСТВЕННЫМ возможным местом (их не с чем
+    перепутать), потом остальные — жадно, в первое свободное. Так директива из
+    одного повторяющегося блока (шесть «**Почему это важно**») не отбирает
+    место у той, которой деваться некуда.
+  */
+  const directiveAt = React.useMemo(() => {
+    const flat: { key: string; id: string }[] = [];
+    toSections(blocks ?? []).forEach((sec, si) =>
+      sec.blocks.forEach((b, bi) =>
+        flat.push({ key: `${si}:${bi}`, id: blockRefId(b, pathname, sec.anchor) }),
+      ),
+    );
+
+    const mine = directives.filter((d) => d.module === moduleId && d.blocks.length);
+    const taken = new Set<number>();
     const map = new Map<string, Directive>();
-    for (const d of directives) {
-      if (d.module !== moduleId) continue;
-      for (const b of d.blocks) if (!map.has(b.id)) map.set(b.id, d);
+
+    /** Позиции, с которых список id директивы ложится на документ подряд. */
+    const candidates = (ids: string[]) => {
+      const out: number[] = [];
+      for (let p = 0; p + ids.length <= flat.length; p++) {
+        let ok = true;
+        for (let k = 0; k < ids.length; k++)
+          if (flat[p + k].id !== ids[k]) {
+            ok = false;
+            break;
+          }
+        if (ok) out.push(p);
+      }
+      return out;
+    };
+
+    const place = (d: Directive, p: number) => {
+      for (let k = 0; k < d.blocks.length; k++) {
+        taken.add(p + k);
+        map.set(flat[p + k].key, d);
+      }
+    };
+
+    const pending: { d: Directive; at: number[] }[] = [];
+    for (const d of mine) {
+      const at = candidates(d.blocks.map((b) => b.id));
+      if (at.length === 1) place(d, at[0]);
+      else if (at.length > 1) pending.push({ d, at });
     }
-    return (b: SourceBlock, anchor?: string) =>
-      map.get(blockRefId(b, pathname, anchor));
-  }, [directives, moduleId, pathname]);
+    for (const { d, at } of pending) {
+      const free = at.find((p) =>
+        d.blocks.every((_, k) => !taken.has(p + k)),
+      );
+      if (free !== undefined) place(d, free);
+    }
+
+    return (si: number, bi: number) => map.get(`${si}:${bi}`);
+  }, [directives, moduleId, pathname, blocks]);
 
   if (!moduleId) return <Navigate to="/source/m1" replace />;
   if (!meta) {
@@ -451,7 +508,7 @@ export function SourcePage() {
           onSelectedChange={setSelected}
           onCreateDirective={() => setRightTab("markup")}
           scrollRef={playScrollRef}
-          directiveFor={directiveFor}
+          directiveAt={directiveAt}
         />
       </div>
 
