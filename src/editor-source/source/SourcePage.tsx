@@ -631,20 +631,69 @@ function TabBtn({
 }
 
 /*
+  ПОДСВЕТКА JSON. Простыню в 85 тысяч знаков одним цветом читать невозможно,
+  поэтому раскрашиваем. Свой мини-разборщик вместо библиотеки: формат тут
+  заведомо валидный — его сделал JSON.stringify, — и хватает одного шаблона на
+  четыре вида токенов.
+
+  Тема в приложении одна, светлая, поэтому и цвета одни — без парных
+  вариантов под тёмную.
+*/
+const JSON_TOKEN =
+  /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g;
+
+const TOKEN_CLASS = {
+  key: "text-sky-700",
+  string: "text-emerald-700",
+  literal: "text-purple-700",
+  number: "text-amber-700",
+};
+
+function highlightJson(src: string): React.ReactNode[] {
+  const out: React.ReactNode[] = [];
+  let last = 0;
+  let key = 0;
+  let m: RegExpExecArray | null;
+  JSON_TOKEN.lastIndex = 0;
+  while ((m = JSON_TOKEN.exec(src))) {
+    if (m.index > last) out.push(src.slice(last, m.index));
+    const [full, str, colon, literal, num] = m;
+    const cls = str
+      ? colon
+        ? TOKEN_CLASS.key
+        : TOKEN_CLASS.string
+      : literal
+        ? TOKEN_CLASS.literal
+        : num
+          ? TOKEN_CLASS.number
+          : "";
+    out.push(
+      <span key={key++} className={cls}>
+        {full}
+      </span>,
+    );
+    last = m.index + full.length;
+  }
+  if (last < src.length) out.push(src.slice(last));
+  return out;
+}
+
+/*
   JSON ровно того вида, что уедет разработчику: та же функция выгрузки, что и у
-  кнопки «JSON модуля». Смотреть можно рядом с текстом, не скачивая файл.
+  кнопки «Скачать». Смотреть можно рядом с текстом, не скачивая файл.
 
   Скролл общий с колонкой раскладки — контейнер тот же (copyScrollRef), поэтому
   синхронизация колонок работает и здесь, без отдельной механики.
 */
 function JsonView({ doc }: { doc: Doc }) {
-  const text = React.useMemo(
-    () => JSON.stringify(docToExport(doc), null, 2),
+  // Разбор тяжёлый (десятки тысяч знаков) — считаем только при смене дерева.
+  const nodes = React.useMemo(
+    () => highlightJson(JSON.stringify(docToExport(doc), null, 2)),
     [doc],
   );
   return (
-    <pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-foreground">
-      {text}
+    <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-[1.65] text-muted-foreground">
+      {nodes}
     </pre>
   );
 }

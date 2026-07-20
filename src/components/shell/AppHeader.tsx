@@ -3,7 +3,6 @@ import { Accessibility } from "lucide-react";
 import { mainMenu, isMenuActive } from "@/data/nav";
 import { cn } from "@/lib/utils";
 import { SiteSearch } from "./SiteSearch";
-import { ThemeToggle } from "./ThemeToggle";
 
 // AppHeader (00 — глобальная навигация) — бренд-лого → #/; главное меню из
 // крупных разделов (Общая информация + ролевые треки + вход в редакторский
@@ -69,7 +68,6 @@ export function AppHeader() {
 
         <div className="flex flex-1 items-center justify-end gap-1">
           <SiteSearch />
-          <ThemeToggle />
         </div>
       </div>
     </header>

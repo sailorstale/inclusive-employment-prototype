@@ -5,7 +5,8 @@
 /*
   Токены из «00b — UI-kit» §1. Нейтральная шкала zinc + один сдержанный
   синий акцент (--brand) + статусные оттенки для вердиктов (--ok/--warn/--bad).
-  Модель theming — стандартная shadcn/ui (:root / .dark), цвета в HSL.
+  Модель theming — shadcn/ui, цвета в HSL. Тема одна, светлая:
+  тёмная убрана по решению заказчика (переключатель только путал).
 */
 
 @layer base {
@@ -47,40 +48,6 @@
     --radius: 0.5rem;
   }
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-
-    --brand: 221 70% 60%;
-    --brand-foreground: 0 0% 100%;
-
-    /* Слегка осветлены для читаемости текста-вердикта на тёмном фоне */
-    --ok: 142 45% 55%;
-    --warn: 38 70% 60%;
-    --bad: 0 65% 62%;
-  }
 }
 
 @layer base {

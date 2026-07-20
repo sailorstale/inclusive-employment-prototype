@@ -1,7 +1,6 @@
 import { NavLink, Link } from "react-router-dom";
 import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { sourceModulesMeta } from "@/editor-source/content/source.generated";
 
 // Шапка инструмента «Редактура источника» — намеренно НЕ похожа на сайт:
@@ -54,7 +53,6 @@ export function SourceTopBar() {
           >
             ← К сайту
           </Link>
-          <ThemeToggle />
         </div>
       </div>
     </header>
