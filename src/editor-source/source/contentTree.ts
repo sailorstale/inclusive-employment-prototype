@@ -249,8 +249,10 @@ export function buildDoc(
   const md = (it: Item, unbold = false): string => {
     const b = it.b;
     const type = b.kind === "heading" ? `h${b.level}` : "paragraph";
+    // У таблицы, картинки и СПИСКА своего поля text нет: у списка текст живёт
+    // в items. Без этой проверки адрес правки считался бы от undefined и падал.
     const raw =
-      b.kind === "table" || b.kind === "image"
+      b.kind === "table" || b.kind === "image" || b.kind === "list"
         ? ""
         : resolve(type, (b as { text: string }).text, (b as { md: string }).md, it.anchor);
     return unbold ? stripBold(raw) : raw;
@@ -405,7 +407,17 @@ export function buildDoc(
           с формулировкой мифа). Заголовки помельче («Кейс из практики», h4) —
           часть ответа и уходят внутрь тела, а не отрываются в отдельный вопрос.
         */
-        const levels = items
+        /*
+          «Пояснение» из аккордеона убираем всегда. Это строительные леса
+          исходного текста: внутри аккордеона ответ и ЕСТЬ пояснение, ярлык
+          только шумит. «Миф» и «Правда» оставляем — они несут вердикт, без них
+          читатель не поймёт, подтверждают утверждение или опровергают.
+        */
+        const isExplainLabel = (t: string) =>
+          /^[*_\s]*пояснени\p{L}*\s*:?[*_\s]*$/iu.test(t);
+        const items2 = items.filter((it) => !isExplainLabel(md(it)));
+
+        const levels = items2
           .filter((it) => it.b.kind === "heading")
           .map((it) => (it.b as { level: number }).level);
         const topLevel = levels.length ? Math.min(...levels) : 0;
@@ -423,7 +435,7 @@ export function buildDoc(
           q = null;
           body = [];
         };
-        for (const it of items) {
+        for (const it of items2) {
           const isTop =
             it.b.kind === "heading" && (it.b as { level: number }).level === topLevel;
           if (isTop) {
