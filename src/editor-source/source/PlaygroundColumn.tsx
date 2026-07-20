@@ -3,8 +3,8 @@ import { Trash2, Check, Eye, Undo2 } from "lucide-react";
 import "@/figma/tokens.css";
 import { renderInline } from "@/editor-source/richText";
 import { DirectiveCard, type DirectiveDraft } from "./DirectiveCard";
-import { ResultView, useContentDoc } from "./ResultView";
-import { docToExport } from "./contentTree";
+import { ResultView } from "./ResultView";
+import { docToExport, type Doc } from "./contentTree";
 import { iconByName } from "./iconForText";
 import {
   useMdResolver,
@@ -100,6 +100,8 @@ type Props = {
   directiveAt?: (si: number, bi: number) => Directive | undefined;
   /** Текущий модуль — попадает в выгрузку и в имя файла. */
   moduleId: string;
+  /** Дерево контента: считается один раз на странице (SourcePage). */
+  doc: Doc;
   /** Выгрузить все модули разом (собирается на уровне страницы). */
   onExportAll?: () => void;
 };
@@ -112,14 +114,11 @@ export function PlaygroundColumn({
   scrollRef,
   directiveAt,
   moduleId,
+  doc,
   onExportAll,
 }: Props) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const resolve = useMdResolver();
-
-  // Дерево контента: им рисуется «Результат» и из него же собирается выгрузка,
-  // поэтому превью и JSON разработчика не могут разъехаться.
-  const doc = useContentDoc(moduleId, sections, resolve, directiveAt);
 
   const exportModule = () => downloadJson(`content-${moduleId}.json`, docToExport(doc));
 

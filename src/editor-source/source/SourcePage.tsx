@@ -17,6 +17,8 @@ import {
   iconTextOf,
 } from "@/editor-source/source/blockResolve";
 import { iconForText } from "@/editor-source/source/iconForText";
+import { docToExport, type Doc } from "@/editor-source/source/contentTree";
+import { useContentDoc } from "@/editor-source/source/ResultView";
 import type { DirectiveDraft } from "@/editor-source/source/DirectiveCard";
 import {
   loadDirectives,
@@ -213,6 +215,8 @@ export function SourcePage() {
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   // Правая колонка: таб «Редактор» (правки текста) или «Разметка» (новый инструмент).
   const [rightTab, setRightTab] = React.useState<"editor" | "markup">("editor");
+  // Левая колонка: текст источника или тот же контент в виде JSON для разработчика.
+  const [leftTab, setLeftTab] = React.useState<"text" | "json">("text");
   // Сохранённые директивы (все модули; для текущего фильтруем при показе).
   const [directives, setDirectives] = React.useState<Directive[]>([]);
   const [err, setErr] = React.useState<string | null>(null);
@@ -357,6 +361,33 @@ export function SourcePage() {
     return (si: number, bi: number) => map.get(`${si}:${bi}`);
   }, [directives, moduleId, pathname, blocks]);
 
+  // Секции и дерево контента считаем ДО ранних return: это хуки.
+  const sections = React.useMemo(
+    () => (blocks ? toSections(blocks) : []),
+    [blocks],
+  );
+  /*
+    ОДНО дерево на страницу: им рисуется «Результат» во второй колонке, из него
+    же JSON в первой и выгрузка файлом. Превью и то, что уедет разработчику,
+    физически не могут разъехаться.
+  */
+  const doc = useContentDoc(moduleId ?? "", sections, resolve, directiveAt);
+
+  /*
+    Смена «Текст ↔ JSON» не должна терять место чтения. Высоты у текста и у
+    JSON разные, поэтому сохранять пиксели бессмысленно: подтягиваем левую
+    колонку к правой — плейграунд тут опорный. Так после переключения обе
+    колонки снова показывают один и тот же кусок документа.
+  */
+  React.useLayoutEffect(() => {
+    const c1 = copyScrollRef.current;
+    const c2 = playScrollRef.current;
+    if (!c1 || !c2) return;
+    const max2 = c2.scrollHeight - c2.clientHeight;
+    const ratio = max2 > 0 ? c2.scrollTop / max2 : 0;
+    c1.scrollTop = ratio * (c1.scrollHeight - c1.clientHeight);
+  }, [leftTab]);
+
   if (!moduleId) return <Navigate to="/source/m1" replace />;
   if (!meta) {
     return (
@@ -364,7 +395,6 @@ export function SourcePage() {
     );
   }
 
-  const sections = blocks ? toSections(blocks) : [];
   const moduleDirectives = directives.filter((d) => d.module === moduleId);
 
   // Собрать ссылки на выделенные блоки (стабильный id + тип + подпись). Текст в
@@ -469,10 +499,20 @@ export function SourcePage() {
 
       {/* Первая колонка — наша копия источника (эталон, читаем) */}
       <div className="flex min-h-0 flex-col overflow-hidden border-r">
-        <div className="shrink-0 border-b bg-muted/40 px-6 py-1.5">
-          <span className="text-xs font-medium text-muted-foreground">
-            Наша редакция · источник для сайта
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b bg-muted/40 px-6 py-1.5">
+          <span className="truncate text-xs font-medium text-muted-foreground">
+            {leftTab === "text"
+              ? "Наша редакция · источник для сайта"
+              : "JSON для разработчика"}
           </span>
+          <div className="flex shrink-0 items-center gap-0.5 rounded-md border bg-background p-0.5">
+            <TabBtn active={leftTab === "text"} onClick={() => setLeftTab("text")}>
+              Текст
+            </TabBtn>
+            <TabBtn active={leftTab === "json"} onClick={() => setLeftTab("json")}>
+              JSON
+            </TabBtn>
+          </div>
         </div>
         <div
           ref={copyScrollRef}
@@ -482,6 +522,8 @@ export function SourcePage() {
               отдельную «шапку» не рисуем, чтобы не дублировать и не «переносить». */}
           {blocks === null ? (
             <p className="text-muted-foreground">Загрузка модуля…</p>
+          ) : leftTab === "json" ? (
+            <JsonView doc={doc} />
           ) : (
             sections.map((sec, i) => (
               <section
@@ -510,6 +552,7 @@ export function SourcePage() {
           scrollRef={playScrollRef}
           directiveAt={directiveAt}
           moduleId={moduleId}
+          doc={doc}
         />
       </div>
 
@@ -570,5 +613,24 @@ function TabBtn({
     >
       {children}
     </button>
+  );
+}
+
+/*
+  JSON ровно того вида, что уедет разработчику: та же функция выгрузки, что и у
+  кнопки «JSON модуля». Смотреть можно рядом с текстом, не скачивая файл.
+
+  Скролл общий с колонкой раскладки — контейнер тот же (copyScrollRef), поэтому
+  синхронизация колонок работает и здесь, без отдельной механики.
+*/
+function JsonView({ doc }: { doc: Doc }) {
+  const text = React.useMemo(
+    () => JSON.stringify(docToExport(doc), null, 2),
+    [doc],
+  );
+  return (
+    <pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-foreground">
+      {text}
+    </pre>
   );
 }
