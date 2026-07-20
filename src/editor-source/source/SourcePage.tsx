@@ -150,6 +150,77 @@ function BlockView({ block }: { block: SourceBlock }) {
   }
 }
 
+/*
+  ОБЩАЯ СИСТЕМА КООРДИНАТ ДЛЯ КОЛОНОК — секции.
+
+  У начала каждой секции стоит data-sec с её номером: в тексте, в JSON и в
+  раскладке (режим «Блоки»). В режиме «Результат» секцию рисует компонент
+  дизайн-системы: служебного data-sec у него нет и заводить не станем — берём
+  Section Container по порядку следования, он на каждую секцию ровно один.
+
+  Массив разрежённый: индекс = номер секции.
+*/
+function secEls(box: HTMLElement): HTMLElement[] {
+  const out: HTMLElement[] = [];
+  box.querySelectorAll<HTMLElement>("[data-sec]").forEach((el) => {
+    out[Number(el.dataset.sec)] = el;
+  });
+  if (out.length) return out;
+  box
+    .querySelectorAll<HTMLElement>('[data-component="Section Container"]')
+    .forEach((el, i) => {
+      out[i] = el;
+    });
+  return out;
+}
+
+/** Границы секции i в координатах содержимого контейнера. */
+function secSpan(els: HTMLElement[], i: number, box: HTMLElement) {
+  const boxTop = box.getBoundingClientRect().top - box.scrollTop;
+  const top = els[i].getBoundingClientRect().top - boxTop;
+  const next = els.slice(i + 1).find(Boolean);
+  // У последней секции конца нет — тянем до конца содержимого. Брать
+  // offsetHeight нельзя: в режиме «Блоки» якорь — лишь ПЕРВЫЙ блок секции.
+  const height = next
+    ? next.getBoundingClientRect().top - boxTop - top
+    : box.scrollHeight - top;
+  return { top, height };
+}
+
+/*
+  Куда прокрутить `to`, чтобы он показывал то же место документа, что и `from`:
+  та же секция и та же доля прокрутки ВНУТРИ неё. null — двигать не нужно.
+
+  Пропорция по высоте тут не годится: секция, которая на странице занимает
+  экран, в JSON тянется на полторы сотни строк, и колонки разъезжаются.
+*/
+function syncTarget(from: HTMLElement, to: HTMLElement): number | null {
+  const fe = secEls(from);
+  const te = secEls(to);
+  let target: number;
+  if (fe.length && te.length) {
+    // Верхняя секция, начало которой уже ушло за верхний край окна.
+    let i = 0;
+    for (let k = 0; k < fe.length; k++)
+      if (fe[k] && secSpan(fe, k, from).top <= from.scrollTop + 1) i = k;
+    while (i >= 0 && !te[i]) i -= 1; // в другой колонке секции может не быть
+    if (i < 0) return null;
+    const f = secSpan(fe, i, from);
+    const frac =
+      f.height > 0
+        ? Math.min(1, Math.max(0, (from.scrollTop - f.top) / f.height))
+        : 0;
+    const t = secSpan(te, i, to);
+    target = t.top + frac * t.height;
+  } else {
+    // Якорей ещё нет (модуль грузится) — пропорциональное поведение как раньше.
+    const max = from.scrollHeight - from.clientHeight;
+    target =
+      (max > 0 ? from.scrollTop / max : 0) * (to.scrollHeight - to.clientHeight);
+  }
+  return Math.max(0, Math.min(target, to.scrollHeight - to.clientHeight));
+}
+
 // Разбивка на секции по h2 — каждая получает id-якорь и AnchorScope (адрес
 // блока учитывает раздел: одинаковый текст в разных разделах не путается).
 type Section = { anchor?: string; blocks: SourceBlock[] };
@@ -224,10 +295,17 @@ export function SourcePage() {
   const { pathname } = useLocation();
   const resolve = useMdResolver();
 
-  // Скролл-области колонок 1 (наша копия) и 2 (плейграунд) — для синхронного
-  // скролла: удобно быстро сверять, не «слетел» ли контент между ними.
-  const copyScrollRef = React.useRef<HTMLDivElement>(null);
-  const playScrollRef = React.useRef<HTMLDivElement>(null);
+  /*
+    Скролл-области колонок 1 (наша копия) и 2 (плейграунд) — для синхронного
+    скролла: удобно быстро сверять, не «слетел» ли контент между ними.
+
+    Держим их СОСТОЯНИЕМ, а не ref: плейграунд пересоздаёт свой контейнер при
+    смене режима «Блоки ↔ Результат», и эффект, повесивший слушатель один раз,
+    оставался бы на отсоединённом узле — синхрон молча переставал работать.
+    Со state эффект переподключается на новый элемент сам.
+  */
+  const [copyBox, setCopyBox] = React.useState<HTMLDivElement | null>(null);
+  const [playBox, setPlayBox] = React.useState<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     if (!moduleId || !moduleLoaders[moduleId]) return;
@@ -253,35 +331,44 @@ export function SourcePage() {
     };
   }, []);
 
-  // Синхронный скролл колонок 1 и 2 (пропорционально высоте) — удобно быстро
-  // сверять, не «слетел» ли контент. Отражённое событие гасим флагом «следующий
-  // скролл у этой колонки — наш, программный»: ставим его, только когда реально
-  // двигаем, поэтому ровно одно событие и гасится (без таймеров/rAF).
+  /*
+    Синхронный скролл колонок 1 и 2 — ПО СЕКЦИЯМ, а не по проценту высоты.
+
+    Пропорция работала, пока слева был текст: высоты примерно совпадали. С JSON
+    она разъезжается — секция, которая на странице занимает экран, в JSON тянется
+    на полторы сотни строк, и к середине модуля колонки смотрят на разные места.
+
+    Поэтому держим общую систему координат: у начала каждой секции во всех трёх
+    представлениях (текст, JSON, раскладка) стоит data-sec с её номером. Берём
+    верхнюю видимую секцию и долю прокрутки ВНУТРИ неё — и ставим другую колонку
+    на ту же секцию с той же долей.
+
+    Отражённое событие гасим флагом «следующий скролл у этой колонки — наш,
+    программный»: ставим его, только когда реально двигаем, поэтому ровно одно
+    событие и гасится (без таймеров/rAF).
+  */
   React.useEffect(() => {
-    const c1 = copyScrollRef.current;
-    const c2 = playScrollRef.current;
+    const c1 = copyBox;
+    const c2 = playBox;
     if (!c1 || !c2) return;
+
     const skip = { c1: false, c2: false };
-    const mirror = (
-      from: HTMLElement,
-      to: HTMLElement,
-      lockTo: "c1" | "c2",
-    ) => {
-      const max = from.scrollHeight - from.clientHeight;
-      const ratio = max > 0 ? from.scrollTop / max : 0;
-      const target = ratio * (to.scrollHeight - to.clientHeight);
+    const align = (from: HTMLElement, to: HTMLElement, lockTo: "c1" | "c2") => {
+      const target = syncTarget(from, to);
+      if (target === null) return;
       if (Math.abs(to.scrollTop - target) > 1) {
         skip[lockTo] = true;
         to.scrollTop = target;
       }
     };
+
     const onC1 = () => {
       if (skip.c1) return void (skip.c1 = false);
-      mirror(c1, c2, "c2");
+      align(c1, c2, "c2");
     };
     const onC2 = () => {
       if (skip.c2) return void (skip.c2 = false);
-      mirror(c2, c1, "c1");
+      align(c2, c1, "c1");
     };
     c1.addEventListener("scroll", onC1, { passive: true });
     c2.addEventListener("scroll", onC2, { passive: true });
@@ -289,7 +376,7 @@ export function SourcePage() {
       c1.removeEventListener("scroll", onC1);
       c2.removeEventListener("scroll", onC2);
     };
-  }, [moduleId]);
+  }, [copyBox, playBox]);
 
   /*
     Директива → КОНКРЕТНЫЕ блоки документа, по позиции, а не по тексту.
@@ -376,17 +463,16 @@ export function SourcePage() {
   /*
     Смена «Текст ↔ JSON» не должна терять место чтения. Высоты у текста и у
     JSON разные, поэтому сохранять пиксели бессмысленно: подтягиваем левую
-    колонку к правой — плейграунд тут опорный. Так после переключения обе
-    колонки снова показывают один и тот же кусок документа.
+    колонку к правой по секциям — плейграунд тут опорный. Так после
+    переключения обе колонки снова показывают один и тот же кусок документа.
   */
   React.useLayoutEffect(() => {
-    const c1 = copyScrollRef.current;
-    const c2 = playScrollRef.current;
+    const c1 = copyBox;
+    const c2 = playBox;
     if (!c1 || !c2) return;
-    const max2 = c2.scrollHeight - c2.clientHeight;
-    const ratio = max2 > 0 ? c2.scrollTop / max2 : 0;
-    c1.scrollTop = ratio * (c1.scrollHeight - c1.clientHeight);
-  }, [leftTab]);
+    const target = syncTarget(c2, c1);
+    if (target !== null) c1.scrollTop = target;
+  }, [leftTab, copyBox, playBox]);
 
   if (!moduleId) return <Navigate to="/source/m1" replace />;
   if (!meta) {
@@ -529,7 +615,7 @@ export function SourcePage() {
           </div>
         </div>
         <div
-          ref={copyScrollRef}
+          ref={setCopyBox}
           className="mx-auto min-h-0 w-full max-w-prose flex-1 space-y-6 overflow-y-auto px-6 py-8"
         >
           {/* Заголовок модуля рендерится в самом потоке блоков (как в доке) —
@@ -543,6 +629,7 @@ export function SourcePage() {
               <section
                 key={sec.anchor ?? `intro-${i}`}
                 id={sec.anchor}
+                data-sec={i}
                 className="space-y-4"
               >
                 <AnchorScope anchor={sec.anchor}>
@@ -563,7 +650,7 @@ export function SourcePage() {
           selected={selected}
           onSelectedChange={setSelected}
           onCreateDirective={() => setRightTab("markup")}
-          scrollRef={playScrollRef}
+          scrollRef={setPlayBox}
           directiveAt={directiveAt}
           moduleId={moduleId}
           doc={doc}
@@ -682,18 +769,50 @@ function highlightJson(src: string): React.ReactNode[] {
   JSON ровно того вида, что уедет разработчику: та же функция выгрузки, что и у
   кнопки «Скачать». Смотреть можно рядом с текстом, не скачивая файл.
 
-  Скролл общий с колонкой раскладки — контейнер тот же (copyScrollRef), поэтому
-  синхронизация колонок работает и здесь, без отдельной механики.
+  Печатаем не одной простынёй, а посекционно: каждая секция получает свой
+  data-sec — тот же якорь, что у текста и у раскладки. Без него синхронный
+  скролл мог быть только пропорциональным, а высоты JSON и страницы не совпадают
+  (у секции с таблицей текста на экран, а JSON на сотню строк), и колонки
+  разъезжались. Собранная строка посимвольно равна JSON.stringify(…, null, 2) —
+  то есть ровно тому, что скачивается файлом.
 */
 function JsonView({ doc }: { doc: Doc }) {
   // Разбор тяжёлый (десятки тысяч знаков) — считаем только при смене дерева.
-  const nodes = React.useMemo(
-    () => highlightJson(JSON.stringify(docToExport(doc), null, 2)),
-    [doc],
-  );
+  const { head, secs, tail } = React.useMemo(() => {
+    const ex = docToExport(doc) as {
+      module: string;
+      children: { component?: string }[];
+    };
+    // Секция печатается с отступом 2, внутри "children" — ещё 2: итого 4.
+    const indent = (s: string) => s.replace(/^/gm, "    ");
+    const children = ex.children ?? [];
+    /*
+      Нумеруем ТОЛЬКО Section Container: перед секциями в дереве может лежать
+      Page Summary, и если считать якорь по индексу в children, все секции
+      уедут на одну позицию относительно текста и раскладки.
+    */
+    let n = -1;
+    return {
+      head: `{\n  "module": ${JSON.stringify(ex.module)},\n  "children": [\n`,
+      secs: children.map((c) => {
+        const isSection = c?.component === "Section Container";
+        if (isSection) n += 1;
+        return { text: indent(JSON.stringify(c, null, 2)), sec: isSection ? n : undefined };
+      }),
+      tail: children.length ? "\n  ]\n}" : "  ]\n}",
+    };
+  }, [doc]);
+
   return (
     <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-[1.65] text-muted-foreground">
-      {nodes}
+      {highlightJson(head)}
+      {secs.map((s, i) => (
+        <span key={i} data-sec={s.sec}>
+          {highlightJson(s.text)}
+          {i < secs.length - 1 ? ",\n" : ""}
+        </span>
+      ))}
+      {highlightJson(tail)}
     </pre>
   );
 }

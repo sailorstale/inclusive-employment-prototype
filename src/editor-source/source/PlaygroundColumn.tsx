@@ -392,6 +392,8 @@ export function PlaygroundColumn({
                   <div
                     key={key}
                     data-pk={key}
+                    /* Первый блок секции — якорь для синхронного скролла колонок. */
+                    data-sec={bi === 0 ? si : undefined}
                     className={[
                       "relative rounded-md border px-3 py-2 transition-colors",
                       on
