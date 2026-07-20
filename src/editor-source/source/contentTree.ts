@@ -212,27 +212,71 @@ function listInside(n?: Node): Extract<Node, { component: "List Container" }> | 
   return undefined;
 }
 
-function mergeLists(nodes: Node[]): Node[] {
+/*
+  Однородный конверт: какой ОДИН тип компонента лежит внутри Card Container.
+  Служебные пометки инструмента не в счёт — они не контент.
+*/
+function soleKind(n?: Node): string | undefined {
+  if (!n || n.component !== "Card Container") return undefined;
+  const kinds = new Set(
+    n.children.filter((c) => c.component !== "note").map((c) => c.component),
+  );
+  return kinds.size === 1 ? [...kinds][0] : undefined;
+}
+
+/*
+  СКЛЕЙКА СОСЕДЕЙ. Два правила, оба про «не плодить обёртки»:
+
+  1. Соседние списки одного типа — в один List Container (он и есть стек с
+     равным шагом, шаг задаёт сам).
+  2. Соседние Card Container с ОДНИМ И ТЕМ ЖЕ типом внутри — в один конверт.
+     Восемь мифов подряд это восемь аккордеонов в ОДНОМ Card Container, а не
+     восемь конвертов по одному: каждый конверт добавлял свои 32 сверху, и
+     ряд однотипных блоков разъезжался.
+
+  Ориентация конвертов должна совпадать: вертикальный столбик и горизонтальный
+  ряд карточек — разные раскладки, их сливать нельзя.
+*/
+function mergeSiblings(nodes: Node[]): Node[] {
   const out: Node[] = [];
   for (const raw of nodes) {
-    // Сначала внутрь: аккордеоны и карточки тоже держат списки.
+    // Сначала внутрь: аккордеоны и карточки тоже держат списки и конверты.
     const n: Node =
       "children" in raw && Array.isArray(raw.children)
-        ? ({ ...raw, children: mergeLists(raw.children) } as Node)
+        ? ({ ...raw, children: mergeSiblings(raw.children) } as Node)
         : raw;
 
     const prev = out[out.length - 1];
+
+    // 1. Списки
     const a = listInside(prev);
     const b = listInside(n);
     if (a && b && a.ordered === b.ordered) {
       const merged = { ...a, children: [...a.children, ...b.children] };
-      // Склеенный список кладём обратно в ту же обёртку, что была у соседа.
       out[out.length - 1] =
         prev!.component === "Card Container"
           ? { ...prev!, children: [merged] }
           : merged;
       continue;
     }
+
+    // 2. Однотипные конверты
+    const ka = soleKind(prev);
+    const kb = soleKind(n);
+    if (
+      ka &&
+      ka === kb &&
+      prev!.component === "Card Container" &&
+      n.component === "Card Container" &&
+      prev!.orientation === n.orientation
+    ) {
+      out[out.length - 1] = {
+        ...prev!,
+        children: [...prev!.children, ...n.children],
+      };
+      continue;
+    }
+
     out.push(n);
   }
   return out;
@@ -598,7 +642,7 @@ export function buildDoc(
   const summary = sectionGroups.flat().find(isPageSummary);
 
   const children: (SectionNode | Node)[] = [];
-  if (summary) children.push(...mergeLists(groupNodes(summary)));
+  if (summary) children.push(...mergeSiblings(groupNodes(summary)));
 
   sections.forEach((sec, i) => {
     const kids: Node[] = [];
@@ -616,7 +660,7 @@ export function buildDoc(
     children.push({
       component: "Section Container",
       anchor: sec.anchor,
-      children: mergeLists(kids),
+      children: mergeSiblings(kids),
     });
   });
 
