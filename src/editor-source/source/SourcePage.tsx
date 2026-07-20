@@ -505,13 +505,27 @@ export function SourcePage() {
               ? "Наша редакция · источник для сайта"
               : "JSON для разработчика"}
           </span>
-          <div className="flex shrink-0 items-center gap-0.5 rounded-md border bg-background p-0.5">
-            <TabBtn active={leftTab === "text"} onClick={() => setLeftTab("text")}>
-              Текст
-            </TabBtn>
-            <TabBtn active={leftTab === "json"} onClick={() => setLeftTab("json")}>
-              JSON
-            </TabBtn>
+          <div className="flex shrink-0 items-center gap-1">
+            {/* Скачивание — рядом с самим JSON: смотрим и забираем в одном месте. */}
+            {leftTab === "json" && (
+              <button
+                type="button"
+                onClick={() =>
+                  downloadJson(`content-${moduleId}.json`, docToExport(doc))
+                }
+                className="rounded-md border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Скачать
+              </button>
+            )}
+            <div className="flex items-center gap-0.5 rounded-md border bg-background p-0.5">
+              <TabBtn active={leftTab === "text"} onClick={() => setLeftTab("text")}>
+                Текст
+              </TabBtn>
+              <TabBtn active={leftTab === "json"} onClick={() => setLeftTab("json")}>
+                JSON
+              </TabBtn>
+            </div>
           </div>
         </div>
         <div
@@ -633,4 +647,17 @@ function JsonView({ doc }: { doc: Doc }) {
       {text}
     </pre>
   );
+}
+
+/** Скачивание JSON файлом — выгрузка для разработчика. */
+function downloadJson(name: string, data: unknown) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
 }

@@ -4,7 +4,7 @@ import "@/figma/tokens.css";
 import { renderInline } from "@/editor-source/richText";
 import { DirectiveCard, type DirectiveDraft } from "./DirectiveCard";
 import { ResultView } from "./ResultView";
-import { docToExport, type Doc } from "./contentTree";
+import type { Doc } from "./contentTree";
 import { iconByName } from "./iconForText";
 import {
   useMdResolver,
@@ -102,8 +102,6 @@ type Props = {
   moduleId: string;
   /** Дерево контента: считается один раз на странице (SourcePage). */
   doc: Doc;
-  /** Выгрузить все модули разом (собирается на уровне страницы). */
-  onExportAll?: () => void;
 };
 
 export function PlaygroundColumn({
@@ -115,12 +113,9 @@ export function PlaygroundColumn({
   directiveAt,
   moduleId,
   doc,
-  onExportAll,
 }: Props) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const resolve = useMdResolver();
-
-  const exportModule = () => downloadJson(`content-${moduleId}.json`, docToExport(doc));
 
   const [marquee, setMarquee] = React.useState<Box | null>(null);
   const [groupBox, setGroupBox] = React.useState<Box | null>(null);
@@ -356,10 +351,6 @@ export function PlaygroundColumn({
           <ModeBtn active={mode === "result"} onClick={() => setMode("result")}>
             Результат
           </ModeBtn>
-        </div>
-        <div className="flex items-center gap-1">
-          <ExportBtn onClick={exportModule}>JSON модуля</ExportBtn>
-          {onExportAll && <ExportBtn onClick={onExportAll}>Все модули</ExportBtn>}
         </div>
       </div>
 
@@ -857,34 +848,4 @@ function ImagePreview({ src, alt }: { src: string; alt?: string }) {
   );
 }
 
-/** Кнопка выгрузки в шапке колонки. */
-function ExportBtn({
-  onClick,
-  children,
-}: {
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-md border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-    >
-      {children}
-    </button>
-  );
-}
 
-/** Скачивание JSON файлом — выгрузка для разработчика. */
-export function downloadJson(name: string, data: unknown) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
-}
