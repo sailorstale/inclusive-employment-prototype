@@ -118,11 +118,13 @@ function groupsOf(
 }
 
 /*
-  По правилу раскладки: Heading и Text ложатся прямо в Section Container, всё
-  остальное — через Card Container. От этого же зависит воздух между блоками.
+  ГЛАВНОЕ ПРАВИЛО РАСКЛАДКИ (КОМПОНЕНТЫ.md): в слот Section Container кладём
+  ТОЛЬКО Heading и Text. Всё остальное — цитата, карточка, таблица, аккордеон,
+  список, врезка — сначала заворачиваем в Card Container. Card Container
+  обязателен даже для одного блока: это универсальный конверт для всего, что
+  не проза, а не «обёртка для карточек».
 */
 const NON_PROSE = new Set([
-  "PageSummary",
   "GeneralCard",
   "Accordion",
   "Quote",
@@ -132,13 +134,30 @@ const NON_PROSE = new Set([
   "Compare",
   "Image",
   "Video",
+  // List — это List Container, тоже не проза: в секцию напрямую не кладётся.
+  "List",
 ]);
 
+/** Page Summary живёт ВНЕ Section Container — один раз, в самом начале страницы. */
+const isPageSummary = (g: Group) => g.dir?.target === "PageSummary";
+
 function needsCard(g: Group): boolean {
+  if (isPageSummary(g)) return false;
   if (g.dir?.target) return NON_PROSE.has(g.dir.target);
   const k = g.items[0]?.b.kind;
-  return k === "quote" || k === "table" || k === "image";
+  // Блок-цитата без автора рисуется как Text · Phrase (см. PlainBlock), а Text
+  // — проза и идёт в секцию напрямую. Конверт ему не нужен.
+  return k === "table" || k === "image" || k === "list";
 }
+
+/*
+  Ряд General Card собирается горизонтальным Card Container: две карточки по
+  половине колонки бок о бок. Ориентацию несёт КОНВЕРТ, а не карточка.
+*/
+const cardOrientation = (g: Group) =>
+  g.dir?.target === "GeneralCard" && g.dir.modifiers?.orient === "Horizontal"
+    ? "Horizontal"
+    : "Vertical";
 
 export function ResultView({
   sections,
@@ -160,19 +179,31 @@ export function ResultView({
     return unbold ? stripBold(raw) : raw;
   };
 
+  const sectionGroups = sections.map((sec, i) => groupsOf(sec, i, directiveAt));
+
+  // Page Summary поднимаем над секциями: по правилу это вступление всей
+  // страницы, а не блок раздела, в котором он оказался размечен.
+  const summary = sectionGroups.flat().find(isPageSummary);
+
+  const render = (g: Group, key: React.Key) => {
+    const body = <GroupView group={g} md={md} resolve={resolve} />;
+    return needsCard(g) ? (
+      <CardContainer key={key} orientation={cardOrientation(g)}>
+        {body}
+      </CardContainer>
+    ) : (
+      <React.Fragment key={key}>{body}</React.Fragment>
+    );
+  };
+
   return (
     <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pb-16">
+      {summary && <GroupView group={summary} md={md} resolve={resolve} />}
       {sections.map((sec, i) => (
         <SectionContainer key={sec.anchor ?? `s-${i}`}>
-          {groupsOf(sec, i, directiveAt).map((g, j) => {
-            const body = <GroupView group={g} md={md} resolve={resolve} />;
-            // Не-проза живёт в Card Container — он же даёт нужный воздух.
-            return needsCard(g) ? (
-              <CardContainer key={j}>{body}</CardContainer>
-            ) : (
-              <React.Fragment key={j}>{body}</React.Fragment>
-            );
-          })}
+          {sectionGroups[i]
+            .filter((g) => g !== summary)
+            .map((g, j) => render(g, j))}
         </SectionContainer>
       ))}
     </div>
@@ -248,7 +279,9 @@ function GroupView({
       const first = items[0];
       const firstMd = first ? md(first) : "";
       const lead = firstMd.match(/^\s*\*\*(.+?)\*\*:?\s*/);
-      const title = lead ? lead[1].replace(/:$/, "") : undefined;
+      // Хвостовая пунктуация в заголовке карточки не нужна: «**Пример.**» —
+      // это подводка из текста, а в General Card это уже заголовок.
+      const title = lead ? lead[1].replace(/[.:;]+$/, "") : undefined;
       const rest = lead ? firstMd.slice(lead[0].length) : firstMd;
       const IconCmp = first?.b && dir.blocks.find((x) => x.icon)?.icon;
       return (
@@ -536,7 +569,10 @@ function PlainBlock({
     case "paragraph":
       return <Text size={inCard ? "M" : "L"}>{renderInline(md(it, unbold))}</Text>;
     case "quote":
-      return <Quote size="S">{renderInline(md(it, unbold))}</Quote>;
+      // Quote — только реальная речь человека с именем и должностью. Блок «>»
+      // из источника автора не несёт, поэтому по правилу это Text · Phrase:
+      // акцентная фраза-врезка курсивом с чертой слева.
+      return <Text size="Phrase">{renderInline(md(it, unbold))}</Text>;
     case "list":
       return (
         <ListContainer as={b.ordered ? "ol" : "ul"}>
