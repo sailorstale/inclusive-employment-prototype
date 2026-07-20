@@ -31,7 +31,8 @@ import { cn } from "@/lib/utils";
 
   ФАЙЛЫ ЛОГОТИПОВ: public/figma/logos/<слаг>.png (577 логотипов фондов
   и партнёров, выгружены из Figma; каталог соответствий «название → слаг» —
-  там же в _index.json). Логотипа Яндекса в наборе нет — пока круглая заглушка «Я».
+  там же в _index.json). Знак Яндекса файлом не нужен — рисуем сами: белая «Я»
+  в фирменном красном круге (--logo-yandex).
   Если файла по слагу нет (или слаг не задан) — рисуется плейсхолдер той же
   формы: прямоугольник для организации, круг «Я» для Яндекса.
 */
@@ -201,7 +202,9 @@ export function Quote({
                 <span
                   aria-hidden
                   title="Яндекс"
-                  className="ds-body-m-bold flex size-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--text-primary)] text-[color:var(--text-inverse-primary)]"
+                  // Знак Яндекса рисуем сами: белая «Я» в фирменном красном круге
+                  // (--logo-yandex). Файла логотипа в наборе нет и не нужен.
+                  className="ds-body-m-bold flex size-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--logo-yandex)] text-[color:var(--text-inverse-primary)]"
                 >
                   Я
                 </span>
