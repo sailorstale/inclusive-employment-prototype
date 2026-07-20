@@ -503,7 +503,10 @@ export function MarkupPanel({
   );
 
   return (
-    <div className="flex min-h-0 flex-col gap-4 overflow-y-auto p-4">
+    // h-full обязателен: без него панель тянется по содержимому, overflow-y-auto
+    // не срабатывает (нечего переполнять) и список директив просто обрезается
+    // родителем. Тот же приём, что у соседней вкладки «Редактор».
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto p-4">
       {picked.length > 0 ? (
         <div>
           <div className="text-sm font-medium text-foreground">
