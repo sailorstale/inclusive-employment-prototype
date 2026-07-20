@@ -23,16 +23,55 @@ import { cn } from "@/lib/utils";
   Так задано в Figma для обоих размеров. Если цитата короткая и в пять строк
   укладывается — «Далее» не мешает: текст просто не обрезается.
 
-  СТРОКА АВТОРСТВА (решение заказчика). Три графических элемента слева направо:
-  1) логотип организации/фонда автора — плашка. Показывается для внешнего
-     спикера; для сотрудника Яндекса НЕ показывается (проп org, скрыт при yandex);
-  2) знак Яндекса — отдельно, когда говорит сотрудник Яндекса (проп yandex);
+  СТРОКА АВТОРСТВА (решение заказчика). Логотип + имя + должность:
+  1) упомянута организация/фонд → её логотип, ПРЯМОУГОЛЬНЫЙ (пропы org + logo);
+  2) упомянут Яндекс → логотип Яндекса, КРУГЛЫЙ (проп yandex);
   3) аватар/фото человека (проп photo, по умолчанию есть).
-  Имя и должность показываются ВСЕГДА. Логотипов у нас нет (нейтральный стиль) —
-  плашка организации и аватар нарисованы плейсхолдерами, знак Яндекса — «Я».
+  Имя и должность показываются ВСЕГДА.
+
+  ФАЙЛЫ ЛОГОТИПОВ: public/figma/logos/<слаг>.svg (Яндекс — yandex.svg).
+  Пока логотипы не выгружены из Figma, рисуется плейсхолдер той же формы —
+  прямоугольник для организации, круг «Я» для Яндекса. Как только файл появится,
+  он подхватится сам, без правок кода (и наоборот: если файла нет — плейсхолдер).
 */
 
 export type QuoteSize = "L" | "S";
+
+/**
+ * Логотип в строке авторства. Берёт файл public/figma/logos/<slug>.svg;
+ * если файла ещё нет (или слаг не задан) — рисует плейсхолдер той же формы.
+ * round — форма Яндекса (круг), иначе прямоугольник организации.
+ */
+function LogoMark({
+  slug,
+  title,
+  round = false,
+  fallback,
+}: {
+  slug?: string;
+  title?: string;
+  round?: boolean;
+  fallback: React.ReactNode;
+}) {
+  const [failed, setFailed] = React.useState(false);
+  React.useEffect(() => setFailed(false), [slug]);
+
+  if (!slug || failed) return <>{fallback}</>;
+
+  return (
+    <img
+      src={`${import.meta.env.BASE_URL}figma/logos/${slug}.svg`}
+      alt=""
+      aria-hidden
+      title={title}
+      onError={() => setFailed(true)}
+      className={cn(
+        "shrink-0 object-contain",
+        round ? "size-8 rounded-full" : "h-8 w-16",
+      )}
+    />
+  );
+}
 
 // Сколько строк видно под катом до «Далее». В Figma обрезка ~5 строк.
 const CUT_LINES = 5;
@@ -45,9 +84,11 @@ type Props = {
   author?: string;
   /** Должность автора, стиль Body S. Показывается всегда. */
   role?: string;
-  /** Организация/фонд автора — плашка-логотип слева. Скрыта, если автор из Яндекса. */
+  /** Организация/фонд автора — её логотип слева (прямоугольный). Скрыта при yandex. */
   org?: string;
-  /** Автор — сотрудник Яндекса: вместо логотипа организации показываем знак «Я». */
+  /** Слаг файла логотипа организации: public/figma/logos/<logo>.svg. */
+  logo?: string;
+  /** Автор — из Яндекса: круглый логотип Яндекса вместо логотипа организации. */
   yandex?: boolean;
   /** Показать аватар-плейсхолдер человека. По умолчанию да. */
   photo?: boolean;
@@ -62,6 +103,7 @@ export function Quote({
   author,
   role,
   org,
+  logo,
   yandex = false,
   photo = true,
   cut = true,
@@ -142,21 +184,33 @@ export function Quote({
 
       {hasCredit ? (
         <figcaption className="flex flex-wrap items-center gap-[var(--space-xs)] pt-[var(--space-m)]">
-          {/* Аффилиация: знак Яндекса (сотрудник) ИЛИ логотип организации. */}
+          {/* Аффилиация: круглый логотип Яндекса ИЛИ прямоугольный логотип организации. */}
           {yandex ? (
-            <span
-              aria-hidden
+            <LogoMark
+              slug="yandex"
               title="Яндекс"
-              className="ds-body-m-bold flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-m)] bg-[color:var(--text-primary)] text-[color:var(--text-inverse-primary)]"
-            >
-              Я
-            </span>
+              round
+              fallback={
+                <span
+                  aria-hidden
+                  title="Яндекс"
+                  className="ds-body-m-bold flex size-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--text-primary)] text-[color:var(--text-inverse-primary)]"
+                >
+                  Я
+                </span>
+              }
+            />
           ) : org ? (
-            <span
-              aria-hidden
+            <LogoMark
+              slug={logo}
               title={org}
-              // Плейсхолдер логотипа организации — плашка (логотипов у нас нет).
-              className="h-8 w-16 shrink-0 rounded-[var(--radius-m)] bg-[color:var(--card-bg-gray)]"
+              fallback={
+                <span
+                  aria-hidden
+                  title={org}
+                  className="h-8 w-16 shrink-0 rounded-[var(--radius-m)] bg-[color:var(--card-bg-gray)]"
+                />
+              }
             />
           ) : null}
 
