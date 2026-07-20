@@ -120,6 +120,13 @@ const isDroppedLabel = (raw: string, labels: string[]) => {
 };
 
 const stripBold = (md: string) => md.replace(/\*\*(.+?)\*\*/g, "$1");
+
+/*
+  Заголовок несёт свой вес сам (Heading, вопрос аккордеона, заголовок карточки).
+  В источнике такие строки часто обёрнуты в «**…**» — если оставить, жирность
+  ляжет поверх жирности. Поэтому в заголовках разметку веса снимаем.
+*/
+const headingText = (t: string) => stripBold(t).trim();
 const stripEmph = (t: string) => t.replace(/^[*_]+|[*_]+$/g, "").trim();
 
 /** Группы внутри ОДНОЙ секции: подряд идущие блоки одной директивы — вместе. */
@@ -257,7 +264,13 @@ export function buildDoc(
     const b = it.b;
     switch (b.kind) {
       case "heading":
-        return [{ component: "Heading", level: `H${b.level}` as HeadingLevel, text: md(it, unbold) }];
+        return [
+          {
+            component: "Heading",
+            level: `H${b.level}` as HeadingLevel,
+            text: headingText(md(it, unbold)),
+          },
+        ];
       case "paragraph":
         // Body L — только проза страницы, вне карточек и прочих компонентов.
         // Внутри General Card, аккордеона и подобных текст на ступень мельче.
@@ -361,7 +374,7 @@ export function buildDoc(
             const title = lead
               ? lead[1].replace(/[.:;]+$/, "")
               : it.b.kind === "heading"
-                ? t
+                ? headingText(t)
                 : undefined;
             const rest = lead ? after : it.b.kind === "heading" ? "" : t;
             const icon = iconOf(it);
@@ -415,7 +428,7 @@ export function buildDoc(
             it.b.kind === "heading" && (it.b as { level: number }).level === topLevel;
           if (isTop) {
             flush();
-            q = md(it);
+            q = headingText(md(it));
           } else if (q !== null) {
             // Тело аккордеона — внутри компонента: Body L там не используется.
             body.push(...plainNodes(it, unbold, true));
@@ -524,7 +537,7 @@ export function buildDoc(
           level: (["H2", "H3", "H4", "H5"] as const).includes(mods.level as "H2")
             ? (mods.level as HeadingLevel)
             : "H2",
-          text: md(it, unbold),
+          text: headingText(md(it, unbold)),
         }));
 
       case "List": {
