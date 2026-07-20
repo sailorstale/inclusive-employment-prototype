@@ -21,6 +21,7 @@ import {
 } from "@/figma";
 import { renderInline } from "@/editor-source/richText";
 import { iconByName } from "./iconForText";
+import { findSlug, mentionsYandex, orgFromText, useLogoIndex } from "./orgLogo";
 import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
@@ -187,6 +188,7 @@ function GroupView({
   resolve: ResolveMd;
 }) {
   const { dir } = group;
+  const logoIndex = useLogoIndex();
 
   // Комментарий «удалить» — блоки не выводим, но оставляем видимый след:
   // молча текст исчезать не должен, всегда понятно, что и почему убрано.
@@ -308,30 +310,57 @@ function GroupView({
       // Строка вида «**Имя, должность**» — авторство; блоки-цитаты — сама речь.
       let author: string | undefined;
       let role: string | undefined;
+      // Полный текст строки авторства — в нём может стоять ссылка на фонд,
+      // по которой ниже подбирается логотип.
+      let creditLine: string | undefined;
       const rest: Item[] = [];
       const quotes: Item[] = [];
       for (const it of items) {
         const t = md(it).trim();
-        const bare = t.replace(/^[*_]+|[*_]+$/g, "");
+        // Ссылка на организацию часто дописана в конец строки авторства
+        // («*Имя, должность* [Фонд «Действуй!»](…)»). Для распознавания автора
+        // её отбрасываем, иначе абзац перестаёт выглядеть как курсив целиком
+        // и имя теряется.
+        const head = t.replace(/\s*\[[^\]]+\]\((?:https?:)?\/\/[^)]+\)\s*$/, "").trim();
+        const bare = head.replace(/^[*_]+|[*_]+$/g, "");
         const looksAuthor =
           it.b.kind === "paragraph" &&
-          /^[*_]{1,2}.+[*_]{1,2}$/.test(t) &&
+          /^[*_]{1,2}.+[*_]{1,2}$/.test(head) &&
           bare.includes(",");
         if (it.b.kind === "quote") quotes.push(it);
         else if (looksAuthor && !author) {
           const [name, ...restRole] = bare.split(",");
           author = name.trim();
           role = restRole.join(",").trim() || undefined;
+          creditLine = t;
         } else rest.push(it);
       }
       const body = quotes.length ? quotes : rest;
+
+      /*
+        Логотип прорастает из самого источника: организацию ищем в строке
+        авторства и в блоках, не попавших в речь (там лежит ссылка на фонд).
+        Сама речь в поиск не идёт — среди названий фондов много обычных слов
+        («Вера», «Жизнь»), и на них прилетал бы чужой логотип.
+      */
+      const creditTexts = [
+        ...(creditLine ? [creditLine] : []),
+        ...(author || role ? [`${author ?? ""} ${role ?? ""}`] : []),
+        ...rest.map((it) => md(it)),
+      ];
+      const yandex = Boolean(mods.yandex) || mentionsYandex(creditTexts);
+      const org = yandex ? undefined : orgFromText(creditTexts);
+      const logo = org ? findSlug(org, logoIndex) : undefined;
+
       return (
         <>
           {body.map((it, i) => (
             <Quote
               key={i}
               size={mods.size === "S" ? "S" : "L"}
-              yandex={Boolean(mods.yandex)}
+              yandex={i === 0 ? yandex : false}
+              org={i === 0 ? org : undefined}
+              logo={i === 0 ? logo : undefined}
               author={i === 0 ? author : undefined}
               role={i === 0 ? role : undefined}
             >
