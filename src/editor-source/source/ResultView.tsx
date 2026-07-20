@@ -1,6 +1,8 @@
 import * as React from "react";
 import {
   Accordion,
+  CardContainer,
+  SectionContainer,
   GeneralCard,
   Heading,
   Image,
@@ -57,26 +59,47 @@ const wantsUnbold = (d?: Directive) =>
 
 const stripBold = (md: string) => md.replace(/\*\*(.+?)\*\*/g, "$1");
 
-/** Разбивка потока блоков на группы: подряд идущие блоки одной директивы — вместе. */
-function toGroups(
-  sections: Section[],
+/** Группы внутри ОДНОЙ секции: подряд идущие блоки одной директивы — вместе. */
+function groupsOf(
+  sec: Section,
   directiveFor?: (b: SourceBlock, anchor?: string) => Directive | undefined,
 ): Group[] {
   const groups: Group[] = [];
   let cur: Group | null = null;
-  for (const sec of sections) {
-    for (const b of sec.blocks) {
-      const d = directiveFor?.(b, sec.anchor);
-      const active = isActive(d) ? d : undefined;
-      if (active && cur?.dir?.id === active.id) {
-        cur.items.push({ b, anchor: sec.anchor });
-      } else {
-        cur = { dir: active, items: [{ b, anchor: sec.anchor }] };
-        groups.push(cur);
-      }
+  for (const b of sec.blocks) {
+    const d = directiveFor?.(b, sec.anchor);
+    const active = isActive(d) ? d : undefined;
+    if (active && cur?.dir?.id === active.id) {
+      cur.items.push({ b, anchor: sec.anchor });
+    } else {
+      cur = { dir: active, items: [{ b, anchor: sec.anchor }] };
+      groups.push(cur);
     }
   }
   return groups;
+}
+
+/*
+  По правилу раскладки: Heading и Text ложатся прямо в Section Container, всё
+  остальное — через Card Container. От этого же зависит воздух между блоками.
+*/
+const NON_PROSE = new Set([
+  "PageSummary",
+  "GeneralCard",
+  "Accordion",
+  "Quote",
+  "Table",
+  "Prompt",
+  "Quiz",
+  "Compare",
+  "Image",
+  "Video",
+]);
+
+function needsCard(g: Group): boolean {
+  if (g.dir?.target) return NON_PROSE.has(g.dir.target);
+  const k = g.items[0]?.b.kind;
+  return k === "quote" || k === "table" || k === "image";
 }
 
 export function ResultView({
@@ -88,11 +111,6 @@ export function ResultView({
   directiveFor?: (b: SourceBlock, anchor?: string) => Directive | undefined;
   resolve: ResolveMd;
 }) {
-  const groups = React.useMemo(
-    () => toGroups(sections, directiveFor),
-    [sections, directiveFor],
-  );
-
   /** Актуальная разметка блока (с правками), при необходимости без жирного. */
   const md = (it: Item, unbold = false): string => {
     const b = it.b;
@@ -105,9 +123,19 @@ export function ResultView({
   };
 
   return (
-    <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 py-8">
-      {groups.map((g, i) => (
-        <GroupView key={i} group={g} md={md} resolve={resolve} />
+    <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pb-16">
+      {sections.map((sec, i) => (
+        <SectionContainer key={sec.anchor ?? `s-${i}`}>
+          {groupsOf(sec, directiveFor).map((g, j) => {
+            const body = <GroupView group={g} md={md} resolve={resolve} />;
+            // Не-проза живёт в Card Container — он же даёт нужный воздух.
+            return needsCard(g) ? (
+              <CardContainer key={j}>{body}</CardContainer>
+            ) : (
+              <React.Fragment key={j}>{body}</React.Fragment>
+            );
+          })}
+        </SectionContainer>
       ))}
     </div>
   );

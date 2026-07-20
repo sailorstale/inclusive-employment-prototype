@@ -38,6 +38,9 @@ const KIND_LABEL: Record<SourceBlock["kind"], string> = {
   image: "Картинка",
 };
 
+// Где помним выбранный режим плейграунда между перезагрузками.
+const MODE_KEY = "inclusion-source-playground-mode";
+
 /** Переключатель режима плейграунда: разметка блоков ↔ результат. */
 function ModeBtn({
   active,
@@ -52,10 +55,11 @@ function ModeBtn({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={[
-        "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+        "rounded px-3 py-1 text-xs font-medium transition-colors",
         active
-          ? "bg-background text-foreground shadow-sm"
+          ? "bg-brand text-brand-foreground shadow-sm"
           : "text-muted-foreground hover:text-foreground",
       ].join(" ")}
     >
@@ -110,7 +114,22 @@ export function PlaygroundColumn({
   const [groupBox, setGroupBox] = React.useState<Box | null>(null);
   // «Блоки» — разметка (выделение рамкой); «Результат» — как выглядит с
   // применёнными директивами (статус «применена»/«проверена»).
-  const [mode, setMode] = React.useState<"blocks" | "result">("blocks");
+  // Выбор запоминаем: иначе после каждой перезагрузки возвращались в «Блоки».
+  const [mode, setModeState] = React.useState<"blocks" | "result">(() => {
+    try {
+      return localStorage.getItem(MODE_KEY) === "result" ? "result" : "blocks";
+    } catch {
+      return "blocks";
+    }
+  });
+  const setMode = (m: "blocks" | "result") => {
+    setModeState(m);
+    try {
+      localStorage.setItem(MODE_KEY, m);
+    } catch {
+      /* приватный режим — просто не запомним */
+    }
+  };
 
   // Текущее выделение в ref — чтобы обработчики видели свежее значение.
   const selRef = React.useRef(selected);
@@ -240,7 +259,7 @@ export function PlaygroundColumn({
         <span className="text-xs font-medium text-muted-foreground">
           Плейграунд · раскладка на компоненты
         </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 rounded-md border bg-background p-0.5">
           <ModeBtn active={mode === "blocks"} onClick={() => setMode("blocks")}>
             Блоки
           </ModeBtn>
