@@ -19,7 +19,7 @@
 
 import * as React from "react";
 
-type LogoEntry = { slug: string; name: string; ogrn?: string };
+export type LogoEntry = { slug: string; name: string; ogrn?: string };
 
 /** Организационно-правовые формы — они не различают фонды, при сверке снимаем. */
 const LEGAL_FORM =

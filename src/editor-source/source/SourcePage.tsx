@@ -509,6 +509,7 @@ export function SourcePage() {
           onCreateDirective={() => setRightTab("markup")}
           scrollRef={playScrollRef}
           directiveAt={directiveAt}
+          moduleId={moduleId}
         />
       </div>
 

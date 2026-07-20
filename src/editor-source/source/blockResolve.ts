@@ -23,17 +23,26 @@ export type ResolveMd = (
   плейграунд показывает ту же редакцию, а не сырой исходник. id считается так же:
   autoId(страница, тип, текст, раздел).
 */
+/*
+  Резолвер правок для ПРОИЗВОЛЬНОГО адреса. Нужен отдельно от хука: выгрузка
+  «все модули» собирает страницы, на которых мы сейчас не находимся, а правки
+  адресуются по pathname — с текущим адресом чужие правки не нашлись бы.
+*/
+export function makeMdResolver(
+  edits: Record<string, { text: string; status: string }>,
+  pathname: string,
+): ResolveMd {
+  return (type, text, md, anchor) => {
+    const rec = edits[autoId(pathname, type, text, anchor)];
+    if (rec && rec.text.trim() && rec.status !== "rollback") return rec.text;
+    return md;
+  };
+}
+
 export function useMdResolver(): ResolveMd {
   const { edits } = useEditor();
   const { pathname } = useLocation();
-  return React.useCallback(
-    (type, text, md, anchor) => {
-      const rec = edits[autoId(pathname, type, text, anchor)];
-      if (rec && rec.text.trim() && rec.status !== "rollback") return rec.text;
-      return md;
-    },
-    [edits, pathname],
-  );
+  return React.useCallback(makeMdResolver(edits, pathname), [edits, pathname]);
 }
 
 // Тип блока в адресе (id): как в Editable — цитата адресуется как paragraph.
