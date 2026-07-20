@@ -122,7 +122,73 @@ export function PlaygroundColumn({
       return "blocks";
     }
   });
+  // Скролл-контейнер нужен и наружу (синхрон колонок), и нам — держим свой ref
+  // и прокидываем элемент в переданный.
+  const boxRef = React.useRef<HTMLDivElement | null>(null);
+  const setBoxRef = React.useCallback(
+    (el: HTMLDivElement | null) => {
+      boxRef.current = el;
+      if (typeof scrollRef === "function") scrollRef(el);
+      else if (scrollRef)
+        (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+    },
+    [scrollRef],
+  );
+
+  /*
+    Начала секций в порядке следования — общая система координат для обоих
+    режимов. В «Результате» секция — это Section Container; в «Блоках» такой
+    обёртки нет, поэтому секцию представляет её первый блок (data-pk = «си:би»).
+    Массив разрежённый: индекс = номер секции.
+  */
+  const sectionEls = React.useCallback((): HTMLElement[] => {
+    const box = boxRef.current;
+    if (!box) return [];
+    if (mode === "result")
+      return Array.from(
+        box.querySelectorAll<HTMLElement>('[data-component="Section Container"]'),
+      );
+    const out: HTMLElement[] = [];
+    box.querySelectorAll<HTMLElement>("[data-pk]").forEach((el) => {
+      const [si, bi] = (el.dataset.pk || "").split(":");
+      if (bi === "0") out[Number(si)] = el;
+    });
+    return out;
+  }, [mode]);
+
+  /*
+    Переключение режима не должно терять место чтения. Высоты у «Блоков» и
+    «Результата» разные (там карточки и аккордеоны), поэтому запоминаем не
+    пиксели, а секцию + долю прокрутки внутри неё — и после смены режима
+    восстанавливаем по той же секции.
+  */
+  const anchor = React.useRef<{ i: number; frac: number } | null>(null);
+
+  /** Границы секции i в координатах содержимого контейнера. */
+  const sectionSpan = (els: HTMLElement[], i: number, box: HTMLElement) => {
+    const boxTop = box.getBoundingClientRect().top - box.scrollTop;
+    const top = els[i].getBoundingClientRect().top - boxTop;
+    const next = els.slice(i + 1).find(Boolean);
+    const height = next
+      ? next.getBoundingClientRect().top - boxTop - top
+      : els[i].offsetHeight;
+    return { top, height };
+  };
+
   const setMode = (m: "blocks" | "result") => {
+    const box = boxRef.current;
+    const els = sectionEls();
+    if (box && els.length) {
+      // Верхняя секция, начало которой уже ушло за верхний край окна.
+      let i = 0;
+      for (let k = 0; k < els.length; k++)
+        if (els[k] && sectionSpan(els, k, box).top <= box.scrollTop) i = k;
+      const { top, height } = sectionSpan(els, i, box);
+      anchor.current = {
+        i,
+        frac: height > 0 ? Math.min(1, Math.max(0, (box.scrollTop - top) / height)) : 0,
+      };
+    }
     setModeState(m);
     try {
       localStorage.setItem(MODE_KEY, m);
@@ -130,6 +196,18 @@ export function PlaygroundColumn({
       /* приватный режим — просто не запомним */
     }
   };
+
+  // Восстановление — до отрисовки кадра, чтобы не было видно прыжка.
+  React.useLayoutEffect(() => {
+    const a = anchor.current;
+    anchor.current = null;
+    const box = boxRef.current;
+    if (!a || !box) return;
+    const els = sectionEls();
+    if (!els[a.i]) return;
+    const { top, height } = sectionSpan(els, a.i, box);
+    box.scrollTop = top + a.frac * height;
+  }, [mode, sectionEls]);
 
   // Текущее выделение в ref — чтобы обработчики видели свежее значение.
   const selRef = React.useRef(selected);
@@ -270,7 +348,7 @@ export function PlaygroundColumn({
       </div>
 
       <div
-        ref={scrollRef}
+        ref={setBoxRef}
         onMouseDown={mode === "blocks" ? onMouseDown : undefined}
         className={[
           "relative min-h-0 flex-1 overflow-y-auto",
