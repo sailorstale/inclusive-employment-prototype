@@ -375,6 +375,28 @@ export function SourcePage() {
     }
   };
 
+  // Комментарий можно дописывать и после сохранения — директива уточняется,
+  // остальные поля (блоки, цель, модификаторы, статус) остаются как были.
+  const handleEditComment = async (id: string, comment: string) => {
+    const d = directives.find((x) => x.id === id);
+    if (!d) return;
+    try {
+      const saved = await saveDirective({
+        id: d.id,
+        module: d.module,
+        blocks: d.blocks,
+        target: d.target,
+        targetLabel: d.targetLabel,
+        modifiers: d.modifiers,
+        comment,
+      });
+      setDirectives((prev) => prev.map((x) => (x.id === id ? saved : x)));
+      setErr(null);
+    } catch {
+      setErr("Не удалось сохранить комментарий — сервер недоступен.");
+    }
+  };
+
   const gridCols = SHOW_DOC
     ? "xl:grid-cols-[1fr_1fr_1fr_minmax(360px,400px)]"
     : "xl:grid-cols-[1fr_1fr_minmax(360px,400px)]";
@@ -459,6 +481,7 @@ export function SourcePage() {
               onSaveDraft={handleSaveDraft}
               onDelete={handleDelete}
               onSetStatus={handleSetStatus}
+              onEditComment={handleEditComment}
             />
           )}
         </div>

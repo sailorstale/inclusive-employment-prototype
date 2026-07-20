@@ -3,6 +3,7 @@ import { Trash2, Check, Eye, Undo2 } from "lucide-react";
 import "@/figma/tokens.css";
 import { renderInline } from "@/editor-source/richText";
 import { DirectiveCard, type DirectiveDraft } from "./DirectiveCard";
+import { ResultView } from "./ResultView";
 import { iconByName } from "./iconForText";
 import {
   useMdResolver,
@@ -36,6 +37,32 @@ const KIND_LABEL: Record<SourceBlock["kind"], string> = {
   table: "Таблица",
   image: "Картинка",
 };
+
+/** Переключатель режима плейграунда: разметка блоков ↔ результат. */
+function ModeBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+        active
+          ? "bg-background text-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground",
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+}
 
 // Модификатор блока для шильдика: у заголовка — уровень, у списка — тип.
 function blockModifier(b: SourceBlock): string | null {
@@ -81,6 +108,9 @@ export function PlaygroundColumn({
 
   const [marquee, setMarquee] = React.useState<Box | null>(null);
   const [groupBox, setGroupBox] = React.useState<Box | null>(null);
+  // «Блоки» — разметка (выделение рамкой); «Результат» — как выглядит с
+  // применёнными директивами (статус «применена»/«проверена»).
+  const [mode, setMode] = React.useState<"blocks" | "result">("blocks");
 
   // Текущее выделение в ref — чтобы обработчики видели свежее значение.
   const selRef = React.useRef(selected);
@@ -210,16 +240,31 @@ export function PlaygroundColumn({
         <span className="text-xs font-medium text-muted-foreground">
           Плейграунд · раскладка на компоненты
         </span>
-        <span className="text-xs text-muted-foreground">
-          Рамкой выделите блоки
-        </span>
+        <div className="flex items-center gap-1">
+          <ModeBtn active={mode === "blocks"} onClick={() => setMode("blocks")}>
+            Блоки
+          </ModeBtn>
+          <ModeBtn active={mode === "result"} onClick={() => setMode("result")}>
+            Результат
+          </ModeBtn>
+        </div>
       </div>
 
       <div
         ref={scrollRef}
-        onMouseDown={onMouseDown}
-        className="relative min-h-0 flex-1 cursor-crosshair select-none overflow-y-auto"
+        onMouseDown={mode === "blocks" ? onMouseDown : undefined}
+        className={[
+          "relative min-h-0 flex-1 overflow-y-auto",
+          mode === "blocks" ? "cursor-crosshair select-none" : "",
+        ].join(" ")}
       >
+        {mode === "result" ? (
+          <ResultView
+            sections={sections}
+            directiveFor={directiveFor}
+            resolve={resolve}
+          />
+        ) : (
         <div
           ref={contentRef}
           className="figma-scope relative mx-auto max-w-prose px-6 py-8"
@@ -286,6 +331,7 @@ export function PlaygroundColumn({
             )}
           </div>
         </div>
+        )}
 
         {marquee && (
           <div
@@ -340,6 +386,7 @@ export function MarkupPanel({
   onSaveDraft,
   onDelete,
   onSetStatus,
+  onEditComment,
 }: {
   sections: Section[];
   selected: Set<string>;
@@ -347,6 +394,7 @@ export function MarkupPanel({
   onSaveDraft: (draft: DirectiveDraft) => void;
   onDelete: (id: string) => void;
   onSetStatus: (id: string, status: Directive["status"]) => void;
+  onEditComment: (id: string, comment: string) => void;
 }) {
   const resolve = useMdResolver();
   const picked: { block: SourceBlock; anchor?: string }[] = [];
@@ -413,6 +461,7 @@ export function MarkupPanel({
                 d={d}
                 onDelete={onDelete}
                 onSetStatus={onSetStatus}
+                onEditComment={onEditComment}
               />
             ))}
           </ul>
@@ -439,12 +488,17 @@ function DirectiveRow({
   d,
   onDelete,
   onSetStatus,
+  onEditComment,
 }: {
   d: Directive;
   onDelete: (id: string) => void;
   onSetStatus: (id: string, status: Directive["status"]) => void;
+  onEditComment: (id: string, comment: string) => void;
 }) {
   const prev = PREV_STATUS[d.status];
+  // Комментарий можно дописывать и после сохранения — директива живёт и уточняется.
+  const [editing, setEditing] = React.useState(false);
+  const [draft, setDraft] = React.useState(d.comment || "");
   const mods = Object.entries(d.modifiers)
     .filter(([, v]) => v !== false && v !== "" && v != null)
     .map(([k, v]) => (v === true ? k : `${k}: ${v}`))
@@ -487,8 +541,51 @@ function DirectiveRow({
             })}
         </div>
       )}
-      {d.comment && (
-        <div className="mt-1 text-sm text-foreground/80">{d.comment}</div>
+      {editing ? (
+        <div className="mt-1">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={3}
+            autoFocus
+            placeholder="Что уточнить в этой директиве"
+            className="w-full resize-y rounded-md border bg-background px-2 py-1.5 text-sm"
+          />
+          <div className="mt-1 flex gap-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                onEditComment(d.id, draft.trim());
+                setEditing(false);
+              }}
+              className="rounded-md bg-brand px-2 py-1 text-xs font-medium text-brand-foreground hover:bg-brand/90"
+            >
+              Сохранить
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDraft(d.comment || "");
+                setEditing(false);
+              }}
+              className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="mt-1 block w-full rounded px-1 py-0.5 text-left text-sm hover:bg-muted/60"
+        >
+          {d.comment ? (
+            <span className="text-foreground/80">{d.comment}</span>
+          ) : (
+            <span className="text-muted-foreground">+ комментарий</span>
+          )}
+        </button>
       )}
 
       {/* Статус: новая → применена → проверена. Разработчик отмечает по мере
