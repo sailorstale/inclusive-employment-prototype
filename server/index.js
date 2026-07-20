@@ -33,10 +33,42 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.json({ limit: "64kb" }));
 
-// Доступ открыт: пароля нет. Правки и комментарии может читать, менять и
-// удалять любой, кто знает адрес. Страховка от потери данных — только
-// ежедневный бэкап data/.
+/*
+  ДОСТУП. Чтение свободное — прототип смотрят по ссылке. Запись (создать,
+  изменить, удалить правку, комментарий, директиву) требует общий пароль
+  APP_PASSWORD: он приходит в заголовке X-Auth, клиент кладёт его туда сам
+  (см. src/editor-source/auth.ts).
+
+  Раньше пароль проверялся ТОЛЬКО в браузере, а сервер его не читал вовсе —
+  то есть замок висел на двери, которой нет: любой запрос мимо интерфейса
+  проходил. Для локальной работы ничего не меняется: если APP_PASSWORD не
+  задан, защиты нет и всё работает как раньше.
+
+  Удаление здесь необратимое, бэкапа кроме ежедневного нет, поэтому закрываем
+  именно запись.
+*/
+const PASSWORD = process.env.APP_PASSWORD || "";
+const WRITE = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+const passwordOk = (req) => !PASSWORD || req.get("X-Auth") === PASSWORD;
+
 const api = express.Router();
+
+/*
+  Статус замка. Всегда 200, даже без пароля: этот же адрес Railway дёргает как
+  healthcheck (railway.json → healthcheckPath), и 401 уронил бы деплой.
+*/
+api.get("/auth", (req, res) => {
+  res.json({ required: Boolean(PASSWORD), ok: passwordOk(req) });
+});
+
+api.use((req, res, next) => {
+  if (WRITE.has(req.method) && !passwordOk(req)) {
+    console.warn(`[auth] отказ: ${req.method} ${req.originalUrl}`);
+    return res.status(401).json({ error: "Нужен пароль" });
+  }
+  next();
+});
 
 api.get("/edits", async (_req, res) => {
   res.json(await store.getAll());
