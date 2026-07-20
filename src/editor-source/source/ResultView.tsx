@@ -54,8 +54,44 @@ const isActive = (d?: Directive) =>
 */
 const wantsDelete = (d?: Directive) =>
   !!d && !d.target && /^\s*удали/i.test((d.comment || "").trim());
+// ВНИМАНИЕ: во всех шаблонах ниже «хвост слова» — это \p{L} с флагом u, а НЕ \w.
+// \w в JS — это [A-Za-z0-9_], кириллицу он не покрывает, поэтому «убра\w*\s+жирн»
+// молча не совпадал с «Убрать жирный» и директива не исполнялась.
 const wantsUnbold = (d?: Directive) =>
-  !!d && /(убра|сня|без)\w*\s+жирн/i.test(d.comment || "");
+  !!d && /(убра|сня|без)\p{L}*\s+жирн/iu.test(d.comment || "");
+
+/*
+  Точечное удаление служебной подписи внутри директивы С целью: комментарий
+  «…упаковать в аккордеоны. Удалить заголовок Пояснение» должен убрать блок-ярлык
+  «Пояснение», а не всю группу (за группу целиком отвечает wantsDelete выше).
+
+  Правило намеренно СТРОГОЕ вдвойне: из комментария берём слова после
+  «удалить/убрать», а выбрасываем только блок, ВЕСЬ текст которого равен одному
+  из них. Поэтому даже если в кандидаты попадёт лишнее слово, содержательный
+  абзац пропасть не может — совпасть должен весь блок целиком.
+*/
+const SERVICE_WORD =
+  /^(заголов\p{L}*|загловк\p{L}*|подпис\p{L}*|надпис\p{L}*|слов\p{L}*|строк\p{L}*|текст\p{L}*|блок\p{L}*|эти|все|всё)$/iu;
+
+function labelsToDrop(d?: Directive): string[] {
+  if (!d?.target) return [];
+  const out: string[] = [];
+  const re = /(?:удали|убра)\p{L}*\s+([^.;!?\n]+)/giu;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(d.comment || ""))) {
+    for (const w of m[1].split(/[\s,]+/)) {
+      const bare = w.replace(/[«»"'*_:]/g, "").trim();
+      if (bare.length >= 3 && !SERVICE_WORD.test(bare)) out.push(bare.toLowerCase());
+    }
+  }
+  return out;
+}
+
+/** Блок целиком — служебный ярлык, названный в комментарии («**Пояснение**»). */
+const isDroppedLabel = (raw: string, labels: string[]) => {
+  const bare = raw.replace(/[*_]/g, "").replace(/:$/, "").trim().toLowerCase();
+  return bare.length > 0 && labels.includes(bare);
+};
 
 const stripBold = (md: string) => md.replace(/\*\*(.+?)\*\*/g, "$1");
 
@@ -150,19 +186,26 @@ function GroupView({
   md: (it: Item, unbold?: boolean) => string;
   resolve: ResolveMd;
 }) {
-  const { dir, items } = group;
+  const { dir } = group;
 
   // Комментарий «удалить» — блоки не выводим, но оставляем видимый след:
   // молча текст исчезать не должен, всегда понятно, что и почему убрано.
   if (wantsDelete(dir)) {
     return (
       <div className="ds-body-s py-2 text-[color:var(--text-secondary)]">
-        — убрано по директиве: {items.length} блок(ов)
+        — убрано по директиве: {group.items.length} блок(ов)
       </div>
     );
   }
 
   const unbold = wantsUnbold(dir);
+
+  // «Удалить заголовок Пояснение» — выбрасываем блоки-ярлыки до сборки, чтобы
+  // служебная подпись не попала ни в вопрос аккордеона, ни в тело карточки.
+  const drop = labelsToDrop(dir);
+  const items = drop.length
+    ? group.items.filter((it) => !isDroppedLabel(md(it), drop))
+    : group.items;
 
   // Без директивы (или директива без цели) — обычная раскладка блока.
   if (!dir?.target) {
