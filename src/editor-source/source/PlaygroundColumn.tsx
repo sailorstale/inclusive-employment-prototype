@@ -581,15 +581,69 @@ function BlockPreview({
     }
     case "table":
       return (
-        <div className="ds-body-s text-[color:var(--text-secondary)]">
-          Таблица · {block.rows.length} строк
+        <div className="max-w-full overflow-x-auto">
+          <table className="w-full border-collapse">
+            {block.header.some((c) => c) && (
+              <thead>
+                <tr>
+                  {block.header.map((c, i) => (
+                    <th
+                      key={i}
+                      className="ds-body-s-bold border border-border bg-muted/50 px-2 py-1 text-left align-top text-[color:var(--text-primary)]"
+                    >
+                      {renderInline(c)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {block.rows.map((r, ri) => (
+                <tr key={ri}>
+                  {r.map((c, ci) => (
+                    <td
+                      key={ci}
+                      className="ds-body-s border border-border px-2 py-1 align-top text-[color:var(--text-primary)]"
+                    >
+                      {renderInline(c)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       );
     case "image":
-      return (
-        <div className="ds-body-s text-[color:var(--text-secondary)]">
-          Картинка{block.alt ? ` · ${block.alt}` : ""}
-        </div>
-      );
+      return <ImagePreview src={block.src} alt={block.alt} />;
   }
+}
+
+/*
+  Картинка источника. Медиа из Google-доков пока не выгружены (папки
+  /source-media нет), поэтому на ошибке загрузки показываем честный плейсхолдер,
+  а не битую иконку. Выгрузят медиа — картинки появятся сами, без правок кода.
+  draggable=false: нативный drag картинки иначе перебивает выделение рамкой.
+*/
+function ImagePreview({ src, alt }: { src: string; alt?: string }) {
+  const [failed, setFailed] = React.useState(false);
+  React.useEffect(() => setFailed(false), [src]);
+
+  if (failed)
+    return (
+      <div className="ds-body-s rounded-md border border-dashed px-2 py-3 text-center text-[color:var(--text-secondary)]">
+        Картинка не выгружена{alt ? ` · ${alt}` : ""}
+      </div>
+    );
+
+  return (
+    <img
+      src={src}
+      alt={alt || ""}
+      loading="lazy"
+      draggable={false}
+      onError={() => setFailed(true)}
+      className="h-auto max-w-full rounded-md border"
+    />
+  );
 }
