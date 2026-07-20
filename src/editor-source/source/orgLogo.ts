@@ -85,22 +85,6 @@ export function findSlug(orgName: string, index: LogoEntry[]): string | undefine
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/**
- * Организация, названная в блоках цитаты ЯВНО. Два признака, оба однозначные:
- * текст markdown-ссылки и название в кавычках. Свободный текст не разбираем.
- */
-export function orgFromText(texts: string[]): string | undefined {
-  for (const t of texts) {
-    const link = t.match(/\[([^\]]+)\]\((?:https?:)?\/\/[^)]+\)/);
-    if (link) return link[1].trim();
-  }
-  for (const t of texts) {
-    const quoted = t.match(/[«"„“]([^»"“”]{2,60})[»"“”]/);
-    if (quoted) return quoted[1].trim();
-  }
-  return undefined;
-}
-
 /** Упомянут ли Яндекс — у него логотип круглый и файлом не задаётся. */
 export const mentionsYandex = (texts: string[]) =>
   texts.some((t) => /яндекс/i.test(t));

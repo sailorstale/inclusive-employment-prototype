@@ -21,7 +21,7 @@ import {
 } from "@/figma";
 import { renderInline } from "@/editor-source/richText";
 import { iconByName } from "./iconForText";
-import { findSlug, mentionsYandex, orgFromText, useLogoIndex } from "./orgLogo";
+import { findSlug, mentionsYandex, useLogoIndex } from "./orgLogo";
 import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
@@ -320,71 +320,104 @@ function GroupView({
     }
 
     case "Quote": {
-      // Строка вида «**Имя, должность**» — авторство; блоки-цитаты — сама речь.
+      /*
+        Вся группа — ОДНА цитата. Выделили несколько блоков и указали компонент,
+        значит они должны быть УПАКОВАНЫ в него, а не разложены по отдельным
+        карточкам (раньше выходило по цитате на каждый абзац речи).
+
+        Разбираем строку авторства на три части: имя, должность, организация.
+        Организацию берём ТОЛЬКО вплотную к строке авторства — ссылкой внутри
+        неё или соседним блоком-ссылкой. Раньше годилась любая ссылка из
+        выделения, и цитате Дарьи Дёминой (АШАН) доставался логотип ОРБИ из
+        соседнего блока. Чего не нашли — не выдумываем, а помечаем маркером,
+        чтобы не забыть дописать.
+      */
+      const LINK_RE = /\[([^\]]+)\]\((?:https?:)?\/\/[^)]+\)/;
+      const stripEmph = (t: string) => t.replace(/^[*_]+|[*_]+$/g, "").trim();
+
+      const parsed = items.map((it) => {
+        const t = md(it).trim();
+        // Ссылку в хвосте строки авторства отбрасываем перед проверкой, иначе
+        // абзац перестаёт выглядеть курсивом целиком и имя теряется.
+        const head = t.replace(new RegExp(`\\s*${LINK_RE.source}\\s*$`), "").trim();
+        const bare = stripEmph(head);
+        return {
+          it,
+          text: t,
+          bare,
+          isLinkOnly: it.b.kind === "paragraph" && LINK_RE.test(t) && !stripEmph(t.replace(LINK_RE, "")),
+          looksAuthor:
+            it.b.kind === "paragraph" &&
+            /^[*_]{1,2}.+[*_]{1,2}$/.test(head) &&
+            bare.includes(","),
+        };
+      });
+
+      const ai = parsed.findIndex((p) => p.looksAuthor);
       let author: string | undefined;
       let role: string | undefined;
-      // Полный текст строки авторства — в нём может стоять ссылка на фонд,
-      // по которой ниже подбирается логотип.
-      let creditLine: string | undefined;
-      const rest: Item[] = [];
-      const quotes: Item[] = [];
-      for (const it of items) {
-        const t = md(it).trim();
-        // Ссылка на организацию часто дописана в конец строки авторства
-        // («*Имя, должность* [Фонд «Действуй!»](…)»). Для распознавания автора
-        // её отбрасываем, иначе абзац перестаёт выглядеть как курсив целиком
-        // и имя теряется.
-        const head = t.replace(/\s*\[[^\]]+\]\((?:https?:)?\/\/[^)]+\)\s*$/, "").trim();
-        const bare = head.replace(/^[*_]+|[*_]+$/g, "");
-        const looksAuthor =
-          it.b.kind === "paragraph" &&
-          /^[*_]{1,2}.+[*_]{1,2}$/.test(head) &&
-          bare.includes(",");
-        if (it.b.kind === "quote") quotes.push(it);
-        else if (looksAuthor && !author) {
-          const [name, ...restRole] = bare.split(",");
-          author = name.trim();
-          role = restRole.join(",").trim() || undefined;
-          creditLine = t;
-        } else rest.push(it);
+      if (ai >= 0) {
+        const [name, ...restRole] = parsed[ai].bare.split(",");
+        author = name.trim() || undefined;
+        role = restRole.join(",").trim() || undefined;
       }
-      const body = quotes.length ? quotes : rest;
 
-      /*
-        Логотип прорастает из самого источника: организацию ищем в строке
-        авторства и в блоках, не попавших в речь (там лежит ссылка на фонд).
-        Сама речь в поиск не идёт — среди названий фондов много обычных слов
-        («Вера», «Жизнь»), и на них прилетал бы чужой логотип.
-      */
-      const creditTexts = [
-        ...(creditLine ? [creditLine] : []),
-        ...(author || role ? [`${author ?? ""} ${role ?? ""}`] : []),
-        ...rest.map((it) => md(it)),
-      ];
-      const yandex = Boolean(mods.yandex) || mentionsYandex(creditTexts);
-      const org = yandex ? undefined : orgFromText(creditTexts);
+      // Организация: ссылка в самой строке авторства, иначе блок-ссылка вплотную.
+      let orgName: string | undefined;
+      let orgIdx = -1;
+      if (ai >= 0) {
+        const inline = parsed[ai].text.match(LINK_RE);
+        if (inline) orgName = inline[1].trim();
+        else
+          for (const j of [ai - 1, ai + 1])
+            if (orgIdx < 0 && parsed[j]?.isLinkOnly) {
+              orgName = parsed[j].text.match(LINK_RE)![1].trim();
+              orgIdx = j;
+            }
+      } else {
+        // Строки авторства нет вовсе — организацию всё равно берём, если в
+        // выделении есть отдельный блок-ссылка: это она и есть.
+        orgIdx = parsed.findIndex((p) => p.isLinkOnly);
+        if (orgIdx >= 0) orgName = parsed[orgIdx].text.match(LINK_RE)![1].trim();
+      }
+
+      const yandex =
+        Boolean(mods.yandex) || mentionsYandex([author ?? "", role ?? ""]);
+      const org = yandex ? undefined : orgName;
       const logo = org ? findSlug(org, logoIndex) : undefined;
+
+      // Речь — всё, кроме строки авторства и съеденного блока-ссылки.
+      const speech = parsed.filter((_, i) => i !== ai && i !== orgIdx);
+
+      // Чего не хватает в строке авторства — показываем явно, чтобы дописали.
+      const missing = [
+        !author && "имя",
+        !role && "должность",
+        !yandex && !org && "организация",
+        org && !logo && `логотип «${org}» не найден в каталоге`,
+      ].filter(Boolean) as string[];
 
       return (
         <>
-          {body.map((it, i) => (
-            <Quote
-              key={i}
-              size={mods.size === "S" ? "S" : "L"}
-              yandex={i === 0 ? yandex : false}
-              org={i === 0 ? org : undefined}
-              logo={i === 0 ? logo : undefined}
-              author={i === 0 ? author : undefined}
-              role={i === 0 ? role : undefined}
-            >
-              {renderInline(md(it).replace(/^[*_]+|[*_]+$/g, ""))}
-            </Quote>
-          ))}
-          {quotes.length
-            ? rest.map((it, i) => (
-                <PlainBlock key={`r${i}`} it={it} md={md} resolve={resolve} unbold={unbold} />
-              ))
-            : null}
+          <Quote
+            size={mods.size === "S" ? "S" : "L"}
+            yandex={yandex}
+            org={org}
+            logo={logo}
+            author={author}
+            role={role}
+          >
+            {speech.map((p, i) => (
+              <p key={i} className={i ? "mt-[var(--space-s)]" : undefined}>
+                {renderInline(stripEmph(p.text))}
+              </p>
+            ))}
+          </Quote>
+          {missing.length > 0 && (
+            <div className="ds-body-s pt-[var(--space-2xs)] text-[color:var(--text-secondary)]">
+              ⚠ Дополнить авторство: {missing.join(", ")}
+            </div>
+          )}
         </>
       );
     }
