@@ -174,6 +174,56 @@ const cardOrientation = (g: Group): "Vertical" | "Horizontal" =>
 
 const LINK_RE = /\[([^\]]+)\]\((?:https?:)?\/\/[^)]+\)/;
 
+/*
+  СКЛЕЙКА СОСЕДНИХ СПИСКОВ.
+
+  Парсер источника отдаёт каждый пункт списка ОТДЕЛЬНЫМ блоком (в директивах это
+  видно как «1 пунктов»). Без склейки каждый пункт получал свой List Container,
+  а тот — свой Card Container: 32 пикселя от конверта плюс 16 от контейнера на
+  КАЖДЫЙ пункт. Списки разъезжались на пол-экрана.
+
+  По системе List Container — это вертикальный стек с равным шагом, и шаг задаёт
+  он сам. Поэтому соседние списки одного типа сливаем в один контейнер: пункты
+  идут подряд, промежуток — штатный gap.
+*/
+function listInside(n?: Node): Extract<Node, { component: "List Container" }> | undefined {
+  if (!n) return undefined;
+  if (n.component === "List Container") return n;
+  if (
+    n.component === "Card Container" &&
+    n.children.length === 1 &&
+    n.children[0].component === "List Container"
+  )
+    return n.children[0];
+  return undefined;
+}
+
+function mergeLists(nodes: Node[]): Node[] {
+  const out: Node[] = [];
+  for (const raw of nodes) {
+    // Сначала внутрь: аккордеоны и карточки тоже держат списки.
+    const n: Node =
+      "children" in raw && Array.isArray(raw.children)
+        ? ({ ...raw, children: mergeLists(raw.children) } as Node)
+        : raw;
+
+    const prev = out[out.length - 1];
+    const a = listInside(prev);
+    const b = listInside(n);
+    if (a && b && a.ordered === b.ordered) {
+      const merged = { ...a, children: [...a.children, ...b.children] };
+      // Склеенный список кладём обратно в ту же обёртку, что была у соседа.
+      out[out.length - 1] =
+        prev!.component === "Card Container"
+          ? { ...prev!, children: [merged] }
+          : merged;
+      continue;
+    }
+    out.push(n);
+  }
+  return out;
+}
+
 export function buildDoc(
   moduleId: string,
   sections: Section[],
@@ -516,7 +566,7 @@ export function buildDoc(
   const summary = sectionGroups.flat().find(isPageSummary);
 
   const children: (SectionNode | Node)[] = [];
-  if (summary) children.push(...groupNodes(summary));
+  if (summary) children.push(...mergeLists(groupNodes(summary)));
 
   sections.forEach((sec, i) => {
     const kids: Node[] = [];
@@ -531,7 +581,11 @@ export function buildDoc(
         });
       else kids.push(...nodes);
     }
-    children.push({ component: "Section Container", anchor: sec.anchor, children: kids });
+    children.push({
+      component: "Section Container",
+      anchor: sec.anchor,
+      children: mergeLists(kids),
+    });
   });
 
   return { module: moduleId, children };
