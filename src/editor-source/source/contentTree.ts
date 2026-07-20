@@ -143,7 +143,15 @@ function groupsOf(
   return groups;
 }
 
-/** Не-проза: в секцию напрямую не кладётся, только через Card Container. */
+/*
+  Не-проза: в секцию напрямую не кладётся, только через Card Container.
+
+  List Container сюда НЕ входит, хотя соблазн есть. В КОМПОНЕНТЫ.md про него
+  сказано прямо: «кладётся куда угодно: в секцию, в карточку, в Compare Card,
+  в аккордеон», и в перечне того, что требует конверта, списка нет. Лишний
+  конверт давал +32 к собственным 16 контейнера — отбивка от абзаца выходила
+  48 вместо 16.
+*/
 const NON_PROSE = new Set([
   "GeneralCard",
   "Accordion",
@@ -154,7 +162,6 @@ const NON_PROSE = new Set([
   "Compare",
   "Image",
   "Video",
-  "List",
 ]);
 
 const isPageSummary = (g: Group) => g.dir?.target === "PageSummary";
@@ -164,7 +171,7 @@ function needsCard(g: Group): boolean {
   if (g.dir?.target) return NON_PROSE.has(g.dir.target);
   const k = g.items[0]?.b.kind;
   // Блок-цитата без автора становится Text · Phrase — это проза, конверт не нужен.
-  return k === "table" || k === "image" || k === "list";
+  return k === "table" || k === "image";
 }
 
 const cardOrientation = (g: Group): "Vertical" | "Horizontal" =>
