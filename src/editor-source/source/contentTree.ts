@@ -144,10 +144,53 @@ const withoutRemovals = (c: string) =>
   флаг нужен, чтобы НЕ навесить один заголовок на слипшуюся карточку:
   «с заголовками 1-2-3 группа» — это три разных заголовка, а не один.
 */
-const wantsSplit = (d?: Directive) =>
-  /(\d+|дв[ае]|три|четыре|пять|шесть|семь)\s+(карточ|аккорд|аккард)/iu.test(
+const RU_NUM: Record<string, number> = {
+  два: 2, две: 2, три: 3, четыре: 4, пять: 5, шесть: 6, семь: 7, восемь: 8,
+};
+
+/** Сколько карточек/аккордеонов просили сделать. undefined — не просили. */
+const splitCount = (d?: Directive): number | undefined => {
+  const m = /(\d+|дв[ае]|три|четыре|пять|шесть|семь|восемь)\s+(?:карточ|аккорд|аккард)/iu.exec(
     d?.comment || "",
   );
+  if (!m) return undefined;
+  const raw = m[1].toLowerCase();
+  const n = /^\d+$/.test(raw) ? Number(raw) : RU_NUM[raw];
+  return n && n >= 2 && n <= 20 ? n : undefined;
+};
+
+const wantsSplit = (d?: Directive) => splitCount(d) !== undefined;
+
+/** «делее предложения с большой буквы» — поднять регистр первой буквы тела. */
+const wantsCapitalize = (d?: Directive) =>
+  /с\s+больш\p{L}*\s+букв/iu.test(d?.comment || "");
+
+const capitalizeFirst = (t: string) =>
+  t.replace(/^\s*(\p{Ll})/u, (m, c: string) => m.replace(c, c.toUpperCase()));
+
+/*
+  Карточка из строки вида «**1-я группа** — наиболее выраженные особенности…»:
+  жирное начало (а если его нет — часть до тире) становится ЗАГОЛОВКОМ, остальное
+  телом. Тире-разделитель при этом уходит — это и есть «убрать тире».
+
+  Если жирная часть — это весь текст, заголовка нет: строка целиком жирная это
+  не заголовок с телом, а просто акцент.
+*/
+const splitTitleBody = (text: string): { title?: string; body: string } => {
+  const bold = text.match(/^\s*\*\*(.+?)\*\*\s*/);
+  if (bold) {
+    const rest = text
+      .slice(bold[0].length)
+      .replace(/^\s*[—–-]\s*/, "")
+      .replace(/^\s*:\s*/, "");
+    if (rest.trim())
+      return { title: bold[1].trim().replace(/[.:;]+$/, ""), body: rest.trim() };
+    return { body: text.trim() };
+  }
+  const dash = text.match(/^(.{2,60}?)\s+[—–]\s+(.+)$/s);
+  if (dash) return { title: dash[1].trim(), body: dash[2].trim() };
+  return { body: text.trim() };
+};
 
 /*
   Явный заголовок карточки из комментария: «Добавь заголовок Важно»,
@@ -203,6 +246,13 @@ const stripNumber = (t: string) => {
 
 /** Текстовые чистки из комментария — общие для всей группы блоков. */
 type TextFix = { unbold: boolean; unitalic: boolean; unnumber: boolean };
+/** Те же чистки, но к готовой строке: у пунктов списка своего md() нет. */
+const applyFix = (t: string, fix: TextFix): string => {
+  let out = t;
+  if (fix.unbold) out = stripBold(out);
+  if (fix.unitalic) out = stripItalic(out);
+  return out;
+};
 const NO_FIX: TextFix = { unbold: false, unitalic: false, unnumber: false };
 const textFix = (d?: Directive): TextFix => ({
   unbold: wantsUnbold(d),
@@ -391,10 +441,7 @@ export function buildDoc(
       b.kind === "table" || b.kind === "image" || b.kind === "list"
         ? ""
         : resolve(type, (b as { text: string }).text, (b as { md: string }).md, it.anchor);
-    let out = raw;
-    if (fix.unbold) out = stripBold(out);
-    if (fix.unitalic) out = stripItalic(out);
-    return out;
+    return applyFix(raw, fix);
   };
 
   const liText = (it: Item, li: { text: string; md: string }) =>
@@ -583,6 +630,65 @@ export function buildDoc(
           dir.blocks.find((x) => x.snippet && md(it).startsWith(x.snippet.slice(0, 20)))
             ?.icon;
 
+        /*
+          ЯВНОЕ ДЕЛЕНИЕ «сделать N карточек».
+
+          Автоматика делит по жирному лиду, и когда это расходится с замыслом,
+          возразить ей было нечем. Теперь количество можно назвать в комментарии.
+
+          Единицу деления берём однозначную, без догадок: либо блоков ровно N
+          (каждый блок — карточка), либо это один список из N пунктов (каждый
+          пункт — карточка). Не сошлось — не выдумываем: оставляем автоматику и
+          говорим об этом заметкой, иначе дизайнер будет думать, что просьба
+          исполнена.
+        */
+        const want = splitCount(dir);
+        const unitText = (it: Item) =>
+          it.b.kind === "list"
+            ? it.b.items.map((li) => applyFix(liText(it, li), fix)).join(" ")
+            : md(it, fix);
+
+        let units: { it: Item; text: string }[] | null = null;
+        if (want) {
+          if (items.length === want) {
+            units = items.map((it) => ({ it, text: unitText(it) }));
+          } else if (
+            items.length === 1 &&
+            items[0].b.kind === "list" &&
+            items[0].b.items.length === want
+          ) {
+            const it = items[0];
+            units = (it.b as { items: { text: string; md: string }[] }).items.map((li) => ({
+              it,
+              text: applyFix(liText(it, li), fix),
+            }));
+          }
+        }
+
+        if (units) {
+          const cap = wantsCapitalize(dir);
+          return units.map(({ it, text }) => {
+            const { title, body } = splitTitleBody(text);
+            const icon = iconOf(it);
+            return {
+              component: "General Card",
+              orient: "Vertical",
+              bgColor: bg,
+              icon: mods.icon && icon ? icon : undefined,
+              title: title ? headingText(title, fix) : undefined,
+              children: body.trim()
+                ? [
+                    {
+                      component: "Text",
+                      size: "M",
+                      text: cap ? capitalizeFirst(body.trim()) : body.trim(),
+                    },
+                  ]
+                : [],
+            };
+          });
+        }
+
         for (const it of items) {
           const t = md(it, fix);
           const lead = t.match(/^\s*\*\*(.+?)\*\*:?\s*/);
@@ -649,7 +755,16 @@ export function buildDoc(
             last.children.push(...plainNodes(it, fix, true));
           }
         }
-        return cards;
+        // Просили поделить, но однозначной единицы нет — молчать нельзя.
+        return want
+          ? [
+              ...cards,
+              {
+                component: "note" as const,
+                text: `просили ${want} карточек, но блоков ${items.length} — поделить однозначно не вышло, оставлена автоматика`,
+              },
+            ]
+          : cards;
       }
 
       case "Accordion": {
