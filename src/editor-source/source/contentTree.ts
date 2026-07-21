@@ -308,23 +308,39 @@ const headingText = (t: string, fix: TextFix = NO_FIX) => {
 };
 const stripEmph = (t: string) => t.replace(/^[*_]+|[*_]+$/g, "").trim();
 
-/** Группы внутри ОДНОЙ секции: подряд идущие блоки одной директивы — вместе. */
-function groupsOf(
-  sec: Section,
-  si: number,
+/*
+  Группы по ВСЕМУ модулю: подряд идущие блоки одной директивы — вместе.
+
+  Почему сквозным проходом, а не внутри каждой секции. Директива — единое целое,
+  но секции режутся по h2. Директива, охватывающая несколько h2 (четыре меры
+  господдержки — каждая заголовком h2), разрывалась на части: каждый аккордеон
+  уезжал в собственную секцию, между ними появлялись отбивки, и общий конверт
+  собрать было нельзя.
+
+  Поэтому группа продолжается через границу секции, а принадлежит той секции,
+  где НАЧАЛАСЬ. Секции, чей заголовок ушёл внутрь такой директивы, своего
+  содержимого не получают и не рисуются вовсе.
+*/
+type PlacedGroup = Group & { si: number };
+
+function groupsOfDoc(
+  sections: Section[],
   directiveAt?: (si: number, bi: number) => Directive | undefined,
-): Group[] {
-  const groups: Group[] = [];
-  let cur: Group | null = null;
-  sec.blocks.forEach((b, bi) => {
-    const d = directiveAt?.(si, bi);
-    const active = isActive(d) ? d : undefined;
-    if (active && cur?.dir?.id === active.id) {
-      cur.items.push({ b, anchor: sec.anchor });
-    } else {
-      cur = { dir: active, items: [{ b, anchor: sec.anchor }] };
-      groups.push(cur);
-    }
+): PlacedGroup[] {
+  const groups: PlacedGroup[] = [];
+  let cur: PlacedGroup | null = null;
+  sections.forEach((sec, si) => {
+    sec.blocks.forEach((b, bi) => {
+      const d = directiveAt?.(si, bi);
+      const active = isActive(d) ? d : undefined;
+      const item = { b, anchor: sec.anchor };
+      if (active && cur?.dir?.id === active.id) {
+        cur.items.push(item);
+      } else {
+        cur = { dir: active, items: [item], si };
+        groups.push(cur);
+      }
+    });
   });
   return groups;
 }
@@ -1028,16 +1044,47 @@ export function buildDoc(
     }
   };
 
-  const sectionGroups = sections.map((sec, i) => groupsOf(sec, i, directiveAt));
-  const summary = sectionGroups.flat().find(isPageSummary);
+  const allGroups = groupsOfDoc(sections, directiveAt);
+  const summary = allGroups.find(isPageSummary);
 
   const children: (SectionNode | Node)[] = [];
   if (summary) children.push(...mergeSiblings(guarded(summary)));
 
+  /*
+    Секция, чей собственный заголовок h2 ушёл ВНУТРЬ директивы (стал вопросом
+    аккордеона или заголовком карточки), перестаёт быть секцией: заголовка у неё
+    больше нет. Отдельный Section Container дал бы пустую отбивку и разорвал бы
+    то, что дизайнер собирал одним блоком. Содержимое продолжает предыдущую
+    секцию — ту, чей заголовок уцелел.
+
+    Цель «Заголовок» не считается поглощением: там заголовок остаётся собой.
+  */
+  const absorbed = (si: number): boolean => {
+    const first = sections[si]?.blocks[0];
+    if (!first || first.kind !== "heading") return false;
+    const d = directiveAt?.(si, 0);
+    return isActive(d) && Boolean(d?.target) && d?.target !== "Heading";
+  };
+
+  const hostOf = (si: number): number => {
+    let s = si;
+    while (s > 0 && absorbed(s)) s -= 1;
+    return s;
+  };
+
+  // Группа принадлежит секции, где началась: директива не рвётся границей h2.
+  const bySection = new Map<number, PlacedGroup[]>();
+  for (const g of allGroups) {
+    if (g === summary) continue;
+    const host = hostOf(g.si);
+    const list = bySection.get(host);
+    if (list) list.push(g);
+    else bySection.set(host, [g]);
+  }
+
   sections.forEach((sec, i) => {
     const kids: Node[] = [];
-    for (const g of sectionGroups[i]) {
-      if (g === summary) continue;
+    for (const g of bySection.get(i) ?? []) {
       const nodes = guarded(g);
       if (needsCard(g))
         kids.push({
@@ -1047,6 +1094,12 @@ export function buildDoc(
         });
       else kids.push(...nodes);
     }
+    /*
+      Секция без содержимого не рисуется: её заголовок ушёл внутрь директивы,
+      начавшейся выше (стал вопросом аккордеона). Пустой Section Container дал
+      бы лишнюю отбивку на пустом месте.
+    */
+    if (!kids.length) return;
     children.push({
       component: "Section Container",
       anchor: sec.anchor,
