@@ -130,6 +130,39 @@ function labelsToDrop(d?: Directive): string[] {
   return out;
 }
 
+/*
+  Комментарий без фраз-удалений. Нужен, чтобы «удалить заголовок Пояснение» не
+  прочиталось как «задать заголовок Пояснение»: это ровно противоположные
+  намерения, а слово «заголовок» в них одно и то же.
+*/
+const withoutRemovals = (c: string) =>
+  c.replace(/(?:удали|убра|убер|сня)\p{L}*[^.;!?\n]*/giu, " ");
+
+/*
+  Просьба разбить набор на несколько карточек/аккордеонов («сделать три
+  карточки», «сделать 6 аккордионов»). Деление пока не автоматизировано —
+  флаг нужен, чтобы НЕ навесить один заголовок на слипшуюся карточку:
+  «с заголовками 1-2-3 группа» — это три разных заголовка, а не один.
+*/
+const wantsSplit = (d?: Directive) =>
+  /(\d+|дв[ае]|три|четыре|пять|шесть|семь)\s+(карточ|аккорд|аккард)/iu.test(
+    d?.comment || "",
+  );
+
+/*
+  Явный заголовок карточки из комментария: «Добавь заголовок Важно»,
+  «карточка с загловоком Пример». Опечатки дизайнера частые, поэтому корень
+  берём с запасом (загол/заглов/загов/заглав).
+*/
+const explicitTitle = (d?: Directive): string | undefined => {
+  if (!d?.target || wantsSplit(d)) return undefined;
+  const m = /(?:загол|заглов|загов|заглав)\p{L}*\s+(?:[«"'])?([^«»"'.,;:!?\n]+)/iu.exec(
+    withoutRemovals(d.comment || ""),
+  );
+  const t = m?.[1]?.replace(/[*_]/g, "").trim();
+  return t && t.length >= 2 && t.length <= 60 ? t : undefined;
+};
+
 const isDroppedLabel = (raw: string, labels: string[]) => {
   const bare = raw.replace(/[*_]/g, "").replace(/:$/, "").trim().toLowerCase();
   return bare.length > 0 && labels.includes(bare);
@@ -452,6 +485,7 @@ export function buildDoc(
         */
         const cards: Node[] = [];
         const bg = typeof mods.bg === "string" ? mods.bg : "blue";
+        const forcedTitle = explicitTitle(dir);
         // Иконки лежат в директиве в том же порядке, что и блоки.
         const iconOf = (it: Item) =>
           dir.blocks.find((x) => x.snippet && md(it).startsWith(x.snippet.slice(0, 20)))
@@ -471,12 +505,26 @@ export function buildDoc(
             (lead && after.trim().length > 0) || it.b.kind === "heading";
           if (startsCard || !cards.length) {
             // Хвостовая пунктуация в заголовке не нужна: «**Пример.**» → «Пример».
-            const title = lead
+            const derived = lead
               ? headingText(lead[1].replace(/[.:;]+$/, ""), fix)
               : it.b.kind === "heading"
                 ? headingText(t, fix)
                 : undefined;
-            const rest = lead ? after : it.b.kind === "heading" ? "" : t;
+            /*
+              Заголовок из комментария перебивает выведенный из жирного лида, и
+              только у ПЕРВОЙ карточки: он задан один, размножать его по всем
+              нельзя. Сам лид тогда уходит в тело — иначе текст, который был
+              «заголовком», просто пропал бы.
+            */
+            const forced = cards.length === 0 ? forcedTitle : undefined;
+            const title = forced ?? derived;
+            const rest = forced
+              ? t
+              : lead
+                ? after
+                : it.b.kind === "heading"
+                  ? ""
+                  : t;
             const icon = iconOf(it);
             cards.push({
               component: "General Card",
