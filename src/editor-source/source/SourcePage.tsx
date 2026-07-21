@@ -239,7 +239,15 @@ function toSections(blocks: SourceBlock[]): Section[] {
   return sections;
 }
 
-/** Левая колонка: реальный клиентский Google-док во фрейме. */
+/** Ссылка на редактируемый оригинал в Google — по docId модуля. */
+const docEditUrl = (docId: string) =>
+  `https://docs.google.com/document/d/${docId}/edit`;
+
+/*
+  Левая колонка, таб «Гуглдок»: реальный клиентский документ во фрейме. Свой
+  заголовок не рисуем — подпись и ссылку «Открыть в Google» несёт шапка колонки,
+  как «Скачать» у JSON. Здесь только сам фрейм (или заглушка, если дока нет).
+*/
 function DocFrame({ meta }: { meta: SourceModuleMeta }) {
   if (!meta.docId) {
     return (
@@ -248,30 +256,13 @@ function DocFrame({ meta }: { meta: SourceModuleMeta }) {
       </div>
     );
   }
-  const preview = `https://docs.google.com/document/d/${meta.docId}/preview`;
-  const open = `https://docs.google.com/document/d/${meta.docId}/edit`;
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b bg-muted/40 px-3 py-1.5">
-        <span className="text-xs font-medium text-muted-foreground">
-          Оригинал · Google-док клиента
-        </span>
-        <a
-          href={open}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-brand hover:underline"
-        >
-          Открыть в Google <ExternalLink className="h-3 w-3" />
-        </a>
-      </div>
-      <iframe
-        key={meta.docId}
-        title={`Google-док: Модуль ${meta.num}`}
-        src={preview}
-        className="min-h-0 flex-1 w-full bg-white"
-      />
-    </div>
+    <iframe
+      key={meta.docId}
+      title={`Google-док: Модуль ${meta.num}`}
+      src={`https://docs.google.com/document/d/${meta.docId}/preview`}
+      className="h-full w-full bg-white"
+    />
   );
 }
 
@@ -286,8 +277,9 @@ export function SourcePage() {
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   // Правая колонка: таб «Редактор» (правки текста) или «Разметка» (новый инструмент).
   const [rightTab, setRightTab] = React.useState<"editor" | "markup">("editor");
-  // Левая колонка: текст источника или тот же контент в виде JSON для разработчика.
-  const [leftTab, setLeftTab] = React.useState<"text" | "json">("text");
+  // Левая колонка: текст источника, тот же контент в виде JSON для разработчика
+  // или оригинал — Google-док клиента во фрейме.
+  const [leftTab, setLeftTab] = React.useState<"text" | "json" | "doc">("text");
   // Сохранённые директивы (все модули; для текущего фильтруем при показе).
   const [directives, setDirectives] = React.useState<Directive[]>([]);
   const [err, setErr] = React.useState<string | null>(null);
@@ -589,7 +581,9 @@ export function SourcePage() {
           <span className="truncate text-xs font-medium text-muted-foreground">
             {leftTab === "text"
               ? "Наша редакция · источник для сайта"
-              : "JSON для разработчика"}
+              : leftTab === "json"
+                ? "JSON для разработчика"
+                : /* в режиме дока подпись избыточна — её несут активный таб и ссылка */ ""}
           </span>
           <div className="flex shrink-0 items-center gap-1">
             {/* Скачивание — рядом с самим JSON: смотрим и забираем в одном месте. */}
@@ -604,6 +598,17 @@ export function SourcePage() {
                 Скачать
               </button>
             )}
+            {/* Открыть оригинал в Google — рядом с самим доком. */}
+            {leftTab === "doc" && meta.docId && (
+              <a
+                href={docEditUrl(meta.docId)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs font-medium text-brand transition-colors hover:underline"
+              >
+                Открыть в Google <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
             <div className="flex items-center gap-0.5 rounded-md border bg-background p-0.5">
               <TabBtn active={leftTab === "text"} onClick={() => setLeftTab("text")}>
                 Текст
@@ -611,36 +616,47 @@ export function SourcePage() {
               <TabBtn active={leftTab === "json"} onClick={() => setLeftTab("json")}>
                 JSON
               </TabBtn>
+              <TabBtn active={leftTab === "doc"} onClick={() => setLeftTab("doc")}>
+                Гуглдок
+              </TabBtn>
             </div>
           </div>
         </div>
-        <div
-          ref={setCopyBox}
-          className="mx-auto min-h-0 w-full max-w-prose flex-1 space-y-6 overflow-y-auto px-6 py-8"
-        >
-          {/* Заголовок модуля рендерится в самом потоке блоков (как в доке) —
-              отдельную «шапку» не рисуем, чтобы не дублировать и не «переносить». */}
-          {blocks === null ? (
-            <p className="text-muted-foreground">Загрузка модуля…</p>
-          ) : leftTab === "json" ? (
-            <JsonView doc={doc} />
-          ) : (
-            sections.map((sec, i) => (
-              <section
-                key={sec.anchor ?? `intro-${i}`}
-                id={sec.anchor}
-                data-sec={i}
-                className="space-y-4"
-              >
-                <AnchorScope anchor={sec.anchor}>
-                  {sec.blocks.map((b, j) => (
-                    <BlockView key={j} block={b} />
-                  ))}
-                </AnchorScope>
-              </section>
-            ))
-          )}
-        </div>
+        {/* Гуглдок — фрейм во всю высоту, без скролл-контейнера с якорями:
+            синхронный скролл с плейграундом тут неприменим (внешний iframe). */}
+        {leftTab === "doc" ? (
+          <div className="min-h-0 flex-1">
+            <DocFrame meta={meta} />
+          </div>
+        ) : (
+          <div
+            ref={setCopyBox}
+            className="mx-auto min-h-0 w-full max-w-prose flex-1 space-y-6 overflow-y-auto px-6 py-8"
+          >
+            {/* Заголовок модуля рендерится в самом потоке блоков (как в доке) —
+                отдельную «шапку» не рисуем, чтобы не дублировать и не «переносить». */}
+            {blocks === null ? (
+              <p className="text-muted-foreground">Загрузка модуля…</p>
+            ) : leftTab === "json" ? (
+              <JsonView doc={doc} />
+            ) : (
+              sections.map((sec, i) => (
+                <section
+                  key={sec.anchor ?? `intro-${i}`}
+                  id={sec.anchor}
+                  data-sec={i}
+                  className="space-y-4"
+                >
+                  <AnchorScope anchor={sec.anchor}>
+                    {sec.blocks.map((b, j) => (
+                      <BlockView key={j} block={b} />
+                    ))}
+                  </AnchorScope>
+                </section>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       {/* Вторая колонка — плейграунд (раскладка на компоненты) */}
