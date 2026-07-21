@@ -92,6 +92,20 @@ const wantsDelete = (d?: Directive) =>
   !!d && !d.target && /^\s*удали/i.test((d.comment || "").trim());
 const wantsUnbold = (d?: Directive) =>
   !!d && /(убра|сня|без)\p{L}*\s+жирн/iu.test(d.comment || "");
+/*
+  Курсив просили снимать теми же словами, что и жирный («убрать курсив»,
+  «убрать италик»), но шаблон ловил только «жирн» — комментарий молча не
+  срабатывал. Держим оба написания: и «курсив», и «италик».
+*/
+const wantsUnitalic = (d?: Directive) =>
+  !!d && /(убра|сня|без)\p{L}*\s+(курсив|италик|italic)/iu.test(d.comment || "");
+/*
+  «Убрать нумерацию в заголовках» — источник нумерует подряд («1. Особенности…»,
+  «Пример 1. Трудоустройство…»), а в аккордеоне и карточке номер лишний.
+  Касается ТОЛЬКО заголовков и вопросов, не тела текста.
+*/
+const wantsUnnumber = (d?: Directive) =>
+  !!d && /(убра|сня|без)\p{L}*\s+(нумерац|нумирац|номер)/iu.test(d.comment || "");
 
 const SERVICE_WORD =
   /^(заголов\p{L}*|загловк\p{L}*|подпис\p{L}*|надпис\p{L}*|слов\p{L}*|строк\p{L}*|текст\p{L}*|блок\p{L}*|эти|все|всё)$/iu;
@@ -124,11 +138,46 @@ const isDroppedLabel = (raw: string, labels: string[]) => {
 const stripBold = (md: string) => md.replace(/\*\*(.+?)\*\*/g, "$1");
 
 /*
+  Курсив — ОДИНОЧНАЯ звёздочка (или подчёркивание). Двойную не трогаем: это
+  жирный, у него своя чистка. Поэтому по краям требуем «не звёздочку», иначе
+  «**текст**» распался бы на «*текст*».
+*/
+const stripItalic = (md: string) =>
+  md
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1$2")
+    .replace(/(^|[^_])_([^_\n]+)_(?!_)/g, "$1$2");
+
+/*
+  Ведущая нумерация заголовка: «1. », «2) », «Пример 1. », «Ситуация 3 — ».
+  Снимаем только ПРЕФИКС и только если после него что-то осталось: заголовок
+  вида «1» (сам по себе номер) не должен превратиться в пустой.
+*/
+const stripNumber = (t: string) => {
+  const out = t.replace(
+    /^\s*(?:[«"']?\p{Lu}\p{L}*\s+)?\d+\s*(?:[.)»"']|—|–|-|:)?\s+/u,
+    "",
+  );
+  return out.trim() ? out.trim() : t.trim();
+};
+
+/** Текстовые чистки из комментария — общие для всей группы блоков. */
+type TextFix = { unbold: boolean; unitalic: boolean; unnumber: boolean };
+const NO_FIX: TextFix = { unbold: false, unitalic: false, unnumber: false };
+const textFix = (d?: Directive): TextFix => ({
+  unbold: wantsUnbold(d),
+  unitalic: wantsUnitalic(d),
+  unnumber: wantsUnnumber(d),
+});
+
+/*
   Заголовок несёт свой вес сам (Heading, вопрос аккордеона, заголовок карточки).
   В источнике такие строки часто обёрнуты в «**…**» — если оставить, жирность
   ляжет поверх жирности. Поэтому в заголовках разметку веса снимаем.
 */
-const headingText = (t: string) => stripBold(t).trim();
+const headingText = (t: string, fix: TextFix = NO_FIX) => {
+  const s = stripBold(t).trim();
+  return fix.unnumber ? stripNumber(s) : s;
+};
 const stripEmph = (t: string) => t.replace(/^[*_]+|[*_]+$/g, "").trim();
 
 /** Группы внутри ОДНОЙ секции: подряд идущие блоки одной директивы — вместе. */
@@ -291,8 +340,8 @@ export function buildDoc(
   logoIndex: LogoEntry[],
   directiveAt?: (si: number, bi: number) => Directive | undefined,
 ): Doc {
-  /** Актуальная разметка блока (с учётом правок), при необходимости без жирного. */
-  const md = (it: Item, unbold = false): string => {
+  /** Актуальная разметка блока (с учётом правок) + чистки из комментария. */
+  const md = (it: Item, fix: TextFix = NO_FIX): string => {
     const b = it.b;
     const type = b.kind === "heading" ? `h${b.level}` : "paragraph";
     // У таблицы, картинки и СПИСКА своего поля text нет: у списка текст живёт
@@ -301,14 +350,17 @@ export function buildDoc(
       b.kind === "table" || b.kind === "image" || b.kind === "list"
         ? ""
         : resolve(type, (b as { text: string }).text, (b as { md: string }).md, it.anchor);
-    return unbold ? stripBold(raw) : raw;
+    let out = raw;
+    if (fix.unbold) out = stripBold(out);
+    if (fix.unitalic) out = stripItalic(out);
+    return out;
   };
 
   const liText = (it: Item, li: { text: string; md: string }) =>
     resolve("li", li.text, li.md, it.anchor);
 
   /** Блок без директивы — обычная раскладка по правилам системы. */
-  const plainNodes = (it: Item, unbold: boolean, inCard = false): Node[] => {
+  const plainNodes = (it: Item, fix: TextFix, inCard = false): Node[] => {
     const b = it.b;
     switch (b.kind) {
       case "heading":
@@ -316,17 +368,17 @@ export function buildDoc(
           {
             component: "Heading",
             level: `H${b.level}` as HeadingLevel,
-            text: headingText(md(it, unbold)),
+            text: headingText(md(it, fix), fix),
           },
         ];
       case "paragraph":
         // Body L — только проза страницы, вне карточек и прочих компонентов.
         // Внутри General Card, аккордеона и подобных текст на ступень мельче.
-        return [{ component: "Text", size: inCard ? "M" : "L", text: md(it, unbold) }];
+        return [{ component: "Text", size: inCard ? "M" : "L", text: md(it, fix) }];
       case "quote":
         // Quote — только речь человека с именем. Блок «>» автора не несёт,
         // поэтому по правилу это Phrase: фраза-врезка курсивом.
-        return [{ component: "Phrase", size: "L", text: md(it, unbold) }];
+        return [{ component: "Phrase", size: "L", text: md(it, fix) }];
       case "list":
         return [
           {
@@ -357,13 +409,13 @@ export function buildDoc(
         { component: "note", text: `убрано по директиве: ${g.items.length} блок(ов)` },
       ];
 
-    const unbold = wantsUnbold(dir);
+    const fix = textFix(dir);
     const drop = labelsToDrop(dir);
     const items = drop.length
       ? g.items.filter((it) => !isDroppedLabel(md(it), drop))
       : g.items;
 
-    if (!dir?.target) return items.flatMap((it) => plainNodes(it, unbold));
+    if (!dir?.target) return items.flatMap((it) => plainNodes(it, fix));
 
     const mods = dir.modifiers || {};
 
@@ -380,7 +432,7 @@ export function buildDoc(
                     type: "Dot" as const,
                     text: liText(it, li),
                   }))
-                : [{ component: "Text", size: "M", text: md(it, unbold) }],
+                : [{ component: "Text", size: "M", text: md(it, fix) }],
             ),
           },
         ];
@@ -406,7 +458,7 @@ export function buildDoc(
             ?.icon;
 
         for (const it of items) {
-          const t = md(it, unbold);
+          const t = md(it, fix);
           const lead = t.match(/^\s*\*\*(.+?)\*\*:?\s*/);
           const after = lead ? t.slice(lead[0].length) : t;
           /*
@@ -420,9 +472,9 @@ export function buildDoc(
           if (startsCard || !cards.length) {
             // Хвостовая пунктуация в заголовке не нужна: «**Пример.**» → «Пример».
             const title = lead
-              ? lead[1].replace(/[.:;]+$/, "")
+              ? headingText(lead[1].replace(/[.:;]+$/, ""), fix)
               : it.b.kind === "heading"
-                ? headingText(t)
+                ? headingText(t, fix)
                 : undefined;
             const rest = lead ? after : it.b.kind === "heading" ? "" : t;
             const icon = iconOf(it);
@@ -441,7 +493,7 @@ export function buildDoc(
               Node,
               { component: "General Card" }
             >;
-            last.children.push(...plainNodes(it, unbold, true));
+            last.children.push(...plainNodes(it, fix, true));
           }
         }
         return cards;
@@ -486,12 +538,12 @@ export function buildDoc(
             it.b.kind === "heading" && (it.b as { level: number }).level === topLevel;
           if (isTop) {
             flush();
-            q = headingText(md(it));
+            q = headingText(md(it, fix), fix);
           } else if (q !== null) {
             // Тело аккордеона — внутри компонента: Body L там не используется.
-            body.push(...plainNodes(it, unbold, true));
+            body.push(...plainNodes(it, fix, true));
           } else {
-            out.push(...plainNodes(it, unbold));
+            out.push(...plainNodes(it, fix));
           }
         }
         flush();
@@ -585,13 +637,13 @@ export function buildDoc(
           // size=Phrase остаётся от старой разметки, когда фраза была вариантом
           // Text. Теперь это отдельный компонент Phrase — так и собираем.
           mods.size === "Phrase"
-            ? { component: "Phrase", size: "L", text: md(it, unbold) }
+            ? { component: "Phrase", size: "L", text: md(it, fix) }
             : {
                 component: "Text",
                 size: (["XL", "L", "M", "S"] as const).includes(mods.size as "L")
                   ? (mods.size as TextSize)
                   : "L",
-                text: md(it, unbold),
+                text: md(it, fix),
               },
         );
 
@@ -599,7 +651,7 @@ export function buildDoc(
         return items.map((it) => ({
           component: "Phrase" as const,
           size: mods.size === "M" ? "M" : "L",
-          text: md(it, unbold),
+          text: md(it, fix),
         }));
 
       case "Heading":
@@ -608,7 +660,7 @@ export function buildDoc(
           level: (["H2", "H3", "H4", "H5"] as const).includes(mods.level as "H2")
             ? (mods.level as HeadingLevel)
             : "H2",
-          text: headingText(md(it, unbold)),
+          text: headingText(md(it, fix), fix),
         }));
 
       case "List": {
@@ -626,7 +678,7 @@ export function buildDoc(
                     type: marker,
                     text: liText(it, li),
                   }))
-                : [{ component: "List Item", size: "L", type: marker, text: md(it, unbold) }],
+                : [{ component: "List Item", size: "L", type: marker, text: md(it, fix) }],
             ),
           },
         ];
@@ -648,7 +700,7 @@ export function buildDoc(
       default:
         return [
           { component: "note", text: `${dir.targetLabel}: сборки пока нет` },
-          ...items.flatMap((it) => plainNodes(it, unbold)),
+          ...items.flatMap((it) => plainNodes(it, fix)),
         ];
     }
   };
