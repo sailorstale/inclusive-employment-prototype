@@ -42,7 +42,22 @@ export const TARGET_GROUPS: TargetGroup[] = [
               { value: "L", label: "L — основной" },
               { value: "M", label: "M — пояснение" },
               { value: "S", label: "S — сноска" },
-              { value: "Phrase", label: "Фраза-врезка" },
+            ],
+            default: "L",
+          },
+        ],
+      },
+      {
+        value: "Phrase",
+        label: "Фраза-врезка",
+        modifiers: [
+          {
+            key: "size",
+            label: "Размер",
+            type: "select",
+            options: [
+              { value: "L", label: "L — крупная" },
+              { value: "M", label: "M — компактная" },
             ],
             default: "L",
           },
@@ -160,7 +175,7 @@ export const TARGET_GROUPS: TargetGroup[] = [
     items: [
       {
         value: "TextButton",
-        label: "Text · Button",
+        label: "Card Button",
         modifiers: [
           {
             key: "type",

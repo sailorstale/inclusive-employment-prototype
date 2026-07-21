@@ -27,7 +27,8 @@ import {
   TableHeaderCell,
   TableRow,
   Text,
-  TextButton,
+  Phrase,
+  CardButtonWithButton,
   Textarea,
   Tooltip,
   Video,
@@ -85,15 +86,20 @@ export function TypographySection() {
         уровень.
       </Text>
 
-      <Heading level="H4">Text · Phrase — фраза-врезка</Heading>
+      <Heading level="H4">Phrase — фраза-врезка</Heading>
       <Text size="M">
-        Новый размер Text. Не цитата (автора нет) — выделенная мысль или
-        инструкция прямо в потоке, с вертикальной чертой слева:
+        Отдельный компонент (вынесен из Text). Не цитата (автора нет) —
+        выделенная мысль или инструкция прямо в потоке, с вертикальной чертой
+        слева. Размер L — крупная, M — компактная:
       </Text>
-      <Text size="Phrase">
+      <Phrase size="L">
         «Давайте посмотрим на трёх героев, которые по-разному используют гаджеты.
         Отметьте тех, кто, на ваш взгляд, обладает цифровой грамотностью».
-      </Text>
+      </Phrase>
+      <Phrase size="M">
+        «Компактный вариант той же врезки — Body M, отступы слева и справа
+        одинаковые».
+      </Phrase>
     </SectionContainer>
   );
 }
@@ -161,7 +167,7 @@ export function ButtonsSection() {
         Кнопки — из набора Controls дизайн-системы: нейтральный тёмно-синий
         Primary (не жёлтая кнопка-легаси старого сайта), с наведением и
         выключенным состоянием. Один Primary на смысловой блок, подпись — глагол
-        с объектом. Кнопку в поток текста ставят через Text · Button (внизу) — это
+        с объектом. Кнопку в поток текста ставят через Card Button (внизу) — это
         правильный способ; ряды ниже показывают типы, размеры и иконки.
       </Text>
 
@@ -200,10 +206,10 @@ export function ButtonsSection() {
         </Button>
       </CardContainer>
 
-      {/* Второй способ: кнопка внутри Text · Button */}
-      <TextButton type="Primary" size="L" icon="Right" iconNode={<FileText />}>
-        Text · Button — кнопка в потоке текста
-      </TextButton>
+      {/* Второй способ: кнопка внутри Card Button */}
+      <CardButtonWithButton type="Primary" size="L" icon="Right" iconNode={<FileText />}>
+        Card Button — кнопка в потоке текста
+      </CardButtonWithButton>
     </SectionContainer>
   );
 }

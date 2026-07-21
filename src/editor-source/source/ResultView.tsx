@@ -9,6 +9,7 @@ import {
   ListContainer,
   ListItem,
   PageSummary,
+  Phrase,
   Prompt,
   Quote,
   Table,
@@ -78,6 +79,9 @@ function NodeView({ node }: { node: Node }) {
 
     case "Text":
       return <Text size={node.size}>{renderInline(node.text)}</Text>;
+
+    case "Phrase":
+      return <Phrase size={node.size}>{renderInline(node.text)}</Phrase>;
 
     case "List Container":
       return (

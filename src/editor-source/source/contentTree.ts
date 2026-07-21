@@ -26,11 +26,13 @@ import { blockRefId, type ResolveMd } from "./blockResolve";
 import { findSlug, mentionsYandex, type LogoEntry } from "./orgLogo";
 
 export type HeadingLevel = "H2" | "H3" | "H4" | "H5";
-export type TextSize = "XL" | "L" | "M" | "S" | "Phrase" | "Button";
+export type TextSize = "XL" | "L" | "M" | "S";
+export type PhraseSize = "L" | "M";
 
 export type Node =
   | { component: "Heading"; level: HeadingLevel; text: string }
   | { component: "Text"; size: TextSize; text: string }
+  | { component: "Phrase"; size: PhraseSize; text: string }
   | { component: "List Container"; ordered: boolean; children: Node[] }
   | { component: "List Item"; size: "L" | "M"; type: "Dot" | "Icon" | "Number"; text: string }
   | { component: "Card Container"; orientation: "Vertical" | "Horizontal"; children: Node[] }
@@ -177,7 +179,7 @@ function needsCard(g: Group): boolean {
   if (isPageSummary(g)) return false;
   if (g.dir?.target) return NON_PROSE.has(g.dir.target);
   const k = g.items[0]?.b.kind;
-  // Блок-цитата без автора становится Text · Phrase — это проза, конверт не нужен.
+  // Блок-цитата без автора становится Phrase — это проза, конверт не нужен.
   return k === "table" || k === "image";
 }
 
@@ -323,8 +325,8 @@ export function buildDoc(
         return [{ component: "Text", size: inCard ? "M" : "L", text: md(it, unbold) }];
       case "quote":
         // Quote — только речь человека с именем. Блок «>» автора не несёт,
-        // поэтому по правилу это Text · Phrase: фраза-врезка курсивом.
-        return [{ component: "Text", size: "Phrase", text: md(it, unbold) }];
+        // поэтому по правилу это Phrase: фраза-врезка курсивом.
+        return [{ component: "Phrase", size: "L", text: md(it, unbold) }];
       case "list":
         return [
           {
@@ -579,11 +581,24 @@ export function buildDoc(
       }
 
       case "Text":
+        return items.map((it): Node =>
+          // size=Phrase остаётся от старой разметки, когда фраза была вариантом
+          // Text. Теперь это отдельный компонент Phrase — так и собираем.
+          mods.size === "Phrase"
+            ? { component: "Phrase", size: "L", text: md(it, unbold) }
+            : {
+                component: "Text",
+                size: (["XL", "L", "M", "S"] as const).includes(mods.size as "L")
+                  ? (mods.size as TextSize)
+                  : "L",
+                text: md(it, unbold),
+              },
+        );
+
+      case "Phrase":
         return items.map((it) => ({
-          component: "Text" as const,
-          size: (["XL", "L", "M", "S", "Phrase"] as const).includes(mods.size as "L")
-            ? (mods.size as TextSize)
-            : "L",
+          component: "Phrase" as const,
+          size: mods.size === "M" ? "M" : "L",
           text: md(it, unbold),
         }));
 

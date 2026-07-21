@@ -30,8 +30,11 @@ export { ListItem } from "./ListItem";
 export type { ListItemSize, ListItemType } from "./ListItem";
 
 // --- Текст ---
-export { Text, TextButton } from "./Text";
+export { Text } from "./Text";
 export type { TextSize } from "./Text";
+export { Phrase } from "./Phrase";
+export type { PhraseSize } from "./Phrase";
+export { CardButton, CardButtonWithButton } from "./CardButton";
 export { Heading } from "./Heading";
 export type { HeadingLevel } from "./Heading";
 export { PageSummary } from "./PageSummary";
