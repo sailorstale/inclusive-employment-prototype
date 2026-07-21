@@ -163,6 +163,14 @@ const explicitTitle = (d?: Directive): string | undefined => {
   return t && t.length >= 2 && t.length <= 60 ? t : undefined;
 };
 
+/*
+  «Пояснение» — строительные леса исходника: внутри аккордеона ответ и ЕСТЬ
+  пояснение, ярлык только шумит. «Миф» и «Правда» оставляем — они несут вердикт.
+  На уровне модуля, потому что нужен и сборке аккордеона, и стражу потерь.
+*/
+const isExplainLabel = (t: string) =>
+  /^[*_\s]*пояснени\p{L}*\s*:?[*_\s]*$/iu.test(t);
+
 const isDroppedLabel = (raw: string, labels: string[]) => {
   const bare = raw.replace(/[*_]/g, "").replace(/:$/, "").trim().toLowerCase();
   return bare.length > 0 && labels.includes(bare);
@@ -434,6 +442,90 @@ export function buildDoc(
     }
   };
 
+  /*
+    СТРАЖ ПОТЕРЬ.
+
+    Контент не должен исчезать молча — только по явной команде «удалить».
+    Правило раскладки сложное (лиды, ярлыки, деление на карточки), и один
+    недосмотр уже стоил нам целого блока: список, попавший в карточку первым,
+    пропадал бесследно.
+
+    Поэтому сверяем: текст каждого исходного блока обязан оставить след в
+    собранных узлах. Не оставил — рисуем заметку прямо в превью. Заметка
+    служебная, в выгрузку не идёт: её задача — чтобы пропажу заметил человек.
+  */
+  const nodeText = (n: Node | SectionNode): string => {
+    const parts: string[] = [];
+    const o = n as Record<string, unknown>;
+    for (const k of ["text", "question", "title", "alt", "author", "role", "org"])
+      if (typeof o[k] === "string") parts.push(o[k] as string);
+    if (Array.isArray(o.paragraphs)) parts.push((o.paragraphs as string[]).join(" "));
+    if (Array.isArray(o.header)) parts.push((o.header as string[]).join(" "));
+    if (Array.isArray(o.rows)) parts.push((o.rows as string[][]).flat().join(" "));
+    if (Array.isArray(o.children))
+      parts.push((o.children as Node[]).map(nodeText).join(" "));
+    return parts.join(" ");
+  };
+
+  /** Текст исходного блока — включая те виды, у которых своего поля text нет. */
+  const itemText = (it: Item): string => {
+    const b = it.b;
+    if (b.kind === "list") return b.items.map((li) => liText(it, li)).join(" ");
+    if (b.kind === "table") return [...b.header, ...b.rows.flat()].join(" ");
+    if (b.kind === "image") return b.alt || "";
+    return md(it);
+  };
+
+  /** Сравниваем по сути: без разметки, регистра и пунктуации. */
+  const signature = (s: string) =>
+    s
+      /*
+        Адрес ссылки в сверке не участвует: в исходнике он есть
+        («[Фонд…](https://…)»), а в собранном узле остаётся только название —
+        URL живёт отдельным полем. Иначе каждая цитата со ссылкой давала
+        ложную тревогу.
+      */
+      .replace(/\]\([^)]*\)/g, " ")
+      .replace(/https?:\/\/\S+/gi, " ")
+      .replace(/[*_`#>[\]()«»"'—–\-.,;:!?]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+
+  const guarded = (g: Group): Node[] => {
+    const out = groupNodes(g);
+    // Удаление и снятие ярлыков — намеренные потери, о них не предупреждаем.
+    if (wantsDelete(g.dir)) return out;
+    const drop = labelsToDrop(g.dir);
+    const produced = signature(out.map(nodeText).join(" "));
+    const lost = g.items.filter((it) => {
+      const raw = itemText(it);
+      if (drop.length && isDroppedLabel(raw, drop)) return false;
+      if (isExplainLabel(raw)) return false;
+      const sig = signature(raw);
+      // Короткие служебные подписи («Миф», «Правда») проверять бессмысленно:
+      // они и так растворяются в тексте соседей и дают ложные тревоги.
+      if (sig.length < 25) return false;
+      /*
+        Сверяем по ХВОСТУ, а не по началу: наши же правила срезают именно
+        префикс («Пример 1. Трудоустройство…» → «Трудоустройство…»), и проба
+        с начала давала ложную тревогу на каждом таком заголовке. Конец текста
+        правила не трогают.
+      */
+      return !produced.includes(sig.slice(-40));
+    });
+    if (!lost.length) return out;
+    return [
+      ...out,
+      {
+        component: "note",
+        text: `не попало в раскладку — ${lost.length} блок(ов): ${lost
+          .map((it) => signature(itemText(it)).slice(0, 45))
+          .join(" · ")}`,
+      },
+    ];
+  };
+
   const groupNodes = (g: Group): Node[] => {
     const { dir } = g;
 
@@ -526,6 +618,17 @@ export function buildDoc(
                   ? ""
                   : t;
             const icon = iconOf(it);
+            /*
+              У списка, таблицы и картинки СВОЕГО текста нет — md() для них
+              пустой, он читает поля text/md, которых у этих видов не бывает.
+              Раньше такой блок, попав в карточку ПЕРВЫМ, исчезал молча: rest
+              пустой → тело пустое → контент терялся. Рендерим его как есть.
+
+              Пустое тело законно только у заголовка (он ушёл в title) и у
+              блока, чей текст целиком стал заголовком.
+            */
+            const ownText =
+              it.b.kind !== "list" && it.b.kind !== "table" && it.b.kind !== "image";
             cards.push({
               component: "General Card",
               orient: "Vertical",
@@ -534,7 +637,9 @@ export function buildDoc(
               title,
               children: rest.trim()
                 ? [{ component: "Text", size: "M", text: rest.trim() }]
-                : [],
+                : ownText
+                  ? []
+                  : plainNodes(it, fix, true),
             });
           } else {
             const last = cards[cards.length - 1] as Extract<
@@ -559,8 +664,6 @@ export function buildDoc(
           только шумит. «Миф» и «Правда» оставляем — они несут вердикт, без них
           читатель не поймёт, подтверждают утверждение или опровергают.
         */
-        const isExplainLabel = (t: string) =>
-          /^[*_\s]*пояснени\p{L}*\s*:?[*_\s]*$/iu.test(t);
         const items2 = items.filter((it) => !isExplainLabel(md(it)));
 
         const levels = items2
@@ -757,13 +860,13 @@ export function buildDoc(
   const summary = sectionGroups.flat().find(isPageSummary);
 
   const children: (SectionNode | Node)[] = [];
-  if (summary) children.push(...mergeSiblings(groupNodes(summary)));
+  if (summary) children.push(...mergeSiblings(guarded(summary)));
 
   sections.forEach((sec, i) => {
     const kids: Node[] = [];
     for (const g of sectionGroups[i]) {
       if (g === summary) continue;
-      const nodes = groupNodes(g);
+      const nodes = guarded(g);
       if (needsCard(g))
         kids.push({
           component: "Card Container",
