@@ -91,7 +91,7 @@ const isActive = (d?: Directive) =>
 const wantsDelete = (d?: Directive) =>
   !!d && !d.target && /^\s*удали/i.test((d.comment || "").trim());
 const wantsUnbold = (d?: Directive) =>
-  !!d && /(убра|сня|без)\p{L}*\s+жирн/iu.test(d.comment || "");
+  !!d && /(убра|сня|без)\p{L}*\s+(жирн|болд|bold)/iu.test(d.comment || "");
 /*
   Курсив просили снимать теми же словами, что и жирный («убрать курсив»,
   «убрать италик»), но шаблон ловил только «жирн» — комментарий молча не
@@ -136,7 +136,15 @@ function labelsToDrop(d?: Directive): string[] {
   намерения, а слово «заголовок» в них одно и то же.
 */
 const withoutRemovals = (c: string) =>
-  c.replace(/(?:удали|убра|убер|сня)\p{L}*[^.;!?\n]*/giu, " ");
+  c
+    /*
+      Инструкции дизайнер часто пишет в одну строку без знаков препинания:
+      «Убрать болд сделать заг Важно». Без границы фраза-удаление съедала и
+      вторую инструкцию, и заголовок терялся. Ставим границу перед глаголом
+      следующей инструкции.
+    */
+    .replace(/\s+(?=(?:сдела|добав|постав|нужн)\p{L}*)/giu, ". ")
+    .replace(/(?:удали|убра|убер|сня)\p{L}*[^.;!?\n]*/giu, " ");
 
 /*
   Просьба разбить набор на несколько карточек/аккордеонов («сделать три
@@ -161,12 +169,40 @@ const splitCount = (d?: Directive): number | undefined => {
 
 const wantsSplit = (d?: Directive) => splitCount(d) !== undefined;
 
-/** «делее предложения с большой буквы» — поднять регистр первой буквы тела. */
+/*
+  «далее предложение с большой буквы» — поднять регистр первой буквы тела.
+
+  Запас на опечатку в корне обязателен: живой комментарий пришёл как «с болшой
+  буквы» (без мягкого знака), и жёсткое «больш» молча не сработало. Поэтому
+  между «бол» и «ш» допускаем любые буквы.
+*/
 const wantsCapitalize = (d?: Directive) =>
-  /с\s+больш\p{L}*\s+букв/iu.test(d?.comment || "");
+  /с\s+бол\p{L}*ш\p{L}*\s+букв/iu.test(d?.comment || "");
 
 const capitalizeFirst = (t: string) =>
   t.replace(/^\s*(\p{Ll})/u, (m, c: string) => m.replace(c, c.toUpperCase()));
+
+/*
+  «Слово Важно убрать в начале предложения», «Слово Суть убрать» — источник
+  начинает абзац служебным словом-ярлыком («Важно: …», «Суть — …»), которое в
+  карточке дублирует заголовок. Убираем это слово ТОЛЬКО из начала текста:
+  внутри предложения оно может быть по делу.
+*/
+const leadWordToDrop = (d?: Directive): string | undefined => {
+  const m = /слов\p{L}*\s+[«"']?([^\s,.;:!?»"']+)[»"']?\s+убра/iu.exec(d?.comment || "");
+  const w = m?.[1]?.trim();
+  return w && w.length >= 2 ? w : undefined;
+};
+
+const stripLeadWord = (t: string, w: string): string => {
+  const esc = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Слово может быть обёрнуто в жирный и отделено двоеточием или тире.
+  const out = t.replace(
+    new RegExp(`^\\s*[*_]*${esc}[*_]*\\s*[:—–-]?\\s*`, "iu"),
+    "",
+  );
+  return out.trim() ? out : t;
+};
 
 /*
   Карточка из строки вида «**1-я группа** — наиболее выраженные особенности…»:
@@ -199,7 +235,8 @@ const splitTitleBody = (text: string): { title?: string; body: string } => {
 */
 const explicitTitle = (d?: Directive): string | undefined => {
   if (!d?.target || wantsSplit(d)) return undefined;
-  const m = /(?:загол|заглов|загов|заглав)\p{L}*\s+(?:[«"'])?([^«»"'.,;:!?\n]+)/iu.exec(
+  // «заг» принимаем только целым словом: иначе «загрузить» дало бы заголовок.
+  const m = /(?:заг(?=\s)|загол\p{L}*|заглов\p{L}*|загов\p{L}*|заглав\p{L}*)\s+(?:[«"'])?([^«»"'.,;:!?\n]+)/iu.exec(
     withoutRemovals(d.comment || ""),
   );
   const t = m?.[1]?.replace(/[*_]/g, "").trim();
@@ -625,6 +662,18 @@ export function buildDoc(
         const cards: Node[] = [];
         const bg = typeof mods.bg === "string" ? mods.bg : "blue";
         const forcedTitle = explicitTitle(dir);
+        /*
+          Чистки ТЕЛА карточки: снять служебное слово-ярлык в начале и поднять
+          регистр. Раньше регистр применялся только в режиме деления, поэтому
+          «начать предложение с большой буквы» в обычной карточке молчало.
+        */
+        const dropWord = leadWordToDrop(dir);
+        const capBody = wantsCapitalize(dir);
+        const bodyText = (t: string) => {
+          let out = dropWord ? stripLeadWord(t, dropWord) : t;
+          if (capBody) out = capitalizeFirst(out);
+          return out.trim();
+        };
         // Иконки лежат в директиве в том же порядке, что и блоки.
         const iconOf = (it: Item) =>
           dir.blocks.find((x) => x.snippet && md(it).startsWith(x.snippet.slice(0, 20)))
@@ -666,7 +715,6 @@ export function buildDoc(
         }
 
         if (units) {
-          const cap = wantsCapitalize(dir);
           return units.map(({ it, text }) => {
             const { title, body } = splitTitleBody(text);
             const icon = iconOf(it);
@@ -676,14 +724,8 @@ export function buildDoc(
               bgColor: bg,
               icon: mods.icon && icon ? icon : undefined,
               title: title ? headingText(title, fix) : undefined,
-              children: body.trim()
-                ? [
-                    {
-                      component: "Text",
-                      size: "M",
-                      text: cap ? capitalizeFirst(body.trim()) : body.trim(),
-                    },
-                  ]
+              children: bodyText(body)
+                ? [{ component: "Text", size: "M", text: bodyText(body) }]
                 : [],
             };
           });
@@ -752,8 +794,8 @@ export function buildDoc(
               bgColor: bg,
               icon: mods.icon && icon ? icon : undefined,
               title,
-              children: rest.trim()
-                ? [{ component: "Text", size: "M", text: rest.trim() }]
+              children: bodyText(rest)
+                ? [{ component: "Text", size: "M", text: bodyText(rest) }]
                 : ownText
                   ? []
                   : plainNodes(it, fix, true),
@@ -766,13 +808,17 @@ export function buildDoc(
             last.children.push(...plainNodes(it, fix, true));
           }
         }
-        // Просили поделить, но однозначной единицы нет — молчать нельзя.
-        return want
+        /*
+          Автоматика делит по заголовкам и жирным лидам и часто САМА даёт
+          нужное число — тогда просьба исполнена, и заметка была бы ложной
+          тревогой. Сообщаем, только если число реально разошлось.
+        */
+        return want && cards.length !== want
           ? [
               ...cards,
               {
                 component: "note" as const,
-                text: `просили ${want} карточек, но блоков ${items.length} — поделить однозначно не вышло, оставлена автоматика`,
+                text: `просили ${want} карточек, получилось ${cards.length} — проверьте деление`,
               },
             ]
           : cards;
