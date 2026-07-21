@@ -1251,11 +1251,6 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
         "level": 2
       },
       {
-        "anchor": "vserossiyskoe-obschestvo-invalidov-voi",
-        "title": "Всероссийское общество инвалидов - ВОИ",
-        "level": 2
-      },
-      {
         "anchor": "chto-govorit-biznes",
         "title": "Что говорит бизнес",
         "level": 2
@@ -1267,6 +1262,21 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
       },
       {
         "anchor": "situaciya",
+        "title": "Ситуация",
+        "level": 3
+      },
+      {
+        "anchor": "situaciya-2",
+        "title": "Ситуация",
+        "level": 3
+      },
+      {
+        "anchor": "situaciya-3",
+        "title": "Ситуация",
+        "level": 3
+      },
+      {
+        "anchor": "situaciya-4",
         "title": "Ситуация",
         "level": 3
       },
@@ -1288,16 +1298,6 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
       {
         "anchor": "chto-govorit-biznes-i-nko",
         "title": "Что говорит бизнес и НКО",
-        "level": 2
-      },
-      {
-        "anchor": "za-10-let-my-sozdali-inklyuzivnuyu-sredu-dlya-ly",
-        "title": "За 10 лет мы создали инклюзивную среду для людей с ОВЗ и детей-сирот вместе с более чем 10 фондами. Некоторые фонды привели сотрудники, с частью мы познакомились на мероприятиях по инклюзии. За годы реализации программы мы вывели свою формулу успеха: открытость со стороны компании и постоянный живой диалог с фондом, лидеры проекта с обеих сторон как единая точка входа, практики наставничества и обмен кейсами.",
-        "level": 2
-      },
-      {
-        "anchor": "na-nachalnom-etape-ne-kazhdyy-menedzher-byl-goto",
-        "title": "На начальном этапе не каждый менеджер был готов принять такую ответственность и работать с людьми с особенностями. Но регулярное просвещение и обмен лучшими практиками помогли сделать работу системной.",
         "level": 2
       },
       {
@@ -1352,52 +1352,37 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
     "num": 5,
     "file": "Модуль 5.md",
     "docId": "1fVRzIziIIRk1l_VNUvvBL6uUI-xWHlqq6lWUEatAJa8",
-    "title": "",
+    "title": "Трек для работодателей",
     "toc": [
+      {
+        "anchor": "modul-5-trek-dlya-rabotodateley",
+        "title": "Модуль 5. Трек для работодателей",
+        "level": 2
+      },
+      {
+        "anchor": "vnutrenniy-audit-rabochey-sredy-processov-i-mate",
+        "title": "Внутренний аудит рабочей среды, процессов и материалов для кандидата с инвалидностью",
+        "level": 2
+      },
+      {
+        "anchor": "kakie-zatraty-zhdut-kompaniyu-pervonachalnye-reg",
+        "title": "Какие затраты ждут компанию: первоначальные/ регулярные расходы и их оптимизация",
+        "level": 2
+      },
       {
         "anchor": "vvedenie",
         "title": "Введение",
         "level": 2
       },
       {
-        "anchor": "opredelite-cel-inklyuzivnogo-nayma",
-        "title": "Определите цель инклюзивного найма",
-        "level": 2
-      },
-      {
-        "anchor": "sostavte-spisok-potencialnyh-vakansiy",
-        "title": "Составьте список потенциальных вакансий",
-        "level": 2
-      },
-      {
-        "anchor": "sravnite-vakansii-mezhdu-soboy-i-vyberite-pozici",
-        "title": "Сравните вакансии между собой и выберите позицию для пилота",
-        "level": 2
-      },
-      {
-        "anchor": "vypishite-funkcional-vakansii",
-        "title": "Выпишите функционал вакансии",
-        "level": 2
-      },
-      {
-        "anchor": "podumayte-kandidatam-s-kakimi-osobennostyami-zdo",
-        "title": "Подумайте, кандидатам с какими особенностями здоровья вакансия подходит лучше всего",
+        "anchor": "shag-1-vybor-vakansii-dlya-inklyuzivnogo-nayma",
+        "title": "Шаг 1. Выбор вакансии для инклюзивного найма",
         "level": 2
       },
       {
         "anchor": "vakansiya-sborschik-zakazov-na-sklade",
         "title": "Вакансия: Сборщик заказов на складе",
         "level": 3
-      },
-      {
-        "anchor": "ocenite-bezopasnost-vakansii-vmeste-so-specialis",
-        "title": "Оцените безопасность вакансии вместе со специалистами охраны труда",
-        "level": 2
-      },
-      {
-        "anchor": "sostavte-itogovyy-spisok-zadach-novogo-sotrudnik",
-        "title": "Составьте итоговый список задач нового сотрудника",
-        "level": 2
       },
       {
         "anchor": "peredacha-nedostupnoy-zadachi-drugomu-specialist",
@@ -2226,8 +2211,13 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
     "num": 6,
     "file": "Модуль 6.md",
     "docId": "1F7_yp0qN2yY4ugFqyasx6BESyOndn3zgsRIDjzL7Wi4",
-    "title": "",
+    "title": "Трек для НКО",
     "toc": [
+      {
+        "anchor": "modul-6-trek-dlya-nko",
+        "title": "Модуль 6. Трек для НКО",
+        "level": 2
+      },
       {
         "anchor": "vvedenie",
         "title": "Введение",
@@ -2862,26 +2852,6 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
         "anchor": "shag-3-pomosch-kandidatu-v-ponimanii-opisaniya-v",
         "title": "Шаг 3. Помощь кандидату в понимании описания вакансии",
         "level": 2
-      },
-      {
-        "anchor": "razberite-vakansiyu-po-zadacham",
-        "title": "Разберите вакансию по задачам",
-        "level": 3
-      },
-      {
-        "anchor": "sopostavte-vakansiyu-s-vozmozhnostyami-kandidata",
-        "title": "Сопоставьте вакансию с возможностями кандидата",
-        "level": 3
-      },
-      {
-        "anchor": "izuchite-rabotodatelya",
-        "title": "Изучите работодателя",
-        "level": 3
-      },
-      {
-        "anchor": "reshite-kak-deystvovat-dalshe",
-        "title": "Решите, как действовать дальше",
-        "level": 3
       },
       {
         "anchor": "shag-4-sostavlenie-ili-obnovlenie-rezyume",
