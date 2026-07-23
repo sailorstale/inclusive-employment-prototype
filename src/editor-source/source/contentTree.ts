@@ -1392,7 +1392,62 @@ export function buildDoc(
     });
   });
 
-  return { module: moduleId, children };
+  // Правила системы применяем в самом конце, одинаково для всех источников.
+  return normalizeDoc({ module: moduleId, children });
+}
+
+/*
+  НОРМАЛИЗАЦИЯ ДЕРЕВА — правила системы, которые не зависят от директив.
+
+  Карточка внутри аккордеона: у аккордеона свой тонированный фон, и цветная
+  карточка на нём спорит с ним же. Поэтому внутри аккордеона карточка всегда
+  БЕЛАЯ, а лежит в List Container — том самом стеке с равным шагом.
+
+  Отдельным проходом, а не в месте сборки: правило одно, а собирают дерево два
+  источника (раскладка модулей и рукописный эталон). Держать его в одном месте —
+  единственный способ не разъехаться.
+*/
+function bodyInsideAccordion(children: Node[]): Node[] {
+  const out: Node[] = [];
+  let stack: Node[] = [];
+  const flush = () => {
+    if (!stack.length) return;
+    out.push({ component: "List Container", ordered: false, children: stack });
+    stack = [];
+  };
+  for (const c of children) {
+    if (c.component === "General Card") {
+      // Подряд идущие карточки — в ОДИН стек, а не по контейнеру на каждую.
+      stack.push({ ...c, bgColor: "white", children: normalizeNodes(c.children) });
+      continue;
+    }
+    flush();
+    out.push(normalizeNode(c));
+  }
+  flush();
+  return out;
+}
+
+function normalizeNode(n: Node): Node {
+  if (n.component === "Accordion")
+    return { ...n, children: bodyInsideAccordion(n.children) };
+  if ("children" in n && Array.isArray(n.children))
+    return { ...n, children: normalizeNodes(n.children) } as Node;
+  return n;
+}
+
+const normalizeNodes = (nodes: Node[]): Node[] => nodes.map(normalizeNode);
+
+/** Применить правила системы ко всему документу. */
+export function normalizeDoc(doc: Doc): Doc {
+  return {
+    ...doc,
+    children: doc.children.map((n) =>
+      (n as SectionNode).component === "Section Container"
+        ? { ...(n as SectionNode), children: normalizeNodes((n as SectionNode).children) }
+        : normalizeNode(n as Node),
+    ),
+  };
 }
 
 /*

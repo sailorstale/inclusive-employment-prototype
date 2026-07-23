@@ -1,4 +1,4 @@
-import type { Doc, Node } from "./contentTree";
+import { normalizeDoc, type Doc, type Node } from "./contentTree";
 
 /*
   ЭТАЛОННАЯ СТРАНИЦА для разработчика.
@@ -75,7 +75,8 @@ const card = (
 });
 
 export function buildSampleDoc(): Doc {
-  return {
+  // Через ту же нормализацию, что и модули: эталон обязан жить по общим правилам.
+  return normalizeDoc({
     module: "sample",
     children: [
       /*
@@ -512,5 +513,5 @@ export function buildSampleDoc(): Doc {
         ],
       },
     ],
-  };
+  });
 }
