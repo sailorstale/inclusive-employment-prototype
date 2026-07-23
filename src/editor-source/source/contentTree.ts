@@ -1421,6 +1421,11 @@ function bodyInsideAccordion(children: Node[]): Node[] {
       stack.push({ ...c, bgColor: "white", children: normalizeNodes(c.children) });
       continue;
     }
+    // Цитата внутри аккордеона — то же правило: живёт в стеке, не россыпью.
+    if (c.component === "Quote") {
+      stack.push(c);
+      continue;
+    }
     flush();
     out.push(normalizeNode(c));
   }
