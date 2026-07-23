@@ -23,6 +23,7 @@ import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
+import { safeHref } from "@/editor-source/safeUrl";
 import { findSlug, mentionsYandex, type LogoEntry } from "./orgLogo";
 
 export type HeadingLevel = "H2" | "H3" | "H4" | "H5";
@@ -1395,6 +1396,62 @@ export function buildDoc(
 }
 
 /*
+  РАЗМЕТКА В ВЫГРУЗКЕ — ТЕГИ, А НЕ MARKDOWN.
+
+  Внутри инструмента текст хранится в markdown (`**жирный**`, `[текст](ссылка)`):
+  так он остаётся читаемым и правится в редакторе. Но разработчик собирает
+  страницы в конструкторе, и звёздочки ему не нужны — нужна явная разметка.
+  Поэтому markdown переводится в теги ровно на границе выгрузки, а превью
+  продолжает рендерить исходный markdown.
+
+  Экранирование обязательно: в источнике есть и «&», и URL в угловых скобках
+  («<https://…>»). Без него такой адрес в JSON выглядел бы как тег. Экранируем
+  ДО вставки своих тегов, иначе экранировались бы и они.
+*/
+const escapeText = (t: string) =>
+  t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const INLINE_MD = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/g;
+
+export function mdToTags(text: string): string {
+  let out = "";
+  let last = 0;
+  let m: RegExpExecArray | null;
+  // Свой экземпляр: рекурсия (ссылка внутри жирного) не должна сбивать lastIndex.
+  const re = new RegExp(INLINE_MD.source, "g");
+  while ((m = re.exec(text))) {
+    out += escapeText(text.slice(last, m.index));
+    if (m[1] !== undefined) {
+      const href = safeHref(m[2]);
+      // Небезопасный протокол — ссылку не делаем, текст сохраняем.
+      out += href
+        ? `<a href="${escapeText(href)}">${mdToTags(m[1])}</a>`
+        : mdToTags(m[1]);
+    } else if (m[3] !== undefined) {
+      out += `<b>${mdToTags(m[3])}</b>`;
+    } else {
+      out += `<i>${mdToTags(m[4] ?? m[5])}</i>`;
+    }
+    last = re.lastIndex;
+  }
+  return out + escapeText(text.slice(last));
+}
+
+/** Поля, которые несут ТЕКСТ. Остальные (component, level, src…) не трогаем. */
+const TEXT_KEYS = new Set([
+  "text",
+  "question",
+  "title",
+  "alt",
+  "author",
+  "role",
+  "org",
+  "warning",
+]);
+/** Поля-массивы строк и таблица (массив массивов). */
+const TEXT_ARRAY_KEYS = new Set(["paragraphs", "header"]);
+
+/*
   Выгрузка для разработчика: то же дерево, но без служебных пометок инструмента
   и без пустых полей. В JSON едет только контент — так решено, чтобы структура
   была чёткой и без мусора.
@@ -1410,6 +1467,19 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
       if (k === "children") {
         const kids = (v as Node[]).map(clean).filter(Boolean);
         if (kids.length) out.children = kids;
+        continue;
+      }
+      // Текст уезжает разработчику с тегами; служебные поля — как есть.
+      if (TEXT_KEYS.has(k) && typeof v === "string") {
+        out[k] = mdToTags(v);
+        continue;
+      }
+      if (TEXT_ARRAY_KEYS.has(k) && Array.isArray(v)) {
+        out[k] = (v as string[]).map(mdToTags);
+        continue;
+      }
+      if (k === "rows" && Array.isArray(v)) {
+        out[k] = (v as string[][]).map((row) => row.map(mdToTags));
         continue;
       }
       out[k] = v;

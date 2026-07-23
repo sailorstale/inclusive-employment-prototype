@@ -5,12 +5,10 @@ import * as React from "react";
 // копипасте, остаётся обычным текстом). Рендерим в React-узлы. Ссылки
 // санитизируем — пускаем только безопасные протоколы (защита от javascript:).
 
-const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;
-
-export function safeHref(url: string): string | null {
-  const u = url.trim();
-  return SAFE_URL.test(u) ? u : null;
-}
+// Проверка ссылок живёт отдельно — её же использует сборка выгрузки.
+// Реэкспорт, чтобы существующие импорты из richText продолжали работать.
+import { safeHref } from "./safeUrl";
+export { safeHref };
 
 const RE = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/g;
 
