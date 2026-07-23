@@ -1422,8 +1422,9 @@ function bodyInsideAccordion(children: Node[]): Node[] {
       continue;
     }
     // Цитата внутри аккордеона — то же правило: живёт в стеке, не россыпью.
+    // И размер тут S: спокойный вариант без подложки, чтобы не спорить с фоном.
     if (c.component === "Quote") {
-      stack.push(c);
+      stack.push({ ...c, size: "S" });
       continue;
     }
     flush();
@@ -1436,6 +1437,16 @@ function bodyInsideAccordion(children: Node[]): Node[] {
 function normalizeNode(n: Node): Node {
   if (n.component === "Accordion")
     return { ...n, children: bodyInsideAccordion(n.children) };
+  /*
+    Размер цитаты определяется МЕСТОМ, а не желанием: S — спокойный вариант без
+    подложки, он существует ради аккордеона, где кремовая подложка спорила бы с
+    тонированным фоном. В самом тексте страницы цитата всегда L: там она акцент,
+    её нужно заметить.
+
+    Сюда доходят только цитаты ВНЕ аккордеона: его тело разбирает
+    bodyInsideAccordion и до этой ветки не доводит.
+  */
+  if (n.component === "Quote") return n.size === "L" ? n : { ...n, size: "L" };
   if ("children" in n && Array.isArray(n.children))
     return { ...n, children: normalizeNodes(n.children) } as Node;
   return n;
