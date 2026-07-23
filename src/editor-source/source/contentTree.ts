@@ -91,21 +91,21 @@ const isActive = (d?: Directive) =>
 const wantsDelete = (d?: Directive) =>
   !!d && !d.target && /^\s*удали/i.test((d.comment || "").trim());
 const wantsUnbold = (d?: Directive) =>
-  !!d && /(убра|сня|без)\p{L}*\s+(жирн|болд|bold)/iu.test(d.comment || "");
+  !!d && /(убра|убер|сня|без)\p{L}*\s+(жирн|болд|bold)/iu.test(d.comment || "");
 /*
   Курсив просили снимать теми же словами, что и жирный («убрать курсив»,
   «убрать италик»), но шаблон ловил только «жирн» — комментарий молча не
   срабатывал. Держим оба написания: и «курсив», и «италик».
 */
 const wantsUnitalic = (d?: Directive) =>
-  !!d && /(убра|сня|без)\p{L}*\s+(курсив|италик|italic)/iu.test(d.comment || "");
+  !!d && /(убра|убер|сня|без)\p{L}*\s+(курсив|италик|italic)/iu.test(d.comment || "");
 /*
   «Убрать нумерацию в заголовках» — источник нумерует подряд («1. Особенности…»,
   «Пример 1. Трудоустройство…»), а в аккордеоне и карточке номер лишний.
   Касается ТОЛЬКО заголовков и вопросов, не тела текста.
 */
 const wantsUnnumber = (d?: Directive) =>
-  !!d && /(убра|сня|без)\p{L}*\s+(нумерац|нумирац|номер)/iu.test(d.comment || "");
+  !!d && /(убра|убер|сня|без)\p{L}*\s+(нумерац|нумирац|номер)/iu.test(d.comment || "");
 
 const SERVICE_WORD =
   /^(заголов\p{L}*|загловк\p{L}*|подпис\p{L}*|надпис\p{L}*|слов\p{L}*|строк\p{L}*|текст\p{L}*|блок\p{L}*|эти|все|всё)$/iu;
@@ -170,6 +170,13 @@ const splitCount = (d?: Directive): number | undefined => {
 const wantsSplit = (d?: Directive) => splitCount(d) !== undefined;
 
 /*
+  «Все в одну карточку», «В одну карточку» — обратное делению: автоматика
+  разложила бы набор по жирным лидам и заголовкам, а дизайнер хочет один блок.
+*/
+const wantsMerge = (d?: Directive) =>
+  /в\s+одну\s+карточ|одной\s+карточк|все\s+в\s+одну/iu.test(d?.comment || "");
+
+/*
   «далее предложение с большой буквы» — поднять регистр первой буквы тела.
 
   Запас на опечатку в корне обязателен: живой комментарий пришёл как «с болшой
@@ -178,6 +185,13 @@ const wantsSplit = (d?: Directive) => splitCount(d) !== undefined;
 */
 const wantsCapitalize = (d?: Directive) =>
   /с\s+бол\p{L}*ш\p{L}*\s+букв/iu.test(d?.comment || "");
+
+/*
+  «без двоеточия» — источник пишет ярлык как «Важно:», и двоеточие тянется в
+  заголовок карточки. Снимаем хвостовой знак у заголовка по просьбе.
+*/
+const wantsNoColon = (d?: Directive) =>
+  /без\s+двоеточ|убра\p{L}*\s+двоеточ|убер\p{L}*\s+двоеточ/iu.test(d?.comment || "");
 
 const capitalizeFirst = (t: string) =>
   t.replace(/^\s*(\p{Ll})/u, (m, c: string) => m.replace(c, c.toUpperCase()));
@@ -240,7 +254,19 @@ const explicitTitle = (d?: Directive): string | undefined => {
     withoutRemovals(d.comment || ""),
   );
   const t = m?.[1]?.replace(/[*_]/g, "").trim();
-  return t && t.length >= 2 && t.length <= 60 ? t : undefined;
+  if (!t || t.length < 2 || t.length > 60) return undefined;
+  /*
+    Заголовок — короткая подпись («Важно», «Пример»), а не кусок фразы. Без этой
+    проверки описательное предложение «сделай текст с заголовками и там ещё есть
+    перечисления…» давало заголовком весь хвост фразы.
+
+    Отсекаем по двум признакам: слишком много слов и начало со служебного слова
+    (в осмысленной подписи его не бывает).
+  */
+  const words = t.split(/\s+/);
+  const FILLER = /^(и|а|но|или|там|тут|где|что|как|это|эти|все|всё|ещё|еще|же|в|на|с|со|для|по|из)$/iu;
+  if (words.length > 4 || FILLER.test(words[0])) return undefined;
+  return t;
 };
 
 /*
@@ -685,6 +711,10 @@ export function buildDoc(
         */
         const dropWord = leadWordToDrop(dir);
         const capBody = wantsCapitalize(dir);
+        const noColon = wantsNoColon(dir);
+        /** Хвостовое двоеточие заголовка — по просьбе «без двоеточия». */
+        const titleFix = (t?: string) =>
+          t && noColon ? t.replace(/\s*[:：]\s*$/, "").trim() || t : t;
         const bodyText = (t: string) => {
           let out = dropWord ? stripLeadWord(t, dropWord) : t;
           if (capBody) out = capitalizeFirst(out);
@@ -707,6 +737,36 @@ export function buildDoc(
           говорим об этом заметкой, иначе дизайнер будет думать, что просьба
           исполнена.
         */
+        /*
+          «Все в одну карточку» — обратное делению. Автоматика разложила бы набор
+          по жирным лидам, а дизайнер хочет один блок: первый блок даёт заголовок
+          (или он задан явно), остальное идёт телом подряд.
+        */
+        if (wantsMerge(dir)) {
+          const [head, ...tail] = items;
+          const t0 = md(head, fix);
+          const auto = splitTitleBody(t0);
+          const title = titleFix(
+            forcedTitle ?? (auto.title ? headingText(auto.title, fix) : undefined),
+          );
+          const firstBody = forcedTitle ? t0 : auto.body;
+          const icon = iconOf(head);
+          const kids: Node[] = [];
+          if (bodyText(firstBody))
+            kids.push({ component: "Text", size: "M", text: bodyText(firstBody) });
+          for (const it of tail) kids.push(...plainNodes(it, fix, true));
+          return [
+            {
+              component: "General Card",
+              orient: "Vertical",
+              bgColor: bg,
+              icon: mods.icon && icon ? icon : undefined,
+              title,
+              children: kids,
+            },
+          ];
+        }
+
         const want = splitCount(dir);
         const unitText = (it: Item) =>
           it.b.kind === "list"
@@ -739,7 +799,7 @@ export function buildDoc(
               orient: "Vertical",
               bgColor: bg,
               icon: mods.icon && icon ? icon : undefined,
-              title: title ? headingText(title, fix) : undefined,
+              title: titleFix(title ? headingText(title, fix) : undefined),
               children: bodyText(body)
                 ? [{ component: "Text", size: "M", text: bodyText(body) }]
                 : [],
@@ -773,7 +833,7 @@ export function buildDoc(
               «заголовком», просто пропал бы.
             */
             const forced = cards.length === 0 ? forcedTitle : undefined;
-            const title = forced ?? derived;
+            const title = titleFix(forced ?? derived);
             /*
               Блок, обёрнутый в жирный ЦЕЛИКОМ, — это метка «важное утверждение»,
               которой источник помечал заголовок. С явным заголовком метка лишняя:
@@ -886,7 +946,22 @@ export function buildDoc(
           }
         }
         flush();
-        return out;
+        /*
+          Число аккордеонов задаётся заголовками источника, а не комментарием:
+          деление по количеству тут не автоматизировано. Но молчать нельзя —
+          если получилось не столько, сколько просили, дизайнер должен узнать
+          об этом сразу, а не искать глазами.
+        */
+        const wantAcc = splitCount(dir);
+        return wantAcc && out.length !== wantAcc
+          ? [
+              ...out,
+              {
+                component: "note" as const,
+                text: `просили ${wantAcc} аккордеонов, получилось ${out.length} — деление идёт по заголовкам источника, проверьте`,
+              },
+            ]
+          : out;
       }
 
       case "Quote": {
