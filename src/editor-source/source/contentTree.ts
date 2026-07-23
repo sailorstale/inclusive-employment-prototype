@@ -177,6 +177,30 @@ const wantsMerge = (d?: Directive) =>
   /в\s+одну\s+карточ|одной\s+карточк|все\s+в\s+одну/iu.test(d?.comment || "");
 
 /*
+  Узнало ли ХОТЬ ОДНО правило что-нибудь в комментарии.
+
+  Нужно, чтобы комментарий не мог пропасть молча. Просьба вроде «сделай из
+  таблицы текст со списками» — это переструктурирование КОНТЕНТА, раскладка так
+  не умеет; раньше она просто рендерила блок как есть и ничего не говорила.
+  Теперь неразобранный комментарий виден заметкой в превью.
+
+  Список намеренно перечисляет все правила поимённо: добавили новое — допишите
+  сюда, иначе оно будет считаться «непонятым» и давать ложную заметку.
+*/
+const commentRecognized = (d?: Directive): boolean =>
+  wantsDelete(d) ||
+  wantsUnbold(d) ||
+  wantsUnitalic(d) ||
+  wantsUnnumber(d) ||
+  wantsMerge(d) ||
+  wantsCapitalize(d) ||
+  wantsNoColon(d) ||
+  splitCount(d) !== undefined ||
+  explicitTitle(d) !== undefined ||
+  leadWordToDrop(d) !== undefined ||
+  labelsToDrop(d).length > 0;
+
+/*
   «далее предложение с большой буквы» — поднять регистр первой буквы тела.
 
   Запас на опечатку в корне обязателен: живой комментарий пришёл как «с болшой
@@ -619,7 +643,25 @@ export function buildDoc(
       .toLowerCase();
 
   const guarded = (g: Group): Node[] => {
-    const out = groupNodes(g);
+    const base = groupNodes(g);
+    /*
+      Комментарий, в котором ни одно правило ничего не узнало, — не «пожелание
+      в воздух»: дизайнер его написал и ждёт результата. Показываем прямо в
+      превью, иначе просьба исчезает бесследно (так и случилось с таблицей).
+    */
+    const comment = (g.dir?.comment || "").trim();
+    const out: Node[] =
+      comment && !commentRecognized(g.dir)
+        ? [
+            ...base,
+            {
+              component: "note",
+              text: `комментарий не разобран${
+                g.dir?.target ? "" : " (компонент не выбран)"
+              }: «${comment.replace(/\s+/g, " ").slice(0, 120)}»`,
+            },
+          ]
+        : base;
     // Удаление и снятие ярлыков — намеренные потери, о них не предупреждаем.
     if (wantsDelete(g.dir)) return out;
     const drop = labelsToDrop(g.dir);
