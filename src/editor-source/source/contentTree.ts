@@ -296,9 +296,13 @@ const leadWordToDrop = (d?: Directive): string | undefined => {
 
 const stripLeadWord = (t: string, w: string): string => {
   const esc = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  // Слово может быть обёрнуто в жирный и отделено двоеточием или тире.
+  /*
+    Слово может быть обёрнуто в жирный и отделено двоеточием или тире, причём
+    двоеточие бывает и ВНУТРИ жирного: «**Суть:** государство…». Без второго
+    разделителя такой ярлык не снимался — звёздочки шли после двоеточия.
+  */
   const out = t.replace(
-    new RegExp(`^\\s*[*_]*${esc}[*_]*\\s*[:—–-]?\\s*`, "iu"),
+    new RegExp(`^\\s*[*_]*\\s*${esc}\\s*[:—–-]?\\s*[*_]*\\s*[:—–-]?\\s*`, "iu"),
     "",
   );
   return out.trim() ? out : t;
@@ -893,6 +897,29 @@ export function buildDoc(
 
     const mods = dir.modifiers || {};
 
+    /*
+      Чистки ТЕЛА: снять служебное слово-ярлык в начале и поднять регистр.
+      Общие для карточки и аккордеона: источник помечает ярлыком («**Суть:**
+      государство компенсирует…») и абзац карточки, и абзац аккордеона —
+      просьба «слово Суть убрать» не должна зависеть от выбранного компонента.
+    */
+    const dropWord = leadWordToDrop(dir);
+    const capBody = wantsCapitalize(dir);
+    const bodyText = (t: string) => {
+      let out = dropWord ? stripLeadWord(t, dropWord) : t;
+      if (capBody) out = capitalizeFirst(out);
+      return out.trim();
+    };
+    /** Те же чистки для готовых узлов — текст лежит внутри Text/Phrase. */
+    const fixBodyNodes = (nodes: Node[]): Node[] =>
+      dropWord || capBody
+        ? nodes.map((n) =>
+            n.component === "Text" || n.component === "Phrase"
+              ? { ...n, text: bodyText(n.text) }
+              : n,
+          )
+        : nodes;
+
     switch (dir.target) {
       case "PageSummary":
         return [
@@ -927,22 +954,10 @@ export function buildDoc(
         const cards: Node[] = [];
         const bg = typeof mods.bg === "string" ? mods.bg : "blue";
         const forcedTitle = explicitTitle(dir);
-        /*
-          Чистки ТЕЛА карточки: снять служебное слово-ярлык в начале и поднять
-          регистр. Раньше регистр применялся только в режиме деления, поэтому
-          «начать предложение с большой буквы» в обычной карточке молчало.
-        */
-        const dropWord = leadWordToDrop(dir);
-        const capBody = wantsCapitalize(dir);
         const noColon = wantsNoColon(dir);
         /** Хвостовое двоеточие заголовка — по просьбе «без двоеточия». */
         const titleFix = (t?: string) =>
           t && noColon ? t.replace(/\s*[:：]\s*$/, "").trim() || t : t;
-        const bodyText = (t: string) => {
-          let out = dropWord ? stripLeadWord(t, dropWord) : t;
-          if (capBody) out = capitalizeFirst(out);
-          return out.trim();
-        };
         // Иконки лежат в директиве в том же порядке, что и блоки.
         const iconOf = (it: Item) =>
           dir.blocks.find((x) => x.snippet && md(it).startsWith(x.snippet.slice(0, 20)))
@@ -1180,7 +1195,7 @@ export function buildDoc(
             q = headingText(md(it, fix), fix);
           } else if (q !== null) {
             // Тело аккордеона — внутри компонента: Body L там не используется.
-            body.push(...plainNodes(it, fix, true));
+            body.push(...fixBodyNodes(plainNodes(it, fix, true)));
           } else {
             out.push(...plainNodes(it, fix));
           }
