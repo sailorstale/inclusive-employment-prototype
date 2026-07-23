@@ -177,6 +177,23 @@ const wantsMerge = (d?: Directive) =>
   /в\s+одну\s+карточ|одной\s+карточк|все\s+в\s+одну/iu.test(d?.comment || "");
 
 /*
+  «Эту таблицу сложно читать, сделай из неё текст с заголовками, перечисления —
+  списками». Таблица на четыре колонки в узкой вёрстке действительно не читается.
+
+  Разбор идёт по смыслу таблицы, а не механически: строка — это один предмет
+  рассказа (её первая ячейка — заголовок), а колонки — аспекты этого предмета
+  (имя колонки становится подзаголовком, содержимое ячейки — текстом). Ячейки с
+  маркерами «•» распадаются на список.
+*/
+const wantsTableToText = (d?: Directive) => {
+  const c = d?.comment || "";
+  return (
+    /таблиц/iu.test(c) &&
+    /(текст|заголовк|загов|списк|перечислен|разбер|разобра|переработ)/iu.test(c)
+  );
+};
+
+/*
   Узнало ли ХОТЬ ОДНО правило что-нибудь в комментарии.
 
   Нужно, чтобы комментарий не мог пропасть молча. Просьба вроде «сделай из
@@ -195,6 +212,7 @@ const commentRecognized = (d?: Directive): boolean =>
   wantsMerge(d) ||
   wantsCapitalize(d) ||
   wantsNoColon(d) ||
+  wantsTableToText(d) ||
   splitCount(d) !== undefined ||
   explicitTitle(d) !== undefined ||
   leadWordToDrop(d) !== undefined ||
@@ -216,6 +234,19 @@ const wantsCapitalize = (d?: Directive) =>
 */
 const wantsNoColon = (d?: Directive) =>
   /без\s+двоеточ|убра\p{L}*\s+двоеточ|убер\p{L}*\s+двоеточ/iu.test(d?.comment || "");
+
+/*
+  Блок-ЯРЛЫК: весь текст блока — одно служебное слово («Пример», «Важно»,
+  «Важно:»). В источнике это подпись к следующему абзацу, а в карточке — её
+  ЗАГОЛОВОК. Оставлять его текстом нельзя: он либо дублирует заданный заголовок
+  («Важно» сверху и «Важно:» первой строкой), либо болтается как сирота.
+*/
+const LABEL_WORD =
+  /^[*_\s]*(пример|важно|суть|итог|вывод|совет|правило|запомнить)\p{L}*\s*[:.]?[*_\s]*$/iu;
+const isLabelBlock = (t: string) => LABEL_WORD.test(t.trim());
+/** Ярлык как заголовок: без хвостового двоеточия и разметки. */
+const labelAsTitle = (t: string) =>
+  t.replace(/[*_]/g, "").replace(/\s*[:.]\s*$/, "").trim();
 
 const capitalizeFirst = (t: string) =>
   t.replace(/^\s*(\p{Ll})/u, (m, c: string) => m.replace(c, c.toUpperCase()));
@@ -694,6 +725,54 @@ export function buildDoc(
     ];
   };
 
+  /** Ячейка: маркеры «•» разворачиваются в список, иначе обычный текст. */
+  const cellNodes = (cell: string): Node[] => {
+    const parts = cell
+      .split(/\s*•\s*/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    if (parts.length > 1)
+      return [
+        {
+          component: "List Container",
+          ordered: false,
+          children: parts.map((t) => ({
+            component: "List Item" as const,
+            size: "L" as const,
+            type: "Dot" as const,
+            text: t,
+          })),
+        },
+      ];
+    return parts.length ? [{ component: "Text", size: "L", text: parts[0] }] : [];
+  };
+
+  /** Таблица → проза: строка даёт заголовок, колонки — подзаголовки с текстом. */
+  const tableToText = (
+    b: Extract<SourceBlock, { kind: "table" }>,
+    fix: TextFix,
+  ): Node[] => {
+    const out: Node[] = [];
+    for (const row of b.rows) {
+      const [first, ...rest] = row;
+      if (first?.trim())
+        out.push({
+          component: "Heading",
+          level: "H4",
+          text: headingText(first, fix),
+        });
+      rest.forEach((cell, i) => {
+        if (!cell?.trim()) return;
+        const col = b.header[i + 1];
+        // Имя колонки — подзаголовок. Без него читатель не поймёт, что за текст.
+        if (col?.trim())
+          out.push({ component: "Heading", level: "H5", text: headingText(col, fix) });
+        out.push(...cellNodes(cell));
+      });
+    }
+    return out;
+  };
+
   const groupNodes = (g: Group): Node[] => {
     const { dir } = g;
 
@@ -707,6 +786,16 @@ export function buildDoc(
     const items = drop.length
       ? g.items.filter((it) => !isDroppedLabel(md(it), drop))
       : g.items;
+
+    /*
+      Разбор таблицы в текст работает и БЕЗ выбранного компонента: дизайнер
+      описал результат словами, и цель тут не нужна — таблица превращается в
+      обычную прозу с заголовками.
+    */
+    if (wantsTableToText(dir))
+      return items.flatMap((it) =>
+        it.b.kind === "table" ? tableToText(it.b, fix) : plainNodes(it, fix),
+      );
 
     if (!dir?.target) return items.flatMap((it) => plainNodes(it, fix));
 
@@ -787,11 +876,16 @@ export function buildDoc(
         if (wantsMerge(dir)) {
           const [head, ...tail] = items;
           const t0 = md(head, fix);
-          const auto = splitTitleBody(t0);
+          /*
+            Блок-ярлык («Пример», «Важно:») даёт заголовок и в тело не идёт:
+            иначе слово стоит и заголовком, и первой строкой текста.
+          */
+          const headIsLabel = isLabelBlock(t0);
+          const auto = headIsLabel ? { title: labelAsTitle(t0), body: "" } : splitTitleBody(t0);
           const title = titleFix(
             forcedTitle ?? (auto.title ? headingText(auto.title, fix) : undefined),
           );
-          const firstBody = forcedTitle ? t0 : auto.body;
+          const firstBody = headIsLabel ? "" : forcedTitle ? t0 : auto.body;
           const icon = iconOf(head);
           const kids: Node[] = [];
           if (bodyText(firstBody))
@@ -860,7 +954,9 @@ export function buildDoc(
             текущей, иначе каждый ярлык плодил бы пустую карточку.
           */
           const startsCard =
-            (lead && after.trim().length > 0) || it.b.kind === "heading";
+            (lead && after.trim().length > 0) ||
+            it.b.kind === "heading" ||
+            isLabelBlock(t);
           if (startsCard || !cards.length) {
             // Хвостовая пунктуация в заголовке не нужна: «**Пример.**» → «Пример».
             const derived = lead
@@ -875,7 +971,15 @@ export function buildDoc(
               «заголовком», просто пропал бы.
             */
             const forced = cards.length === 0 ? forcedTitle : undefined;
-            const title = titleFix(forced ?? derived);
+            /*
+              Блок-ярлык («Важно:») — это заголовок, а не текст. Если заголовок
+              уже задан комментарием, ярлык просто выбрасываем: иначе слово
+              стоит дважды — заголовком и первой строкой тела.
+            */
+            const labelOnly = isLabelBlock(t);
+            const title = titleFix(
+              forced ?? (labelOnly ? labelAsTitle(t) : derived),
+            );
             /*
               Блок, обёрнутый в жирный ЦЕЛИКОМ, — это метка «важное утверждение»,
               которой источник помечал заголовок. С явным заголовком метка лишняя:
@@ -885,15 +989,17 @@ export function buildDoc(
               Жирные вставки ВНУТРИ обычного текста не трогаем: там это смысловое
               выделение, а не метка.
             */
-            const rest = forced
-              ? lead && !after.trim()
-                ? lead[1]
-                : t
-              : lead
-                ? after
-                : it.b.kind === "heading"
-                  ? ""
-                  : t;
+            const rest = labelOnly
+              ? ""
+              : forced
+                ? lead && !after.trim()
+                  ? lead[1]
+                  : t
+                : lead
+                  ? after
+                  : it.b.kind === "heading"
+                    ? ""
+                    : t;
             const icon = iconOf(it);
             /*
               У списка, таблицы и картинки СВОЕГО текста нет — md() для них
