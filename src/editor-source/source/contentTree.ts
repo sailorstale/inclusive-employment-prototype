@@ -725,26 +725,60 @@ export function buildDoc(
     ];
   };
 
-  /** Ячейка: маркеры «•» разворачиваются в список, иначе обычный текст. */
+  /*
+    Ячейка таблицы — не всегда «просто текст» или «просто список». В одной могут
+    лежать: вводная фраза, пронумерованные случаи жирным («**1. Работа
+    допускается…**») и перечисление примеров через «•».
+
+    Раскладывать это плоским списком нельзя: вводная фраза становилась пунктом,
+    а текст ПОСЛЕ перечисления прилипал к последнему пункту. Поэтому читаем
+    структуру: нумерованный жирный — подзаголовок и граница, «•» — пункты
+    списка, всё остальное — текст.
+  */
   const cellNodes = (cell: string): Node[] => {
-    const parts = cell
-      .split(/\s*•\s*/)
-      .map((x) => x.trim())
-      .filter(Boolean);
-    if (parts.length > 1)
-      return [
-        {
-          component: "List Container",
-          ordered: false,
-          children: parts.map((t) => ({
-            component: "List Item" as const,
-            size: "L" as const,
-            type: "Dot" as const,
-            text: t,
-          })),
-        },
-      ];
-    return parts.length ? [{ component: "Text", size: "L", text: parts[0] }] : [];
+    const out: Node[] = [];
+    let bullets: string[] = [];
+    const flushList = () => {
+      if (!bullets.length) return;
+      out.push({
+        component: "List Container",
+        ordered: false,
+        children: bullets.map((t) => ({
+          component: "List Item" as const,
+          size: "L" as const,
+          type: "Dot" as const,
+          text: t,
+        })),
+      });
+      bullets = [];
+    };
+    const pushText = (t: string) => {
+      const s = t.trim();
+      if (s) out.push({ component: "Text", size: "L", text: s });
+    };
+
+    for (const part of cell.split(/(\*\*\s*\d+\.\s*[^*]+?\*\*)/g)) {
+      const head = part.match(/^\*\*\s*(\d+\.\s*[^*]+?)\s*\*\*$/);
+      if (head) {
+        flushList();
+        // Хвостовая точка в подзаголовке не нужна, номер случая — нужен.
+        out.push({
+          component: "Heading",
+          level: "H5",
+          text: head[1].replace(/\s*[.:]\s*$/, "").trim(),
+        });
+        continue;
+      }
+      const chunks = part.split(/\s*•\s*/);
+      const lead = chunks.shift() ?? "";
+      if (lead.trim()) {
+        flushList();
+        pushText(lead);
+      }
+      for (const c of chunks) if (c.trim()) bullets.push(c.trim());
+    }
+    flushList();
+    return out;
   };
 
   /** Таблица → проза: строка даёт заголовок, колонки — подзаголовки с текстом. */
