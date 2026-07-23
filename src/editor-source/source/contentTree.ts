@@ -98,7 +98,11 @@ export type SectionNode = {
 
 export type Doc = {
   module: string;
-  /** Page Summary живёт вне секций — по правилу это вступление всей страницы. */
+  /*
+    Верхний уровень — почти всегда Section Container. Узлы напрямую остались
+    возможны для завершения страницы (форма мнения, «Читайте также»): это не
+    раздел материала.
+  */
   children: (SectionNode | Node)[];
 };
 
@@ -1359,7 +1363,19 @@ export function buildDoc(
   const summary = allGroups.find(isPageSummary);
 
   const children: (SectionNode | Node)[] = [];
-  if (summary) children.push(...mergeSiblings(guarded(summary)));
+  /*
+    ВСТУПЛЕНИЕ СТРАНИЦЫ — в своём Section Container (проверено по Figma,
+    узел 7054:4797): в его слоте лежат лид Text XL и Page Summary.
+
+    Раньше Page Summary клали в корень документа, мимо секций. Дизайнер изменил
+    макет — и правило вслед за ним: у вступления такая же секция-обёртка, как у
+    любого раздела, иначе отступ сверху берётся не оттуда.
+  */
+  if (summary)
+    children.push({
+      component: "Section Container",
+      children: mergeSiblings(guarded(summary)),
+    });
 
   /*
     Секция, чей собственный заголовок h2 ушёл ВНУТРЬ директивы (стал вопросом
