@@ -501,6 +501,28 @@ function soleKind(n?: Node): string | undefined {
 }
 
 /*
+  РОЛЬ содержимого конверта — по фону карточек. Фон здесь не украшение, а смысл:
+  синий — обычная, жёлтый — важное, розовый — опасное, зелёный — позитив.
+
+  Нужно для склейки: «Пример» (бежевый) и «Важно» (жёлтый) стоят рядом, оба —
+  General Card, и по одному лишь типу склеивались в ОДИН конверт. Но это разные
+  по сущности блоки, им нужны разные конверты. Одинаковые по роли (три карточки
+  групп инвалидности, пара «медицинский/социальный подход») по-прежнему живут
+  в одном.
+
+  undefined — ролей несколько: такой конверт не склеиваем ни с чем.
+*/
+function soleRole(n?: Node): string | undefined {
+  if (!n || n.component !== "Card Container") return undefined;
+  const roles = new Set(
+    n.children
+      .filter((c) => c.component !== "note")
+      .map((c) => (c.component === "General Card" ? c.bgColor : "—")),
+  );
+  return roles.size === 1 ? [...roles][0] : undefined;
+}
+
+/*
   СКЛЕЙКА СОСЕДЕЙ. Два правила, оба про «не плодить обёртки»:
 
   1. Соседние списки одного типа — в один List Container (он и есть стек с
@@ -539,9 +561,14 @@ function mergeSiblings(nodes: Node[]): Node[] {
     // 2. Однотипные конверты
     const ka = soleKind(prev);
     const kb = soleKind(n);
+    // Роль (фон карточек) — часть условия: разные по сущности блоки не сливаем.
+    const ra = soleRole(prev);
+    const rb = soleRole(n);
     if (
       ka &&
       ka === kb &&
+      ra !== undefined &&
+      ra === rb &&
       prev!.component === "Card Container" &&
       n.component === "Card Container" &&
       prev!.orientation === n.orientation
