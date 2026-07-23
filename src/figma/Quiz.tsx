@@ -94,7 +94,12 @@ export function Quiz({
         </p>
       ) : null}
 
-      <p id={questionId} className="ds-body-l-bold text-[color:var(--text-primary)]">
+      {/* Вопрос может быть из нескольких абзацев (сценарий-кейс + сам вопрос) —
+          переносы значимы, поэтому whitespace-pre-line. */}
+      <p
+        id={questionId}
+        className="ds-body-l-bold whitespace-pre-line text-[color:var(--text-primary)]"
+      >
         {question}
       </p>
 

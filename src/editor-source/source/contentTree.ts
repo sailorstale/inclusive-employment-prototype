@@ -1595,8 +1595,13 @@ export function buildDoc(
           const explanation = flat(b.answer + 1, end).join("\n\n");
           out.push({
             component: "Quiz",
-            question: heads[heads.length - 1] ?? "",
-            ...(heads.length > 1 ? { description: heads.slice(0, -1).join("\n\n") } : {}),
+            /*
+              Все блоки-заголовки квиза идут В ВОПРОС, даже если их несколько
+              (сценарий-кейс + сам вопрос). Отдельное поле description не
+              заводим: у остальных квизов его нет, единообразнее держать весь
+              текст вопросом. Перенос между блоками значащий — сохраняем «\n\n».
+            */
+            question: heads.join("\n\n"),
             items: options,
             ...(explanation ? { explanation } : {}),
           });
