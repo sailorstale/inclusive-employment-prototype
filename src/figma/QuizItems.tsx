@@ -83,7 +83,13 @@ export function QuizItems({
       className={cn(
         // Поля 12, скругление 8, зазор чекбокс↔текст 16. Чекбокс и бейдж
         // прижаты к верху — так строка выглядит одинаково и в одну, и в три строки.
-        "flex w-full items-start gap-[var(--space-m)]",
+        //
+        // relative — обязателен. Настоящий чекбокс спрятан через sr-only, а это
+        // position:absolute. Без позиционированного родителя он отсчитывается от
+        // ВСЕГО документа и уезжает на тысячи пикселей вниз: страница становится
+        // прокручиваемой, а при клике браузер уводит фокус туда — и приложение
+        // уезжает за экран.
+        "relative flex w-full items-start gap-[var(--space-m)]",
         "p-[var(--space-sm)] rounded-[var(--radius-xs)] border transition-colors",
         // Наше добавление: в Figma состояния Focus нет.
         "focus-within:outline-none focus-within:ring-2 focus-within:ring-[color:var(--text-primary)] focus-within:ring-offset-2",
