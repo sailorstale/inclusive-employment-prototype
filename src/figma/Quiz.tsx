@@ -1,7 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./Button";
-import { QuizBadge, type QuizBadgeType } from "./QuizBadge";
 import { QuizItems, type QuizItemState } from "./QuizItems";
 
 /*
@@ -22,8 +21,9 @@ import { QuizItems, type QuizItemState } from "./QuizItems";
      «Проверить» разбор скрыт. Вопрос дизайнеру открыт.
   2) Кнопки «Проверить» до выбора (disabled) и «Пройти заново» (Ghost) в Figma нет —
      наше добавление, иначе макет некликабельный.
-  3) Quiz Badge в блоке разбора — наше добавление: в Figma бейдж живёт только
-     внутри строки ответа, а Feedback Container — обычный фрейм с текстом.
+  3) (снято) Бейдж в блоке разбора когда-то добавили мы — убран по решению
+     дизайнера. Теперь как в Figma: бейдж живёт только внутри строки ответа,
+     а Feedback Container — обычный фрейм со счётом и разбором.
   4) Заголовок (title) сделали опциональным: в шаблоне он дословно повторяет вопрос,
      похоже на заглушку. Вопрос дизайнеру: заголовок и вопрос — разные тексты?
 
@@ -158,20 +158,6 @@ function itemState(item: QuizOption, isSelected: boolean): QuizItemState {
 }
 
 /*
-  Вердикт целиком: точное совпадение → Верно; ни одного попадания → Неверно;
-  что-то угадано, но не всё → Частично.
-*/
-function verdictOf(items: QuizOption[], selected: boolean[]): QuizBadgeType {
-  const totalCorrect = items.filter((i) => i.correct).length;
-  const hits = items.filter((i, n) => i.correct && selected[n]).length;
-  const wrong = items.filter((i, n) => !i.correct && selected[n]).length;
-
-  if (hits === totalCorrect && wrong === 0) return "Correct";
-  if (hits === 0) return "Incorrect";
-  return "Partly";
-}
-
-/*
   Feedback Container: белая карточка, поля 24, скругление 16, зазор 8.
   В Figma это обычный фрейм внутри Quiz, а не отдельный компонент —
   поэтому data-component здесь не ставим, шильдика в Figma для него нет.
@@ -196,13 +182,14 @@ function Feedback({
       )}
       aria-live="polite"
     >
-      <div className="flex items-center gap-[var(--space-sm)]">
-        <p className="ds-h5 text-[color:var(--text-primary)]">
-          Верно {hits} из {totalCorrect}
-        </p>
-        {/* Наше добавление: в Figma бейджа в разборе нет. */}
-        <QuizBadge type={verdictOf(items, selected)} />
-      </div>
+      {/*
+        Бейдж-вердикт здесь был нашим добавлением, в Figma его нет. Убран: он
+        дублировал счёт («Верно 0 из 1» и рядом «Неверно» — одно и то же), а
+        результат по каждому варианту и так виден бейджами в самих ответах.
+      */}
+      <p className="ds-h5 text-[color:var(--text-primary)]">
+        Верно {hits} из {totalCorrect}
+      </p>
       {explanation ? (
         <p className="ds-body-m text-[color:var(--text-primary)]">
           {explanation}
