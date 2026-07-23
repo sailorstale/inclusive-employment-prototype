@@ -19,6 +19,10 @@ import {
 import { iconForText } from "@/editor-source/source/iconForText";
 import { docToExport } from "@/editor-source/source/contentTree";
 import { JsonView, downloadJson } from "@/editor-source/source/JsonView";
+import {
+  syncTarget,
+  useScrollSync,
+} from "@/editor-source/source/scrollSync";
 import { useContentDoc } from "@/editor-source/source/ResultView";
 import type { DirectiveDraft } from "@/editor-source/source/DirectiveCard";
 import {
@@ -151,77 +155,6 @@ function BlockView({ block }: { block: SourceBlock }) {
   }
 }
 
-/*
-  ОБЩАЯ СИСТЕМА КООРДИНАТ ДЛЯ КОЛОНОК — секции.
-
-  У начала каждой секции стоит data-sec с её номером: в тексте, в JSON и в
-  раскладке (режим «Блоки»). В режиме «Результат» секцию рисует компонент
-  дизайн-системы: служебного data-sec у него нет и заводить не станем — берём
-  Section Container по порядку следования, он на каждую секцию ровно один.
-
-  Массив разрежённый: индекс = номер секции.
-*/
-function secEls(box: HTMLElement): HTMLElement[] {
-  const out: HTMLElement[] = [];
-  box.querySelectorAll<HTMLElement>("[data-sec]").forEach((el) => {
-    out[Number(el.dataset.sec)] = el;
-  });
-  if (out.length) return out;
-  box
-    .querySelectorAll<HTMLElement>('[data-component="Section Container"]')
-    .forEach((el, i) => {
-      out[i] = el;
-    });
-  return out;
-}
-
-/** Границы секции i в координатах содержимого контейнера. */
-function secSpan(els: HTMLElement[], i: number, box: HTMLElement) {
-  const boxTop = box.getBoundingClientRect().top - box.scrollTop;
-  const top = els[i].getBoundingClientRect().top - boxTop;
-  const next = els.slice(i + 1).find(Boolean);
-  // У последней секции конца нет — тянем до конца содержимого. Брать
-  // offsetHeight нельзя: в режиме «Блоки» якорь — лишь ПЕРВЫЙ блок секции.
-  const height = next
-    ? next.getBoundingClientRect().top - boxTop - top
-    : box.scrollHeight - top;
-  return { top, height };
-}
-
-/*
-  Куда прокрутить `to`, чтобы он показывал то же место документа, что и `from`:
-  та же секция и та же доля прокрутки ВНУТРИ неё. null — двигать не нужно.
-
-  Пропорция по высоте тут не годится: секция, которая на странице занимает
-  экран, в JSON тянется на полторы сотни строк, и колонки разъезжаются.
-*/
-function syncTarget(from: HTMLElement, to: HTMLElement): number | null {
-  const fe = secEls(from);
-  const te = secEls(to);
-  let target: number;
-  if (fe.length && te.length) {
-    // Верхняя секция, начало которой уже ушло за верхний край окна.
-    let i = 0;
-    for (let k = 0; k < fe.length; k++)
-      if (fe[k] && secSpan(fe, k, from).top <= from.scrollTop + 1) i = k;
-    while (i >= 0 && !te[i]) i -= 1; // в другой колонке секции может не быть
-    if (i < 0) return null;
-    const f = secSpan(fe, i, from);
-    const frac =
-      f.height > 0
-        ? Math.min(1, Math.max(0, (from.scrollTop - f.top) / f.height))
-        : 0;
-    const t = secSpan(te, i, to);
-    target = t.top + frac * t.height;
-  } else {
-    // Якорей ещё нет (модуль грузится) — пропорциональное поведение как раньше.
-    const max = from.scrollHeight - from.clientHeight;
-    target =
-      (max > 0 ? from.scrollTop / max : 0) * (to.scrollHeight - to.clientHeight);
-  }
-  return Math.max(0, Math.min(target, to.scrollHeight - to.clientHeight));
-}
-
 // Разбивка на секции по h2 — каждая получает id-якорь и AnchorScope (адрес
 // блока учитывает раздел: одинаковый текст в разных разделах не путается).
 type Section = { anchor?: string; blocks: SourceBlock[] };
@@ -340,36 +273,7 @@ export function SourcePage() {
     программный»: ставим его, только когда реально двигаем, поэтому ровно одно
     событие и гасится (без таймеров/rAF).
   */
-  React.useEffect(() => {
-    const c1 = copyBox;
-    const c2 = playBox;
-    if (!c1 || !c2) return;
-
-    const skip = { c1: false, c2: false };
-    const align = (from: HTMLElement, to: HTMLElement, lockTo: "c1" | "c2") => {
-      const target = syncTarget(from, to);
-      if (target === null) return;
-      if (Math.abs(to.scrollTop - target) > 1) {
-        skip[lockTo] = true;
-        to.scrollTop = target;
-      }
-    };
-
-    const onC1 = () => {
-      if (skip.c1) return void (skip.c1 = false);
-      align(c1, c2, "c2");
-    };
-    const onC2 = () => {
-      if (skip.c2) return void (skip.c2 = false);
-      align(c2, c1, "c1");
-    };
-    c1.addEventListener("scroll", onC1, { passive: true });
-    c2.addEventListener("scroll", onC2, { passive: true });
-    return () => {
-      c1.removeEventListener("scroll", onC1);
-      c2.removeEventListener("scroll", onC2);
-    };
-  }, [copyBox, playBox]);
+  useScrollSync(copyBox, playBox);
 
   /*
     Директива → КОНКРЕТНЫЕ блоки документа, по позиции, а не по тексту.
