@@ -193,7 +193,7 @@ function DocFrame({ meta }: { meta: SourceModuleMeta }) {
   return (
     <iframe
       key={meta.docId}
-      title={`Google-док: Модуль ${meta.num}`}
+      title={`Google-док: Модуль ${meta.label}`}
       src={`https://docs.google.com/document/d/${meta.docId}/preview`}
       className="h-full w-full bg-white"
     />

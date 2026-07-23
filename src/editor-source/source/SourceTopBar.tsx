@@ -30,7 +30,7 @@ export function SourceTopBar() {
             <NavLink
               key={m.id}
               to={`/source/${m.id}`}
-              title={m.title ? `Модуль ${m.num}. ${m.title}` : `Модуль ${m.num}`}
+              title={m.title ? `Модуль ${m.label}. ${m.title}` : `Модуль ${m.label}`}
               className={({ isActive }) =>
                 cn(
                   "shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
@@ -41,7 +41,7 @@ export function SourceTopBar() {
                 )
               }
             >
-              Модуль {m.num}
+              {m.label}
             </NavLink>
           ))}
 

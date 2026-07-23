@@ -22,6 +22,8 @@ export type SourceTocItem = { anchor: string; title: string; level: 2 | 3 };
 export type SourceModuleMeta = {
   id: string;
   num: number;
+  /** Отображаемый номер: «1» или «5.1» для подмодуля. */
+  label: string;
   file: string;
   /** Google-Doc id клиентского источника (для iframe в инструменте). */
   docId: string;
@@ -34,6 +36,7 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
   {
     "id": "m1",
     "num": 1,
+    "label": "1",
     "file": "Модуль 1.md",
     "docId": "1zGSz7A-hUEsSlxl1x-jnEcqrWhp1Csi_yfuYqVYAdSw",
     "title": "Инклюзивное трудоустройство: взгляд без предубеждений",
@@ -318,6 +321,7 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
   {
     "id": "m2",
     "num": 2,
+    "label": "2",
     "file": "Модуль 2.md",
     "docId": "1h40j97GIfCyVx_GbNQaSbv_3UjCOtiiL_BM4RLpECaE",
     "title": "Документы, льготы и квоты: правовые основы трудоустройства",
@@ -897,6 +901,7 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
   {
     "id": "m3",
     "num": 3,
+    "label": "3",
     "file": "Модуль 3.md",
     "docId": "1Jm3egCKSzafx_eOZ8XtwJxttXIqq3HCk8YWyFKQi83w",
     "title": "",
@@ -1171,6 +1176,7 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
   {
     "id": "m4",
     "num": 4,
+    "label": "4",
     "file": "Модуль 4.md",
     "docId": "1si_hW1_wvlLRZ2BkRCzer_0bl3Bg70OGyWVyU0rAQD8",
     "title": "Как работает инклюзивный наём: от поиска до партнёрства",
@@ -1348,11 +1354,12 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
     ]
   },
   {
-    "id": "m5",
+    "id": "m5-1",
     "num": 5,
+    "label": "5.1",
     "file": "Модуль 5.md",
     "docId": "1fVRzIziIIRk1l_VNUvvBL6uUI-xWHlqq6lWUEatAJa8",
-    "title": "Трек для работодателей",
+    "title": "Выбор вакансии и аудит",
     "toc": [
       {
         "anchor": "modul-5-trek-dlya-rabotodateley",
@@ -1588,7 +1595,17 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
         "anchor": "prakticheskoe-zadanie-dlya-rabotodatelya-2",
         "title": "Практическое задание для работодателя",
         "level": 3
-      },
+      }
+    ]
+  },
+  {
+    "id": "m5-2",
+    "num": 5,
+    "label": "5.2",
+    "file": "Модуль 5.md",
+    "docId": "1fVRzIziIIRk1l_VNUvvBL6uUI-xWHlqq6lWUEatAJa8",
+    "title": "Среда и поиск кандидатов",
+    "toc": [
       {
         "anchor": "shag-3-sozdanie-inklyuzivnoy-sredy",
         "title": "Шаг 3. Создание инклюзивной среды",
@@ -1938,7 +1955,17 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
         "anchor": "ostalis-voprosy-ili-pozhelaniya",
         "title": "Остались вопросы или пожелания?",
         "level": 2
-      },
+      }
+    ]
+  },
+  {
+    "id": "m5-3",
+    "num": 5,
+    "label": "5.3",
+    "file": "Модуль 5.md",
+    "docId": "1fVRzIziIIRk1l_VNUvvBL6uUI-xWHlqq6lWUEatAJa8",
+    "title": "Онбординг и затраты",
+    "toc": [
       {
         "anchor": "shag-5-onbording-i-soprovozhdenie-sotrudnika-s-i",
         "title": "Шаг 5. Онбординг и сопровождение сотрудника с инвалидностью",
@@ -2207,11 +2234,12 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
     ]
   },
   {
-    "id": "m6",
+    "id": "m6-1",
     "num": 6,
+    "label": "6.1",
     "file": "Модуль 6.md",
     "docId": "1F7_yp0qN2yY4ugFqyasx6BESyOndn3zgsRIDjzL7Wi4",
-    "title": "Трек для НКО",
+    "title": "Старт программы",
     "toc": [
       {
         "anchor": "modul-6-trek-dlya-nko",
@@ -2487,7 +2515,17 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
         "anchor": "podvedem-itogi",
         "title": "Подведём итоги",
         "level": 2
-      },
+      }
+    ]
+  },
+  {
+    "id": "m6-2",
+    "num": 6,
+    "label": "6.2",
+    "file": "Модуль 6.md",
+    "docId": "1F7_yp0qN2yY4ugFqyasx6BESyOndn3zgsRIDjzL7Wi4",
+    "title": "Работа с соискателем",
+    "toc": [
       {
         "anchor": "pervichnoe-intervyu-s-soiskatelem",
         "title": "Первичное интервью с соискателем",
@@ -2947,7 +2985,17 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
         "anchor": "prakticheskoe-zadanie",
         "title": "Практическое задание",
         "level": 3
-      },
+      }
+    ]
+  },
+  {
+    "id": "m6-3",
+    "num": 6,
+    "label": "6.3",
+    "file": "Модуль 6.md",
+    "docId": "1F7_yp0qN2yY4ugFqyasx6BESyOndn3zgsRIDjzL7Wi4",
+    "title": "Работа с работодателями",
+    "toc": [
       {
         "anchor": "poisk-rabotodateley",
         "title": "Поиск работодателей",
@@ -3232,7 +3280,17 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
         "anchor": "podvedem-itogi-5",
         "title": "Подведём итоги",
         "level": 2
-      },
+      }
+    ]
+  },
+  {
+    "id": "m6-4",
+    "num": 6,
+    "label": "6.4",
+    "file": "Модуль 6.md",
+    "docId": "1F7_yp0qN2yY4ugFqyasx6BESyOndn3zgsRIDjzL7Wi4",
+    "title": "Сопровождение и развитие",
+    "toc": [
       {
         "anchor": "soprovozhdenie-na-etape-trudoustroystva",
         "title": "Сопровождение на этапе трудоустройства",
@@ -3549,10 +3607,15 @@ export const sourceModulesMeta: SourceModuleMeta[] = [
 
 /** Ленивая загрузка блоков модуля — отдельный чанк на модуль. */
 export const moduleLoaders: Record<string, () => Promise<{ blocks: SourceBlock[] }>> = {
-  m1: () => import("./source/m1.generated"),
-  m2: () => import("./source/m2.generated"),
-  m3: () => import("./source/m3.generated"),
-  m4: () => import("./source/m4.generated"),
-  m5: () => import("./source/m5.generated"),
-  m6: () => import("./source/m6.generated"),
+  "m1": () => import("./source/m1.generated"),
+  "m2": () => import("./source/m2.generated"),
+  "m3": () => import("./source/m3.generated"),
+  "m4": () => import("./source/m4.generated"),
+  "m5-1": () => import("./source/m5-1.generated"),
+  "m5-2": () => import("./source/m5-2.generated"),
+  "m5-3": () => import("./source/m5-3.generated"),
+  "m6-1": () => import("./source/m6-1.generated"),
+  "m6-2": () => import("./source/m6-2.generated"),
+  "m6-3": () => import("./source/m6-3.generated"),
+  "m6-4": () => import("./source/m6-4.generated"),
 };
