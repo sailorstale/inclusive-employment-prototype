@@ -1,7 +1,15 @@
 import * as React from "react";
 import {
   Accordion,
+  Button,
+  CardButton,
   CardContainer,
+  Compare,
+  CompareCard,
+  Feedback,
+  Quiz,
+  ReadMore,
+  ReadMoreItem,
   SectionContainer,
   GeneralCard,
   Heading,
@@ -192,6 +200,63 @@ function NodeView({ node }: { node: Node }) {
         <Prompt title={node.title} warning={node.warning}>
           {node.text}
         </Prompt>
+      );
+
+    case "Card Button":
+      return (
+        <CardButton>
+          <Button type={node.type}>{node.text}</Button>
+        </CardButton>
+      );
+
+    case "Compare":
+      return (
+        <Compare>
+          {node.children.map((c, i) => (
+            <NodeView key={i} node={c} />
+          ))}
+        </Compare>
+      );
+
+    case "Compare Card":
+      return (
+        <CompareCard tone={node.tone} txt={node.txt}>
+          {node.children.map((c, i) => (
+            <NodeView key={i} node={c} />
+          ))}
+        </CompareCard>
+      );
+
+    case "Quiz":
+      return (
+        <Quiz
+          title={node.title}
+          description={node.description}
+          question={node.question}
+          items={node.items}
+          explanation={node.explanation}
+        />
+      );
+
+    case "Feedback":
+      return <Feedback roles={node.roles} />;
+
+    case "Read More":
+      return (
+        <ReadMore title={node.title}>
+          {node.children.map((c, i) => (
+            <NodeView key={i} node={c} />
+          ))}
+        </ReadMore>
+      );
+
+    case "Read More Item":
+      return (
+        <ReadMoreItem
+          title={node.title}
+          description={node.description}
+          href={node.href}
+        />
       );
 
     case "note":

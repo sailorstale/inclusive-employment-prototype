@@ -61,6 +61,32 @@ export type Node =
   | { component: "Image"; src: string; alt?: string }
   | { component: "Video" }
   | { component: "Prompt"; title: string; warning: string; text: string }
+  /*
+    Компоненты, которых раскладка пока не собирает из источника, но которые есть
+    в библиотеке и обязаны быть в формате: разработчик должен знать их поля,
+    иначе соберёт по-своему. Появятся в выгрузке, как только под них будут
+    директивы.
+  */
+  | { component: "Card Button"; text: string; type: "Primary" | "Secondary" | "Outline" | "Ghost" }
+  | { component: "Compare"; children: Node[] }
+  | {
+      component: "Compare Card";
+      tone: "positive" | "negative";
+      /** Короткая формулировка сверху, рядом с иконкой. */
+      txt: string;
+      children: Node[];
+    }
+  | {
+      component: "Quiz";
+      title?: string;
+      description?: string;
+      question: string;
+      items: { text: string; correct?: boolean }[];
+      explanation?: string;
+    }
+  | { component: "Feedback"; roles?: string[] }
+  | { component: "Read More"; title?: string; children: Node[] }
+  | { component: "Read More Item"; title: string; description: string; href: string }
   /** Пометка инструмента для редактора. В выгрузку не попадает. */
   | { component: "note"; text: string };
 
