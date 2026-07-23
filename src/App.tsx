@@ -12,6 +12,7 @@ import { ComponentsPage } from "./pages/figma/ComponentsPage";
 // (собственная копия движка правок в editor-source/, сайтовый редактор не задет).
 import { SourceLayout } from "./editor-source/source/SourceLayout";
 import { SourcePage } from "./editor-source/source/SourcePage";
+import { SamplePage } from "./editor-source/source/SamplePage";
 
 // Сквозные / лендинг (следующий заход — оставлены как есть)
 import { HomePage } from "./pages/HomePage";
@@ -78,6 +79,9 @@ export default function App() {
         */}
         <Route element={<SourceLayout />}>
           <Route path="/source" element={<SourcePage />} />
+          {/* Статический маршрут ДО параметрического: иначе «sample»
+              прочитался бы как id модуля и страница не нашлась бы. */}
+          <Route path="/source/sample" element={<SamplePage />} />
           <Route path="/source/:moduleId" element={<SourcePage />} />
         </Route>
 
