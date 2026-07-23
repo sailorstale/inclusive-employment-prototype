@@ -100,12 +100,24 @@ function NodeView({ node }: { node: Node }) {
         </ListContainer>
       );
 
-    case "List Item":
+    case "List Item": {
+      // Пункт из двух строк («ссылка, дальше описание») — перенос значащий.
+      const lines = node.text.split("\n");
       return (
-        <ListItem size={node.size} type={node.type}>
-          {renderInline(node.text)}
+        <ListItem
+          size={node.size}
+          type={node.type}
+          iconNode={node.icon ? React.createElement(iconByName(node.icon)) : undefined}
+        >
+          {lines.map((line, i) => (
+            <React.Fragment key={i}>
+              {i > 0 ? <br /> : null}
+              {renderInline(line)}
+            </React.Fragment>
+          ))}
         </ListItem>
       );
+    }
 
     case "Card Container":
       return (

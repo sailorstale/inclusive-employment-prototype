@@ -18,6 +18,7 @@ import {
   Target,
   Lightbulb,
   Info,
+  Link,
 } from "lucide-react";
 
 /*
@@ -55,6 +56,8 @@ const DEFAULT: { name: string; Icon: LucideIcon } = { name: "Info", Icon: Info }
 const BY_NAME = new Map<string, LucideIcon>([
   ...RULES.map((r) => [r.name, r.Icon] as const),
   [DEFAULT.name, DEFAULT.Icon],
+  // Ссылка по тексту не угадывается — её выбирают явно («иконка ссылки»).
+  ["Link", Link],
 ]);
 
 /** Иконка по тексту блока: {name, Icon}. */

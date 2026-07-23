@@ -35,7 +35,14 @@ export type Node =
   | { component: "Text"; size: TextSize; text: string }
   | { component: "Phrase"; size: PhraseSize; text: string }
   | { component: "List Container"; ordered: boolean; children: Node[] }
-  | { component: "List Item"; size: "L" | "M"; type: "Dot" | "Icon" | "Number"; text: string }
+  | {
+      component: "List Item";
+      size: "L" | "M";
+      type: "Dot" | "Icon" | "Number";
+      /** Имя иконки Lucide для type=Icon. Без него — галочка по умолчанию. */
+      icon?: string;
+      text: string;
+    }
   | { component: "Card Container"; orientation: "Vertical" | "Horizontal"; children: Node[] }
   | { component: "Page Summary"; children: Node[] }
   | {
@@ -201,6 +208,111 @@ const splitCount = (d?: Directive): number | undefined => {
 const wantsSplit = (d?: Directive) => splitCount(d) !== undefined;
 
 /*
+  СРАВНЕНИЕ ИМЁН ИЗ КОММЕНТАРИЯ С ТЕКСТОМ ИСТОЧНИКА — мягкое.
+
+  Дизайнер называет заголовок по памяти и почти всегда с опечаткой
+  («Альтерннативное квотировангие» вместо «Альтернативное квотирование»).
+  Точное сравнение здесь означало бы молчаливый отказ — тот самый случай,
+  который этот файл ловит проходами. Поэтому допускаем расхождение до пятой
+  части длины: свои опечатки покрывает, чужой заголовок не притягивает.
+*/
+const normName = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+
+/** Расстояние Левенштейна — сколько правок отделяет одну строку от другой. */
+const editDistance = (a: string, b: string): number => {
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++)
+      cur[j] = Math.min(
+        prev[j] + 1,
+        cur[j - 1] + 1,
+        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+    prev = cur;
+  }
+  return prev[b.length];
+};
+
+const roughlySame = (a: string, b: string): boolean => {
+  const x = normName(a);
+  const y = normName(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+  const limit = Math.max(1, Math.floor(Math.max(x.length, y.length) * 0.2));
+  return editDistance(x, y) <= limit;
+};
+
+/*
+  «Ссылка, и потом после переноса строки текст» — в источнике пункт списка
+  разложен на ДВА блока: заголовок-ссылка и абзац-описание. В списке это один
+  пункт из двух строк, а не два пункта.
+*/
+const wantsLinePairs = (d?: Directive) =>
+  /перенос\p{L}*\s+строк|с\s+новой\s+строк|новой\s+строчк/iu.test(d?.comment || "");
+
+/*
+  «Вместо галочки иконка ссылки» — у пункта списка с иконкой галочка стоит по
+  умолчанию, а для перечня документов по смыслу нужна ссылка. Слово из
+  комментария переводим в имя иконки; незнакомое слово оставляет галочку.
+*/
+const ICON_BY_WORD: [RegExp, string][] = [
+  [/ссылк|линк|link/iu, "Link"],
+  [/документ|файл|бумаг/iu, "FileText"],
+  [/закон|прав|юрид/iu, "Scale"],
+];
+
+const listItemIcon = (d?: Directive): string | undefined => {
+  const m = /иконк\p{L}*\s+([\p{L}]+)/iu.exec(d?.comment || "");
+  if (!m) return undefined;
+  return ICON_BY_WORD.find(([re]) => re.test(m[1]))?.[1];
+};
+
+/** Сколько квизов просили собрать. undefined — не просили. */
+const quizCount = (d?: Directive): number | undefined => {
+  const m = /(\d+|дв[ае]|три|четыре|пять|шесть|семь|восемь)\s+квиз/iu.exec(d?.comment || "");
+  if (!m) return undefined;
+  const raw = m[1].toLowerCase();
+  const n = /^\d+$/.test(raw) ? Number(raw) : RU_NUM[raw];
+  return n && n >= 2 && n <= 30 ? n : undefined;
+};
+
+/** Сколько пунктов просили в списке. undefined — не просили. */
+const listCount = (d?: Directive): number | undefined => {
+  const m = /(\d+|дв[ае]|три|четыре|пять|шесть|семь|восемь)\s+(?:пункт|пукт|пунт)/iu.exec(
+    d?.comment || "",
+  );
+  if (!m) return undefined;
+  const raw = m[1].toLowerCase();
+  const n = /^\d+$/.test(raw) ? Number(raw) : RU_NUM[raw];
+  return n && n >= 2 && n <= 30 ? n : undefined;
+};
+
+/*
+  «Заголовки Прямое трудоустройство и Альтернативное квотирование превратить в
+  жирный текст» — источник ставит подзаголовок там, где по смыслу просто акцент
+  внутри ответа. В аккордеоне такой заголовок открывал бы СВОЙ аккордеон, и их
+  выходило больше, чем просил дизайнер. Названные заголовки уходят в тело
+  жирной строкой.
+*/
+const headingsToBold = (d?: Directive): string[] => {
+  const m =
+    /(?:загол\p{L}*|подзагол\p{L}*|заг)\s+(.+?)\s+(?:можно\s+)?(?:превра|сдела|переве)\p{L}*\s+(?:в\s+)?жирн/isu.exec(
+      d?.comment || "",
+    );
+  if (!m) return [];
+  return m[1]
+    .split(/\s+и\s+|[,;]\s*/iu)
+    .map((s) => s.replace(/[«»"'*_]/g, "").trim())
+    .filter((s) => s.length >= 3);
+};
+
+/*
   «Все в одну карточку», «В одну карточку» — обратное делению: автоматика
   разложила бы набор по жирным лидам и заголовкам, а дизайнер хочет один блок.
 */
@@ -244,6 +356,11 @@ const commentRecognized = (d?: Directive): boolean =>
   wantsCapitalize(d) ||
   wantsNoColon(d) ||
   wantsTableToText(d) ||
+  headingsToBold(d).length > 0 ||
+  wantsLinePairs(d) ||
+  listItemIcon(d) !== undefined ||
+  listCount(d) !== undefined ||
+  quizCount(d) !== undefined ||
   splitCount(d) !== undefined ||
   explicitTitle(d) !== undefined ||
   leadWordToDrop(d) !== undefined ||
@@ -700,8 +817,23 @@ export function buildDoc(
   const nodeText = (n: Node | SectionNode): string => {
     const parts: string[] = [];
     const o = n as Record<string, unknown>;
-    for (const k of ["text", "question", "title", "alt", "author", "role", "org"])
+    for (const k of [
+      "text",
+      "question",
+      "title",
+      "alt",
+      "author",
+      "role",
+      "org",
+      // Квиз держит текст ещё и здесь — без этого страж считал его потерянным.
+      "description",
+      "explanation",
+    ])
       if (typeof o[k] === "string") parts.push(o[k] as string);
+    if (Array.isArray(o.items))
+      parts.push(
+        (o.items as { text?: string }[]).map((i) => i?.text ?? "").join(" "),
+      );
     if (Array.isArray(o.paragraphs)) parts.push((o.paragraphs as string[]).join(" "));
     if (Array.isArray(o.header)) parts.push((o.header as string[]).join(" "));
     if (Array.isArray(o.rows)) parts.push((o.rows as string[][]).flat().join(" "));
@@ -730,7 +862,9 @@ export function buildDoc(
       */
       .replace(/\]\([^)]*\)/g, " ")
       .replace(/https?:\/\/\S+/gi, " ")
-      .replace(/[*_`#>[\]()«»"'—–\-.,;:!?]/g, " ")
+      // Маркер списка — разметка, а не текст: в разборе квиза мы ставим его
+      // сами, и без этого страж считал бы пункты «потерянными».
+      .replace(/[*_`#>[\]()«»"'—–\-.,;:!?•·]/g, " ")
       .replace(/\s+/g, " ")
       .trim()
       .toLowerCase();
@@ -1169,8 +1303,17 @@ export function buildDoc(
         */
         const items2 = items.filter((it) => !isExplainLabel(md(it)));
 
+        /*
+          Заголовки, названные в комментарии, вопросом аккордеона не становятся:
+          дизайнер попросил превратить их в жирный текст внутри ответа.
+        */
+        const boldNames = headingsToBold(dir);
+        const isBoldHeading = (it: Item) =>
+          it.b.kind === "heading" &&
+          boldNames.some((n) => roughlySame(n, headingText(md(it, fix), fix)));
+
         const levels = items2
-          .filter((it) => it.b.kind === "heading")
+          .filter((it) => it.b.kind === "heading" && !isBoldHeading(it))
           .map((it) => (it.b as { level: number }).level);
         const topLevel = levels.length ? Math.min(...levels) : 0;
         const out: Node[] = [];
@@ -1189,10 +1332,18 @@ export function buildDoc(
         };
         for (const it of items2) {
           const isTop =
-            it.b.kind === "heading" && (it.b as { level: number }).level === topLevel;
+            it.b.kind === "heading" &&
+            (it.b as { level: number }).level === topLevel &&
+            !isBoldHeading(it);
           if (isTop) {
             flush();
             q = headingText(md(it, fix), fix);
+          } else if (q !== null && isBoldHeading(it)) {
+            body.push({
+              component: "Text",
+              size: "M",
+              text: `**${headingText(md(it, fix), fix)}**`,
+            });
           } else if (q !== null) {
             // Тело аккордеона — внутри компонента: Body L там не используется.
             body.push(...fixBodyNodes(plainNodes(it, fix, true)));
@@ -1335,22 +1486,132 @@ export function buildDoc(
       case "List": {
         const marker =
           mods.marker === "Number" ? "Number" : mods.marker === "Icon" ? "Icon" : "Dot";
+        const icon = marker === "Icon" ? listItemIcon(dir) : undefined;
+        const item = (text: string): Node => ({
+          component: "List Item",
+          size: "L",
+          type: marker,
+          ...(icon ? { icon } : {}),
+          text,
+        });
+        /*
+          ПУНКТ ИЗ ДВУХ СТРОК. Источник разложил пункт на заголовок-ссылку и
+          абзац-описание — по просьбе «ссылка, потом после переноса строки
+          текст» они снова один пункт: заголовок открывает пункт, следующие
+          абзацы дописываются к нему с новой строки.
+        */
+        const kids: Node[] = [];
+        if (wantsLinePairs(dir)) {
+          const lines: string[][] = [];
+          for (const it of items) {
+            const text = it.b.kind === "list" ? "" : md(it, fix);
+            if (it.b.kind === "heading" || !lines.length) lines.push([]);
+            if (it.b.kind === "list")
+              it.b.items.forEach((li) => lines[lines.length - 1].push(liText(it, li)));
+            else if (text.trim()) lines[lines.length - 1].push(text);
+          }
+          kids.push(...lines.filter((l) => l.length).map((l) => item(l.join("\n"))));
+        } else {
+          for (const it of items) {
+            if (it.b.kind === "list") it.b.items.forEach((li) => kids.push(item(liText(it, li))));
+            else kids.push(item(md(it, fix)));
+          }
+        }
+        const want = listCount(dir);
         return [
-          {
-            component: "List Container",
-            ordered: marker === "Number",
-            children: items.flatMap((it): Node[] =>
-              it.b.kind === "list"
-                ? it.b.items.map((li) => ({
-                    component: "List Item" as const,
-                    size: "L" as const,
-                    type: marker,
-                    text: liText(it, li),
-                  }))
-                : [{ component: "List Item", size: "L", type: marker, text: md(it, fix) }],
-            ),
-          },
+          { component: "List Container", ordered: marker === "Number", children: kids },
+          // Просили N пунктов, а вышло другое — молчать нельзя (см. аккордеоны).
+          ...(want && kids.length !== want
+            ? [
+                {
+                  component: "note" as const,
+                  text: `просили ${want} пунктов, получилось ${kids.length} — проверьте`,
+                },
+              ]
+            : []),
         ];
+      }
+
+      /*
+        КВИЗ. Источник пишет самопроверку всегда одинаково: вопрос (заголовок
+        или абзац целиком жирным) → список вариантов → абзац-ярлык «Ответ» →
+        разбор. Верные варианты помечены ЖИРНЫМ прямо в источнике, поэтому
+        правильность мы ЧИТАЕМ, а не угадываем по тексту разбора.
+
+        Жирность у верного варианта снимаем: иначе ответ виден до проверки.
+      */
+      case "Quiz": {
+        const isAnswerLabel = (t: string) => /^[*_\s]*ответ[*_\s:.]*$/iu.test(t.trim());
+        const WHOLE_BOLD = /^\s*\*\*([\s\S]+)\*\*\s*$/;
+        const unbold = (t: string) => WHOLE_BOLD.exec(t.trim())?.[1] ?? t;
+        const isQuestionBlock = (it: Item) =>
+          it.b.kind === "heading" || WHOLE_BOLD.test(md(it, fix).trim());
+
+        const answers = items
+          .map((it, i) => (it.b.kind !== "list" && isAnswerLabel(md(it)) ? i : -1))
+          .filter((i) => i >= 0);
+
+        /* Границы каждого квиза: список вариантов и начало вопроса перед ним. */
+        const bounds = answers.map((a) => {
+          let opts = a - 1;
+          while (opts >= 0 && items[opts].b.kind !== "list") opts--;
+          let start = opts - 1;
+          while (start >= 0 && isQuestionBlock(items[start])) start--;
+          return { answer: a, opts, start: start + 1 };
+        });
+
+        const flat = (from: number, to: number): string[] => {
+          const out: string[] = [];
+          for (let i = from; i < to && i < items.length; i++) {
+            const it = items[i];
+            if (it.b.kind === "list")
+              out.push(it.b.items.map((li) => `• ${liText(it, li)}`).join("\n"));
+            else if (md(it, fix).trim()) out.push(md(it, fix).trim());
+          }
+          return out;
+        };
+
+        const out: Node[] = [];
+        bounds.forEach((b, i) => {
+          if (b.opts < 0 || b.start > b.opts - 1) return;
+          const heads = items
+            .slice(b.start, b.opts)
+            .map((it) =>
+              it.b.kind === "heading"
+                ? headingText(md(it, fix), fix)
+                : unbold(md(it, fix)).trim(),
+            )
+            .filter(Boolean);
+          const optionsBlock = items[b.opts].b;
+          const options =
+            optionsBlock.kind === "list"
+              ? optionsBlock.items.map((li) => {
+                  const raw = liText(items[b.opts], li);
+                  const correct = WHOLE_BOLD.test(raw.trim());
+                  return { text: unbold(raw).trim(), ...(correct ? { correct } : {}) };
+                })
+              : [];
+          const end = bounds[i + 1]?.start ?? items.length;
+          const explanation = flat(b.answer + 1, end).join("\n\n");
+          out.push({
+            component: "Quiz",
+            question: heads[heads.length - 1] ?? "",
+            ...(heads.length > 1 ? { description: heads.slice(0, -1).join("\n\n") } : {}),
+            items: options,
+            ...(explanation ? { explanation } : {}),
+          });
+        });
+
+        const wantQuiz = quizCount(dir);
+        return wantQuiz && out.length !== wantQuiz
+          ? [
+              ...out,
+              {
+                component: "note",
+                text: `просили ${wantQuiz} квизов, получилось ${out.length} — проверьте`,
+              },
+            ]
+          : out;
       }
 
       case "Prompt": {
@@ -1575,6 +1836,9 @@ const TEXT_KEYS = new Set([
   "role",
   "org",
   "warning",
+  // Квиз: вводный текст и разбор тоже несут разметку источника.
+  "description",
+  "explanation",
 ]);
 /** Поля-массивы строк и таблица (массив массивов). */
 const TEXT_ARRAY_KEYS = new Set(["paragraphs", "header"]);
@@ -1608,6 +1872,15 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
       }
       if (k === "rows" && Array.isArray(v)) {
         out[k] = (v as string[][]).map((row) => row.map(mdToTags));
+        continue;
+      }
+      // Варианты квиза — объекты {text, correct}: текст переводим в теги,
+      // флаг верности оставляем как есть.
+      if (k === "items" && Array.isArray(v)) {
+        out[k] = (v as { text: string; correct?: boolean }[]).map((o) => ({
+          ...o,
+          text: mdToTags(o.text),
+        }));
         continue;
       }
       out[k] = v;
