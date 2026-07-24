@@ -137,12 +137,14 @@ function NodeView({ node }: { node: Node }) {
         </PageSummary>
       );
 
+    // Проп в Figma зовётся orient, в данных — orientation (одно имя на
+    // понятие, как у Card Container). Здесь переходник.
     case "General Card":
       return (
         <GeneralCard
           title={node.title}
           bgColor={node.bgColor as GeneralCardBg}
-          orient={node.orient}
+          orient={node.orientation}
           iconNode={node.icon ? React.createElement(iconByName(node.icon)) : undefined}
         >
           {node.children.map((c, i) => (
@@ -230,9 +232,10 @@ function NodeView({ node }: { node: Node }) {
         </Compare>
       );
 
+    // Слой в Figma называется txt, в данных — title (как у всех остальных).
     case "Compare Card":
       return (
-        <CompareCard tone={node.tone} txt={node.txt}>
+        <CompareCard tone={node.tone} txt={node.title}>
           {node.children.map((c, i) => (
             <NodeView key={i} node={c} />
           ))}

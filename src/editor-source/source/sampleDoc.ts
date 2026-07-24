@@ -67,7 +67,7 @@ const card = (
   icon?: string,
 ): Node => ({
   component: "General Card",
-  orient: "Vertical",
+  orientation: "Vertical",
   bgColor,
   icon,
   title,
@@ -542,7 +542,7 @@ export function buildSampleDoc(): Doc {
                 {
                   component: "Compare Card",
                   tone: "positive",
-                  txt: "Что даёт компании",
+                  title: "Что даёт компании",
                   children: [
                     list([
                       li("расширяется круг кандидатов;", "Dot", "M"),
@@ -554,7 +554,7 @@ export function buildSampleDoc(): Doc {
                 {
                   component: "Compare Card",
                   tone: "negative",
-                  txt: "Что придётся учесть",
+                  title: "Что придётся учесть",
                   children: [
                     list([
                       li("адаптация рабочего места;", "Dot", "M"),
@@ -582,6 +582,7 @@ export function buildSampleDoc(): Doc {
           box([
             {
               component: "Quiz",
+              mode: "single",
               title: "Квоты",
               description: "Проверьте себя: что засчитывается в квоту.",
               question: "Сколько квотируемых мест закрывает сотрудник с инвалидностью I группы?",

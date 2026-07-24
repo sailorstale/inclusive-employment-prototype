@@ -46,8 +46,13 @@ export type Node =
   | { component: "Card Container"; orientation: "Vertical" | "Horizontal"; children: Node[] }
   | { component: "Page Summary"; children: Node[] }
   | {
+      /*
+        Ориентация называется orientation — как у Card Container. В Figma проп
+        зовётся orient, но одно понятие не должно иметь двух имён в данных;
+        переходником работает ResultView.
+      */
       component: "General Card";
-      orient: "Vertical" | "Horizontal";
+      orientation: "Vertical" | "Horizontal";
       bgColor: string;
       icon?: string;
       title?: string;
@@ -79,8 +84,8 @@ export type Node =
   | {
       component: "Compare Card";
       tone: "positive" | "negative";
-      /** Короткая формулировка сверху, рядом с иконкой. */
-      txt: string;
+      /** Короткая формулировка сверху, рядом с иконкой. В Figma слой зовётся txt. */
+      title: string;
       children: Node[];
     }
   | {
@@ -88,6 +93,8 @@ export type Node =
       title?: string;
       description?: string;
       question: string;
+      /** Один верный вариант или несколько — считается по самим вариантам. */
+      mode: "single" | "multiple";
       items: { text: string; correct?: boolean }[];
       explanation?: string;
     }
@@ -1135,7 +1142,7 @@ export function buildDoc(
           return [
             {
               component: "General Card",
-              orient: "Vertical",
+              orientation: "Vertical",
               bgColor: bg,
               icon: mods.icon && icon ? icon : undefined,
               title,
@@ -1173,7 +1180,7 @@ export function buildDoc(
             const icon = iconOf(it);
             return {
               component: "General Card",
-              orient: "Vertical",
+              orientation: "Vertical",
               bgColor: bg,
               icon: mods.icon && icon ? icon : undefined,
               title: titleFix(title ? headingText(title, fix) : undefined),
@@ -1255,7 +1262,7 @@ export function buildDoc(
               it.b.kind !== "list" && it.b.kind !== "table" && it.b.kind !== "image";
             cards.push({
               component: "General Card",
-              orient: "Vertical",
+              orientation: "Vertical",
               bgColor: bg,
               icon: mods.icon && icon ? icon : undefined,
               title,
@@ -1602,6 +1609,8 @@ export function buildDoc(
               текст вопросом. Перенос между блоками значащий — сохраняем «\n\n».
             */
             question: heads.join("\n\n"),
+            // Режим выбора не задаётся руками — он и есть число верных вариантов.
+            mode: options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
             items: options,
             ...(explanation ? { explanation } : {}),
           });
@@ -1849,6 +1858,98 @@ const TEXT_KEYS = new Set([
 const TEXT_ARRAY_KEYS = new Set(["paragraphs", "header"]);
 
 /*
+  КОНТРАКТ ВЫГРУЗКИ (замечания разработчика к JSON).
+
+  1. Имена компонентов — строго Title Case с пробелами, как в Figma. Список
+     ниже избыточен намеренно: тип Record заставляет TypeScript ругаться, если
+     в дерево добавили компонент, а в контракт его не внесли. Иначе имена
+     разъедутся молча — как уже разъехались orient и orientation.
+  2. Имена ПОЛЕЙ переименовываем там, где одно слово значило разное: у пункта
+     списка type — это маркер, у кнопки type — вид кнопки.
+  3. Значения-перечисления едут строчными: "dot", "vertical", "collapsed".
+     Размеры (L, M, XL) и уровни заголовков (H2…H5) НЕ трогаем — это
+     обозначения шкалы, а не слова; «l» и «h2» читались бы хуже.
+*/
+const EXPORT_COMPONENTS: Record<
+  Exclude<Node["component"] | SectionNode["component"], "note">,
+  true
+> = {
+  "Section Container": true,
+  "Page Summary": true,
+  Heading: true,
+  Text: true,
+  Phrase: true,
+  "List Container": true,
+  "List Item": true,
+  "Card Container": true,
+  "General Card": true,
+  Accordion: true,
+  Quote: true,
+  Table: true,
+  Image: true,
+  Video: true,
+  Prompt: true,
+  "Card Button": true,
+  Compare: true,
+  "Compare Card": true,
+  Quiz: true,
+  Feedback: true,
+  "Read More": true,
+  "Read More Item": true,
+};
+
+/** Переименование полей на границе: одно понятие — одно имя. */
+const RENAME_KEYS: Record<string, Record<string, string>> = {
+  "List Item": { type: "marker" },
+  "Card Button": { type: "variant" },
+};
+
+/** Значения этих полей едут строчными. */
+const LOWER_VALUE_KEYS = new Set(["marker", "variant", "orientation", "state", "tone"]);
+
+/*
+  СПИСОК: маркер и размер — свойство всего списка, а не каждого пункта.
+  Поднимаем общее значение в контейнер, из пунктов убираем; ordered не
+  выгружаем вовсе — он дублирует marker: "number".
+
+  Если пункты вдруг различаются, поле остаётся у пунктов: подъём не должен
+  стирать различие, которого мы не ожидали.
+*/
+/** Контейнеры, чьи дети — пункты списка. Page Summary — такой же случай. */
+const LIST_HOSTS = new Set(["List Container", "Page Summary"]);
+const hoistListFields = (container: Record<string, unknown>): Record<string, unknown> => {
+  const out = { ...container };
+  delete out.ordered;
+  let kids: Record<string, unknown>[] = (out.children as Record<string, unknown>[]) ?? [];
+  if (!kids.length) return out;
+  /*
+    Смотрим только на ПУНКТЫ: у Page Summary рядом с ними лежит ещё и вводный
+    текст, и по нему подъём отступал — пункты оставались с маркером.
+  */
+  const isItem = (k: Record<string, unknown>) => k.component === "List Item";
+  const items = kids.filter(isItem);
+  if (!items.length) return out;
+  for (const key of ["marker", "size", "icon"]) {
+    const first: unknown = items[0][key];
+    if (first === undefined || !items.every((k) => k[key] === first)) continue;
+    out[key] = first;
+    kids = kids.map((k) => {
+      if (!isItem(k)) return k;
+      const copy = { ...k };
+      delete copy[key];
+      return copy;
+    });
+  }
+  /*
+    children — последним полем: иначе поднятый marker оказывается ПОСЛЕ
+    длинного списка пунктов, и читать выгрузку глазами неудобно.
+  */
+  delete out.children;
+  out.children = kids;
+  return out;
+};
+
+/*
   Выгрузка для разработчика: то же дерево, но без служебных пометок инструмента
   и без пустых полей. В JSON едет только контент — так решено, чтобы структура
   была чёткой и без мусора.
@@ -1856,14 +1957,22 @@ const TEXT_ARRAY_KEYS = new Set(["paragraphs", "header"]);
 export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
   const clean = (n: Node | SectionNode): unknown | null => {
     if ((n as Node).component === "note") return null;
+    const component = (n as Node).component;
+    const rename = RENAME_KEYS[component] ?? {};
     const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(n)) {
+    for (const [rawKey, v] of Object.entries(n)) {
+      const k = rename[rawKey] ?? rawKey;
       if (v === undefined || v === null || v === false) continue;
       if (Array.isArray(v) && v.length === 0) continue;
       if (typeof v === "string" && !v.trim()) continue;
       if (k === "children") {
         const kids = (v as Node[]).map(clean).filter(Boolean);
         if (kids.length) out.children = kids;
+        continue;
+      }
+      // Перечисления — строчными; текст и шкалы (L, H2) не трогаем.
+      if (LOWER_VALUE_KEYS.has(k) && typeof v === "string") {
+        out[k] = v.toLowerCase();
         continue;
       }
       // Текст уезжает разработчику с тегами; служебные поля — как есть.
@@ -1890,7 +1999,7 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
       }
       out[k] = v;
     }
-    return out;
+    return LIST_HOSTS.has(component) ? hoistListFields(out) : out;
   };
   return nodes.map(clean).filter(Boolean);
 }
