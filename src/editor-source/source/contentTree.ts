@@ -24,7 +24,13 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
 import { safeHref } from "@/editor-source/safeUrl";
-import { findSlug, mentionsYandex, type LogoEntry } from "./orgLogo";
+import {
+  findSlug,
+  findPhotoSlug,
+  mentionsYandex,
+  type LogoEntry,
+  type AvatarEntry,
+} from "./orgLogo";
 
 export type HeadingLevel = "H2" | "H3" | "H4" | "H5";
 export type TextSize = "XL" | "L" | "M" | "S";
@@ -67,6 +73,8 @@ export type Node =
       org?: string;
       logo?: string;
       yandex?: boolean;
+      /** Слаг фото автора: public/figma/avatars/<photo>.jpg. */
+      photo?: string;
       paragraphs: string[];
     }
   | { component: "Table"; header: string[]; rows: string[][] }
@@ -750,6 +758,7 @@ export function buildDoc(
   resolve: ResolveMd,
   logoIndex: LogoEntry[],
   directiveAt?: (si: number, bi: number) => Directive | undefined,
+  avatarIndex: AvatarEntry[] = [],
 ): Doc {
   /** Актуальная разметка блока (с учётом правок) + чистки из комментария. */
   const md = (it: Item, fix: TextFix = NO_FIX): string => {
@@ -1433,6 +1442,8 @@ export function buildDoc(
           Boolean(mods.yandex) || mentionsYandex([author ?? "", role ?? ""]);
         const org = yandex ? undefined : orgName;
         const logo = org ? findSlug(org, logoIndex) : undefined;
+        // Фото автора — по имени, из каталога аватарок (тот же приём, что логотип).
+        const photo = author ? findPhotoSlug(author, avatarIndex) : undefined;
         const speech = parsed.filter((_, i) => i !== ai && i !== orgIdx);
 
         const missing = [
@@ -1440,6 +1451,7 @@ export function buildDoc(
           !role && "должность",
           !yandex && !org && "организация",
           org && !logo && `логотип «${org}» не найден в каталоге`,
+          author && !photo && "фото автора",
         ].filter(Boolean) as string[];
 
         return [
@@ -1451,6 +1463,7 @@ export function buildDoc(
             org,
             logo,
             yandex: yandex || undefined,
+            photo,
             paragraphs: speech.map((p) => stripEmph(p.text)),
           },
           ...(missing.length

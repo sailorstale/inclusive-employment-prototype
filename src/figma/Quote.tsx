@@ -102,6 +102,8 @@ type Props = {
   yandex?: boolean;
   /** Показать аватар-плейсхолдер человека. По умолчанию да. */
   photo?: boolean;
+  /** Фото автора (URL). Если задано — рисуется вместо серого плейсхолдера. */
+  photoSrc?: string;
   /** «Кат»: обрезать длинную цитату до пяти строк со ссылкой «Далее». */
   cut?: boolean;
   className?: string;
@@ -116,6 +118,7 @@ export function Quote({
   logo,
   yandex = false,
   photo = true,
+  photoSrc,
   cut = true,
   className,
 }: Props) {
@@ -234,10 +237,18 @@ export function Quote({
             />
           ) : null}
 
-          {photo ? (
+          {photoSrc ? (
+            // Настоящее фото автора: квадрат, обрезанный в круг.
+            <img
+              src={photoSrc}
+              alt={author ? `Фото: ${author}` : ""}
+              className="size-8 shrink-0 rounded-[var(--radius-100)] object-cover"
+              loading="lazy"
+            />
+          ) : photo ? (
             <span
               aria-hidden
-              // Плейсхолдер фото человека.
+              // Плейсхолдер, пока фото автора нет.
               className="size-8 shrink-0 rounded-[var(--radius-100)] bg-[color:var(--card-bg-gray)]"
             />
           ) : null}

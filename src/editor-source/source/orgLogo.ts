@@ -107,3 +107,70 @@ export function useLogoIndex(): LogoEntry[] {
   }, []);
   return index;
 }
+
+/*
+  ФОТО АВТОРА ЦИТАТЫ — ровно тот же механизм, что и логотипы, только по ИМЕНИ
+  человека. Каталог public/figma/avatars/_index.json: слаг → имя. Назначили блоку
+  «Цитату» → из строки авторства достаём имя → подставляем аватар. Нет имени в
+  каталоге — цитата рисуется без фото и в превью появляется заметка (страж).
+*/
+export type AvatarEntry = { slug: string; name: string };
+
+let avatarCache: Promise<AvatarEntry[]> | null = null;
+
+export function loadAvatarIndex(): Promise<AvatarEntry[]> {
+  if (!avatarCache)
+    avatarCache = fetch(`${import.meta.env.BASE_URL}figma/avatars/_index.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`Каталог аватарок не отдался: ${r.status}`);
+        return r.json();
+      })
+      .then((raw: unknown) =>
+        Array.isArray(raw)
+          ? (raw as AvatarEntry[]).filter((e) => e && e.slug && e.name)
+          : [],
+      )
+      .catch((e) => {
+        console.error("[avatars]", e);
+        return [];
+      });
+  return avatarCache;
+}
+
+/**
+ * Слаг аватара по имени автора. Сверяем нормализованные имена: точное
+ * совпадение или совпадение по набору слов (порядок «Имя Фамилия» /
+ * «Фамилия Имя» не важен). Имена короче 3 знаков не ищем.
+ */
+export function findPhotoSlug(
+  author: string,
+  index: AvatarEntry[],
+): string | undefined {
+  const want = normalize(author);
+  if (want.length < 3) return undefined;
+  const words = new Set(want.split(" "));
+  for (const e of index) {
+    const n = normalize(e.name);
+    if (n === want) return e.slug;
+  }
+  // Мягкое совпадение: все слова каталожного имени есть в имени автора.
+  for (const e of index) {
+    const parts = normalize(e.name).split(" ").filter(Boolean);
+    if (parts.length >= 2 && parts.every((p) => words.has(p))) return e.slug;
+  }
+  return undefined;
+}
+
+export function useAvatarIndex(): AvatarEntry[] {
+  const [index, setIndex] = React.useState<AvatarEntry[]>([]);
+  React.useEffect(() => {
+    let alive = true;
+    loadAvatarIndex().then((i) => {
+      if (alive) setIndex(i);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return index;
+}

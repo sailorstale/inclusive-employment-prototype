@@ -30,7 +30,7 @@ import {
 } from "@/figma";
 import { renderInline } from "@/editor-source/richText";
 import { iconByName } from "./iconForText";
-import { useLogoIndex } from "./orgLogo";
+import { useLogoIndex, useAvatarIndex } from "./orgLogo";
 import { buildDoc, type Doc, type Node, type SectionNode } from "./contentTree";
 import type { Directive } from "@/editor-source/directives";
 import type { Section } from "./PlaygroundColumn";
@@ -56,9 +56,10 @@ export function useContentDoc(
   directiveAt?: (si: number, bi: number) => Directive | undefined,
 ): Doc {
   const logoIndex = useLogoIndex();
+  const avatarIndex = useAvatarIndex();
   return React.useMemo(
-    () => buildDoc(moduleId, sections, resolve, logoIndex, directiveAt),
-    [moduleId, sections, resolve, logoIndex, directiveAt],
+    () => buildDoc(moduleId, sections, resolve, logoIndex, directiveAt, avatarIndex),
+    [moduleId, sections, resolve, logoIndex, directiveAt, avatarIndex],
   );
 }
 
@@ -174,6 +175,11 @@ function NodeView({ node }: { node: Node }) {
           logo={node.logo}
           author={node.author}
           role={node.role}
+          photoSrc={
+            node.photo
+              ? `${import.meta.env.BASE_URL}figma/avatars/${node.photo}.jpg`
+              : undefined
+          }
         >
           {node.paragraphs.map((p, i) => (
             <p key={i} className={i ? "mt-[var(--space-s)]" : undefined}>
