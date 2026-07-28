@@ -34,6 +34,10 @@ export type QuizOption = {
   text: string;
   /** Верный ли вариант. Чекбоксы = множественный выбор, верных может быть несколько. */
   correct?: boolean;
+  /** Разбор ИМЕННО этого варианта («почему верно / неверно»). Показывается после
+   *  проверки под выбранными вариантами. Если задан хоть у одного — блок разбора
+   *  собирается по вариантам, а не из общего explanation. */
+  feedback?: string;
 };
 
 type Props = {
@@ -178,6 +182,12 @@ function Feedback({
 }) {
   const totalCorrect = items.filter((i) => i.correct).length;
   const hits = items.filter((i, n) => i.correct && selected[n]).length;
+  // Разбор по вариантам: если у вариантов есть свой feedback — показываем разбор
+  // выбранных, а не общий explanation. Так работает формат «ОС на каждый ответ».
+  const perOption = items.some((i) => i.feedback);
+  const chosen = items
+    .map((it, n) => ({ it, n }))
+    .filter(({ it, n }) => selected[n] && it.feedback);
 
   return (
     <div
@@ -187,19 +197,22 @@ function Feedback({
       )}
       aria-live="polite"
     >
-      {/*
-        Бейдж-вердикт здесь был нашим добавлением, в Figma его нет. Убран: он
-        дублировал счёт («Верно 0 из 1» и рядом «Неверно» — одно и то же), а
-        результат по каждому варианту и так виден бейджами в самих ответах.
-      */}
       <p className="ds-h5 text-[color:var(--text-primary)]">
         Верно {hits} из {totalCorrect}
       </p>
-      {explanation ? (
-        <p className="ds-body-m text-[color:var(--text-primary)]">
-          {explanation}
-        </p>
-      ) : null}
+      {perOption
+        ? chosen.map(({ it, n }) => (
+            <p key={n} className="ds-body-m text-[color:var(--text-primary)]">
+              {it.feedback}
+            </p>
+          ))
+        : explanation
+          ? (
+              <p className="ds-body-m text-[color:var(--text-primary)]">
+                {explanation}
+              </p>
+            )
+          : null}
     </div>
   );
 }

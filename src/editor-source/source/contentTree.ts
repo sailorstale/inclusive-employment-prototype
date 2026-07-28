@@ -103,7 +103,7 @@ export type Node =
       question: string;
       /** Один верный вариант или несколько — считается по самим вариантам. */
       mode: "single" | "multiple";
-      items: { text: string; correct?: boolean }[];
+      items: { text: string; correct?: boolean; feedback?: string }[];
       explanation?: string;
     }
   | { component: "Feedback"; roles?: string[] }
@@ -1574,8 +1574,72 @@ export function buildDoc(
         const isAnswerLabel = (t: string) => /^[*_\s]*ответ[*_\s:.]*$/iu.test(t.trim());
         const WHOLE_BOLD = /^\s*\*\*([\s\S]+)\*\*\s*$/;
         const unbold = (t: string) => WHOLE_BOLD.exec(t.trim())?.[1] ?? t;
+        const stripBold = (t: string) => t.replace(/\*\*/g, "").trim();
         const isQuestionBlock = (it: Item) =>
           it.b.kind === "heading" || WHOLE_BOLD.test(md(it, fix).trim());
+
+        /*
+          ФОРМАТ С РАЗБОРОМ НА КАЖДЫЙ ВАРИАНТ (М3). В источнике:
+            нумерованный пункт     → вопрос-сценарий;
+            маркированный пункт     → вариант ответа (жирный — снимаем);
+            абзац «ОС: …» следом    → разбор ИМЕННО этого варианта.
+          Верный вариант — тот, чей разбор начинается с «Верно» (не «Неверно»).
+          Каждый нумерованный пункт открывает новый квиз.
+        */
+        const OS_RE = /^\s*(?:\*\*)?\s*ОС\s*[:.]/iu;
+        const stripOS = (t: string) =>
+          stripBold(t.replace(/^\s*(?:\*\*)?\s*ОС\s*[:.]\s*(?:\*\*)?\s*/iu, ""));
+        const isOS = (it: Item) => it.b.kind !== "list" && OS_RE.test(md(it, fix).trim());
+        const hasPerOption = items.some(isOS);
+
+        if (hasPerOption) {
+          type Q = { qParts: string[]; options: NonNullable<Extract<Node, { component: "Quiz" }>["items"]> };
+          const quizzes: Q[] = [];
+          let cur: Q | null = null;
+          const flush = () => {
+            if (cur && cur.options.length) quizzes.push(cur);
+          };
+          for (let i = 0; i < items.length; i++) {
+            const it = items[i];
+            if (it.b.kind === "list" && it.b.ordered) {
+              // Нумерованный пункт — новый вопрос.
+              flush();
+              cur = { qParts: it.b.items.map((li) => stripBold(liText(it, li))), options: [] };
+            } else if (it.b.kind === "list") {
+              // Маркированный пункт — вариант; следом может идти его «ОС».
+              const text = stripBold(it.b.items.map((li) => liText(it, li)).join(" "));
+              const next = items[i + 1];
+              const fb = next && isOS(next) ? stripOS(md(next, fix)) : "";
+              if (fb) i++; // «ОС» съели
+              // Верный вариант — разбор начинается с «Верно» (не «Неверно»).
+              // \b в JS не знает кириллицу, поэтому проверяем границу вручную:
+              // «Верно» + знак препинания/конец, но не «Верное».
+              const correct = /^\s*верно(?:[^\p{L}]|$)/iu.test(fb);
+              (cur ??= { qParts: [], options: [] }).options.push({
+                text,
+                ...(correct ? { correct: true } : {}),
+                ...(fb ? { feedback: fb } : {}),
+              });
+            } else if (isOS(it)) {
+              // «ОС» без своего варианта — пропускаем (не мусорим в вопрос).
+            } else if (cur && cur.options.length === 0) {
+              // Абзац до вариантов — часть вопроса.
+              const t = md(it, fix).trim();
+              if (t) cur.qParts.push(stripBold(t));
+            }
+          }
+          flush();
+          const out: Node[] = quizzes.map((q) => ({
+            component: "Quiz",
+            question: q.qParts.filter(Boolean).join("\n\n"),
+            mode: q.options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
+            items: q.options,
+          }));
+          const wantQuiz = quizCount(dir);
+          return wantQuiz && out.length !== wantQuiz
+            ? [...out, { component: "note", text: `просили ${wantQuiz} квизов, получилось ${out.length} — проверьте` }]
+            : out;
+        }
 
         const answers = items
           .map((it, i) => (it.b.kind !== "list" && isAnswerLabel(md(it)) ? i : -1))
