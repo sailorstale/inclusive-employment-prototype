@@ -772,12 +772,12 @@ function BlockPreview({
             block.ordered ? "list-decimal" : "list-disc"
           }`}
         >
-          {block.items.slice(0, 4).map((it, i) => (
+          {/* Список показываем ЦЕЛИКОМ: в режиме разметки нужно видеть весь блок,
+              который выделяешь. Раньше обрезали до 4 пунктов с «…» — это читалось
+              как потерянные пункты. */}
+          {block.items.map((it, i) => (
             <li key={i}>{renderInline(resolve("li", it.text, it.md, anchor))}</li>
           ))}
-          {block.items.length > 4 && (
-            <li className="list-none text-[color:var(--text-secondary)]">…</li>
-          )}
         </List>
       );
     }
