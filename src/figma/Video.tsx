@@ -18,33 +18,61 @@ import { cn } from "@/lib/utils";
 type Props = {
   /** Кадр-постер. Без него — пастельный зелёный фон. */
   poster?: string;
+  /** Ссылка на ролик. Если задана — плейсхолдер кликабелен и ведёт на неё. */
+  href?: string;
   className?: string;
 };
 
-export function Video({ poster, className }: Props) {
+export function Video({ poster, href, className }: Props) {
+  const box = (
+    <div className="relative aspect-[848/474] w-full overflow-hidden rounded-[var(--radius-l)] bg-[color:var(--card-bg-green)]">
+      {poster ? (
+        <img
+          src={poster}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 size-full object-cover"
+        />
+      ) : null}
+
+      {/* Кнопка play по центру. */}
+      <span className="absolute left-1/2 top-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[var(--radius-100)] bg-white/80 backdrop-blur-sm">
+        <Play
+          className="size-6 translate-x-[1px] fill-current text-[color:var(--text-primary)]"
+          aria-hidden
+        />
+      </span>
+    </div>
+  );
+
   return (
     <div
       data-component="Video"
       className={cn("w-full pt-[var(--space-2xl)]", className)}
     >
-      <div className="relative aspect-[848/474] w-full overflow-hidden rounded-[var(--radius-l)] bg-[color:var(--card-bg-green)]">
-        {poster ? (
-          <img
-            src={poster}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 size-full object-cover"
-          />
-        ) : null}
-
-        {/* Кнопка play по центру. */}
-        <span className="absolute left-1/2 top-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[var(--radius-100)] bg-white/80 backdrop-blur-sm">
-          <Play
-            className="size-6 translate-x-[1px] fill-current text-[color:var(--text-primary)]"
-            aria-hidden
-          />
-        </span>
-      </div>
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Открыть видео"
+          className="block"
+        >
+          {box}
+        </a>
+      ) : (
+        box
+      )}
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ds-body-s mt-[var(--space-2xs)] block break-all text-[color:var(--brand)] hover:underline"
+        >
+          {href}
+        </a>
+      ) : null}
     </div>
   );
 }

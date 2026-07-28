@@ -61,6 +61,8 @@ type Props = {
   onCheckedChange?: (checked: boolean) => void;
   /** После проверки строка только показывает результат, отметку менять нельзя. */
   disabled?: boolean;
+  /** Спрятать квадрат-чекбокс. Для квиза с одним ответом: выбор — клик по строке. */
+  hideBox?: boolean;
   /** Текст варианта. Длина свободная — строка растёт в высоту. */
   children?: React.ReactNode;
   className?: string;
@@ -71,6 +73,7 @@ export function QuizItems({
   checked = false,
   onCheckedChange,
   disabled = false,
+  hideBox = false,
   children,
   className,
 }: Props) {
@@ -107,7 +110,7 @@ export function QuizItems({
         disabled={disabled}
         onChange={(e) => onCheckedChange?.(e.target.checked)}
       />
-      <CheckboxAtom checked={checked} />
+      {hideBox ? null : <CheckboxAtom checked={checked} />}
       <span className="ds-body-m grow text-[color:var(--text-primary)]">
         {children}
       </span>

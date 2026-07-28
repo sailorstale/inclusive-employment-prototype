@@ -89,8 +89,26 @@ function NodeView({ node }: { node: Node }) {
     case "Text":
       return <Text size={node.size}>{renderInline(node.text)}</Text>;
 
-    case "Phrase":
-      return <Phrase size={node.size}>{renderInline(node.text)}</Phrase>;
+    case "Phrase": {
+      // Слитая врезка может содержать несколько абзацев (разделены пустой
+      // строкой) — переносим их через <br/>, не плодя вложенные <p>.
+      const parts = node.text.split(/\n\n+/);
+      return (
+        <Phrase size={node.size}>
+          {parts.map((p, i) => (
+            <React.Fragment key={i}>
+              {i > 0 ? (
+                <>
+                  <br />
+                  <br />
+                </>
+              ) : null}
+              {renderInline(p)}
+            </React.Fragment>
+          ))}
+        </Phrase>
+      );
+    }
 
     case "List Container":
       return (
@@ -213,7 +231,7 @@ function NodeView({ node }: { node: Node }) {
       return <Image src={node.src} alt={node.alt} />;
 
     case "Video":
-      return <Video />;
+      return <Video href={node.href} />;
 
     case "Prompt":
       return (

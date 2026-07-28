@@ -67,17 +67,26 @@ export function Quiz({
   );
   const [checked, setChecked] = React.useState(false);
 
-  const toggle = (index: number, value: boolean) => {
-    // Иммутабельно: новый массив, старый не трогаем.
-    setSelected((prev) => prev.map((v, i) => (i === index ? value : v)));
-  };
+  /*
+    Квиз с разбором на каждый вариант («ОС:») работает БЕЗ кнопки «Проверить»:
+    один выбор — и сразу виден разбор выбранного варианта. Обычный квиз (общий
+    разбор, множественный выбор) — по кнопке. Отличаем по наличию feedback.
+  */
+  const instant = items.some((i) => i.feedback);
 
-  const reset = () => {
-    setSelected(items.map(() => false));
-    setChecked(false);
+  const toggle = (index: number, value: boolean) => {
+    // Мгновенный режим — один вариант: выбираем только его, остальные гасим.
+    // Обычный — множественный выбор, иммутабельно.
+    setSelected((prev) =>
+      instant
+        ? prev.map((_, i) => i === index)
+        : prev.map((v, i) => (i === index ? value : v)),
+    );
   };
 
   const hasSelection = selected.some(Boolean);
+  // Разбор виден: в мгновенном режиме — как только выбрали, иначе — по «Проверить».
+  const revealed = instant ? hasSelection : checked;
 
   return (
     <div
@@ -118,9 +127,13 @@ export function Quiz({
             // Список статичен и не переупорядочивается — индекс как ключ безопасен
             // и не ломается, если два варианта совпали текстом.
             key={index}
-            state={checked ? itemState(item, selected[index]) : "Default"}
+            state={revealed ? itemState(item, selected[index]) : "Default"}
             checked={selected[index]}
-            disabled={checked}
+            // В мгновенном режиме варианты остаются кликабельными — можно
+            // попробовать другой ответ. В обычном — после «Проверить» замирают.
+            disabled={instant ? false : checked}
+            // Один ответ → квадрат-чекбокс не нужен, выбор кликом по строке.
+            hideBox={instant}
             onCheckedChange={(value) => toggle(index, value)}
           >
             {item.text}
@@ -128,28 +141,27 @@ export function Quiz({
         ))}
       </div>
 
-      <div className="flex items-center gap-[var(--space-xs)]">
-        {checked ? (
-          <Button type="Ghost" size="M" onClick={reset}>
-            Пройти заново
-          </Button>
-        ) : (
+      {/* Кнопка «Проверить» — только в обычном режиме. «Пройти заново» убрана
+          совсем: смысла в ней нет. */}
+      {!instant ? (
+        <div className="flex items-center gap-[var(--space-xs)]">
           <Button
             type="Primary"
             size="M"
-            disabled={!hasSelection}
+            disabled={!hasSelection || checked}
             onClick={() => setChecked(true)}
           >
             Проверить
           </Button>
-        )}
-      </div>
+        </div>
+      ) : null}
 
-      {checked ? (
+      {revealed ? (
         <Feedback
           items={items}
           selected={selected}
           explanation={explanation}
+          showScore={!instant}
         />
       ) : null}
     </div>
@@ -175,10 +187,13 @@ function Feedback({
   items,
   selected,
   explanation,
+  showScore,
 }: {
   items: QuizOption[];
   selected: boolean[];
   explanation?: string;
+  /** Показывать строку-счёт «Верно X из Y». У квизов с разбором на вариант — нет. */
+  showScore: boolean;
 }) {
   const totalCorrect = items.filter((i) => i.correct).length;
   const hits = items.filter((i, n) => i.correct && selected[n]).length;
@@ -197,9 +212,11 @@ function Feedback({
       )}
       aria-live="polite"
     >
-      <p className="ds-h5 text-[color:var(--text-primary)]">
-        Верно {hits} из {totalCorrect}
-      </p>
+      {showScore ? (
+        <p className="ds-h5 text-[color:var(--text-primary)]">
+          Верно {hits} из {totalCorrect}
+        </p>
+      ) : null}
       {perOption
         ? chosen.map(({ it, n }) => (
             <p key={n} className="ds-body-m text-[color:var(--text-primary)]">

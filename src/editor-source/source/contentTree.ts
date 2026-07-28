@@ -79,7 +79,7 @@ export type Node =
     }
   | { component: "Table"; header: string[]; rows: string[][] }
   | { component: "Image"; src: string; alt?: string }
-  | { component: "Video" }
+  | { component: "Video"; href?: string }
   | { component: "Prompt"; title: string; warning: string; text: string }
   /*
     Компоненты, которых раскладка пока не собирает из источника, но которые есть
@@ -1398,12 +1398,18 @@ export function buildDoc(
 
       case "Quote": {
         /*
-          Вся группа — ОДНА цитата: выделили блоки и указали компонент, значит
-          они упаковываются в него. Строку авторства разбираем на имя,
-          должность, организацию. Организацию берём ТОЛЬКО вплотную к строке
-          авторства (ссылкой внутри неё или соседним блоком-ссылкой) — иначе
-          цитате доставался логотип из чужого блока через два абзаца.
+          В группе может быть НЕСКОЛЬКО цитат (несколько строк авторства подряд:
+          «Имя, должность в Компании» → речь → следующее «Имя, …»). Каждая строка
+          авторства открывает новую цитату. Строку разбираем на имя (до первой
+          запятой) и должность+компанию (после). Компания-Яндекс даёт круглый
+          логотип; организация из ссылки — прямоугольный.
+
+          «Убери кавычки» в комментарии — снимаем « » вокруг речи.
         */
+        const dropQuotes = /кавыч/i.test(dir.comment || "");
+        const stripQuotes = (t: string) =>
+          dropQuotes ? t.replace(/^\s*[«"„“]+|[»"“”]+\s*$/g, "").trim() : t;
+
         const parsed = items.map((it) => {
           const t = md(it).trim();
           const head = t.replace(new RegExp(`\\s*${LINK_RE.source}\\s*$`), "").trim();
@@ -1416,56 +1422,74 @@ export function buildDoc(
               it.b.kind === "paragraph" &&
               LINK_RE.test(t) &&
               !stripEmph(t.replace(LINK_RE, "")),
+            // Строка авторства «Имя, должность в Компании»: либо ЗАГОЛОВОК
+            // (парсер часто повышает такие строки в h3), либо абзац целиком
+            // курсивом/жирным. Ключ — запятая между именем и должностью.
             looksAuthor:
-              it.b.kind === "paragraph" &&
-              /^[*_]{1,2}.+[*_]{1,2}$/.test(head) &&
-              bare.includes(","),
+              bare.includes(",") &&
+              (it.b.kind === "heading" ||
+                (it.b.kind === "paragraph" && /^[*_]{1,2}.+[*_]{1,2}$/.test(head))),
           };
         });
 
-        const ai = parsed.findIndex((p) => p.looksAuthor);
-        let author: string | undefined;
-        let role: string | undefined;
-        if (ai >= 0) {
-          const [name, ...restRole] = parsed[ai].bare.split(",");
-          author = name.trim() || undefined;
-          role = restRole.join(",").trim() || undefined;
-        }
+        const authorIdxs = parsed
+          .map((p, i) => (p.looksAuthor ? i : -1))
+          .filter((i) => i >= 0);
+        // Ни одной строки авторства — вся группа как одна безымянная цитата.
+        const starts = authorIdxs.length ? authorIdxs : [0];
 
-        let orgName: string | undefined;
-        let orgIdx = -1;
-        if (ai >= 0) {
-          const inline = parsed[ai].text.match(LINK_RE);
+        const out: Node[] = [];
+        starts.forEach((ai, k) => {
+          const end = starts[k + 1] ?? items.length;
+          const hasAuthor = authorIdxs.includes(ai);
+          let author: string | undefined;
+          let role: string | undefined;
+          if (hasAuthor) {
+            const [name, ...restRole] = parsed[ai].bare.split(",");
+            author = name.trim() || undefined;
+            role = restRole.join(",").trim() || undefined;
+          }
+
+          // Организация: ссылка в самой строке авторства или блок-ссылка в сегменте.
+          let orgName: string | undefined;
+          let orgIdx = -1;
+          const inline = hasAuthor ? parsed[ai].text.match(LINK_RE) : null;
           if (inline) orgName = inline[1].trim();
           else
-            for (const j of [ai - 1, ai + 1])
-              if (orgIdx < 0 && parsed[j]?.isLinkOnly) {
+            for (let j = ai; j < end; j++)
+              if (orgIdx < 0 && parsed[j].isLinkOnly && (!hasAuthor || j !== ai)) {
                 orgName = parsed[j].text.match(LINK_RE)![1].trim();
                 orgIdx = j;
               }
-        } else {
-          orgIdx = parsed.findIndex((p) => p.isLinkOnly);
-          if (orgIdx >= 0) orgName = parsed[orgIdx].text.match(LINK_RE)![1].trim();
-        }
 
-        const yandex =
-          Boolean(mods.yandex) || mentionsYandex([author ?? "", role ?? ""]);
-        const org = yandex ? undefined : orgName;
-        const logo = org ? findSlug(org, logoIndex) : undefined;
-        // Фото автора — по имени, из каталога аватарок (тот же приём, что логотип).
-        const photo = author ? findPhotoSlug(author, avatarIndex) : undefined;
-        const speech = parsed.filter((_, i) => i !== ai && i !== orgIdx);
+          const yandex =
+            Boolean(mods.yandex) || mentionsYandex([author ?? "", role ?? ""]);
+          const org = yandex ? undefined : orgName;
+          const logo = org ? findSlug(org, logoIndex) : undefined;
+          const photo = author ? findPhotoSlug(author, avatarIndex) : undefined;
 
-        const missing = [
-          !author && "имя",
-          !role && "должность",
-          !yandex && !org && "организация",
-          org && !logo && `логотип «${org}» не найден в каталоге`,
-          author && !photo && "фото автора",
-        ].filter(Boolean) as string[];
+          // Речь: абзацы сегмента, кроме строки авторства и блока-ссылки.
+          // Список внутри речи раскрываем в пункты-строки «• …».
+          const speech: string[] = [];
+          parsed.slice(ai, end).forEach((p, j) => {
+            if ((hasAuthor && j === 0) || ai + j === orgIdx) return;
+            if (p.it.b.kind === "list")
+              p.it.b.items.forEach((li) => speech.push("• " + stripQuotes(liText(p.it, li))));
+            else {
+              const s = stripQuotes(stripEmph(p.text));
+              if (s) speech.push(s);
+            }
+          });
 
-        return [
-          {
+          const missing = [
+            !author && "имя",
+            !role && "должность",
+            !yandex && !org && "организация",
+            org && !logo && `логотип «${org}» не найден в каталоге`,
+            author && !photo && "фото автора",
+          ].filter(Boolean) as string[];
+
+          out.push({
             component: "Quote",
             size: mods.size === "S" ? "S" : "L",
             author,
@@ -1474,12 +1498,12 @@ export function buildDoc(
             logo,
             yandex: yandex || undefined,
             photo,
-            paragraphs: speech.map((p) => stripEmph(p.text)),
-          },
-          ...(missing.length
-            ? [{ component: "note" as const, text: `Дополнить авторство: ${missing.join(", ")}` }]
-            : []),
-        ];
+            paragraphs: speech,
+          });
+          if (missing.length)
+            out.push({ component: "note", text: `Дополнить авторство: ${missing.join(", ")}` });
+        });
+        return out;
       }
 
       case "Text":
@@ -1497,12 +1521,16 @@ export function buildDoc(
               },
         );
 
-      case "Phrase":
-        return items.map((it) => ({
-          component: "Phrase" as const,
-          size: mods.size === "M" ? "M" : "L",
-          text: md(it, fix),
-        }));
+      case "Phrase": {
+        const size = mods.size === "M" ? "M" : "L";
+        // «Это одна фраза» в комментарии — слить все выделенные блоки в ОДИН
+        // компонент врезки (абзацы внутри разделяем пустой строкой).
+        if (/одна\s+фраз/iu.test(dir.comment || "")) {
+          const text = items.map((it) => md(it, fix)).filter(Boolean).join("\n\n");
+          return [{ component: "Phrase", size, text }];
+        }
+        return items.map((it) => ({ component: "Phrase" as const, size, text: md(it, fix) }));
+      }
 
       case "Heading":
         return items.map((it) => ({
@@ -1726,6 +1754,15 @@ export function buildDoc(
             text: text || head,
           },
         ];
+      }
+
+      case "Video": {
+        // Видео задаётся ссылкой: достаём первый URL из выделенных блоков.
+        const url = items
+          .map((it) => md(it))
+          .join(" ")
+          .match(/(?:\]\()?(https?:\/\/[^)\s]+)/)?.[1];
+        return [{ component: "Video", ...(url ? { href: url } : {}) }];
       }
 
       default:
