@@ -10,11 +10,11 @@ import { SmallImage, type SmallImageName } from "./SmallImage";
   текста и подать отдельно — шаг инструкции, важное замечание, пример, мини-итог.
   Не для цитат (есть Quote) и не для «хорошо/плохо» (есть Compare Card).
 
-  Сама по себе не стоит: живёт в слоте Card Container
-  (Section Container → Card Container → General Card → Body → Slot).
-  Поэтому своего верхнего отступа у неё нет — воздух даёт Card Container.
+  Сама по себе не стоит: живёт в слоте Block
+  (Section Container → Block → General Card → Body → Slot).
+  Поэтому своего верхнего отступа у неё нет — воздух даёт Block.
 
-  В слот (children) кладут Text, ListContainer, Button.
+  В слот (children) кладут Text, Stack, Button.
 
   ЦВЕТ ФОНА — СВОЙСТВО (проп bgColor). В Figma-наборе его не видно (красят руками),
   но по решению заказчика он должен быть свойством компонента, с семантикой:
@@ -60,7 +60,7 @@ type Props = {
   step?: string;
   /** Иконка 32 из lucide-react в белом круге 64. Не задана — круга нет. */
   iconNode?: React.ReactNode;
-  /** Slot: Text, ListContainer, Button. */
+  /** Slot: Text, Stack, Button. */
   children?: React.ReactNode;
   className?: string;
 };

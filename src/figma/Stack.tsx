@@ -2,14 +2,16 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /*
-  Figma: component set «List Container» (6838:6191).
+  Figma: component set 6838:6191 — там он пока называется «List Container»,
+  переименование в «Stack» согласовано с разработчиком и ждёт правки в макете.
 
-  Название обманывает второй раз: это не «список», а вертикальный стек с шагом 8.
-  Обычно в нём лежат List Item, но в живом шаблоне встречается List Container,
-  внутри которого две Quote (узел 0:592) — то есть класть можно и другие блоки.
+  Стек, а не список: вертикальная стопка с равным шагом 8. Обычно в нём лежат
+  List Item, но в живом шаблоне встречается стек, внутри которого две Quote
+  (узел 0:592) — класть можно и другие блоки. Старое имя это скрывало, потому
+  его и меняем.
 
   Верхний отступ 16 (space/m) — третья ступень лестницы отступов:
-  Section Container 56 → Card Container 32 → List Container 16.
+  Section Container 56 → Block 32 → Stack 16.
 
   Вкладывается куда угодно: в Section Container, внутрь Card, Compare Card,
   Accordion. Ставим `as="ul"`, когда внутри действительно список пунктов —
@@ -23,12 +25,12 @@ type Props = {
   className?: string;
 };
 
-export function ListContainer({ children, as = "ul", className }: Props) {
+export function Stack({ children, as = "ul", className }: Props) {
   const Tag = as;
 
   return (
     <div
-      data-component="List Container"
+      data-component="Stack"
       className={cn("w-full pt-[var(--space-m)]", className)}
     >
       {/* Slot. counter-reset обнуляет нумерацию для List Item · Number внутри. */}

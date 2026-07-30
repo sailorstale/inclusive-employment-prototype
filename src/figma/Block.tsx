@@ -2,15 +2,17 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /*
-  Figma: component set «Card Container» (6517:2765), свойства Platform × Orientation.
+  Figma: component set 6517:2765, свойства Platform × Orientation — там он пока
+  называется «Card Container», переименование в «Block» согласовано с
+  разработчиком и ждёт правки в макете.
 
-  Самый недооценённый компонент системы. Название обманывает: это НЕ «обёртка
+  Самый недооценённый компонент системы. Старое имя обманывало: это НЕ «обёртка
   для карточек», а универсальный конверт для любого блока, который не является
-  прозой. В живом шаблоне 8 Card Container из 8 держат внутри: цитаты, карточки,
+  прозой. В живом шаблоне 8 Block из 8 держат внутри: цитаты, карточки,
   таблицу, пары сравнения, аккордеоны, квизы, врезки Prompt и одиночную кнопку.
 
   Правило: Heading и Text → прямо в Section Container.
-           Всё остальное → сначала Card Container, потом внутрь него.
+           Всё остальное → сначала Block, потом внутрь него.
 
   Orientation:
   - Vertical — блоки друг под другом (столбиком).
@@ -20,22 +22,22 @@ import { cn } from "@/lib/utils";
   Верхний отступ 32 (space/xl), промежуток между детьми 8 (space/xs).
 */
 
-export type CardContainerOrientation = "Vertical" | "Horizontal";
+export type BlockOrientation = "Vertical" | "Horizontal";
 
 type Props = {
-  orientation?: CardContainerOrientation;
+  orientation?: BlockOrientation;
   children?: React.ReactNode;
   className?: string;
 };
 
-export function CardContainer({
+export function Block({
   orientation = "Vertical",
   children,
   className,
 }: Props) {
   return (
     <div
-      data-component={`Card Container · ${orientation}`}
+      data-component={`Block · ${orientation}`}
       className={cn("w-full pt-[var(--space-xl)]", className)}
     >
       {/* Slot */}

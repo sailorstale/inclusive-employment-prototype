@@ -127,7 +127,7 @@ export function KitchenSinkPage() {
               Как устроена иерархия: секция → конверт → блок → стек → пункт
             </ListItem>
             <ListItem size="L" type="Dot">
-              Почему Card Container обязателен для всего, что не проза
+              Почему Block обязателен для всего, что не проза
             </ListItem>
             <ListItem size="L" type="Dot">
               Как выглядят все компоненты системы и их варианты

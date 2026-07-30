@@ -23,9 +23,9 @@ export type { FooterItemTitle } from "./Footer";
 
 // --- Контейнеры ---
 export { SectionContainer } from "./SectionContainer";
-export { CardContainer } from "./CardContainer";
-export type { CardContainerOrientation } from "./CardContainer";
-export { ListContainer } from "./ListContainer";
+export { Block } from "./Block";
+export type { BlockOrientation } from "./Block";
+export { Stack } from "./Stack";
 export { ListItem } from "./ListItem";
 export type { ListItemSize, ListItemType } from "./ListItem";
 

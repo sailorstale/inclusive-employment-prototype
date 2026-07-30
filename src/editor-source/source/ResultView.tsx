@@ -3,7 +3,7 @@ import {
   Accordion,
   Button,
   CardButton,
-  CardContainer,
+  Block,
   Compare,
   CompareCard,
   Feedback,
@@ -14,7 +14,7 @@ import {
   GeneralCard,
   Heading,
   Image,
-  ListContainer,
+  Stack,
   ListItem,
   PageSummary,
   Phrase,
@@ -110,13 +110,13 @@ function NodeView({ node }: { node: Node }) {
       );
     }
 
-    case "List Container":
+    case "Stack":
       return (
-        <ListContainer as={node.ordered ? "ol" : "ul"}>
+        <Stack as={node.ordered ? "ol" : "ul"}>
           {node.children.map((c, i) => (
             <NodeView key={i} node={c} />
           ))}
-        </ListContainer>
+        </Stack>
       );
 
     case "List Item": {
@@ -138,13 +138,13 @@ function NodeView({ node }: { node: Node }) {
       );
     }
 
-    case "Card Container":
+    case "Block":
       return (
-        <CardContainer orientation={node.orientation}>
+        <Block orientation={node.orientation}>
           {node.children.map((c, i) => (
             <NodeView key={i} node={c} />
           ))}
-        </CardContainer>
+        </Block>
       );
 
     case "Page Summary":
@@ -157,7 +157,7 @@ function NodeView({ node }: { node: Node }) {
       );
 
     // Проп в Figma зовётся orient, в данных — orientation (одно имя на
-    // понятие, как у Card Container). Здесь переходник.
+    // понятие, как у Block). Здесь переходник.
     case "General Card":
       return (
         <GeneralCard

@@ -12,7 +12,7 @@
   в конструкторе. Это же имя стоит в шильдике прототипа.
 
   Правило раскладки (КОМПОНЕНТЫ.md): в слот Section Container кладём только
-  Heading и Text, всё остальное заворачиваем в Card Container.
+  Heading и Text, всё остальное заворачиваем в Block.
 
   Служебные пометки инструмента («убрано по директиве», «дополнить авторство»)
   — это узлы note. В превью они видны, в выгрузку НЕ идут: в JSON должен ехать
@@ -45,7 +45,7 @@ export type Node =
   | { component: "Heading"; level: HeadingLevel; text: string; anchor?: string }
   | { component: "Text"; size: TextSize; text: string }
   | { component: "Phrase"; size: PhraseSize; text: string }
-  | { component: "List Container"; ordered: boolean; children: Node[] }
+  | { component: "Stack"; ordered: boolean; children: Node[] }
   | {
       component: "List Item";
       size: "L" | "M";
@@ -54,11 +54,11 @@ export type Node =
       icon?: string;
       text: string;
     }
-  | { component: "Card Container"; orientation: "Vertical" | "Horizontal"; children: Node[] }
+  | { component: "Block"; orientation: "Vertical" | "Horizontal"; children: Node[] }
   | { component: "Page Summary"; children: Node[] }
   | {
       /*
-        Ориентация называется orientation — как у Card Container. В Figma проп
+        Ориентация называется orientation — как у Block. В Figma проп
         зовётся orient, но одно понятие не должно иметь двух имён в данных;
         переходником работает ResultView.
       */
@@ -621,9 +621,9 @@ function groupsOfDoc(
 }
 
 /*
-  Не-проза: в секцию напрямую не кладётся, только через Card Container.
+  Не-проза: в секцию напрямую не кладётся, только через Block.
 
-  List Container сюда НЕ входит, хотя соблазн есть. В КОМПОНЕНТЫ.md про него
+  Stack сюда НЕ входит, хотя соблазн есть. В КОМПОНЕНТЫ.md про него
   сказано прямо: «кладётся куда угодно: в секцию, в карточку, в Compare Card,
   в аккордеон», и в перечне того, что требует конверта, списка нет. Лишний
   конверт давал +32 к собственным 16 контейнера — отбивка от абзаца выходила
@@ -663,32 +663,32 @@ const LINK_RE = /\[([^\]]+)\]\(((?:https?:)?\/\/[^)]+)\)/;
   СКЛЕЙКА СОСЕДНИХ СПИСКОВ.
 
   Парсер источника отдаёт каждый пункт списка ОТДЕЛЬНЫМ блоком (в директивах это
-  видно как «1 пунктов»). Без склейки каждый пункт получал свой List Container,
-  а тот — свой Card Container: 32 пикселя от конверта плюс 16 от контейнера на
+  видно как «1 пунктов»). Без склейки каждый пункт получал свой Stack,
+  а тот — свой Block: 32 пикселя от конверта плюс 16 от контейнера на
   КАЖДЫЙ пункт. Списки разъезжались на пол-экрана.
 
-  По системе List Container — это вертикальный стек с равным шагом, и шаг задаёт
+  По системе Stack — это вертикальный стек с равным шагом, и шаг задаёт
   он сам. Поэтому соседние списки одного типа сливаем в один контейнер: пункты
   идут подряд, промежуток — штатный gap.
 */
-function listInside(n?: Node): Extract<Node, { component: "List Container" }> | undefined {
+function listInside(n?: Node): Extract<Node, { component: "Stack" }> | undefined {
   if (!n) return undefined;
-  if (n.component === "List Container") return n;
+  if (n.component === "Stack") return n;
   if (
-    n.component === "Card Container" &&
+    n.component === "Block" &&
     n.children.length === 1 &&
-    n.children[0].component === "List Container"
+    n.children[0].component === "Stack"
   )
     return n.children[0];
   return undefined;
 }
 
 /*
-  Однородный конверт: какой ОДИН тип компонента лежит внутри Card Container.
+  Однородный конверт: какой ОДИН тип компонента лежит внутри Block.
   Служебные пометки инструмента не в счёт — они не контент.
 */
 function soleKind(n?: Node): string | undefined {
-  if (!n || n.component !== "Card Container") return undefined;
+  if (!n || n.component !== "Block") return undefined;
   const kinds = new Set(
     n.children.filter((c) => c.component !== "note").map((c) => c.component),
   );
@@ -708,7 +708,7 @@ function soleKind(n?: Node): string | undefined {
   undefined — ролей несколько: такой конверт не склеиваем ни с чем.
 */
 function soleRole(n?: Node): string | undefined {
-  if (!n || n.component !== "Card Container") return undefined;
+  if (!n || n.component !== "Block") return undefined;
   const roles = new Set(
     n.children
       .filter((c) => c.component !== "note")
@@ -720,10 +720,10 @@ function soleRole(n?: Node): string | undefined {
 /*
   СКЛЕЙКА СОСЕДЕЙ. Два правила, оба про «не плодить обёртки»:
 
-  1. Соседние списки одного типа — в один List Container (он и есть стек с
+  1. Соседние списки одного типа — в один Stack (он и есть стек с
      равным шагом, шаг задаёт сам).
-  2. Соседние Card Container с ОДНИМ И ТЕМ ЖЕ типом внутри — в один конверт.
-     Восемь мифов подряд это восемь аккордеонов в ОДНОМ Card Container, а не
+  2. Соседние Block с ОДНИМ И ТЕМ ЖЕ типом внутри — в один конверт.
+     Восемь мифов подряд это восемь аккордеонов в ОДНОМ Block, а не
      восемь конвертов по одному: каждый конверт добавлял свои 32 сверху, и
      ряд однотипных блоков разъезжался.
 
@@ -747,7 +747,7 @@ function mergeSiblings(nodes: Node[]): Node[] {
     if (a && b && a.ordered === b.ordered) {
       const merged = { ...a, children: [...a.children, ...b.children] };
       out[out.length - 1] =
-        prev!.component === "Card Container"
+        prev!.component === "Block"
           ? { ...prev!, children: [merged] }
           : merged;
       continue;
@@ -764,8 +764,8 @@ function mergeSiblings(nodes: Node[]): Node[] {
       ka === kb &&
       ra !== undefined &&
       ra === rb &&
-      prev!.component === "Card Container" &&
-      n.component === "Card Container" &&
+      prev!.component === "Block" &&
+      n.component === "Block" &&
       prev!.orientation === n.orientation
     ) {
       out[out.length - 1] = {
@@ -829,7 +829,7 @@ export function buildDoc(
       case "list":
         return [
           {
-            component: "List Container",
+            component: "Stack",
             ordered: b.ordered,
             children: b.items.map((li) => ({
               component: "List Item" as const,
@@ -983,7 +983,7 @@ export function buildDoc(
     const flushList = () => {
       if (!bullets.length) return;
       out.push({
-        component: "List Container",
+        component: "Stack",
         ordered: false,
         children: bullets.map((t) => ({
           component: "List Item" as const,
@@ -1127,7 +1127,7 @@ export function buildDoc(
 
           Сами карточки всегда Vertical (иконка сверху, под ней заголовок и
           текст). «Горизонтально» из директивы — про РЯД: это ориентация
-          конверта Card Container, две карточки по половине колонки бок о бок.
+          конверта Block, две карточки по половине колонки бок о бок.
 
           Иконка у каждой карточки своя — подобрана по тексту её блока.
         */
@@ -1612,7 +1612,7 @@ export function buildDoc(
         }
         const want = listCount(dir);
         return [
-          { component: "List Container", ordered: marker === "Number", children: kids },
+          { component: "Stack", ordered: marker === "Number", children: kids },
           // Просили N пунктов, а вышло другое — молчать нельзя (см. аккордеоны).
           ...(want && kids.length !== want
             ? [
@@ -1864,7 +1864,7 @@ export function buildDoc(
       const nodes = guarded(g);
       if (needsCard(g))
         kids.push({
-          component: "Card Container",
+          component: "Block",
           orientation: cardOrientation(g),
           children: nodes,
         });
@@ -1892,7 +1892,7 @@ export function buildDoc(
 
   Карточка внутри аккордеона: у аккордеона свой тонированный фон, и цветная
   карточка на нём спорит с ним же. Поэтому внутри аккордеона карточка всегда
-  БЕЛАЯ, а лежит в List Container — том самом стеке с равным шагом.
+  БЕЛАЯ, а лежит в Stack — том самом стеке с равным шагом.
 
   Отдельным проходом, а не в месте сборки: правило одно, а собирают дерево два
   источника (раскладка модулей и рукописный эталон). Держать его в одном месте —
@@ -1903,7 +1903,7 @@ function bodyInsideAccordion(children: Node[]): Node[] {
   let stack: Node[] = [];
   const flush = () => {
     if (!stack.length) return;
-    out.push({ component: "List Container", ordered: false, children: stack });
+    out.push({ component: "Stack", ordered: false, children: stack });
     stack = [];
   };
   for (const c of children) {
@@ -2140,9 +2140,9 @@ const EXPORT_COMPONENTS: Record<
   Heading: true,
   Text: true,
   Phrase: true,
-  "List Container": true,
+  "Stack": true,
   "List Item": true,
-  "Card Container": true,
+  "Block": true,
   "General Card": true,
   Accordion: true,
   Quote: true,
@@ -2180,7 +2180,7 @@ const LOWER_VALUE_KEYS = new Set(["marker", "variant", "orientation", "state", "
   поднимаем, только если она у всех одна.
 */
 /** Контейнеры, чьи дети — пункты списка. Page Summary — такой же случай. */
-const LIST_HOSTS = new Set(["List Container", "Page Summary"]);
+const LIST_HOSTS = new Set(["Stack", "Page Summary"]);
 const hoistListFields = (container: Record<string, unknown>): Record<string, unknown> => {
   const out = { ...container };
   delete out.ordered;

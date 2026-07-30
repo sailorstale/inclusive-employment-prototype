@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
   нужно не всё. НЕ берут для важного (условия, предупреждения): спрятанное
   под кликом большинство не откроет.
 
-  Ставится только внутрь Card Container (как любой не-текстовый блок).
+  Ставится только внутрь Block (как любой не-текстовый блок).
   Состояние State=Collapsed|Expanded в Figma — структурное: в свёрнутом
   Content Container→Slot физически нет. Здесь это локальный useState,
   стартовое значение — проп defaultOpen.
@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 type Props = {
   /** Текст вопроса — заголовок Desktop/H4. */
   question: React.ReactNode;
-  /** Ответ. В Figma это Content Container → Slot: Text, List Container, Quote. */
+  /** Ответ. В Figma это Content Container → Slot: Text, Stack, Quote. */
   children?: React.ReactNode;
   /** Стартовое состояние. По умолчанию свёрнут, как State=Collapsed. */
   defaultOpen?: boolean;
@@ -85,7 +85,7 @@ export function Accordion({
       </button>
 
       {/* Content Container → Slot. Своего зазора нет: верхний отступ приносит
-          сам вложенный блок (Text pt-24, List Container pt-16). */}
+          сам вложенный блок (Text pt-24, Stack pt-16). */}
       {open ? (
         <div id={contentId} className="w-full">
           {children}

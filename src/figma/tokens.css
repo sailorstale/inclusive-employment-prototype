@@ -197,7 +197,7 @@
 
 /*
   Маркер нумерованного списка (List Item · Number). Номер считает CSS-счётчик:
-  List Container сбрасывает ds-num, каждый Number-пункт увеличивает его, а этот
+  Stack сбрасывает ds-num, каждый Number-пункт увеличивает его, а этот
   ::before печатает «1.», «2.» … — нумеровать руками не нужно.
 */
 .figma-scope .ds-num::before { content: counter(ds-num) "."; }

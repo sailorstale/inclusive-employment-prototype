@@ -1,7 +1,7 @@
 import {
   Accordion,
   Button,
-  CardContainer,
+  Block,
   Checkbox,
   Compare,
   CompareCard,
@@ -11,7 +11,7 @@ import {
   Heading,
   Image,
   Input,
-  ListContainer,
+  Stack,
   ListItem,
   Prompt,
   Quiz,
@@ -49,7 +49,7 @@ import {
   а в проверке системы и вложенностей.
 
   Везде соблюдается главное правило: Heading и Text лежат прямо в
-  Section Container, всё остальное — только внутри Card Container.
+  Section Container, всё остальное — только внутри Block.
 */
 
 export function TypographySection() {
@@ -66,7 +66,7 @@ export function TypographySection() {
         >
           Section Container
         </Tooltip>
-        . Всё остальное заворачивается в Card Container. Подробности — в
+        . Всё остальное заворачивается в Block. Подробности — в
         документе <ExternalLink href="https://www.figma.com/design/k5eUmzpvQR96XrwBxUfGgS/">макет в Figma</ExternalLink>.
       </Text>
 
@@ -111,21 +111,21 @@ export function ListsSection() {
         Списки
       </Heading>
       <Text size="L">
-        List Container — не «список», а вертикальный стек с шагом 8. Обычно в нём
+        Stack — вертикальный стек с шагом 8, а не «список». Обычно в нём
         List Item, но лечь может и другой блок (ниже, в разделе «Цитаты»,
         показан живой случай с двумя Quote внутри).
       </Text>
 
-      <ListContainer>
+      <Stack>
         <ListItem size="L" type="Dot">
           List Item · L · Dot — пункт с точкой, кегль 18
         </ListItem>
         <ListItem size="L" type="Dot">
           Точка красится в text/secondary, сам текст — в text/primary
         </ListItem>
-      </ListContainer>
+      </Stack>
 
-      <ListContainer>
+      <Stack>
         <ListItem size="L" type="Icon">
           List Item · L · Icon — по умолчанию галочка вместо точки
         </ListItem>
@@ -135,14 +135,14 @@ export function ListsSection() {
         <ListItem size="M" type="Dot">
           List Item · M · Dot — точка, кегль 16
         </ListItem>
-      </ListContainer>
+      </Stack>
 
       <Text size="L">
         Новый маркер Number — нумерованный список. Номера считает CSS-счётчик,
         руками их проставлять не нужно. Тег контейнера — ol, чтобы разметка была
         честной:
       </Text>
-      <ListContainer as="ol">
+      <Stack as="ol">
         <ListItem size="L" type="Number">
           List Item · L · Number — первый шаг, номер печатается сам
         </ListItem>
@@ -152,7 +152,7 @@ export function ListsSection() {
         <ListItem size="L" type="Number">
           Третий шаг — теперь «Наём по шагам» можно нумеровать по-настоящему
         </ListItem>
-      </ListContainer>
+      </Stack>
     </SectionContainer>
   );
 }
@@ -171,8 +171,8 @@ export function ButtonsSection() {
         правильный способ; ряды ниже показывают типы, размеры и иконки.
       </Text>
 
-      {/* Card Container с одиночной кнопкой — так сделано в живом шаблоне */}
-      <CardContainer orientation="Horizontal">
+      {/* Block с одиночной кнопкой — так сделано в живом шаблоне */}
+      <Block orientation="Horizontal">
         <Button type="Primary" size="L">
           Primary · L
         </Button>
@@ -185,9 +185,9 @@ export function ButtonsSection() {
         <Button type="Ghost" size="L">
           Ghost · L
         </Button>
-      </CardContainer>
+      </Block>
 
-      <CardContainer orientation="Horizontal">
+      <Block orientation="Horizontal">
         <Button type="Primary" size="M" icon="Left" iconNode={<Download />}>
           Скачать шаблон
         </Button>
@@ -204,7 +204,7 @@ export function ButtonsSection() {
         <Button type="Primary" size="M" disabled>
           Выключена
         </Button>
-      </CardContainer>
+      </Block>
 
       {/* Второй способ: кнопка внутри Card Button */}
       <CardButtonWithButton type="Primary" size="L" icon="Right" iconNode={<FileText />}>
@@ -222,11 +222,11 @@ export function CardsSection() {
       </Heading>
       <Text size="L">
         General Card — универсальный блок со слотом. Ряд карточек собирается
-        через Card Container · Horizontal: 380 + 8 + 380 = ширина колонки.
+        через Block · Horizontal: 380 + 8 + 380 = ширина колонки.
       </Text>
 
-      {/* Ряд карточек: Card Container · Horizontal → General Card ×2 */}
-      <CardContainer orientation="Horizontal">
+      {/* Ряд карточек: Block · Horizontal → General Card ×2 */}
+      <Block orientation="Horizontal">
         <GeneralCard
           className="min-w-[380px] flex-1"
           title="Карточка со всеми украшениями"
@@ -248,10 +248,10 @@ export function CardsSection() {
           bgColor="green"
         >
           <Text size="M">
-            В слот карточки кладут Text, List Container и Button:
+            В слот карточки кладут Text, Stack и Button:
           </Text>
-          {/* Глубокая вложенность: Card Container → Card → Slot → List Container → List Item */}
-          <ListContainer>
+          {/* Глубокая вложенность: Block → Card → Slot → Stack → List Item */}
+          <Stack>
             <ListItem size="M" type="Dot">
               Первый пункт внутри карточки
             </ListItem>
@@ -261,9 +261,9 @@ export function CardsSection() {
             <ListItem size="M" type="Dot">
               Третий пункт
             </ListItem>
-          </ListContainer>
+          </Stack>
         </GeneralCard>
-      </CardContainer>
+      </Block>
 
       <Text size="L">
         Цвет фона — свойство bgColor со смыслом. По умолчанию синий; жёлтый —
@@ -271,7 +271,7 @@ export function CardsSection() {
         Белый, бежевый и серый — нейтральные, без закреплённого значения.
       </Text>
 
-      <CardContainer orientation="Horizontal">
+      <Block orientation="Horizontal">
         {(
           [
             { bg: "blue", note: "по умолчанию — обычная карточка" },
@@ -289,10 +289,10 @@ export function CardsSection() {
             <Text size="S">{note}</Text>
           </GeneralCard>
         ))}
-      </CardContainer>
+      </Block>
 
       {/* Orient=Horizontal — компактная строка, высота НЕ фиксирована */}
-      <CardContainer>
+      <Block>
         <GeneralCard
           orient="Horizontal"
           title="General Card · Horizontal"
@@ -304,7 +304,7 @@ export function CardsSection() {
             118 — проверено по живому узлу, где она 420.
           </Text>
         </GeneralCard>
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
@@ -322,7 +322,7 @@ export function QuotesSection() {
         кат»: обрезается до пяти строк, ссылка «Далее» раскрывает остальное.
       </Text>
 
-      <CardContainer>
+      <Block>
         <Quote
           size="L"
           author="Гульнара Горишняя"
@@ -350,23 +350,23 @@ export function QuotesSection() {
           поэтому слева плашка-логотип организации. Короткая цитата в пять строк
           укладывается, поэтому «Далее» не появляется.
         </Quote>
-      </CardContainer>
+      </Block>
 
       <Text size="L">
-        Живой случай из шаблона: две Quote лежат внутри List Container — то есть
+        Живой случай из шаблона: две Quote лежат внутри Stack — то есть
         стек принимает не только пункты списка.
       </Text>
 
-      <CardContainer>
-        <ListContainer as="div">
+      <Block>
+        <Stack as="div">
           <Quote size="S" author="Первый автор" role="Должность">
-            Первая цитата внутри List Container.
+            Первая цитата внутри Stack.
           </Quote>
           <Quote size="S" author="Второй автор" role="Должность">
             Вторая цитата — промежуток 8 задаёт стек.
           </Quote>
-        </ListContainer>
-      </CardContainer>
+        </Stack>
+      </Block>
     </SectionContainer>
   );
 }
@@ -382,33 +382,33 @@ export function CompareSection() {
         бок о бок, и не переносит их одна под другую.
       </Text>
 
-      <CardContainer>
+      <Block>
         <Compare>
           <CompareCard tone="positive" txt="Так правильно">
             <Text size="M">В слот половинки кладут текст и список:</Text>
-            <ListContainer>
+            <Stack>
               <ListItem size="M" type="Icon">
                 Понятная формулировка вакансии
               </ListItem>
               <ListItem size="M" type="Icon">
                 Указаны условия и доступность офиса
               </ListItem>
-            </ListContainer>
+            </Stack>
           </CompareCard>
 
           <CompareCard tone="negative" txt="Так неправильно">
             <Text size="M">Смысл задаётся только цветом — свойства нет:</Text>
-            <ListContainer>
+            <Stack>
               <ListItem size="M" type="Dot">
                 Требования без объяснения
               </ListItem>
               <ListItem size="M" type="Dot">
                 Про доступность ни слова
               </ListItem>
-            </ListContainer>
+            </Stack>
           </CompareCard>
         </Compare>
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
@@ -425,7 +425,7 @@ export function TableSection() {
         строками из Table cell.
       </Text>
 
-      <CardContainer>
+      <Block>
         <Table>
           <TableRow header>
             <TableHeaderCell>Контейнер</TableHeaderCell>
@@ -436,15 +436,15 @@ export function TableSection() {
             <TableCell>Каркас смыслового раздела страницы</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell weight="Medium">Card Container</TableCell>
+            <TableCell weight="Medium">Block</TableCell>
             <TableCell>Конверт для всего, что не проза</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell weight="Medium">List Container</TableCell>
+            <TableCell weight="Medium">Stack</TableCell>
             <TableCell>Вертикальный стек с равным шагом</TableCell>
           </TableRow>
         </Table>
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
@@ -460,37 +460,37 @@ export function AccordionSection() {
         что читатель обязан прочесть: свёрнутое не читают.
       </Text>
 
-      <CardContainer>
+      <Block>
         <Accordion question="Вопрос с обычным ответом" defaultOpen>
           <Text size="L">
-            В слот аккордеона кладут Text, List Container и Quote.
+            В слот аккордеона кладут Text, Stack и Quote.
           </Text>
         </Accordion>
 
         <Accordion question="Вопрос со списком в ответе">
           <Text size="L">Ответ может содержать список:</Text>
-          <ListContainer>
+          <Stack>
             <ListItem size="L" type="Dot">
               Первый пункт ответа
             </ListItem>
             <ListItem size="L" type="Dot">
               Второй пункт ответа
             </ListItem>
-          </ListContainer>
+          </Stack>
         </Accordion>
 
-        {/* Живой случай: внутри аккордеона — List Container с цитатами */}
+        {/* Живой случай: внутри аккордеона — Stack с цитатами */}
         <Accordion question="Вопрос с цитатами в ответе">
-          <ListContainer as="div">
+          <Stack as="div">
             <Quote size="S" author="Имя Фамилия" role="Должность">
               Цитата внутри аккордеона — так собрано в живом шаблоне.
             </Quote>
             <Quote size="S" author="Имя Фамилия" role="Должность">
               Вторая цитата рядом.
             </Quote>
-          </ListContainer>
+          </Stack>
         </Accordion>
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
@@ -506,7 +506,7 @@ export function PromptSection() {
         отдаёт сырьё и сразу предупреждает, что вслепую его применять нельзя.
       </Text>
 
-      <CardContainer>
+      <Block>
         <Prompt
           title="ИИ промпт"
           warning="До использования в реальных документах — проверить с юристом."
@@ -515,7 +515,7 @@ export function PromptSection() {
           условия труда и доступность офиса. Не используй формулировки, которые
           сужают круг кандидатов без деловой необходимости.
         </Prompt>
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
@@ -531,7 +531,7 @@ export function QuizSection() {
         уходят.
       </Text>
 
-      <CardContainer>
+      <Block>
         <Quiz
           title="Проверьте себя"
           description="Отметьте все подходящие варианты и нажмите «Проверить»."
@@ -544,7 +544,7 @@ export function QuizSection() {
           ]}
           explanation="Квота закрывается только оформленными отношениями: штат или соглашение с НКО об аренде рабочего места."
         />
-      </CardContainer>
+      </Block>
 
       <Heading level="H3">Состояния Quiz Items и Quiz Badge</Heading>
       <Text size="M">
@@ -552,7 +552,7 @@ export function QuizSection() {
         проверки.
       </Text>
 
-      <CardContainer>
+      <Block>
         <QuizItems state="Default">Quiz Items · Default</QuizItems>
         <QuizItems state="Correct" checked>
           Quiz Items · Correct
@@ -561,13 +561,13 @@ export function QuizSection() {
           Quiz Items · Incorrect
         </QuizItems>
         <QuizItems state="Partly">Quiz Items · Partly</QuizItems>
-      </CardContainer>
+      </Block>
 
-      <CardContainer orientation="Horizontal">
+      <Block orientation="Horizontal">
         <QuizBadge type="Correct" />
         <QuizBadge type="Incorrect" />
         <QuizBadge type="Partly" />
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
@@ -606,7 +606,7 @@ export function SmallImageSection() {
         Figma пустые: там рисунок ещё не залит.
       </Text>
 
-      <CardContainer orientation="Horizontal">
+      <Block orientation="Horizontal">
         {ALL_IMAGES.map((name) => (
           <div key={name} className="flex w-[104px] flex-col items-center gap-[var(--space-2xs)]">
             <SmallImage name={name} size={64} />
@@ -615,7 +615,7 @@ export function SmallImageSection() {
             </span>
           </div>
         ))}
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
@@ -628,7 +628,7 @@ export function MediaSection() {
       </Heading>
       <Text size="L">
         Два новых компонента для тела страницы. Раньше их не было: фото жило
-        только в Hero, а Small Image — стикер-декор. Оба кладут в Card Container
+        только в Hero, а Small Image — стикер-декор. Оба кладут в Block
         и оба резиновые — ширину задаёт колонка, соотношение сторон ~16:9.
       </Text>
 
@@ -637,17 +637,17 @@ export function MediaSection() {
         реального фото не показывает, поэтому это рамка-заглушка «здесь будет
         изображение».
       </Text>
-      <CardContainer>
+      <Block>
         <Image />
-      </CardContainer>
+      </Block>
 
       <Text size="L">
         Video — ролик, например интервью героя. Кнопка play по центру; в
         прототипе — пастельный плейсхолдер без реального кадра.
       </Text>
-      <CardContainer>
+      <Block>
         <Video />
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
@@ -665,14 +665,14 @@ export function ControlsSection() {
       </Text>
 
       <Heading level="H3">Поля ввода</Heading>
-      <CardContainer>
+      <Block>
         <Input placeholder="Введите текст" />
         <Input state="Disabled" placeholder="Недоступно" />
         <Input state="Error" defaultValue="неверный@email" />
-      </CardContainer>
+      </Block>
 
       <Heading level="H3">Выпадающий список</Heading>
-      <CardContainer>
+      <Block>
         <Dropdown>
           <option>Удалённая работа</option>
           <option>Гибрид</option>
@@ -680,27 +680,27 @@ export function ControlsSection() {
         </Dropdown>
         <Dropdown state="Disabled" placeholder="Недоступно" />
         <Dropdown state="Error" placeholder="Не выбрано" />
-      </CardContainer>
+      </Block>
 
       <Heading level="H3">Поиск</Heading>
-      <CardContainer>
+      <Block>
         <Search />
         <Search defaultValue="Удалённая работа" />
         <Search state="Error" />
-      </CardContainer>
+      </Block>
 
       <Heading level="H3">Многострочное поле</Heading>
-      <CardContainer>
+      <Block>
         <Textarea placeholder="Расскажите о вашем опыте" />
         <Textarea state="Error" placeholder="Поле обязательно для заполнения" />
-      </CardContainer>
+      </Block>
 
       <Heading level="H3">Флажки и переключатели</Heading>
       <Text size="M">
         Checkbox — независимые пункты (можно отметить несколько), Radio — выбор
         одного из группы. Размеры L и S, отмеченный цвет — тёмно-синий DS.
       </Text>
-      <CardContainer orientation="Horizontal">
+      <Block orientation="Horizontal">
         <label className="flex items-center gap-[var(--space-xs)]">
           <Checkbox defaultChecked aria-label="Удалённая работа" />
           <Text size="M">Удалённая работа</Text>
@@ -713,8 +713,8 @@ export function ControlsSection() {
           <Checkbox disabled aria-label="Недоступно" />
           <Text size="M">Недоступно</Text>
         </label>
-      </CardContainer>
-      <CardContainer orientation="Horizontal">
+      </Block>
+      <Block orientation="Horizontal">
         <label className="flex items-center gap-[var(--space-xs)]">
           <Radio name="demo-format" defaultChecked aria-label="Полный день" />
           <Text size="M">Полный день</Text>
@@ -727,7 +727,7 @@ export function ControlsSection() {
           <Radio name="demo-format" disabled aria-label="Недоступно" />
           <Text size="M">Недоступно</Text>
         </label>
-      </CardContainer>
+      </Block>
     </SectionContainer>
   );
 }
