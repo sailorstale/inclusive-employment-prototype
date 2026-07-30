@@ -37,7 +37,12 @@ export type TextSize = "XL" | "L" | "M" | "S";
 export type PhraseSize = "L" | "M";
 
 export type Node =
-  | { component: "Heading"; level: HeadingLevel; text: string }
+  /*
+    anchor — якорь заголовка, уникальный в пределах страницы: по нему
+    разработчик вешает id и скроллит оглавление. У H2, открывающего секцию,
+    якорь совпадает с якорем самой секции — это одно и то же место.
+  */
+  | { component: "Heading"; level: HeadingLevel; text: string; anchor?: string }
   | { component: "Text"; size: TextSize; text: string }
   | { component: "Phrase"; size: PhraseSize; text: string }
   | { component: "List Container"; ordered: boolean; children: Node[] }
@@ -70,14 +75,26 @@ export type Node =
       size: "L" | "S";
       author?: string;
       role?: string;
-      org?: string;
+      /*
+        Организация обязательна в КАЖДОЙ цитате (решение разработчика): её имя
+        уходит в alt логотипа, а сам логотип станет ссылкой на сайт организации.
+        У авторов Яндекса это «Яндекс».
+      */
+      org: string;
+      /** Ключ логотипа: «yandex» либо имя файла в public/figma/logos. */
       logo?: string;
-      yandex?: boolean;
+      /** Адрес организации — туда ведёт логотип. Берётся из ссылки в источнике. */
+      orgHref?: string;
       /** Слаг фото автора: public/figma/avatars/<photo>.jpg. */
       photo?: string;
       paragraphs: string[];
     }
-  | { component: "Table"; header: string[]; rows: string[][] }
+  /*
+    caption — подпись для скринридера, визуально скрытая (решение разработчика:
+    «все caption только для скринридеров, сгенерируй их сам, скрой визуально»).
+    Собирается из ближайшего заголовка и шапки таблицы.
+  */
+  | { component: "Table"; caption?: string; header: string[]; rows: string[][] }
   | { component: "Image"; src: string; alt?: string }
   | { component: "Video"; href?: string }
   | { component: "Prompt"; title: string; warning: string; text: string }
@@ -639,7 +656,8 @@ const cardOrientation = (g: Group): "Vertical" | "Horizontal" =>
     ? "Horizontal"
     : "Vertical";
 
-const LINK_RE = /\[([^\]]+)\]\((?:https?:)?\/\/[^)]+\)/;
+/** [текст](адрес): группа 1 — текст, группа 2 — сам адрес (нужен логотипу цитаты). */
+const LINK_RE = /\[([^\]]+)\]\(((?:https?:)?\/\/[^)]+)\)/;
 
 /*
   СКЛЕЙКА СОСЕДНИХ СПИСКОВ.
@@ -796,6 +814,8 @@ export function buildDoc(
             component: "Heading",
             level: `H${b.level}` as HeadingLevel,
             text: headingText(md(it, fix), fix),
+            // Якорь из источника: он же стоит у секции и в оглавлении.
+            anchor: b.anchor,
           },
         ];
       case "paragraph":
@@ -1451,21 +1471,32 @@ export function buildDoc(
           }
 
           // Организация: ссылка в самой строке авторства или блок-ссылка в сегменте.
+          // Вместе с названием забираем и адрес — логотип будет вести на сайт.
           let orgName: string | undefined;
+          let orgLink: string | undefined;
           let orgIdx = -1;
           const inline = hasAuthor ? parsed[ai].text.match(LINK_RE) : null;
-          if (inline) orgName = inline[1].trim();
-          else
+          if (inline) {
+            orgName = inline[1].trim();
+            orgLink = inline[2].trim();
+          } else
             for (let j = ai; j < end; j++)
               if (orgIdx < 0 && parsed[j].isLinkOnly && (!hasAuthor || j !== ai)) {
-                orgName = parsed[j].text.match(LINK_RE)![1].trim();
+                const m = parsed[j].text.match(LINK_RE)!;
+                orgName = m[1].trim();
+                orgLink = m[2].trim();
                 orgIdx = j;
               }
 
+          /*
+            Аффилиация одним полем logo: «yandex» — круглый знак Яндекса,
+            иначе имя файла логотипа организации. Отдельного флага yandex нет
+            (замечание разработчика: одно понятие — одно поле).
+          */
           const yandex =
             Boolean(mods.yandex) || mentionsYandex([author ?? "", role ?? ""]);
-          const org = yandex ? undefined : orgName;
-          const logo = org ? findSlug(org, logoIndex) : undefined;
+          const org = yandex ? "Яндекс" : (orgName ?? "");
+          const logo = yandex ? "yandex" : orgName ? findSlug(orgName, logoIndex) : undefined;
           const photo = author ? findPhotoSlug(author, avatarIndex) : undefined;
 
           // Речь: абзацы сегмента, кроме строки авторства и блока-ссылки.
@@ -1484,8 +1515,9 @@ export function buildDoc(
           const missing = [
             !author && "имя",
             !role && "должность",
-            !yandex && !org && "организация",
+            !org && "организация",
             org && !logo && `логотип «${org}» не найден в каталоге`,
+            org && !yandex && !orgLink && "адрес организации",
             author && !photo && "фото автора",
           ].filter(Boolean) as string[];
 
@@ -1496,7 +1528,7 @@ export function buildDoc(
             role,
             org,
             logo,
-            yandex: yandex || undefined,
+            orgHref: orgLink,
             photo,
             paragraphs: speech,
           });
@@ -1539,6 +1571,9 @@ export function buildDoc(
             ? (mods.level as HeadingLevel)
             : "H2",
           text: headingText(md(it, fix), fix),
+          // Заголовок мог быть сделан из абзаца — тогда якоря в источнике нет,
+          // его посчитает проход по документу.
+          anchor: it.b.kind === "heading" ? it.b.anchor : undefined,
         }));
 
       case "List": {
@@ -1910,16 +1945,101 @@ function normalizeNode(n: Node): Node {
 
 const normalizeNodes = (nodes: Node[]): Node[] => nodes.map(normalizeNode);
 
+/*
+  ЯКОРЯ ЗАГОЛОВКОВ И ПОДПИСИ ТАБЛИЦ — одним проходом по документу.
+
+  Почему не в normalizeNode: обоим правилам нужен контекст, которого у
+  отдельного узла нет. Якорь обязан быть уникальным НА ВСЮ СТРАНИЦУ (по нему
+  разработчик вешает id и скроллит оглавление), а подпись таблицы берётся у
+  ближайшего заголовка сверху.
+
+  Заголовок, открывающий секцию, получает якорь САМОЙ секции: это одно и то же
+  место, и два разных id на одну точку только запутали бы.
+*/
+const RU_LAT: Record<string, string> = {
+  а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z",
+  и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r",
+  с: "s", т: "t", у: "u", ф: "f", х: "h", ц: "c", ч: "ch", ш: "sh", щ: "sch",
+  ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
+};
+
+/** Тот же транслит, что у парсера источника, — якоря совпадают с оглавлением. */
+function anchorSlug(text: string, used: Set<string>): string {
+  let out = "";
+  for (const ch of text.toLowerCase()) {
+    if (RU_LAT[ch] !== undefined) out += RU_LAT[ch];
+    else if (/[a-z0-9]/.test(ch)) out += ch;
+    else if (/[\s\-–—_]/.test(ch)) out += "-";
+  }
+  out = out.replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "sec";
+  let s = out;
+  let i = 2;
+  while (used.has(s)) s = `${out}-${i++}`;
+  used.add(s);
+  return s;
+}
+
+function annotate(doc: Doc): Doc {
+  const used = new Set<string>();
+  // Ближайший заголовок сверху — из него растёт подпись таблицы.
+  let lastHeading = "";
+
+  const captionFor = (t: { header: string[] }) => {
+    const cols = t.header.map((h) => stripEmph(h).trim()).filter(Boolean).join(", ");
+    const head = lastHeading.trim();
+    return (
+      [head && `${head}.`, cols && `Столбцы: ${cols}.`].filter(Boolean).join(" ") ||
+      "Таблица"
+    );
+  };
+
+  /** share — якорь секции, он достаётся её первому заголовку. */
+  const walk = (nodes: Node[], share?: string): Node[] => {
+    let toShare = share;
+    return nodes.map((n) => {
+      if (n.component === "Heading") {
+        const anchor = toShare ?? anchorSlug(n.anchor || n.text, used);
+        toShare = undefined;
+        lastHeading = n.text;
+        return { ...n, anchor };
+      }
+      if (n.component === "Accordion") {
+        lastHeading = n.question;
+        return { ...n, children: walk(n.children) };
+      }
+      if (n.component === "General Card" && n.title) lastHeading = n.title;
+      // Подпись — первым полем: её читают глазами раньше, чем строки таблицы.
+      if (n.component === "Table")
+        return n.caption
+          ? n
+          : { component: n.component, caption: captionFor(n), header: n.header, rows: n.rows };
+      if ("children" in n && Array.isArray(n.children))
+        return { ...n, children: walk(n.children) } as Node;
+      return n;
+    });
+  };
+
+  return {
+    ...doc,
+    children: doc.children.map((n) => {
+      if ((n as SectionNode).component !== "Section Container") return walk([n as Node])[0];
+      const sec = n as SectionNode;
+      const anchor = sec.anchor ? anchorSlug(sec.anchor, used) : undefined;
+      return { ...sec, anchor, children: walk(sec.children, anchor) };
+    }),
+  };
+}
+
 /** Применить правила системы ко всему документу. */
 export function normalizeDoc(doc: Doc): Doc {
-  return {
+  return annotate({
     ...doc,
     children: doc.children.map((n) =>
       (n as SectionNode).component === "Section Container"
         ? { ...(n as SectionNode), children: normalizeNodes((n as SectionNode).children) }
         : normalizeNode(n as Node),
     ),
-  };
+  });
 }
 
 /*
@@ -1938,7 +2058,16 @@ export function normalizeDoc(doc: Doc): Doc {
 const escapeText = (t: string) =>
   t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-const INLINE_MD = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/g;
+/*
+  Последняя альтернатива — тултип {{термин|описание}} или
+  {{термин|Заголовок|описание}}. В выгрузке он становится тегом с тремя полями:
+  видимый текст внутри, заголовок и описание — атрибутами.
+*/
+const INLINE_MD =
+  /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_|\{\{([^{}|]+)\|([^{}|]+)(?:\|([^{}|]+))?\}\}/g;
+
+/** В атрибут тега кавычка попасть не должна — экранируем её отдельно. */
+const escapeAttr = (t: string) => escapeText(t).replace(/"/g, "&quot;");
 
 export function mdToTags(text: string): string {
   let out = "";
@@ -1956,6 +2085,12 @@ export function mdToTags(text: string): string {
         : mdToTags(m[1]);
     } else if (m[3] !== undefined) {
       out += `<b>${mdToTags(m[3])}</b>`;
+    } else if (m[6] !== undefined) {
+      const title = m[8] !== undefined ? m[7] : undefined;
+      const description = m[8] ?? m[7];
+      out +=
+        `<tooltip${title ? ` title="${escapeAttr(title)}"` : ""}` +
+        ` description="${escapeAttr(description)}">${escapeText(m[6])}</tooltip>`;
     } else {
       out += `<i>${mdToTags(m[4] ?? m[5])}</i>`;
     }
@@ -1974,6 +2109,8 @@ const TEXT_KEYS = new Set([
   "role",
   "org",
   "warning",
+  // Подпись таблицы для скринридера — обычный текст, но экранировать надо.
+  "caption",
   // Квиз: вводный текст и разбор тоже несут разметку источника.
   "description",
   "explanation",
@@ -2033,11 +2170,14 @@ const LOWER_VALUE_KEYS = new Set(["marker", "variant", "orientation", "state", "
 
 /*
   СПИСОК: маркер и размер — свойство всего списка, а не каждого пункта.
-  Поднимаем общее значение в контейнер, из пунктов убираем; ordered не
-  выгружаем вовсе — он дублирует marker: "number".
+  Поднимаем в контейнер, из пунктов убираем; ordered не выгружаем вовсе — он
+  дублирует marker: "number".
 
-  Если пункты вдруг различаются, поле остаётся у пунктов: подъём не должен
-  стирать различие, которого мы не ожидали.
+  Маркер и размер поднимаем ВСЕГДА, по первому пункту: разнобой внутри одного
+  списка разработчик прямо назвал невозможным («такой вариант невозможен»), и
+  оставлять поле у пунктов «на всякий случай» — значит нарушать контракт.
+  А вот иконка у пунктов законно разная (галочка и минус в одном списке), её
+  поднимаем, только если она у всех одна.
 */
 /** Контейнеры, чьи дети — пункты списка. Page Summary — такой же случай. */
 const LIST_HOSTS = new Set(["List Container", "Page Summary"]);
@@ -2055,7 +2195,9 @@ const hoistListFields = (container: Record<string, unknown>): Record<string, unk
   if (!items.length) return out;
   for (const key of ["marker", "size", "icon"]) {
     const first: unknown = items[0][key];
-    if (first === undefined || !items.every((k) => k[key] === first)) continue;
+    if (first === undefined) continue;
+    // Иконка — единственное поле, где различие пунктов осмысленно.
+    if (key === "icon" && !items.every((k) => k[key] === first)) continue;
     out[key] = first;
     kids = kids.map((k) => {
       if (!isItem(k)) return k;
@@ -2097,6 +2239,15 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
       // Перечисления — строчными; текст и шкалы (L, H2) не трогаем.
       if (LOWER_VALUE_KEYS.has(k) && typeof v === "string") {
         out[k] = v.toLowerCase();
+        continue;
+      }
+      /*
+        Иконка едет каноническим именем Lucide — строчными через дефис
+        («file-text»), как на lucide.dev: разработчик заводит их у себя по
+        ключу. Внутри дерева имя PascalCase, потому что это имя импорта.
+      */
+      if (k === "icon" && typeof v === "string") {
+        out[k] = v.replace(/([a-z])([A-Z0-9])/g, "$1-$2").toLowerCase();
         continue;
       }
       // Текст уезжает разработчику с тегами; служебные поля — как есть.

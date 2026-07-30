@@ -188,9 +188,11 @@ function NodeView({ node }: { node: Node }) {
       return (
         <Quote
           size={node.size}
-          yandex={Boolean(node.yandex)}
+          // Отдельного флага в данных больше нет: круглый знак Яндекса — это
+          // просто значение logo. Переходник к пропам Figma-компонента.
+          yandex={node.logo === "yandex"}
           org={node.org}
-          logo={node.logo}
+          logo={node.logo === "yandex" ? undefined : node.logo}
           author={node.author}
           role={node.role}
           photoSrc={
@@ -209,7 +211,7 @@ function NodeView({ node }: { node: Node }) {
 
     case "Table":
       return (
-        <Table>
+        <Table caption={node.caption}>
           {node.header.some(Boolean) && (
             <TableRow header>
               {node.header.map((c, i) => (

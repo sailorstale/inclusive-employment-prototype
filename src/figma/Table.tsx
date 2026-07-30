@@ -133,6 +133,12 @@ export type TableHeader = {
 type TableProps = {
   /** Короткая запись шапки. Иначе шапку задают строкой <TableRow header>. */
   headers?: readonly TableHeader[];
+  /*
+    Подпись таблицы — ТОЛЬКО для скринридера, визуально скрыта (решение
+    разработчика). Читается перед содержимым и объясняет, что в таблице;
+    на вид страницы не влияет.
+  */
+  caption?: string;
   children?: React.ReactNode;
   className?: string;
 };
@@ -144,7 +150,7 @@ function isHeaderRow(node: React.ReactNode): boolean {
   );
 }
 
-export function Table({ headers, children, className }: TableProps) {
+export function Table({ headers, caption, children, className }: TableProps) {
   const rows = React.Children.toArray(children);
   const headerRows = rows.filter(isHeaderRow);
   const bodyRows = rows.filter((r) => !isHeaderRow(r));
@@ -155,6 +161,7 @@ export function Table({ headers, children, className }: TableProps) {
       data-component="Table"
       className={cn("w-full border-collapse", className)}
     >
+      {caption && <caption className="sr-only">{caption}</caption>}
       {hasHead && (
         <thead>
           {headers?.length ? (

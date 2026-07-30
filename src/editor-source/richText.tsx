@@ -10,7 +10,17 @@ import * as React from "react";
 import { safeHref } from "./safeUrl";
 export { safeHref };
 
-const RE = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/g;
+import { Tooltip } from "@/figma/Tooltip";
+
+/*
+  Тултип — пояснение термина прямо в абзаце: {{термин|описание}} либо
+  {{термин|Заголовок|описание}}. Три поля по договорённости с разработчиком:
+  видимый текст, необязательный заголовок пузыря и само описание.
+  Альтернатива стоит ПОСЛЕДНЕЙ намеренно: номера прежних групп не должны
+  съехать — на них завязаны и этот файл, и сборка выгрузки.
+*/
+const RE =
+  /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_|\{\{([^{}|]+)\|([^{}|]+)(?:\|([^{}|]+))?\}\}/g;
 
 export function renderInline(text: string): React.ReactNode {
   const nodes: React.ReactNode[] = [];
@@ -43,6 +53,14 @@ export function renderInline(text: string): React.ReactNode {
     } else if (m[3] !== undefined) {
       // рекурсивно — чтобы ссылка внутри **жира**/*курсива* тоже рендерилась
       nodes.push(<strong key={key}>{renderInline(m[3])}</strong>);
+    } else if (m[6] !== undefined) {
+      // Третьей части нет — значит заголовка у пузыря нет, есть только описание.
+      const title = m[8] !== undefined ? m[7] : undefined;
+      nodes.push(
+        <Tooltip key={key} title={title} content={m[8] ?? m[7]}>
+          {m[6]}
+        </Tooltip>,
+      );
     } else {
       nodes.push(<em key={key}>{renderInline(m[4] ?? m[5])}</em>);
     }
@@ -55,6 +73,7 @@ export function renderInline(text: string): React.ReactNode {
 /** Текст без разметки — для метрик длины и дифа. */
 export function stripMarkdown(text: string): string {
   return text
+    .replace(/\{\{([^{}|]+)\|[^{}]*\}\}/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/\*([^*]+)\*/g, "$1")
