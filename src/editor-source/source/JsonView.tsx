@@ -65,18 +65,104 @@ function highlightJson(src: string): React.ReactNode[] {
   data-sec — тот же якорь, что у текста и у раскладки. Без него синхронный
   скролл мог быть только пропорциональным, а высоты JSON и страницы не совпадают
   (у секции с таблицей текста на экран, а JSON на сотню строк), и колонки
-  разъезжались. Собранная строка посимвольно равна JSON.stringify(…, null, 2) —
-  то есть ровно тому, что скачивается файлом.
+  разъезжались.
+
+  ПЕЧАТЬ ПО УЗЛАМ. Внутри секции каждый узел — свой <span> с адресом (путь
+  индексов «1.2.0»): по этому же адресу подписан компонент в правой колонке,
+  поэтому клик по компоненту подсвечивает ровно его кусок JSON, а клик по
+  JSON — компонент. Вёрстка текста при этом совпадает с
+  JSON.stringify(…, null, 2) до символа — то есть с тем, что скачивается файлом.
 */
-export function JsonView({ doc }: { doc: Doc }) {
+const IND = (d: number) => "  ".repeat(d);
+
+/** Значение-не-узел: обычный JSON, только со сдвигом всех строк, кроме первой. */
+const jsonValue = (v: unknown, d: number) =>
+  (JSON.stringify(v, null, 2) ?? "null").replace(/\n/g, "\n" + IND(d));
+
+type NodeLike = Record<string, unknown> & { component?: string };
+
+const isNodeList = (v: unknown): v is NodeLike[] =>
+  Array.isArray(v) && v.every((x) => x && typeof x === "object" && "component" in x);
+
+function JsonNode({
+  node,
+  path,
+  depth,
+  selected,
+  onSelect,
+}: {
+  node: NodeLike;
+  path: string;
+  depth: number;
+  selected?: string | null;
+  onSelect?: (path: string) => void;
+}) {
+  const entries = Object.entries(node);
+  return (
+    <span
+      data-json-path={path}
+      className={
+        // Только фон: рамка на многострочном инлайне рвётся по строкам и рябит.
+        selected === path ? "rounded-sm bg-[color:var(--pick-bg)]" : undefined
+      }
+      onClick={
+        onSelect
+          ? (e) => {
+              // Внутренний узел важнее внешнего: клик выбирает самый глубокий.
+              e.stopPropagation();
+              onSelect(path);
+            }
+          : undefined
+      }
+    >
+      {highlightJson(IND(depth) + "{\n")}
+      {entries.map(([k, v], i) => {
+        const comma = i < entries.length - 1 ? "," : "";
+        if (k === "children" && isNodeList(v))
+          return (
+            <React.Fragment key={k}>
+              {highlightJson(`${IND(depth + 1)}"children": [\n`)}
+              {v.map((c, j) => (
+                <React.Fragment key={j}>
+                  <JsonNode
+                    node={c}
+                    path={`${path}.${j}`}
+                    depth={depth + 2}
+                    selected={selected}
+                    onSelect={onSelect}
+                  />
+                  {j < v.length - 1 ? ",\n" : "\n"}
+                </React.Fragment>
+              ))}
+              {highlightJson(`${IND(depth + 1)}]${comma}\n`)}
+            </React.Fragment>
+          );
+        return (
+          <React.Fragment key={k}>
+            {highlightJson(
+              `${IND(depth + 1)}${JSON.stringify(k)}: ${jsonValue(v, depth + 1)}${comma}\n`,
+            )}
+          </React.Fragment>
+        );
+      })}
+      {highlightJson(IND(depth) + "}")}
+    </span>
+  );
+}
+
+export function JsonView({
+  doc,
+  selected,
+  onSelect,
+}: {
+  doc: Doc;
+  /** Путь выбранного узла — тот же, что у компонента в правой колонке. */
+  selected?: string | null;
+  onSelect?: (path: string) => void;
+}) {
   // Разбор тяжёлый (десятки тысяч знаков) — считаем только при смене дерева.
   const { head, secs, tail } = React.useMemo(() => {
-    const ex = docToExport(doc) as {
-      module: string;
-      children: { component?: string }[];
-    };
-    // Секция печатается с отступом 2, внутри "children" — ещё 2: итого 4.
-    const indent = (s: string) => s.replace(/^/gm, "    ");
+    const ex = docToExport(doc) as { module: string; children: NodeLike[] };
     const children = ex.children ?? [];
     /*
       Нумеруем ТОЛЬКО Section Container: перед секциями в дереве может лежать
@@ -89,7 +175,7 @@ export function JsonView({ doc }: { doc: Doc }) {
       secs: children.map((c) => {
         const isSection = c?.component === "Section Container";
         if (isSection) n += 1;
-        return { text: indent(JSON.stringify(c, null, 2)), sec: isSection ? n : undefined };
+        return { node: c, sec: isSection ? n : undefined };
       }),
       tail: children.length ? "\n  ]\n}" : "  ]\n}",
     };
@@ -100,7 +186,13 @@ export function JsonView({ doc }: { doc: Doc }) {
       {highlightJson(head)}
       {secs.map((s, i) => (
         <span key={i} data-sec={s.sec}>
-          {highlightJson(s.text)}
+          <JsonNode
+            node={s.node}
+            path={String(i)}
+            depth={2}
+            selected={selected}
+            onSelect={onSelect}
+          />
           {i < secs.length - 1 ? ",\n" : ""}
         </span>
       ))}

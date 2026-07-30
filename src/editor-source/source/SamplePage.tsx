@@ -3,7 +3,7 @@ import { docToExport } from "@/editor-source/source/contentTree";
 import { JsonView, downloadJson } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
 import { buildSampleDoc } from "@/editor-source/source/sampleDoc";
-import { useScrollSync } from "@/editor-source/source/scrollSync";
+import { useScrollSync, scrollToEl } from "@/editor-source/source/scrollSync";
 
 /*
   ЭТАЛОННАЯ СТРАНИЦА — «Образец».
@@ -34,7 +34,39 @@ export function SamplePage() {
   */
   const [jsonBox, setJsonBox] = React.useState<HTMLDivElement | null>(null);
   const [viewBox, setViewBox] = React.useState<HTMLDivElement | null>(null);
-  useScrollSync(jsonBox, viewBox);
+  // Пока наводим обе колонки на выбранный узел, синхрон по секциям молчит.
+  const paused = React.useRef(false);
+  useScrollSync(jsonBox, viewBox, paused);
+
+  /*
+    Выбранный узел — общий для колонок: клик по компоненту подсвечивает его
+    кусок JSON, клик по JSON — сам компонент. Повторный клик снимает выбор.
+  */
+  const [picked, setPicked] = React.useState<string | null>(null);
+  const pick = React.useMemo(
+    () => ({
+      selected: picked,
+      onSelect: (path: string) => setPicked((p) => (p === path ? null : path)),
+    }),
+    [picked],
+  );
+
+  /*
+    Наводка живёт здесь, а не в колонках: двигать нужно ОБЕ и подряд, иначе
+    скролл одной поднимет синхрон, и он собьёт наводку другой.
+  */
+  React.useEffect(() => {
+    if (!picked || !jsonBox || !viewBox) return;
+    paused.current = true;
+    scrollToEl(jsonBox, jsonBox.querySelector(`[data-json-path="${picked}"]`));
+    scrollToEl(
+      viewBox,
+      viewBox.querySelector(`[data-json-path="${picked}"]`)?.firstElementChild,
+    );
+    // Событий скролла к этому моменту уже не будет — отпускаем синхрон.
+    const t = window.setTimeout(() => (paused.current = false), 200);
+    return () => window.clearTimeout(t);
+  }, [picked, jsonBox, viewBox]);
 
   return (
     <div className="grid h-full min-h-0 grid-cols-1 md:grid-cols-2">
@@ -56,7 +88,7 @@ export function SamplePage() {
           ref={setJsonBox}
           className="mx-auto min-h-0 w-full max-w-prose flex-1 overflow-y-auto px-6 py-8"
         >
-          <JsonView doc={doc} />
+          <JsonView doc={doc} selected={picked} onSelect={pick.onSelect} />
         </div>
       </div>
 
@@ -67,11 +99,11 @@ export function SamplePage() {
             Как это должно выглядеть
           </span>
           <span className="hidden text-xs text-muted-foreground sm:block">
-            соберите по JSON и сравните
+            кликните по блоку — слева подсветится его JSON
           </span>
         </div>
         <div ref={setViewBox} className="min-h-0 flex-1 overflow-y-auto">
-          <ResultView doc={doc} />
+          <ResultView doc={doc} pick={pick} />
         </div>
       </div>
     </div>

@@ -130,3 +130,23 @@
     display: none;
   }
 }
+
+/*
+  ВЫБОР УЗЛА НА ЭТАЛОННОЙ СТРАНИЦЕ.
+
+  Клик по компоненту подсвечивает его же кусок в колонке JSON и наоборот.
+  Обёртка узла — display:contents, своего блока у неё нет, поэтому рамку рисуем
+  на её единственном ребёнке: раскладка от этого не меняется.
+*/
+:root {
+  --pick-bg: #fef3c7;
+  --pick-line: #f59e0b;
+}
+.ds-pick > * {
+  cursor: pointer;
+}
+.ds-pick.is-picked > * {
+  outline: 2px solid var(--pick-line);
+  outline-offset: 3px;
+  border-radius: 6px;
+}

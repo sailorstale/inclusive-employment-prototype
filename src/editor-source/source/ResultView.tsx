@@ -58,30 +58,80 @@ export function useContentDoc(
   const logoIndex = useLogoIndex();
   const avatarIndex = useAvatarIndex();
   return React.useMemo(
-    () => buildDoc(moduleId, sections, resolve, logoIndex, directiveAt, avatarIndex),
+    () =>
+      buildDoc(
+        moduleId,
+        sections,
+        resolve,
+        logoIndex,
+        directiveAt,
+        avatarIndex,
+      ),
     [moduleId, sections, resolve, logoIndex, directiveAt, avatarIndex],
   );
 }
 
-export function ResultView({ doc }: { doc: Doc }) {
-  return (
+/*
+  ВЫБОР УЗЛА — связь превью и JSON.
+
+  На эталонной странице разработчик тыкает в компонент и хочет увидеть, каким
+  куском JSON он задан. Поэтому у каждого узла есть адрес — путь индексов
+  («1.2.0»), одинаковый в обеих колонках. Контекст, а не проп: иначе адрес
+  пришлось бы тащить через каждый компонент библиотеки.
+
+  Контекста нет (страницы модулей) — обёртки не появляются вовсе, разметка
+  превью остаётся чистой.
+*/
+type Pick = { selected: string | null; onSelect: (path: string) => void };
+const PickContext = React.createContext<Pick | null>(null);
+
+export function ResultView({ doc, pick }: { doc: Doc; pick?: Pick }) {
+  const body = (
     <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pb-16">
       {doc.children.map((n, i) =>
         n.component === "Section Container" ? (
           <SectionContainer key={(n as SectionNode).anchor ?? `s-${i}`}>
             {(n as SectionNode).children.map((c, j) => (
-              <NodeView key={j} node={c} />
+              <NodeView key={j} node={c} path={`${i}.${j}`} />
             ))}
           </SectionContainer>
         ) : (
-          <NodeView key={i} node={n as Node} />
+          <NodeView key={i} node={n as Node} path={String(i)} />
         ),
       )}
     </div>
   );
+  return pick ? (
+    <PickContext.Provider value={pick}>{body}</PickContext.Provider>
+  ) : (
+    body
+  );
 }
 
-function NodeView({ node }: { node: Node }) {
+/*
+  Обёртка вокруг узла: адрес в data-атрибуте и клик, выбирающий САМЫЙ ГЛУБОКИЙ
+  узел под курсором (внутренние гасят всплытие). display:contents — обёртка не
+  создаёт своего блока, поэтому раскладка не меняется ни на пиксель.
+*/
+function NodeView({ node, path }: { node: Node; path: string }) {
+  const pick = React.useContext(PickContext);
+  const inner = <NodeBody node={node} path={path} />;
+  if (!pick) return inner;
+  return (
+    <div
+      className={`ds-pick contents${pick.selected === path ? " is-picked" : ""}`}
+      data-json-path={path}
+      onClick={(e) => {
+        e.stopPropagation();
+        pick.onSelect(path);
+      }}
+    >
+      {inner}
+    </div>
+  );
+}
+
+function NodeBody({ node, path }: { node: Node; path: string }) {
   switch (node.component) {
     case "Heading":
       return <Heading level={node.level}>{renderInline(node.text)}</Heading>;
@@ -114,7 +164,7 @@ function NodeView({ node }: { node: Node }) {
       return (
         <Stack as={node.ordered ? "ol" : "ul"}>
           {node.children.map((c, i) => (
-            <NodeView key={i} node={c} />
+            <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
         </Stack>
       );
@@ -126,7 +176,9 @@ function NodeView({ node }: { node: Node }) {
         <ListItem
           size={node.size}
           type={node.type}
-          iconNode={node.icon ? React.createElement(iconByName(node.icon)) : undefined}
+          iconNode={
+            node.icon ? React.createElement(iconByName(node.icon)) : undefined
+          }
         >
           {lines.map((line, i) => (
             <React.Fragment key={i}>
@@ -142,7 +194,7 @@ function NodeView({ node }: { node: Node }) {
       return (
         <Block orientation={node.orientation}>
           {node.children.map((c, i) => (
-            <NodeView key={i} node={c} />
+            <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
         </Block>
       );
@@ -151,7 +203,7 @@ function NodeView({ node }: { node: Node }) {
       return (
         <PageSummary>
           {node.children.map((c, i) => (
-            <NodeView key={i} node={c} />
+            <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
         </PageSummary>
       );
@@ -164,10 +216,12 @@ function NodeView({ node }: { node: Node }) {
           title={node.title}
           bgColor={node.bgColor as GeneralCardBg}
           orient={node.orientation}
-          iconNode={node.icon ? React.createElement(iconByName(node.icon)) : undefined}
+          iconNode={
+            node.icon ? React.createElement(iconByName(node.icon)) : undefined
+          }
         >
           {node.children.map((c, i) => (
-            <NodeView key={i} node={c} />
+            <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
         </GeneralCard>
       );
@@ -179,7 +233,7 @@ function NodeView({ node }: { node: Node }) {
           defaultOpen={node.state === "Expanded"}
         >
           {node.children.map((c, i) => (
-            <NodeView key={i} node={c} />
+            <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
         </Accordion>
       );
@@ -253,7 +307,7 @@ function NodeView({ node }: { node: Node }) {
       return (
         <Compare>
           {node.children.map((c, i) => (
-            <NodeView key={i} node={c} />
+            <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
         </Compare>
       );
@@ -263,7 +317,7 @@ function NodeView({ node }: { node: Node }) {
       return (
         <CompareCard tone={node.tone} txt={node.title}>
           {node.children.map((c, i) => (
-            <NodeView key={i} node={c} />
+            <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
         </CompareCard>
       );
@@ -286,7 +340,7 @@ function NodeView({ node }: { node: Node }) {
       return (
         <ReadMore title={node.title}>
           {node.children.map((c, i) => (
-            <NodeView key={i} node={c} />
+            <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
         </ReadMore>
       );

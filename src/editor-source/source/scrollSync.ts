@@ -95,6 +95,12 @@ export function syncTarget(from: HTMLElement, to: HTMLElement): number | null {
 export function useScrollSync(
   a: HTMLElement | null,
   b: HTMLElement | null,
+  /*
+    Пауза. Когда колонки наводят на ВЫБРАННЫЙ узел, обе едут точно к нему —
+    и синхрон в этот момент только мешает: он выравнивает по доле секции и
+    сбивает точную наводку. Ref, а не состояние: слушатели переподключать не надо.
+  */
+  paused?: React.RefObject<boolean>,
 ): void {
   React.useEffect(() => {
     if (!a || !b) return;
@@ -111,10 +117,12 @@ export function useScrollSync(
 
     const onA = () => {
       if (skip.a) return void (skip.a = false);
+      if (paused?.current) return;
       align(a, b, "b");
     };
     const onB = () => {
       if (skip.b) return void (skip.b = false);
+      if (paused?.current) return;
       align(b, a, "a");
     };
     a.addEventListener("scroll", onA, { passive: true });
@@ -123,5 +131,16 @@ export function useScrollSync(
       a.removeEventListener("scroll", onA);
       b.removeEventListener("scroll", onB);
     };
-  }, [a, b]);
+  }, [a, b, paused]);
+}
+
+/**
+ * Подвести контейнер к элементу: элемент встаёт под верхний край с небольшим
+ * запасом. Не scrollIntoView — тот двигает и внешние прокрутки, а нам нужна
+ * ровно эта колонка.
+ */
+export function scrollToEl(box: HTMLElement, el: Element | null | undefined) {
+  if (!el) return;
+  const shift = el.getBoundingClientRect().top - box.getBoundingClientRect().top;
+  box.scrollTop += shift - 80;
 }
