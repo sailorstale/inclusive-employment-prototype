@@ -407,6 +407,7 @@ const wantsTableToText = (d?: Directive) => {
 const commentRecognized = (d?: Directive): boolean =>
   wantsDelete(d) ||
   wantsUnlink(d) ||
+  linkPhrase(d) !== undefined ||
   wantsDecaps(d) ||
   wantsMergeParagraph(d) ||
   addedLinkUrl(d) !== undefined ||
@@ -588,6 +589,24 @@ const wantsUnlink = (d?: Directive) =>
 
 /** «…и написать её обычным текстом под заголовком» — адрес отдельной строкой. */
 const wantsUrlAsText = (d?: Directive) => !!d && /текстом/iu.test(d.comment || "");
+
+/*
+  «Присвоить ссылку словам X» — адрес переезжает с заголовка на фразу в тексте.
+  Голый адрес строкой читателю не нужен: ссылка должна жить в словах, которые
+  он и так читает.
+*/
+const linkPhrase = (d?: Directive): string | undefined => {
+  const c = d?.comment || "";
+  if (!/(присво|назнач|повес)/iu.test(c)) return undefined;
+  // Фраза в кавычках — самый надёжный вид; иначе берём хвост инструкции.
+  const quoted = /[«"]([^»"]{3,80})[»"]/u.exec(c)?.[1];
+  if (quoted) return quoted.trim();
+  const tail =
+    /(?:присво|назнач|повес)\p{L}*\s+(?:её|ее|ей|ссылку|ссылки|на)?\s*([^\n]{3,80})$/iu.exec(
+      c,
+    )?.[1];
+  return tail?.trim();
+};
 
 /*
   «Написать не капсом, аббревиатуру капом оставить». Слово из заглавных длиннее
@@ -1211,6 +1230,31 @@ export function buildDoc(
       );
 
     if (!dir?.target) {
+      /*
+        Ссылка переезжает на названные слова: с заголовка её сняли, а адрес
+        вешаем на первую же подходящую фразу в ТЕКСТЕ группы. Заголовки
+        пропускаем намеренно — из них ссылку как раз и убирали.
+      */
+      const phrase = linkPhrase(dir);
+      if (fix.unlink && phrase) {
+        const url = items.map((it) => linkUrl(md(it))).find(Boolean);
+        let done = false;
+        return items.flatMap((it) =>
+          plainNodes(it, fix).map((n) => {
+            if (done || !url || n.component !== "Text") return n;
+            const t = n.text;
+            const at = t.toLowerCase().indexOf(phrase.toLowerCase());
+            if (at < 0) return n;
+            done = true;
+            const found = t.slice(at, at + phrase.length);
+            return {
+              ...n,
+              text: `${t.slice(0, at)}[${found}](${url})${t.slice(at + phrase.length)}`,
+            };
+          }),
+        );
+      }
+
       /*
         Ссылка в заголовке: разметку снимаем всегда (fix.unlink), а если просили
         «написать её обычным текстом» — адрес идёт отдельной строкой под
