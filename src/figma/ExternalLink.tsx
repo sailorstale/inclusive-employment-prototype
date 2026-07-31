@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { safeHref } from "@/editor/richText";
+import { safeHref } from "@/editor-source/safeUrl";
 
 /*
   Figma: component set «External Link» (6898:4283), свойство Platform (берём Desktop).

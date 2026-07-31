@@ -23,7 +23,8 @@ export function safeHref(url: string): string | null {
   Разница не косметическая: у внешней ссылки стрелка ↗ — единственный знак,
   что клик уведёт с сайта. Ставить её «для красоты» нельзя, и наоборот —
   прятать у настоящей внешней тоже.
+
+  Проверка живёт в lib/links — там же, где ею пользуются страницы сайта
+  (SmartLink). Второй такой же регэксп рядом заводить нельзя: разъедутся.
 */
-export function isExternalHref(url: string): boolean {
-  return /^(https?:)?\/\/|^mailto:/i.test(url.trim());
-}
+export { isExternalLink as isExternalHref } from "@/lib/links";

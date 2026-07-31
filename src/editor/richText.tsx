@@ -5,12 +5,14 @@ import * as React from "react";
 // копипасте, остаётся обычным текстом). Рендерим в React-узлы. Ссылки
 // санитизируем — пускаем только безопасные протоколы (защита от javascript:).
 
-const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;
-
-export function safeHref(url: string): string | null {
-  const u = url.trim();
-  return SAFE_URL.test(u) ? u : null;
-}
+import { ExternalLink } from "@/figma/ExternalLink";
+import { isExternalLink } from "@/lib/links";
+/*
+  Санитизация ссылок — одна на весь проект (editor-source/safeUrl). Здесь
+  реэкспорт: на него завязаны старые импорты этого модуля.
+*/
+export { safeHref } from "@/editor-source/safeUrl";
+import { safeHref } from "@/editor-source/safeUrl";
 
 const RE = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/g;
 
@@ -25,19 +27,26 @@ export function renderInline(text: string): React.ReactNode {
     const key = `i${i++}`;
     if (m[1] !== undefined) {
       const href = safeHref(m[2]);
+      /*
+        Правка редактора живёт на живой странице сайта, поэтому и ссылки в ней
+        должны выглядеть как везде: наружу — компонент со стрелкой ↗, внутрь —
+        обычная ссылка. Правило общее, из lib/links.
+      */
       nodes.push(
-        href ? (
+        !href ? (
+          m[1]
+        ) : isExternalLink(href) ? (
+          <ExternalLink key={key} href={href}>
+            {m[1]}
+          </ExternalLink>
+        ) : (
           <a
             key={key}
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-brand underline underline-offset-2"
           >
             {m[1]}
           </a>
-        ) : (
-          m[1]
         ),
       );
     } else if (m[3] !== undefined) {
