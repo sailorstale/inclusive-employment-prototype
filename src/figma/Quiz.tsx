@@ -192,11 +192,23 @@ function Feedback({
   items: QuizOption[];
   selected: boolean[];
   explanation?: string;
-  /** Показывать строку-счёт «Верно X из Y». У квизов с разбором на вариант — нет. */
+  /** Показывать строку-вердикт («Верно» / «Частично верно» / «Неверно»). */
   showScore: boolean;
 }) {
   const totalCorrect = items.filter((i) => i.correct).length;
   const hits = items.filter((i, n) => i.correct && selected[n]).length;
+  const misses = items.filter((i, n) => !i.correct && selected[n]).length;
+  /*
+    Вердикт словом, без счёта. Цифры («Верно 1 из 2») читателя не учат: он и
+    так видит по цвету строк, где ошибся, а «1 из 0» на квизе без единого
+    верного варианта выглядело просто сломанным. Решение дизайнера.
+  */
+  const verdict =
+    hits === totalCorrect && misses === 0
+      ? "Верно"
+      : hits === 0
+        ? "Неверно"
+        : "Частично верно";
   // Разбор по вариантам: если у вариантов есть свой feedback — показываем разбор
   // выбранных, а не общий explanation. Так работает формат «ОС на каждый ответ».
   const perOption = items.some((i) => i.feedback);
@@ -213,9 +225,7 @@ function Feedback({
       aria-live="polite"
     >
       {showScore ? (
-        <p className="ds-h5 text-[color:var(--text-primary)]">
-          Верно {hits} из {totalCorrect}
-        </p>
+        <p className="ds-h5 text-[color:var(--text-primary)]">{verdict}</p>
       ) : null}
       {perOption
         ? chosen.map(({ it, n }) => (
