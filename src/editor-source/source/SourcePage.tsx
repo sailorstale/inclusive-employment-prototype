@@ -18,6 +18,7 @@ import {
 } from "@/editor-source/source/blockResolve";
 import { iconForText } from "@/editor-source/source/iconForText";
 import { docToExport } from "@/editor-source/source/contentTree";
+import { normalizeSourceBlocks } from "@/editor-source/source/normalizeBlocks";
 import { JsonView, downloadJson } from "@/editor-source/source/JsonView";
 import {
   syncTarget,
@@ -239,7 +240,9 @@ export function SourcePage() {
     setBlocks(null);
     setSelected(new Set()); // при смене модуля выделение сбрасываем
     moduleLoaders[moduleId]().then((m) => {
-      if (alive) setBlocks(m.blocks);
+      // Чиним «заголовки, ставшие списком» до всего остального: секции,
+      // директивы и выгрузка считаются уже от исправленных блоков.
+      if (alive) setBlocks(normalizeSourceBlocks(m.blocks));
     });
     return () => {
       alive = false;
