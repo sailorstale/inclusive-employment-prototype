@@ -167,8 +167,17 @@ const isActive = (d?: Directive) =>
   а не выкинуть блок.
 */
 const wantsDelete = (d?: Directive) => {
-  if (!d || d.target) return false;
+  if (!d) return false;
   const c = (d.comment || "").trim();
+  /*
+    Комментарий из ОДНОГО слова «удалить» — команда без оговорок, и компонент
+    ей не мешает: дизайнер бывает сначала выбирает цель, а потом решает, что
+    блок вообще не нужен. Во всех остальных случаях удаление требует, чтобы
+    цель НЕ была выбрана, иначе «удалить заголовок Пояснение» (точечная чистка
+    ярлыка внутри карточки) выкинуло бы всю карточку.
+  */
+  if (/^\s*удал\p{L}*\s*$/iu.test(c)) return true;
+  if (d.target) return false;
   /*
     убра — убрать/убрал; убир — убираем/убирать; убер — убери/уберём.
 
@@ -179,28 +188,29 @@ const wantsDelete = (d?: Directive) => {
     «Абилимпикс», которому просили лишь снять ссылку.
   */
   return (
-    /^\s*(удали|убра|убир|убер)/iu.test(c) &&
+    // «удал» без «и»: живой комментарий пришёл как «удаляем».
+    /^\s*(удал|убра|убир|убер)/iu.test(c) &&
     !/(жирн|болд|bold|курсив|италик|italic|ссылк|линк|капс|нумерац|нумирац|номер|двоеточ|кавыч)/iu.test(
       c,
     )
   );
 };
 const wantsUnbold = (d?: Directive) =>
-  !!d && /(убра|убер|сня|без)\p{L}*\s+(жирн|болд|bold)/iu.test(d.comment || "");
+  !!d && /(убра|убир|убер|сня|без)\p{L}*\s+(жирн|болд|bold)/iu.test(d.comment || "");
 /*
   Курсив просили снимать теми же словами, что и жирный («убрать курсив»,
   «убрать италик»), но шаблон ловил только «жирн» — комментарий молча не
   срабатывал. Держим оба написания: и «курсив», и «италик».
 */
 const wantsUnitalic = (d?: Directive) =>
-  !!d && /(убра|убер|сня|без)\p{L}*\s+(курсив|италик|italic)/iu.test(d.comment || "");
+  !!d && /(убра|убир|убер|сня|без)\p{L}*\s+(курсив|италик|italic)/iu.test(d.comment || "");
 /*
   «Убрать нумерацию в заголовках» — источник нумерует подряд («1. Особенности…»,
   «Пример 1. Трудоустройство…»), а в аккордеоне и карточке номер лишний.
   Касается ТОЛЬКО заголовков и вопросов, не тела текста.
 */
 const wantsUnnumber = (d?: Directive) =>
-  !!d && /(убра|убер|сня|без)\p{L}*\s+(нумерац|нумирац|номер)/iu.test(d.comment || "");
+  !!d && /(убра|убир|убер|сня|без)\p{L}*\s+(нумерац|нумирац|номер)/iu.test(d.comment || "");
 
 const SERVICE_WORD =
   /^(заголов\p{L}*|загловк\p{L}*|подпис\p{L}*|надпис\p{L}*|слов\p{L}*|строк\p{L}*|текст\p{L}*|блок\p{L}*|эти|все|всё)$/iu;
@@ -410,6 +420,8 @@ const commentRecognized = (d?: Directive): boolean =>
   linkPhrase(d) !== undefined ||
   wantsDecaps(d) ||
   wantsMergeParagraph(d) ||
+  wantsImageToList(d) ||
+  labelToTitle(d) !== undefined ||
   addedLinkUrl(d) !== undefined ||
   countHint(d) !== undefined ||
   wantsUnbold(d) ||
@@ -583,7 +595,7 @@ const stripNumber = (t: string) => {
 */
 const wantsUnlink = (d?: Directive) =>
   !!d &&
-  /(убра|убер|сня|без)\p{L}*\s+(ссылк|линк)|(ссылк|линк)\p{L}*\s+(убра|убер|сня)/iu.test(
+  /(убра|убир|убер|сня|без)\p{L}*\s+(ссылк|линк)|(ссылк|линк)\p{L}*\s+(убра|убир|убер|сня)/iu.test(
     d.comment || "",
   );
 
@@ -656,6 +668,23 @@ const countHint = (d?: Directive): { n: number; component: string } | undefined 
   if (!n) return undefined;
   return { n, component: /цитат/iu.test(m[2]) ? "Quote" : "Accordion" };
 };
+
+/*
+  «Превратить картинку в список». Картинка — это схема из плашек, и прочитать
+  её может только человек (или я в проходе). Поэтому пункты пишутся в
+  комментарий после пустой строки, по одному на строку, а правило собирает из
+  них обычный список. Так решение видно дизайнеру и правится им же.
+*/
+const wantsImageToList = (d?: Directive) =>
+  !!d && /(картинк|изображен|схем)\p{L}*[^\n]*список/iu.test(d.comment || "");
+
+/*
+  «Пример в заголовок» — ярлык из начала абзаца («**Пример.** Во время
+  аудита…») становится заголовком карточки, а из тела уходит. Это тот же
+  случай, что ярлык отдельным блоком, только здесь он приклеен к первой строке.
+*/
+const labelToTitle = (d?: Directive): string | undefined =>
+  /([\p{Lu}][\p{L}]{2,20})\s+в\s+заголов/iu.exec(d?.comment || "")?.[1];
 
 /** «Собрать эти три в один абзац» — склейка группы в один блок текста. */
 /*
@@ -1230,6 +1259,36 @@ export function buildDoc(
       );
 
     if (!dir?.target) {
+      /*
+        Картинка-схема разворачивается в список: пункты дизайнер (или я в
+        проходе) выписывает в комментарий после пустой строки.
+      */
+      if (wantsImageToList(dir)) {
+        const lines = commentTail(dir)
+          .split("\n")
+          .map((s) => s.replace(/^\s*[-—•*\d.)\s]+/, "").trim())
+          .filter(Boolean);
+        if (lines.length)
+          return [
+            {
+              component: "Stack",
+              ordered: false,
+              children: lines.map((text) => ({
+                component: "List Item" as const,
+                size: "L" as const,
+                type: "Dot" as const,
+                text,
+              })),
+            },
+          ];
+        return [
+          {
+            component: "note",
+            text: "картинку в список: выпишите пункты в комментарий после пустой строки",
+          },
+        ];
+      }
+
       /*
         Ссылка переезжает на названные слова: с заголовка её сняли, а адрес
         вешаем на первую же подходящую фразу в ТЕКСТЕ группы. Заголовки
@@ -1956,6 +2015,8 @@ export function buildDoc(
         */
         const isSituationLabel = (t: string) =>
           /^[*_\s]*ситуац\p{L}*[*_\s:.]*$/iu.test(t.trim());
+        /** Абзац, НАЧИНАЮЩИЙСЯ с жирного ярлыка: «**Вакансия:** Специалист…». */
+        const WHOLE_BOLD_START = /^\s*\*\*[^*]+\*\*/;
         const isFeedbackLabel = (t: string) =>
           /^[*_\s]*(обратная\s+связь|ос)[*_\s:.]*$/iu.test(t.trim());
         /** «Верные: НКО, Работодателя» — по одному верному варианту на квиз. */
@@ -1963,6 +2024,15 @@ export function buildDoc(
           const m = /верн\p{L}*\s*[:—-]\s*([^\n]+)/iu.exec(dir.comment || "");
           return m ? m[1].split(/\s*[,;]\s*/).map((s) => s.trim()).filter(Boolean) : [];
         };
+        /*
+          Имя верного варианта можно писать коротко: «по слуху» вместо «Люди с
+          инвалидностью по слуху». Поэтому сверяем и целиком (с запасом на
+          опечатку), и на вхождение — дизайнеру не придётся копировать длинные
+          формулировки из источника.
+        */
+        const isWanted = (option: string, want: string) =>
+          roughlySame(option, want) ||
+          normName(option).includes(normName(want));
         const WHOLE_BOLD = /^\s*\*\*([\s\S]+)\*\*\s*$/;
         const unbold = (t: string) => WHOLE_BOLD.exec(t.trim())?.[1] ?? t;
         const stripBold = (t: string) => t.replace(/\*\*/g, "").trim();
@@ -2031,7 +2101,7 @@ export function buildDoc(
           const out: Node[] = quizzes.map((q, i) => {
             const want = names[i];
             const options = q.options.map((o) =>
-              want && roughlySame(o.text, want) ? { ...o, correct: true } : o,
+              want && isWanted(o.text, want) ? { ...o, correct: true } : o,
             );
             return {
               component: "Quiz",
@@ -2054,6 +2124,96 @@ export function buildDoc(
             notes.push({
               component: "note",
               text: `не указан верный вариант у ${missed} квиз(ов) — допишите в комментарий «Верные: …»`,
+            });
+          return [...out, ...notes];
+        }
+
+        /*
+          ФОРМАТ «ВАКАНСИЯ» (М5). Квиз собран из абзацев и двух списков:
+            «**Вакансия:** …» и «**Функции:**» + список  → вопрос-описание;
+            абзац с «?»                                   → сам вопрос;
+            следующий список                              → варианты ответа;
+            «ОС: …» и абзацы за ним                       → общий разбор.
+
+          Отличие от формата М3 (там тоже есть «ОС») — нумерованных списков нет:
+          в М3 нумерованный пункт открывал вопрос, а разбор был у КАЖДОГО
+          варианта. Здесь разбор один на квиз, а варианты лежат одним списком.
+
+          Верный вариант, как и в М4, не помечен в источнике — берётся из
+          комментария строкой «Верные: …».
+        */
+        const hasOrderedList = items.some((it) => it.b.kind === "list" && it.b.ordered);
+        if (hasPerOption && !hasOrderedList) {
+          type Opt = NonNullable<Extract<Node, { component: "Quiz" }>["items"]>[number];
+          type Q = { qParts: string[]; options: Opt[]; expl: string[]; asked: boolean };
+          const quizzes: Q[] = [];
+          const fresh = (): Q => {
+            const q: Q = { qParts: [], options: [], expl: [], asked: false };
+            quizzes.push(q);
+            return q;
+          };
+          let cur = fresh();
+          let mode: "question" | "explanation" = "question";
+
+          for (const it of items) {
+            if (it.b.kind === "list") {
+              const lines = it.b.items.map((li) => applyFix(liText(it, li), fix));
+              // Список ПОСЛЕ вопроса — это варианты ответа, до вопроса — часть описания.
+              if (cur.asked && !cur.options.length)
+                cur.options = lines.map((text) => ({ text: stripBold(text) }));
+              else cur.qParts.push(lines.map((l) => `• ${stripBold(l)}`).join("\n"));
+              continue;
+            }
+            const raw = md(it, fix).trim();
+            if (!raw) continue;
+            if (isOS(it)) {
+              mode = "explanation";
+              cur.expl.push(stripOS(md(it, fix)));
+              continue;
+            }
+            if (mode === "explanation") {
+              // Новый квиз начинается, когда прошлый уже собран.
+              if (cur.options.length && WHOLE_BOLD_START.test(raw)) {
+                cur = fresh();
+                mode = "question";
+                cur.qParts.push(stripBold(raw));
+              } else cur.expl.push(stripBold(raw));
+              continue;
+            }
+            cur.qParts.push(stripBold(raw));
+            if (/\?\s*$/.test(raw)) cur.asked = true;
+          }
+
+          const names = correctNames();
+          const out: Node[] = quizzes
+            .filter((q) => q.options.length)
+            .map((q, i) => {
+              const want = names[i];
+              const options = q.options.map((o) =>
+                want && isWanted(o.text, want) ? { ...o, correct: true } : o,
+              );
+              return {
+                component: "Quiz",
+                question: q.qParts.filter(Boolean).join("\n\n"),
+                mode: options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
+                items: options,
+                ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
+              };
+            });
+          const wantQuiz = quizCount(dir);
+          const notes: Node[] = [];
+          if (wantQuiz && out.length !== wantQuiz)
+            notes.push({
+              component: "note",
+              text: `просили ${wantQuiz} квизов, получилось ${out.length} — проверьте`,
+            });
+          const noAnswer = out.filter((q) =>
+            (q as Extract<Node, { component: "Quiz" }>).items.every((o) => !o.correct),
+          ).length;
+          if (noAnswer)
+            notes.push({
+              component: "note",
+              text: `не указан верный вариант у ${noAnswer} квиз(ов) — допишите в комментарий «Верные: …»`,
             });
           return [...out, ...notes];
         }
