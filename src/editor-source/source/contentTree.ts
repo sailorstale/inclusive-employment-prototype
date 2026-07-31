@@ -1619,7 +1619,13 @@ export function buildDoc(
           if (isTop) {
             flush();
             q = headingText(md(it, fix), fix);
-          } else if (q !== null && isBoldHeading(it)) {
+          } else if (q !== null && it.b.kind === "heading") {
+            /*
+              ВНУТРИ АККОРДЕОНА ЗАГОЛОВКОВ НЕТ (решение дизайнера). Подписи
+              вроде «Как действовать» и «Результат» — жирная строка тела, а не
+              Heading: настоящий заголовок здесь один, это сам вопрос
+              аккордеона, и второй уровень с ним только спорит.
+            */
             body.push({
               component: "Text",
               size: "M",
