@@ -130,23 +130,36 @@ export function Quote({
   const [overflows, setOverflows] = React.useState(false);
   const quoteRef = React.useRef<HTMLQuoteElement>(null);
 
+  /*
+    Замер ПЕРЕИГРЫВАЕТСЯ при изменении ширины. Разовый замер врал: первый кадр
+    цитата успевает поймать ещё не разложенную (узкую) колонку, короткий текст
+    в ней переносится на десяток строк — и «Далее» оставалось висеть под
+    однострочной цитатой навсегда. ResizeObserver закрывает и загрузку шрифта,
+    и смену размера окна, и раскрытие аккордеона.
+  */
   React.useLayoutEffect(() => {
     const el = quoteRef.current;
     if (!cut || !el) {
       setOverflows(false);
       return;
     }
-    // line-clamp (-webkit-box) схлопывает scrollHeight до высоты обрезки,
-    // поэтому натуральную высоту меряем, временно сняв обрезку.
-    const prev = el.style.cssText;
-    el.style.display = "block";
-    el.style.webkitLineClamp = "unset";
-    const natural = el.scrollHeight;
-    el.style.cssText = prev;
-    const cs = getComputedStyle(el);
-    const lineHeight =
-      parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5;
-    setOverflows(natural > lineHeight * CUT_LINES + 1);
+    const measure = () => {
+      // line-clamp (-webkit-box) схлопывает scrollHeight до высоты обрезки,
+      // поэтому натуральную высоту меряем, временно сняв обрезку.
+      const prev = el.style.cssText;
+      el.style.display = "block";
+      el.style.webkitLineClamp = "unset";
+      const natural = el.scrollHeight;
+      el.style.cssText = prev;
+      const cs = getComputedStyle(el);
+      const lineHeight =
+        parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5;
+      setOverflows(natural > lineHeight * CUT_LINES + 1);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [cut, children, size]);
 
   const clamped = cut && !expanded;

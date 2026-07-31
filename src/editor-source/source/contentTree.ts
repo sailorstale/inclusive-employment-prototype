@@ -76,16 +76,18 @@ export type Node =
       author?: string;
       role?: string;
       /*
-        Организация обязательна в КАЖДОЙ цитате (решение разработчика): её имя
-        уходит в alt логотипа, а сам логотип станет ссылкой на сайт организации.
-        У авторов Яндекса это «Яндекс».
+        ПОЛНАЯ ЦИТАТА — решение дизайнера: имя, должность, организация и
+        логотип есть ВСЕГДА. Цитаты без логотипа не бывает: либо логотип
+        организации, либо знак Яндекса. Чего нет — то дозаполняется руками,
+        инструмент помечает такие места («дополнить авторство»).
       */
       org: string;
-      /** Ключ логотипа: «yandex» либо имя файла в public/figma/logos. */
+      /*
+        Имена файлов, а не адреса: картинку разработчик скачивает с прототипа
+        (figma/logos/<logo>.png, figma/avatars/<photo>.jpg) и заводит у себя в
+        конструкторе. Ссылок в выгрузке нет намеренно.
+      */
       logo?: string;
-      /** Адрес организации — туда ведёт логотип. Берётся из ссылки в источнике. */
-      orgHref?: string;
-      /** Слаг фото автора: public/figma/avatars/<photo>.jpg. */
       photo?: string;
       paragraphs: string[];
     }
@@ -1470,21 +1472,20 @@ export function buildDoc(
             role = restRole.join(",").trim() || undefined;
           }
 
-          // Организация: ссылка в самой строке авторства или блок-ссылка в сегменте.
-          // Вместе с названием забираем и адрес — логотип будет вести на сайт.
+          /*
+            Организация: ссылка в самой строке авторства или блок-ссылка в
+            сегменте. Берём только НАЗВАНИЕ: адрес организации в выгрузке не
+            нужен (решение дизайнера) — логотип разработчик скачивает файлом
+            с прототипа, а не ходит по ссылке.
+          */
           let orgName: string | undefined;
-          let orgLink: string | undefined;
           let orgIdx = -1;
           const inline = hasAuthor ? parsed[ai].text.match(LINK_RE) : null;
-          if (inline) {
-            orgName = inline[1].trim();
-            orgLink = inline[2].trim();
-          } else
+          if (inline) orgName = inline[1].trim();
+          else
             for (let j = ai; j < end; j++)
               if (orgIdx < 0 && parsed[j].isLinkOnly && (!hasAuthor || j !== ai)) {
-                const m = parsed[j].text.match(LINK_RE)!;
-                orgName = m[1].trim();
-                orgLink = m[2].trim();
+                orgName = parsed[j].text.match(LINK_RE)![1].trim();
                 orgIdx = j;
               }
 
@@ -1512,12 +1513,16 @@ export function buildDoc(
             }
           });
 
+          /*
+            Цитата обязана быть полной: имя, должность, организация, логотип и
+            фото. Чего не хватает — пишем прямо в превью, чтобы дизайнер видел
+            дыру, а не искал её глазами в выгрузке.
+          */
           const missing = [
             !author && "имя",
             !role && "должность",
             !org && "организация",
             org && !logo && `логотип «${org}» не найден в каталоге`,
-            org && !yandex && !orgLink && "адрес организации",
             author && !photo && "фото автора",
           ].filter(Boolean) as string[];
 
@@ -1528,7 +1533,6 @@ export function buildDoc(
             role,
             org,
             logo,
-            orgHref: orgLink,
             photo,
             paragraphs: speech,
           });
