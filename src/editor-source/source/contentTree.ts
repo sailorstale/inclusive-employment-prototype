@@ -393,6 +393,11 @@ const wantsTableToText = (d?: Directive) => {
 */
 const commentRecognized = (d?: Directive): boolean =>
   wantsDelete(d) ||
+  wantsUnlink(d) ||
+  wantsDecaps(d) ||
+  wantsMergeParagraph(d) ||
+  addedLinkUrl(d) !== undefined ||
+  countHint(d) !== undefined ||
   wantsUnbold(d) ||
   wantsUnitalic(d) ||
   wantsUnnumber(d) ||
@@ -558,20 +563,116 @@ const stripNumber = (t: string) => {
   return out.trim() ? out.trim() : t.trim();
 };
 
+/*
+  «Убрать ссылку» — снять разметку ссылки, ТЕКСТ оставить. Просят, когда адрес
+  в заголовке мешает: заголовок должен быть заголовком, а не кликом.
+*/
+const wantsUnlink = (d?: Directive) =>
+  !!d &&
+  /(убра|убер|сня|без)\p{L}*\s+(ссылк|линк)|(ссылк|линк)\p{L}*\s+(убра|убер|сня)/iu.test(
+    d.comment || "",
+  );
+
+/** «…и написать её обычным текстом под заголовком» — адрес отдельной строкой. */
+const wantsUrlAsText = (d?: Directive) => !!d && /текстом/iu.test(d.comment || "");
+
+/*
+  «Написать не капсом, аббревиатуру капом оставить». Слово из заглавных длиннее
+  четырёх букв — это не аббревиатура, а крик: приводим к обычному виду. СЗН,
+  НКО, ИПРА (четыре буквы и короче) остаются как есть.
+*/
+const wantsDecaps = (d?: Directive) =>
+  !!d && /(не|без)\s*капс|не\s+заглавн|строчн/iu.test(d.comment || "");
+
+const ABBR_MAX = 4;
+const decaps = (t: string) =>
+  t.replace(/\p{Lu}[\p{Lu}\d-]+/gu, (w) =>
+    w.replace(/-/g, "").length <= ABBR_MAX
+      ? w
+      : w[0] + w.slice(1).toLowerCase(),
+  );
+
+/** Снять разметку ссылки, оставив её текст. */
+const stripLink = (t: string) => t.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+
+/** Экранирование для поиска подстроки регэкспом. */
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Адрес из ссылки блока — нужен, когда его просят вынести обычным текстом. */
+const linkUrl = (t: string) => /\[[^\]]+\]\(([^)]+)\)/.exec(t)?.[1];
+
+/** «Добавить ссылку в первое слово» + адрес в том же комментарии. */
+const addedLinkUrl = (d?: Directive): string | undefined =>
+  /добав\p{L}*\s+ссылк/iu.test(d?.comment || "")
+    ? /(https?:\/\/[^\s)]+)/.exec(d?.comment || "")?.[1]
+    : undefined;
+
+/*
+  «Тут 4 аккордеона», «тут три цитаты» — дизайнер называет число, чтобы сверить
+  результат. Само правило раскладки от этого не зависит: цитаты и аккордеоны
+  собираются по структуре источника. Но если собралось другое число — об этом
+  надо сказать, иначе расхождение заметит только клиент.
+*/
+const COUNT_WORD: Record<string, number> = { ...RU_NUM };
+const countHint = (d?: Directive): { n: number; component: string } | undefined => {
+  const m = /(\d+|дв[еа]|три|четыре|пять|шесть|семь|восемь)\s+(цитат|аккорд|аккард|аккод)\p{L}*/iu.exec(
+    d?.comment || "",
+  );
+  if (!m) return undefined;
+  const raw = m[1].toLowerCase();
+  const n = /^\d+$/.test(raw) ? Number(raw) : COUNT_WORD[raw];
+  if (!n) return undefined;
+  return { n, component: /цитат/iu.test(m[2]) ? "Quote" : "Accordion" };
+};
+
+/** «Собрать эти три в один абзац» — склейка группы в один блок текста. */
+/*
+  \b здесь не годится: в JS граница слова считается по [A-Za-z0-9_], и перед
+  кириллическим «один» её просто нет — правило молча не срабатывало.
+*/
+const wantsMergeParagraph = (d?: Directive) =>
+  !!d && /(собер|собра|объедин)\p{L}*[^.\n]*один\s+(абзац|блок)?/iu.test(d.comment || "");
+
+/*
+  Готовый текст в комментарии. Дизайнер иногда пишет не «что сделать», а прямо
+  «как должно получиться» — вторым абзацем после пустой строки. Тогда он и
+  становится результатом, а не наша склейка.
+*/
+const commentTail = (d?: Directive) => {
+  const parts = (d?.comment || "").split(/\n\s*\n/);
+  return parts.length > 1 ? parts.slice(1).join("\n\n").trim() : "";
+};
+
 /** Текстовые чистки из комментария — общие для всей группы блоков. */
-type TextFix = { unbold: boolean; unitalic: boolean; unnumber: boolean };
+type TextFix = {
+  unbold: boolean;
+  unitalic: boolean;
+  unnumber: boolean;
+  unlink: boolean;
+  decaps: boolean;
+};
 /** Те же чистки, но к готовой строке: у пунктов списка своего md() нет. */
 const applyFix = (t: string, fix: TextFix): string => {
   let out = t;
   if (fix.unbold) out = stripBold(out);
   if (fix.unitalic) out = stripItalic(out);
+  if (fix.unlink) out = stripLink(out);
+  if (fix.decaps) out = decaps(out);
   return out;
 };
-const NO_FIX: TextFix = { unbold: false, unitalic: false, unnumber: false };
+const NO_FIX: TextFix = {
+  unbold: false,
+  unitalic: false,
+  unnumber: false,
+  unlink: false,
+  decaps: false,
+};
 const textFix = (d?: Directive): TextFix => ({
   unbold: wantsUnbold(d),
   unitalic: wantsUnitalic(d),
   unnumber: wantsUnnumber(d),
+  unlink: wantsUnlink(d),
+  decaps: wantsDecaps(d),
 });
 
 /*
@@ -879,8 +980,11 @@ export function buildDoc(
     ])
       if (typeof o[k] === "string") parts.push(o[k] as string);
     if (Array.isArray(o.items))
+      // У варианта квиза есть и свой разбор — он тоже текст источника.
       parts.push(
-        (o.items as { text?: string }[]).map((i) => i?.text ?? "").join(" "),
+        (o.items as { text?: string; feedback?: string }[])
+          .map((i) => `${i?.text ?? ""} ${i?.feedback ?? ""}`)
+          .join(" "),
       );
     if (Array.isArray(o.paragraphs)) parts.push((o.paragraphs as string[]).join(" "));
     if (Array.isArray(o.header)) parts.push((o.header as string[]).join(" "));
@@ -937,8 +1041,26 @@ export function buildDoc(
             },
           ]
         : base;
-    // Удаление и снятие ярлыков — намеренные потери, о них не предупреждаем.
+    // Дизайнер назвал число («тут три цитаты») — сверяем и говорим, если не сошлось.
+    const hint = countHint(g.dir);
+    if (hint) {
+      const got = out.filter(
+        (n) => (n as Node).component === hint.component,
+      ).length;
+      if (got !== hint.n)
+        out.push({
+          component: "note",
+          text: `просили ${hint.n}, собралось ${got} (${hint.component}) — проверьте`,
+        });
+    }
+
+    /*
+      Удаление и снятие ярлыков — намеренные потери, о них не предупреждаем.
+      Готовый текст из комментария — тоже: дизайнер сам переписал абзац, и
+      расхождение с источником здесь не пропажа, а его решение.
+    */
     if (wantsDelete(g.dir)) return out;
+    if (wantsMergeParagraph(g.dir) && commentTail(g.dir)) return out;
     const drop = labelsToDrop(g.dir);
     const produced = signature(out.map(nodeText).join(" "));
     const lost = g.items.filter((it) => {
@@ -1075,7 +1197,61 @@ export function buildDoc(
         it.b.kind === "table" ? tableToText(it.b, fix) : plainNodes(it, fix),
       );
 
-    if (!dir?.target) return items.flatMap((it) => plainNodes(it, fix));
+    if (!dir?.target) {
+      /*
+        Ссылка в заголовке: разметку снимаем всегда (fix.unlink), а если просили
+        «написать её обычным текстом» — адрес идёт отдельной строкой под
+        заголовком. Сноска (Text S): это служебная строка, а не абзац.
+      */
+      if (fix.unlink && wantsUrlAsText(dir))
+        return items.flatMap((it) => {
+          const url = linkUrl(md(it));
+          const nodes = plainNodes(it, fix);
+          return url ? [...nodes, { component: "Text", size: "S", text: url } as Node] : nodes;
+        });
+
+      // «Добавить ссылку в первое слово» — ссылкой становится ровно одно слово.
+      const addUrl = addedLinkUrl(dir);
+      if (addUrl)
+        return items.flatMap((it, i) => {
+          if (i > 0 || it.b.kind === "table" || it.b.kind === "image")
+            return plainNodes(it, fix);
+          const t = md(it, fix);
+          return [
+            {
+              component: "Text",
+              size: "L",
+              text: t.replace(/^([\p{L}\p{N}«»-]+)/u, `[$1](${addUrl})`),
+            } as Node,
+          ];
+        });
+
+      /*
+        Склейка группы в один абзац. Текст берём из комментария, если дизайнер
+        его там написал; ссылки из исходных блоков возвращаем на их названия —
+        «назначить ссылки хедхантеру и авито» это и значит.
+      */
+      if (wantsMergeParagraph(dir)) {
+        const links = items.flatMap((it) =>
+          [...md(it).matchAll(/\[([^\]]+)\]\(([^)\s]+)\)/g)].map((m) => ({
+            text: m[1],
+            url: m[2],
+          })),
+        );
+        let text =
+          commentTail(dir) ||
+          items
+            .map((it) => stripBold(stripLink(md(it, fix))).trim())
+            .filter(Boolean)
+            .join(" ");
+        for (const l of links)
+          if (!new RegExp(`\\[${escapeRe(l.text)}\\]`).test(text))
+            text = text.replace(l.text, `[${l.text}](${l.url})`);
+        return [{ component: "Text", size: "L", text }];
+      }
+
+      return items.flatMap((it) => plainNodes(it, fix));
+    }
 
     const mods = dir.modifiers || {};
 
@@ -1434,8 +1610,21 @@ export function buildDoc(
 
         const parsed = items.map((it) => {
           const t = md(it).trim();
-          const head = t.replace(new RegExp(`\\s*${LINK_RE.source}\\s*$`), "").trim();
-          const bare = stripEmph(head);
+          /*
+            Хвостовая ссылка может быть обёрнута в жирный («…, **[Мастер
+            ОК](ссылка)**»). Без запаса на звёздочки строка «не заканчивалась
+            ссылкой», и автор с организацией уезжали в тело цитаты.
+          */
+          const head = t
+            .replace(new RegExp(`\\s*[*_]{0,2}${LINK_RE.source}[*_]{0,2}\\s*$`), "")
+            .trim();
+          /*
+            Ссылка может обнимать ВСЮ строку авторства («**[Денис Роза,
+            основатель… «Перспектива»](ссылка)**») — тогда от строки после
+            снятия хвостовой ссылки не остаётся ничего, и имя надо брать из
+            текста самой ссылки.
+          */
+          const bare = stripEmph(stripLink(head || t));
           return {
             it,
             text: t,
@@ -1444,13 +1633,29 @@ export function buildDoc(
               it.b.kind === "paragraph" &&
               LINK_RE.test(t) &&
               !stripEmph(t.replace(LINK_RE, "")),
-            // Строка авторства «Имя, должность в Компании»: либо ЗАГОЛОВОК
-            // (парсер часто повышает такие строки в h3), либо абзац целиком
-            // курсивом/жирным. Ключ — запятая между именем и должностью.
+            /*
+              Строка авторства «Имя, должность в Компании»: либо ЗАГОЛОВОК
+              (парсер часто повышает такие строки в h3), либо абзац целиком
+              курсивом/жирным. Ключ — запятая между именем и должностью.
+
+              Плюс два ограничителя, без которых целый абзац речи, набранный
+              курсивом, принимался за автора и рвал цитату надвое: строка
+              авторства КОРОТКАЯ и не содержит конца предложения внутри.
+            */
             looksAuthor:
               bare.includes(",") &&
+              bare.length <= 140 &&
+              !/[.!?]\s+\p{Lu}/u.test(bare) &&
               (it.b.kind === "heading" ||
-                (it.b.kind === "paragraph" && /^[*_]{1,2}.+[*_]{1,2}$/.test(head))),
+                (it.b.kind === "paragraph" &&
+                  (/^[*_]{1,2}.+[*_]{1,2}$/.test(head) ||
+                    /*
+                      «Татьяна Самбурова, руководитель отдела…, **[Мастер
+                      ОК](ссылка)**» — строка авторства без общего курсива, зато
+                      с организацией-ссылкой в хвосте. Раньше такая строка
+                      уезжала в тело, и две цитаты слипались в одну.
+                    */
+                    (LINK_RE.test(t) && head !== t)))),
           };
         });
 
@@ -1488,6 +1693,27 @@ export function buildDoc(
                 orgName = parsed[j].text.match(LINK_RE)![1].trim();
                 orgIdx = j;
               }
+          /*
+            Организация чаще всего названа прямо в строке авторства и взята в
+            кавычки: «…руководитель устойчивого развития торговой сети
+            „Пятёрочка“». Ссылки при этом нет — раньше такая цитата уезжала без
+            организации вовсе. Кавычки и есть признак имени собственного, гадать
+            по остальному тексту не нужно.
+          */
+          const quoted = hasAuthor
+            ? /[«„"]([^»“"]{2,60})[»“"]/u.exec(stripEmph(parsed[ai].bare))?.[1]
+            : undefined;
+          if (quoted) orgName = quoted.trim();
+          /*
+            Ссылка может стоять на ВСЕЙ строке авторства («Денис Роза,
+            основатель… в РООИ «Перспектива»»). Тогда название организации — то,
+            что в кавычках, а не вся строка: иначе логотип ищется по фразе
+            с именем и должностью и, конечно, не находится.
+          */
+          if (!quoted && orgName && orgName.includes(",")) {
+            const inQuotes = /[«„"]([^»“"]{2,60})[»“"]/u.exec(orgName)?.[1];
+            if (inQuotes) orgName = inQuotes.trim();
+          }
 
           /*
             Аффилиация одним полем logo: «yandex» — круглый знак Яндекса,
@@ -1574,7 +1800,18 @@ export function buildDoc(
           level: (["H2", "H3", "H4", "H5"] as const).includes(mods.level as "H2")
             ? (mods.level as HeadingLevel)
             : "H2",
-          text: headingText(md(it, fix), fix),
+          /*
+            Заголовком часто помечают ОДНОПУНКТОВЫЙ список: источник оформил
+            подзаголовок маркером. У списка своего text нет, md() отдаёт пустую
+            строку — заголовок получался пустым и тихо пропадал. Берём текст
+            пунктов.
+          */
+          text: headingText(
+            it.b.kind === "list"
+              ? it.b.items.map((li) => applyFix(liText(it, li), fix)).join(" ")
+              : md(it, fix),
+            fix,
+          ),
           // Заголовок мог быть сделан из абзаца — тогда якоря в источнике нет,
           // его посчитает проход по документу.
           anchor: it.b.kind === "heading" ? it.b.anchor : undefined,
@@ -1639,6 +1876,30 @@ export function buildDoc(
       */
       case "Quiz": {
         const isAnswerLabel = (t: string) => /^[*_\s]*ответ[*_\s:.]*$/iu.test(t.trim());
+        /*
+          ФОРМАТ «СИТУАЦИЯ» (М4). В источнике каждый квиз выглядит так:
+            заголовок «Ситуация»            → служебный ярлык, в результат не идёт;
+            один-три абзаца                 → сам сценарий;
+            жирный абзац с «?»              → вопрос;
+            жирный ярлык («Работодателя»)   → вариант ответа,
+              следующий абзац                 → разбор ИМЕННО этого варианта;
+            жирная «Обратная связь»         → общий разбор до конца квиза.
+
+          Верный вариант в источнике НИКАК не помечен — его видно только из
+          общего разбора («это зона ответственности работодателя»). Поэтому он
+          берётся из комментария директивы строкой «Верные: НКО, Работодателя…»
+          — по одному имени на квиз, по порядку. Так решение видно дизайнеру и
+          правится им же, а не спрятано в коде.
+        */
+        const isSituationLabel = (t: string) =>
+          /^[*_\s]*ситуац\p{L}*[*_\s:.]*$/iu.test(t.trim());
+        const isFeedbackLabel = (t: string) =>
+          /^[*_\s]*(обратная\s+связь|ос)[*_\s:.]*$/iu.test(t.trim());
+        /** «Верные: НКО, Работодателя» — по одному верному варианту на квиз. */
+        const correctNames = (): string[] => {
+          const m = /верн\p{L}*\s*[:—-]\s*([^\n]+)/iu.exec(dir.comment || "");
+          return m ? m[1].split(/\s*[,;]\s*/).map((s) => s.trim()).filter(Boolean) : [];
+        };
         const WHOLE_BOLD = /^\s*\*\*([\s\S]+)\*\*\s*$/;
         const unbold = (t: string) => WHOLE_BOLD.exec(t.trim())?.[1] ?? t;
         const stripBold = (t: string) => t.replace(/\*\*/g, "").trim();
@@ -1658,6 +1919,81 @@ export function buildDoc(
           stripBold(t.replace(/^\s*(?:\*\*)?\s*ОС\s*[:.]\s*(?:\*\*)?\s*/iu, ""));
         const isOS = (it: Item) => it.b.kind !== "list" && OS_RE.test(md(it, fix).trim());
         const hasPerOption = items.some(isOS);
+
+        // Формат «Ситуация» — весь квиз абзацами, без списков.
+        if (items.some((it) => isSituationLabel(md(it, fix)))) {
+          type Opt = NonNullable<Extract<Node, { component: "Quiz" }>["items"]>[number];
+          type Q = { qParts: string[]; options: Opt[]; expl: string[] };
+          const quizzes: Q[] = [];
+          let cur: Q | null = null;
+          let mode: "question" | "options" | "explanation" = "question";
+          let lastOpt: Opt | null = null;
+
+          for (const it of items) {
+            const raw = md(it, fix).trim();
+            if (!raw) continue;
+            const bare = stripBold(raw);
+
+            if (isSituationLabel(raw)) {
+              // Новый квиз. Сам ярлык «Ситуация» дизайнер просил убрать.
+              cur = { qParts: [], options: [], expl: [] };
+              quizzes.push(cur);
+              mode = "question";
+              lastOpt = null;
+              continue;
+            }
+            if (!cur) continue;
+
+            if (isFeedbackLabel(raw)) {
+              mode = "explanation";
+              lastOpt = null;
+              continue;
+            }
+            // Жирный абзац без вопросительного знака — ярлык варианта ответа.
+            const isLabel = WHOLE_BOLD.test(raw) && !/\?\s*$/.test(bare);
+            if (isLabel && mode !== "explanation") {
+              mode = "options";
+              lastOpt = { text: bare };
+              cur.options.push(lastOpt);
+              continue;
+            }
+            if (mode === "explanation") cur.expl.push(bare);
+            else if (mode === "options" && lastOpt) {
+              // Абзац под ярлыком — разбор этого варианта.
+              lastOpt.feedback = lastOpt.feedback ? `${lastOpt.feedback}\n\n${bare}` : bare;
+            } else cur.qParts.push(bare);
+          }
+
+          const names = correctNames();
+          const out: Node[] = quizzes.map((q, i) => {
+            const want = names[i];
+            const options = q.options.map((o) =>
+              want && roughlySame(o.text, want) ? { ...o, correct: true } : o,
+            );
+            return {
+              component: "Quiz",
+              // Сценарий и вопрос — одним блоком: так просил дизайнер.
+              question: q.qParts.filter(Boolean).join("\n\n"),
+              mode: options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
+              items: options,
+              ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
+            };
+          });
+          const missed = quizzes.filter((_, i) => !names[i]).length;
+          const wantQuiz = quizCount(dir);
+          const notes: Node[] = [];
+          if (wantQuiz && out.length !== wantQuiz)
+            notes.push({
+              component: "note",
+              text: `просили ${wantQuiz} квизов, получилось ${out.length} — проверьте`,
+            });
+          if (missed)
+            notes.push({
+              component: "note",
+              text: `не указан верный вариант у ${missed} квиз(ов) — допишите в комментарий «Верные: …»`,
+            });
+          return [...out, ...notes];
+        }
 
         if (hasPerOption) {
           type Q = { qParts: string[]; options: NonNullable<Extract<Node, { component: "Quiz" }>["items"]> };
