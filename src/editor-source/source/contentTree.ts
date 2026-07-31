@@ -23,7 +23,7 @@ import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
-import { safeHref } from "@/editor-source/safeUrl";
+import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
 import {
   findSlug,
   findPhotoSlug,
@@ -2647,9 +2647,15 @@ export function mdToTags(text: string): string {
     out += escapeText(text.slice(last, m.index));
     if (m[1] !== undefined) {
       const href = safeHref(m[2]);
+      /*
+        Внешняя ссылка помечается rel="external": по ней разработчик берёт
+        компонент External Link со стрелкой, по остальным — обычную ссылку.
+        Правило то же, что в превью: с протоколом — наружу, от корня — внутрь.
+      */
+      const rel = href && isExternalHref(href) ? ' rel="external"' : "";
       // Небезопасный протокол — ссылку не делаем, текст сохраняем.
       out += href
-        ? `<a href="${escapeText(href)}">${mdToTags(m[1])}</a>`
+        ? `<a href="${escapeText(href)}"${rel}>${mdToTags(m[1])}</a>`
         : mdToTags(m[1]);
     } else if (m[3] !== undefined) {
       out += `<b>${mdToTags(m[3])}</b>`;

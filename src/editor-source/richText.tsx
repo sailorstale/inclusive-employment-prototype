@@ -11,6 +11,8 @@ import { safeHref } from "./safeUrl";
 export { safeHref };
 
 import { Tooltip } from "@/figma/Tooltip";
+import { ExternalLink } from "@/figma/ExternalLink";
+import { isExternalHref } from "./safeUrl";
 
 /*
   Тултип — пояснение термина прямо в абзаце: {{термин|описание}} либо
@@ -35,20 +37,27 @@ export function renderInline(text: string): React.ReactNode {
     const key = `i${i++}`;
     if (m[1] !== undefined) {
       const href = safeHref(m[2]);
+      /*
+        Внешняя ссылка — компонент со стрелкой ↗ (она и предупреждает, что клик
+        уводит с сайта). Внутренняя — обычная подчёркнутая ссылка. Различаем по
+        адресу: с протоколом — наружу, от корня («/…») — внутрь.
+      */
       nodes.push(
-        href ? (
+        !href ? (
+          m[1]
+        ) : isExternalHref(href) ? (
+          <ExternalLink key={key} href={href}>
+            {m[1]}
+          </ExternalLink>
+        ) : (
           <a
             key={key}
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-brand underline underline-offset-2"
           >
             {m[1]}
           </a>
-        ) : (
-          m[1]
-        )
+        ),
       );
     } else if (m[3] !== undefined) {
       // рекурсивно — чтобы ссылка внутри **жира**/*курсива* тоже рендерилась
