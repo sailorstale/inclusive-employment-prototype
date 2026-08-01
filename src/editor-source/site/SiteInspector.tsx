@@ -10,6 +10,8 @@ import { EditorToast } from "@/editor-source/EditorNotices";
 import { EditorDock } from "@/editor-source/EditorDock";
 import { SourcePage } from "@/editor-source/source/SourcePage";
 import { AppHeader } from "@/components/shell/AppHeader";
+import { SidebarNav } from "@/components/shell/SidebarNav";
+import type { TocItem } from "@/lib/toc";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
@@ -98,10 +100,12 @@ export function SiteInspector({
   page,
   pageDoc,
   topics,
+  tocItems,
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
   topics: string[];
+  tocItems: TocItem[];
 }) {
   const [mode, setMode] = React.useState<Mode>("site");
 
@@ -132,7 +136,7 @@ export function SiteInspector({
       </div>
       <div className="min-h-0 flex-1">
         {mode === "site" ? (
-          <SiteMode page={page} pageDoc={pageDoc} topics={topics} />
+          <SiteMode page={page} pageDoc={pageDoc} topics={topics} tocItems={tocItems} />
         ) : (
           <ModuleMode module={page.module} />
         )}
@@ -180,15 +184,57 @@ function ModuleMode({ module }: { module: string }) {
   );
 }
 
+/* Правое меню сайта — оглавление «На этой странице». Клик прокручивает правую
+   панель к секции (обычный in-page скролл в контейнере, без внешнего роутинга). */
+function SiteRail({
+  items,
+  paneRef,
+}: {
+  items: TocItem[];
+  paneRef: React.RefObject<HTMLDivElement>;
+}) {
+  if (items.length < 2) return null;
+  const go = (anchor: string) => {
+    const pane = paneRef.current;
+    if (!pane) return;
+    const el = pane.querySelector(`section[id="${CSS.escape(anchor)}"]`);
+    if (el)
+      pane.scrollTop +=
+        el.getBoundingClientRect().top - pane.getBoundingClientRect().top - 12;
+  };
+  return (
+    <nav aria-label="На этой странице" className="text-sm">
+      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        На этой странице
+      </div>
+      <ul className="space-y-1 border-l">
+        {items.map((t) => (
+          <li key={t.anchor}>
+            <button
+              type="button"
+              onClick={() => go(t.anchor)}
+              className="-ml-px block border-l border-transparent py-0.5 pl-3 text-left leading-snug text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+            >
+              {t.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 /* Режим «Сайт» — инспектор: слева источник/JSON/гугдок, справа сама страница. */
 function SiteMode({
   page,
   pageDoc,
   topics,
+  tocItems,
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
   topics: string[];
+  tocItems: TocItem[];
 }) {
   const [tab, setTab] = React.useState<RefView>("source");
   const [selected, setSelected] = React.useState<string | null>(null);
@@ -279,7 +325,7 @@ function SiteMode({
   }, [tab, pageDoc, blocks]);
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,48rem)_1fr] divide-x">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,40rem)_minmax(0,1fr)] divide-x">
       {/* ЛЕВО — колонка сверки с табами */}
       <section className="flex min-h-0 flex-col">
         <div className="flex items-center gap-1 border-b bg-muted/40 px-3 py-2">
@@ -321,23 +367,42 @@ function SiteMode({
         </div>
       </section>
 
-      {/* ПРАВО — сам сайт: шапка сайта с навигацией + страница (рисуется
-          напрямую, не в iframe — чтобы синхрон и клик работали). Шапка липкая,
-          остаётся на месте при скролле, как на настоящем сайте. */}
+      {/* ПРАВО — сам сайт, полная раскладка: шапка + меню разделов слева +
+          контент + оглавление «На этой странице» справа (рисуется напрямую, не
+          в iframe — чтобы синхрон и клик работали). Меню и шапка липкие. */}
       <section className="min-h-0">
         <div ref={rightRef} className="h-full overflow-y-auto">
           <AppHeader />
-          <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
-            <h1 className="ds-h1 pt-8 text-[color:var(--text-primary)]">{page.title}</h1>
-            {topics.length > 0 && (
-              <PageSummary>
-                {topics.map((t, i) => (
-                  <ListItem key={i}>{t}</ListItem>
-                ))}
-              </PageSummary>
-            )}
+          <div className="mx-auto grid max-w-7xl grid-cols-[15rem_minmax(0,1fr)_13rem] gap-x-8 px-6 py-8">
+            {/* Левое меню — навигация по разделам сайта */}
+            <aside className="min-w-0">
+              <div className="sticky top-20">
+                <SidebarNav />
+              </div>
+            </aside>
+
+            {/* Контент страницы */}
+            <div className="min-w-0">
+              <div className="figma-scope mx-auto max-w-[var(--column-width)]">
+                <h1 className="ds-h1 text-[color:var(--text-primary)]">{page.title}</h1>
+                {topics.length > 0 && (
+                  <PageSummary>
+                    {topics.map((t, i) => (
+                      <ListItem key={i}>{t}</ListItem>
+                    ))}
+                  </PageSummary>
+                )}
+              </div>
+              <ResultView doc={pageDoc} pick={{ selected, onSelect: setSelected }} />
+            </div>
+
+            {/* Правое меню — оглавление страницы */}
+            <aside className="min-w-0">
+              <div className="sticky top-20">
+                <SiteRail items={tocItems} paneRef={rightRef} />
+              </div>
+            </aside>
           </div>
-          <ResultView doc={pageDoc} pick={{ selected, onSelect: setSelected }} />
         </div>
       </section>
     </div>

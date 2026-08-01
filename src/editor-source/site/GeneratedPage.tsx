@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
+import type { TocItem } from "@/lib/toc";
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
 import { stripDecourse } from "./decourse";
@@ -53,7 +54,14 @@ export function GeneratedPage() {
     .map(sectionTitle)
     .filter((t): t is string => Boolean(t));
 
+  /* Оглавление «На этой странице» (правое меню) — все секции страницы. */
+  const tocItems: TocItem[] = chosen
+    .map((s) => ({ label: sectionTitle(s) ?? "", anchor: s.anchor ?? "" }))
+    .filter((t) => t.label && t.anchor);
+
   const pageDoc: Doc = { module: page.module, children: chosen };
 
-  return <SiteInspector page={page} pageDoc={pageDoc} topics={topics} />;
+  return (
+    <SiteInspector page={page} pageDoc={pageDoc} topics={topics} tocItems={tocItems} />
+  );
 }
