@@ -16,6 +16,7 @@ import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
 import { buildOsnovyExport } from "./siteExport";
+import { coverFor } from "./covers";
 import { downloadJson } from "@/editor-source/source/JsonView";
 
 /*
@@ -281,6 +282,7 @@ function SiteMode({
   const paused = React.useRef(false);
 
   const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
+  const cover = coverFor(page.slug);
 
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
@@ -344,7 +346,10 @@ function SiteMode({
                 doc={pageDoc}
                 selected={selected}
                 onSelect={setSelected}
-                heading={{ slug: page.slug, h1: page.title }}
+                heading={{
+                  slug: page.slug,
+                  header: { h1: page.title, cover: coverFor(page.slug) },
+                }}
               />
             </div>
           ) : tab === "doc" ? (
@@ -385,6 +390,13 @@ function SiteMode({
                 также». */}
             <div className="min-w-0">
               <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pt-8">
+                {cover.src && (
+                  <img
+                    src={cover.src}
+                    alt={cover.alt}
+                    className="mb-6 h-auto w-full rounded-[var(--radius-l)] object-cover"
+                  />
+                )}
                 <h1 className="ds-h1 text-[color:var(--text-primary)]">{page.title}</h1>
               </div>
               <ResultView doc={pageDoc} pick={{ selected, onSelect: setSelected }} />

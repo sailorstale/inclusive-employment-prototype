@@ -13,6 +13,7 @@ import { loadDirectives } from "@/editor-source/directives";
 import { OSNOVY_PAGES } from "./pageMap";
 import { decourse } from "./decourse";
 import { pageChildren } from "./pageStructure";
+import { coverFor, type Cover } from "./covers";
 
 /*
   ЕДИНЫЙ JSON ВСЕГО РАЗДЕЛА «ОСНОВЫ» — одно ТЗ разработчику на все страницы.
@@ -37,7 +38,11 @@ function toSections(blocks: SourceBlock[]): Section[] {
   return out;
 }
 
-export type PageExport = { slug: string; h1: string; children: unknown[] };
+export type PageExport = {
+  slug: string;
+  header: { h1: string; cover: Cover };
+  children: unknown[];
+};
 export type OsnovyExport = { section: string; pages: PageExport[] };
 
 /** Построить единый экспорт раздела «Основы» (все страницы). */
@@ -72,7 +77,11 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
 
     // Та же структура, что рисует сайт: обвязка + секции, одним деревом.
     const children = toExport(pageChildren(chosen, page.slug));
-    pages.push({ slug: page.slug, h1: page.title, children });
+    pages.push({
+      slug: page.slug,
+      header: { h1: page.title, cover: coverFor(page.slug) },
+      children,
+    });
   }
 
   return { section: "Основы", pages };

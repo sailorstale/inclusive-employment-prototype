@@ -173,7 +173,7 @@ export function JsonView({
     // Верхние поля: заданные снаружи (slug/h1) или, по умолчанию, module.
     const fields = heading ?? { module: ex.module };
     const headLines = Object.entries(fields)
-      .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},\n`)
+      .map(([k, v]) => `  ${JSON.stringify(k)}: ${jsonValue(v, 1)},\n`)
       .join("");
     /*
       Нумеруем ТОЛЬКО Section Container: перед секциями в дереве может лежать
