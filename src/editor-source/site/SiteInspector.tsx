@@ -255,28 +255,42 @@ function SiteRail({
   items: TocEntry[];
   pane: HTMLDivElement | null;
 }) {
-  // Scrollspy: активный пункт — последний заголовок (H2-секция или H3), чьё
-  // начало уже прошло верх панели. Якорь H2 стоит на Section Container, H3 —
-  // на самом заголовке (см. ResultView).
+  // Группируем: каждая H2-секция и её H3-подзаголовки.
+  const groups = React.useMemo(() => {
+    const g: { h2: TocEntry; h3s: TocEntry[] }[] = [];
+    for (const it of items) {
+      if (it.level === 2) g.push({ h2: it, h3s: [] });
+      else if (g.length) g[g.length - 1].h3s.push(it);
+    }
+    return g;
+  }, [items]);
+
+  // Scrollspy: активный пункт (H2 или H3, для подсветки) и активная СЕКЦИЯ (H2,
+  // под которой раскрываем H3). Оба — последний заголовок, чьё начало прошло верх.
   const [active, setActive] = React.useState<string | null>(null);
+  const [section, setSection] = React.useState<string | null>(null);
   React.useEffect(() => {
     if (!pane) return;
-    const anchors = items.map((i) => i.anchor);
     const spy = () => {
       const top = pane.getBoundingClientRect().top;
       let cur: string | null = null;
-      for (const a of anchors) {
-        const el = pane.querySelector(`[id="${CSS.escape(a)}"]`);
-        if (el && el.getBoundingClientRect().top - top <= 96) cur = a;
+      let sec: string | null = null;
+      for (const it of items) {
+        const el = pane.querySelector(`[id="${CSS.escape(it.anchor)}"]`);
+        if (el && el.getBoundingClientRect().top - top <= 96) {
+          cur = it.anchor;
+          if (it.level === 2) sec = it.anchor;
+        }
       }
       setActive(cur);
+      setSection(sec);
     };
     spy();
     pane.addEventListener("scroll", spy, { passive: true });
     return () => pane.removeEventListener("scroll", spy);
   }, [pane, items]);
 
-  if (items.length < 2) return null;
+  if (groups.length < 2) return null;
   const go = (anchor: string) => {
     if (!pane) return;
     const el = pane.querySelector(`[id="${CSS.escape(anchor)}"]`);
@@ -284,28 +298,47 @@ function SiteRail({
       pane.scrollTop +=
         el.getBoundingClientRect().top - pane.getBoundingClientRect().top - 12;
   };
+  const itemCls = (anchor: string, level: 2 | 3, inSection = false) =>
+    cn(
+      "-ml-px block border-l py-0.5 text-left leading-snug transition-colors",
+      level === 3 ? "pl-6" : "pl-3",
+      active === anchor
+        ? "border-foreground font-medium text-foreground"
+        : inSection
+          ? "border-transparent text-foreground hover:border-foreground"
+          : "border-transparent text-muted-foreground hover:border-foreground hover:text-foreground",
+    );
   return (
     <nav aria-label="На этой странице" className="text-sm">
       <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         На этой странице
       </div>
       <ul className="space-y-1 border-l">
-        {items.map((t) => (
-          <li key={t.anchor}>
-            <button
-              type="button"
-              onClick={() => go(t.anchor)}
-              className={cn(
-                "-ml-px block border-l py-0.5 text-left leading-snug transition-colors",
-                t.level === 3 ? "pl-6" : "pl-3",
-                active === t.anchor
-                  ? "border-foreground font-medium text-foreground"
-                  : "border-transparent text-muted-foreground hover:border-foreground hover:text-foreground",
-              )}
-            >
-              {t.label}
-            </button>
-          </li>
+        {groups.map((g) => (
+          <React.Fragment key={g.h2.anchor}>
+            <li>
+              <button
+                type="button"
+                onClick={() => go(g.h2.anchor)}
+                className={itemCls(g.h2.anchor, 2, section === g.h2.anchor)}
+              >
+                {g.h2.label}
+              </button>
+            </li>
+            {/* H3-подпункты — только у текущей секции (не все сразу). */}
+            {section === g.h2.anchor &&
+              g.h3s.map((h3) => (
+                <li key={h3.anchor}>
+                  <button
+                    type="button"
+                    onClick={() => go(h3.anchor)}
+                    className={itemCls(h3.anchor, 3)}
+                  >
+                    {h3.label}
+                  </button>
+                </li>
+              ))}
+          </React.Fragment>
         ))}
       </ul>
     </nav>
