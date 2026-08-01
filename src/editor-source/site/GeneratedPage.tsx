@@ -8,6 +8,7 @@ import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree"
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
 import { stripDecourse } from "./decourse";
+import { Inspector } from "./Inspector";
 
 /*
   СТРАНИЦА САЙТА ИЗ ИСТОЧНИКА.
@@ -36,6 +37,7 @@ export function GeneratedPage() {
   const { pathname } = useLocation();
   const page = pageBySlug(pathname);
   const doc = useModuleDoc(page?.module ?? "");
+  const [inspect, setInspect] = React.useState(false);
 
   if (!page)
     return <div className="mx-auto max-w-prose px-6 py-16 text-muted-foreground">Страница не из карты: {pathname}</div>;
@@ -67,6 +69,9 @@ export function GeneratedPage() {
 
   return (
     <div>
+      {inspect && (
+        <Inspector doc={pageDoc} module={page.module} onClose={() => setInspect(false)} />
+      )}
       {/* Регистрирует оглавление в правый рейл (TocRail в Layout). */}
       <PageToc items={tocItems} minItems={2} />
       <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
@@ -80,6 +85,13 @@ export function GeneratedPage() {
         )}
       </div>
       <ResultView doc={pageDoc} />
+      <button
+        type="button"
+        onClick={() => setInspect(true)}
+        className="fixed bottom-4 right-4 z-40 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background shadow-lg hover:opacity-90"
+      >
+        Инспектор
+      </button>
     </div>
   );
 }
