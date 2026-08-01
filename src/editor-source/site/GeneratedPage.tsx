@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { PageSummary, ListItem } from "@/figma";
 import { PageToc } from "@/components/PageToc";
 import type { TocItem } from "@/lib/toc";
@@ -8,8 +8,10 @@ import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree"
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
 import { stripDecourse } from "./decourse";
+import { SiteInspector } from "./SiteInspector";
 
-// Внутри iframe (в инструменте сверки) кнопку «Инспектор» не показываем.
+// Наверху страница разворачивается в инструмент сверки; ВНУТРИ iframe (window.top
+// !== self) рисуется голой — её показывает правая панель инструмента.
 const embedded = typeof window !== "undefined" && window.self !== window.top;
 
 /*
@@ -68,22 +70,17 @@ export function GeneratedPage() {
 
   const pageDoc: Doc = { module: page.module, children: chosen };
 
+  // На верхнем уровне страница СРАЗУ разворачивается в инструмент сверки (без
+  // кнопки): слева источник/JSON/гугдок, справа сама страница. Внутри iframe
+  // (embedded) рисуем её ГОЛОЙ — её и показывает правая панель инструмента.
+  if (!embedded) return <SiteInspector page={page} pageDoc={pageDoc} />;
+
   return (
     <div>
       {/* Регистрирует оглавление в правый рейл (TocRail в Layout). */}
       <PageToc items={tocItems} minItems={2} />
       <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
-        <div className="flex items-start justify-between gap-4 pt-10">
-          <h1 className="ds-h1 text-[color:var(--text-primary)]">{page.title}</h1>
-          {!embedded && (
-            <Link
-              to={`/source/inspect${page.slug}`}
-              className="mt-2 shrink-0 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              Сверка с источником
-            </Link>
-          )}
-        </div>
+        <h1 className="ds-h1 pt-10 text-[color:var(--text-primary)]">{page.title}</h1>
         {topics.length > 0 && (
           <PageSummary>
             {topics.map((t, i) => (
