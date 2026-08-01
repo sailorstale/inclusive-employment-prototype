@@ -75,7 +75,16 @@ export function GeneratedPage() {
       {/* Регистрирует оглавление в правый рейл (TocRail в Layout). */}
       <PageToc items={tocItems} minItems={2} />
       <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
-        <h1 className="ds-h1 pt-10 text-[color:var(--text-primary)]">{page.title}</h1>
+        <div className="flex items-start justify-between gap-4 pt-10">
+          <h1 className="ds-h1 text-[color:var(--text-primary)]">{page.title}</h1>
+          <button
+            type="button"
+            onClick={() => setInspect(true)}
+            className="mt-2 shrink-0 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            Инспектор
+          </button>
+        </div>
         {topics.length > 0 && (
           <PageSummary>
             {topics.map((t, i) => (
@@ -85,13 +94,6 @@ export function GeneratedPage() {
         )}
       </div>
       <ResultView doc={pageDoc} />
-      <button
-        type="button"
-        onClick={() => setInspect(true)}
-        className="fixed bottom-4 right-4 z-40 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background shadow-lg hover:opacity-90"
-      >
-        Инспектор
-      </button>
     </div>
   );
 }

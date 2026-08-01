@@ -45,14 +45,17 @@ export function renderInline(text: string): React.ReactNode {
   let mk: RegExpExecArray | null;
   while ((mk = re.exec(text))) {
     if (mk.index > last) out.push(renderPlain(text.slice(last, mk.index)));
+    const was = mk[2];
     out.push(
-      <mark
-        key={`mk${k++}`}
-        title={`было: ${mk[2]}`}
-        className="rounded-[3px] bg-[hsl(45_93%_85%)] px-0.5 underline decoration-amber-600 decoration-dotted underline-offset-2"
-      >
-        {renderPlain(mk[1])}
-      </mark>,
+      // Свой тултип на CSS-hover — мгновенный, в отличие от нативного title.
+      <span key={`mk${k++}`} className="group relative inline">
+        <mark className="rounded-[3px] bg-[hsl(45_93%_85%)] px-0.5 underline decoration-amber-600 decoration-dotted underline-offset-2">
+          {renderPlain(mk[1])}
+        </mark>
+        <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-xs font-normal text-background shadow-md group-hover:block">
+          было: {was}
+        </span>
+      </span>,
     );
     last = re.lastIndex;
   }
