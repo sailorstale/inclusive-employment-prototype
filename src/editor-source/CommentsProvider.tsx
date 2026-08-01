@@ -18,6 +18,7 @@ export type CommentTarget = {
   page?: string | null;
   blockType?: string | null;
   original?: string | null;
+  author?: string | null;
 };
 
 type CommentsContextValue = {
@@ -140,6 +141,7 @@ export function CommentsProvider({
         page: target.page,
         blockType: target.blockType,
         original: target.original,
+        author: target.author,
         text: trimmed,
         // Правка текста комментария снова «открывает» его.
         resolved: trimmed ? false : prev?.resolved ?? false,

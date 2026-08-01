@@ -20,6 +20,8 @@ export type Comment = {
   resolved: boolean;
   createdAt: string;
   updatedAt: string;
+  /** Автор комментария (поток «review»: клиент/разработчик представляется). */
+  author?: string | null;
   /** Легаси-поле старых комментариев-пинов: текст блока-якоря. Новые записи его
    *  не пишут (привязка по id блока), но старые уже сохранённые — сохраняем и
    *  показываем как ссылку на блок, чтобы не потерять смысл правки. */
@@ -34,6 +36,7 @@ export type CommentInput = {
   text?: string;
   deleted?: boolean;
   resolved?: boolean;
+  author?: string | null;
 };
 
 const API = { site: "/api", source: "/api/source", review: "/api/review" } as const;
@@ -102,6 +105,7 @@ export async function saveComment(
     page: input.page ?? prev?.page ?? null,
     blockType: input.blockType ?? prev?.blockType ?? null,
     original: input.original ?? prev?.original ?? null,
+    author: input.author ?? prev?.author ?? null,
     text: typeof input.text === "string" ? input.text : prev?.text ?? "",
     deleted: typeof input.deleted === "boolean" ? input.deleted : prev?.deleted ?? false,
     resolved: typeof input.resolved === "boolean" ? input.resolved : prev?.resolved ?? false,
