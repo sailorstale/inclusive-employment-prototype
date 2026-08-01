@@ -570,19 +570,20 @@ function SiteComments({
       const el = (e.target as HTMLElement).closest?.(
         "[data-json-path]",
       ) as HTMLElement | null;
-      if (!el) return;
+      if (!el) return; // над самой иконкой/не-компонентом — ничего не трогаем
       window.clearTimeout(clearRef.current);
-      const box = (el.firstElementChild as HTMLElement) || el;
-      const r = box.getBoundingClientRect();
       const path = el.getAttribute("data-json-path") as string;
-      setHover((prev) =>
-        prev && prev.path === path && Math.abs(prev.top - r.top) < 1
-          ? prev
-          : { path, top: r.top, right: r.right },
-      );
+      // Пересчитываем позицию ТОЛЬКО при смене компонента — иначе иконка
+      // дёргалась бы на каждом пикселе движения (моргание).
+      setHover((prev) => {
+        if (prev && prev.path === path) return prev;
+        const box = (el.firstElementChild as HTMLElement) || el;
+        const r = box.getBoundingClientRect();
+        return { path, top: r.top, right: r.right };
+      });
     };
     const onLeave = () => {
-      clearRef.current = window.setTimeout(() => setHover(null), 250);
+      clearRef.current = window.setTimeout(() => setHover(null), 300);
     };
     pane.addEventListener("mousemove", onMove, { passive: true });
     pane.addEventListener("mouseleave", onLeave);
@@ -616,8 +617,8 @@ function SiteComments({
           type="button"
           style={{
             position: "fixed",
-            top: hover.top + 4,
-            left: hover.right - 26,
+            top: hover.top + 6,
+            left: hover.right - 40,
             zIndex: 60,
           }}
           onMouseEnter={() => window.clearTimeout(clearRef.current)}
@@ -625,13 +626,13 @@ function SiteComments({
           aria-label="Комментировать"
           title="Комментировать"
           className={cn(
-            "flex h-[22px] w-[22px] items-center justify-center rounded-md border bg-card transition-colors hover:bg-accent",
+            "flex h-9 w-9 items-center justify-center rounded-lg border bg-card transition-colors hover:bg-accent",
             threadOf(hover.path).length > 0
               ? "border-[color:var(--comment-line)] text-[color:var(--comment-line)]"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          <MessageSquarePlus className="h-3.5 w-3.5" />
+          <MessageSquarePlus className="h-5 w-5" />
         </button>
       )}
 
