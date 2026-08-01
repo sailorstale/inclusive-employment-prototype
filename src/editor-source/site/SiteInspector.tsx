@@ -1,4 +1,5 @@
 import * as React from "react";
+import { MessageSquarePlus } from "lucide-react";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
@@ -615,20 +616,22 @@ function SiteComments({
           type="button"
           style={{
             position: "fixed",
-            top: hover.top,
-            left: hover.right + 8,
+            top: hover.top + 4,
+            left: hover.right - 26,
             zIndex: 60,
           }}
           onMouseEnter={() => window.clearTimeout(clearRef.current)}
           onClick={() => setOpenPath(hover.path)}
-          className="flex items-center gap-1 rounded-full border bg-card px-2.5 py-1 text-xs font-medium shadow-md hover:bg-accent"
-        >
-          Комментировать
-          {threadOf(hover.path).length > 0 && (
-            <span className="rounded-full bg-primary px-1.5 text-[10px] leading-4 text-primary-foreground">
-              {threadOf(hover.path).length}
-            </span>
+          aria-label="Комментировать"
+          title="Комментировать"
+          className={cn(
+            "flex h-[22px] w-[22px] items-center justify-center rounded-md border bg-card transition-colors hover:bg-accent",
+            threadOf(hover.path).length > 0
+              ? "border-[color:var(--comment-line)] text-[color:var(--comment-line)]"
+              : "text-muted-foreground hover:text-foreground",
           )}
+        >
+          <MessageSquarePlus className="h-3.5 w-3.5" />
         </button>
       )}
 
