@@ -5,7 +5,7 @@ import { ResultView } from "@/editor-source/source/ResultView";
 import { useScrollSync } from "@/editor-source/source/scrollSync";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
 import { EditorProvider } from "@/editor-source/EditorProvider";
-import { CommentsProvider } from "@/editor-source/CommentsProvider";
+import { CommentsProvider, useComments } from "@/editor-source/CommentsProvider";
 import { EditorToast } from "@/editor-source/EditorNotices";
 import { EditorDock } from "@/editor-source/EditorDock";
 import { SourcePage } from "@/editor-source/source/SourcePage";
@@ -147,8 +147,9 @@ export function SiteInspector({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      {/* Тумблер режимов — общий верхний бар. */}
+    <CommentsProvider scope="review">
+      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+        {/* Тумблер режимов — общий верхний бар. */}
       <div className="flex shrink-0 items-center gap-1 border-b bg-muted/40 px-3 py-1.5">
         <div className="flex items-center gap-0.5 rounded-md border bg-background p-0.5">
           <ModeBtn active={mode === "module"} onClick={() => setMode("module")}>
@@ -175,7 +176,8 @@ export function SiteInspector({
           <ModuleMode module={page.module} />
         )}
       </div>
-    </div>
+      </div>
+    </CommentsProvider>
   );
 }
 
@@ -373,6 +375,19 @@ function SiteMode({
   const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
   const cover = coverFor(page.slug);
 
+  // Комментарии клиента/разработчика (отдельный поток «review»). Множество путей
+  // компонентов с открытым комментарием — для маркера на самих компонентах.
+  const { comments } = useComments();
+  const commented = React.useMemo(
+    () =>
+      new Set(
+        comments
+          .filter((c) => c.page === page.slug && c.text && !c.resolved)
+          .map((c) => c.id.slice(c.id.indexOf("::") + 2)),
+      ),
+    [comments, page.slug],
+  );
+
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
     return matchBlock(blocks, nodeText(nodeAtPath(pageDoc, selected)));
@@ -488,7 +503,10 @@ function SiteMode({
                 )}
                 <h1 className="ds-h1 text-[color:var(--text-primary)]">{page.title}</h1>
               </div>
-              <ResultView doc={pageDoc} pick={{ selected, onSelect: setSelected }} />
+              <ResultView
+                doc={pageDoc}
+                pick={{ selected, onSelect: setSelected, commented }}
+              />
             </div>
 
             {/* Правое меню — оглавление страницы */}
@@ -500,6 +518,167 @@ function SiteMode({
           </div>
         </div>
       </section>
+
+      {/* Комментарии клиента/разработчика: выбери компонент справа → напиши. */}
+      <ReviewPanel
+        slug={page.slug}
+        selected={selected}
+        onSelect={setSelected}
+        pageDoc={pageDoc}
+        pane={rightBox}
+      />
+    </div>
+  );
+}
+
+/* Панель комментариев клиента/разработчика (поток «review»). Выбран компонент —
+   редактор комментария к нему; иначе — список всех комментариев страницы для
+   обработки (клик по пункту наводит на компонент). */
+function ReviewPanel({
+  slug,
+  selected,
+  onSelect,
+  pageDoc,
+  pane,
+}: {
+  slug: string;
+  selected: string | null;
+  onSelect: (path: string | null) => void;
+  pageDoc: Doc;
+  pane: HTMLDivElement | null;
+}) {
+  const { comments, commentOf, setComment } = useComments();
+  const [draft, setDraft] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+
+  const commentId = selected ? `${slug}::${selected}` : null;
+  const existing = commentId ? commentOf(commentId) : undefined;
+  React.useEffect(() => {
+    setDraft(existing?.text ?? "");
+    if (selected) setOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commentId]);
+
+  const pageComments = comments.filter((c) => c.page === slug && c.text);
+  const snippet = (s?: string | null) => (s ? s.replace(/\s+/g, " ").trim().slice(0, 60) : "");
+  const scrollTo = (path: string) => {
+    onSelect(path);
+    if (!pane) return;
+    const el = pane.querySelector(`[data-json-path="${CSS.escape(path)}"]`);
+    if (el)
+      pane.scrollTop +=
+        el.getBoundingClientRect().top - pane.getBoundingClientRect().top - 80;
+  };
+
+  const save = () => {
+    if (!commentId || !selected) return;
+    setComment(
+      {
+        id: commentId,
+        page: slug,
+        blockType: (nodeAtPath(pageDoc, selected) as Node | null)?.component ?? null,
+        original: snippet(nodeText(nodeAtPath(pageDoc, selected))),
+      },
+      draft,
+    );
+  };
+
+  // Свёрнуто — только кнопка со счётчиком.
+  if (!open && !selected) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="fixed bottom-4 right-4 z-[60] flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm font-medium shadow-md hover:bg-accent"
+      >
+        Комментарии
+        <span className="rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
+          {pageComments.length}
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="fixed bottom-4 right-4 z-[60] flex max-h-[70vh] w-80 flex-col rounded-lg border bg-card shadow-xl">
+      <div className="flex items-center justify-between border-b px-3 py-2">
+        <span className="text-sm font-semibold">
+          Комментарии{pageComments.length ? ` · ${pageComments.length}` : ""}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            onSelect(null);
+            setOpen(false);
+          }}
+          className="rounded px-1.5 text-muted-foreground hover:text-foreground"
+          aria-label="Закрыть"
+        >
+          ✕
+        </button>
+      </div>
+
+      {selected ? (
+        <div className="flex flex-col gap-2 p-3">
+          <div className="rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
+            {snippet(nodeText(nodeAtPath(pageDoc, selected))) || "выбранный компонент"}
+          </div>
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Что не так с этим компонентом?"
+            className="h-24 w-full resize-none rounded border bg-background px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={save}
+              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              disabled={draft.trim() === (existing?.text ?? "")}
+            >
+              Сохранить
+            </button>
+            {existing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDraft("");
+                  setComment(
+                    { id: commentId as string, page: slug },
+                    "",
+                  );
+                }}
+                className="rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Удалить
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <ul className="min-h-0 flex-1 overflow-y-auto p-2 text-sm">
+          {pageComments.length === 0 ? (
+            <li className="px-2 py-4 text-center text-muted-foreground">
+              Пока нет комментариев. Выбери компонент справа и напиши.
+            </li>
+          ) : (
+            pageComments.map((c) => (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  onClick={() => scrollTo(c.id.slice(c.id.indexOf("::") + 2))}
+                  className="block w-full rounded px-2 py-1.5 text-left hover:bg-accent"
+                >
+                  <span className="block truncate text-foreground">{c.text}</span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {snippet(c.original)}
+                  </span>
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
     </div>
   );
 }

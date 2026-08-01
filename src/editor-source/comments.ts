@@ -36,13 +36,20 @@ export type CommentInput = {
   resolved?: boolean;
 };
 
-const API = { site: "/api", source: "/api/source" } as const;
+const API = { site: "/api", source: "/api/source", review: "/api/review" } as const;
 const LOCAL_KEY = {
   site: "inclusion-comments-v2",
   source: "inclusion-source-comments-v2",
+  review: "inclusion-site-review-v1",
 } as const;
 
-const modes: Record<Scope, "server" | "local"> = { site: "local", source: "local" };
+// review-поток — свой ключ в localStorage; серверного эндпоинта нет, поэтому
+// остаётся локальным (как и остальные комментарии в деве).
+const modes: Record<Scope, "server" | "local"> = {
+  site: "local",
+  source: "local",
+  review: "local",
+};
 export const getCommentsMode = (scope: Scope = "site") => modes[scope];
 
 function readLocal(scope: Scope): Record<string, Comment> {

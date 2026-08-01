@@ -6,15 +6,23 @@ import { apiFetch } from "./auth";
 // обособленный инструмент «Редактура источника» ходят в РАЗНЫЕ эндпоинты/ключи
 // и держат независимый режим (сервер/локально), чтобы не влиять друг на друга.
 
-export type Scope = "site" | "source";
+// review — отдельный поток комментариев клиента/разработчика на самом сайте
+// (инспектор, режим «Сайт»), не смешивается с редакторскими правками source.
+export type Scope = "site" | "source" | "review";
 
-const API = { site: "/api", source: "/api/source" } as const;
+// review — поток комментариев сайта; правок в нём нет, но ключ нужен типам.
+const API = { site: "/api", source: "/api/source", review: "/api/review" } as const;
 const LOCAL_KEY = {
   site: "inclusion-editor-edits-v2",
   source: "inclusion-source-edits-v2",
+  review: "inclusion-review-edits-v1",
 } as const;
 
-const modes: Record<Scope, "server" | "local"> = { site: "local", source: "local" };
+const modes: Record<Scope, "server" | "local"> = {
+  site: "local",
+  source: "local",
+  review: "local",
+};
 export const getMode = (scope: Scope = "site") => modes[scope];
 
 function readLocal(scope: Scope): Record<string, EditRecord> {

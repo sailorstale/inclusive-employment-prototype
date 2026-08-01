@@ -82,7 +82,12 @@ export function useContentDoc(
   Контекста нет (страницы модулей) — обёртки не появляются вовсе, разметка
   превью остаётся чистой.
 */
-type Pick = { selected: string | null; onSelect: (path: string) => void };
+type Pick = {
+  selected: string | null;
+  onSelect: (path: string) => void;
+  /** Пути компонентов с комментарием — для маркера (режим «Сайт»). */
+  commented?: Set<string>;
+};
 const PickContext = React.createContext<Pick | null>(null);
 
 export function ResultView({ doc, pick }: { doc: Doc; pick?: Pick }) {
@@ -122,7 +127,9 @@ function NodeView({ node, path }: { node: Node; path: string }) {
   if (!pick) return inner;
   return (
     <div
-      className={`ds-pick contents${pick.selected === path ? " is-picked" : ""}`}
+      className={`ds-pick contents${pick.selected === path ? " is-picked" : ""}${
+        pick.commented?.has(path) ? " has-comment" : ""
+      }`}
       data-json-path={path}
       onClick={(e) => {
         e.stopPropagation();
