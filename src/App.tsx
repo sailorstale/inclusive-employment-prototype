@@ -27,13 +27,6 @@ import { A11yPage } from "./pages/A11yPage";
 // монтируются под /general/* и служат обоим ролевым трекам.
 import { CompaniesHubPage } from "./pages/companies/CompaniesHubPage";
 import { GeneratedPage } from "./editor-source/site/GeneratedPage";
-import { CompaniesHowPage } from "./pages/companies/CompaniesHowPage";
-import { LegalHubPage } from "./pages/companies/LegalHubPage";
-import { ContractPage } from "./pages/companies/ContractPage";
-import { BenefitsPage } from "./pages/companies/BenefitsPage";
-import { QuotasPage } from "./pages/companies/QuotasPage";
-import { StatusPage } from "./pages/companies/StatusPage";
-import { FaqPage } from "./pages/companies/FaqPage";
 import { HireHubPage } from "./pages/companies/HireHubPage";
 import { Step1Page } from "./pages/companies/Step1Page";
 import { Step2Page } from "./pages/companies/Step2Page";
@@ -41,7 +34,6 @@ import { Step3Page } from "./pages/companies/Step3Page";
 import { Step4Page } from "./pages/companies/Step4Page";
 import { Step5Page } from "./pages/companies/Step5Page";
 import { Step6Page } from "./pages/companies/Step6Page";
-import { TeamPage } from "./pages/companies/TeamPage";
 
 // Трек «Для НКО» — Программа НКО (М6). Общая база М1–М4 — в разделе
 // «Общая информация» (/general/*), НКО-дубли удалены.
@@ -98,16 +90,18 @@ export default function App() {
             path="/general"
             element={<Navigate to="/general/start" replace />}
           />
-          {/* «Основы» врастают из источника (перенос М1–4). Главную не трогаем. */}
+          {/* «Основы» целиком врастают из источника (перенос М1–4): одна
+              GeneratedPage разбирает адрес по карте страниц (pageMap). Главную
+              (/) не трогаем — она отдельная. */}
           <Route path="/general/start" element={<GeneratedPage />} />
-          <Route path="/general/how" element={<CompaniesHowPage />} />
-          <Route path="/general/legal" element={<LegalHubPage />} />
-          <Route path="/general/legal/contract" element={<ContractPage />} />
-          <Route path="/general/legal/benefits" element={<BenefitsPage />} />
-          <Route path="/general/legal/quotas" element={<QuotasPage />} />
-          <Route path="/general/legal/status" element={<StatusPage />} />
-          <Route path="/general/legal/faq" element={<FaqPage />} />
-          <Route path="/general/team" element={<TeamPage />} />
+          <Route path="/general/how" element={<GeneratedPage />} />
+          <Route path="/general/legal" element={<GeneratedPage />} />
+          <Route path="/general/legal/contract" element={<GeneratedPage />} />
+          <Route path="/general/legal/benefits" element={<GeneratedPage />} />
+          <Route path="/general/legal/quotas" element={<GeneratedPage />} />
+          <Route path="/general/legal/status" element={<GeneratedPage />} />
+          <Route path="/general/legal/faq" element={<GeneratedPage />} />
+          <Route path="/general/team" element={<GeneratedPage />} />
 
           {/* Для компаний (М5 — Наём по шагам) */}
           <Route path="/companies" element={<CompaniesHubPage />} />
