@@ -13,6 +13,7 @@ import { ComponentsPage } from "./pages/figma/ComponentsPage";
 import { SourceLayout } from "./editor-source/source/SourceLayout";
 import { SourcePage } from "./editor-source/source/SourcePage";
 import { SamplePage } from "./editor-source/source/SamplePage";
+import { SitePagePreview } from "./editor-source/site/SitePagePreview";
 
 // Сквозные / лендинг (следующий заход — оставлены как есть)
 import { HomePage } from "./pages/HomePage";
@@ -82,6 +83,9 @@ export default function App() {
           {/* Статический маршрут ДО параметрического: иначе «sample»
               прочитался бы как id модуля и страница не нашлась бы. */}
           <Route path="/source/sample" element={<SamplePage />} />
+          {/* Превью страницы сайта из источника (срез 1). До :moduleId, иначе
+              «preview» прочиталось бы как id модуля. */}
+          <Route path="/source/preview/*" element={<SitePagePreview />} />
           <Route path="/source/:moduleId" element={<SourcePage />} />
         </Route>
 
