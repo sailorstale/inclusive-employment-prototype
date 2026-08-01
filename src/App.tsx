@@ -14,6 +14,7 @@ import { SourceLayout } from "./editor-source/source/SourceLayout";
 import { SourcePage } from "./editor-source/source/SourcePage";
 import { SamplePage } from "./editor-source/source/SamplePage";
 import { SitePagePreview } from "./editor-source/site/SitePagePreview";
+import { SiteInspector } from "./editor-source/site/SiteInspector";
 
 // Сквозные / лендинг (следующий заход — оставлены как есть)
 import { HomePage } from "./pages/HomePage";
@@ -86,6 +87,8 @@ export default function App() {
           {/* Превью страницы сайта из источника (срез 1). До :moduleId, иначе
               «preview» прочиталось бы как id модуля. */}
           <Route path="/source/preview/*" element={<SitePagePreview />} />
+          {/* Инструмент сверки: слева источник/JSON/гугдок, справа сайт. */}
+          <Route path="/source/inspect/*" element={<SiteInspector />} />
           <Route path="/source/:moduleId" element={<SourcePage />} />
         </Route>
 

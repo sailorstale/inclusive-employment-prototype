@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { PageSummary, ListItem } from "@/figma";
 import { PageToc } from "@/components/PageToc";
 import type { TocItem } from "@/lib/toc";
@@ -8,7 +8,9 @@ import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree"
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
 import { stripDecourse } from "./decourse";
-import { Inspector } from "./Inspector";
+
+// Внутри iframe (в инструменте сверки) кнопку «Инспектор» не показываем.
+const embedded = typeof window !== "undefined" && window.self !== window.top;
 
 /*
   СТРАНИЦА САЙТА ИЗ ИСТОЧНИКА.
@@ -37,7 +39,6 @@ export function GeneratedPage() {
   const { pathname } = useLocation();
   const page = pageBySlug(pathname);
   const doc = useModuleDoc(page?.module ?? "");
-  const [inspect, setInspect] = React.useState(false);
 
   if (!page)
     return <div className="mx-auto max-w-prose px-6 py-16 text-muted-foreground">Страница не из карты: {pathname}</div>;
@@ -69,21 +70,19 @@ export function GeneratedPage() {
 
   return (
     <div>
-      {inspect && (
-        <Inspector doc={pageDoc} module={page.module} onClose={() => setInspect(false)} />
-      )}
       {/* Регистрирует оглавление в правый рейл (TocRail в Layout). */}
       <PageToc items={tocItems} minItems={2} />
       <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
         <div className="flex items-start justify-between gap-4 pt-10">
           <h1 className="ds-h1 text-[color:var(--text-primary)]">{page.title}</h1>
-          <button
-            type="button"
-            onClick={() => setInspect(true)}
-            className="mt-2 shrink-0 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            Инспектор
-          </button>
+          {!embedded && (
+            <Link
+              to={`/source/inspect${page.slug}`}
+              className="mt-2 shrink-0 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              Сверка с источником
+            </Link>
+          )}
         </div>
         {topics.length > 0 && (
           <PageSummary>
