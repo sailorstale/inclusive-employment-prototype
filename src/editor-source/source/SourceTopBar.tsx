@@ -63,6 +63,24 @@ export function SourceTopBar() {
           >
             Образец
           </NavLink>
+
+          {/* Вход в превью страниц сайта (перенос М1–4). */}
+          <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-border" />
+          <NavLink
+            to="/source/preview/general/start"
+            title="Превью страниц сайта из источника"
+            className={({ isActive }) =>
+              cn(
+                "shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                isActive
+                  ? "bg-[hsl(var(--brand)/0.12)] text-brand"
+                  : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
+              )
+            }
+          >
+            Страницы сайта
+          </NavLink>
         </nav>
 
         <div className="flex shrink-0 items-center gap-1">
