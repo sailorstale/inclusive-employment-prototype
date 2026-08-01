@@ -38,6 +38,15 @@ const TABS: { id: RefView; label: string }[] = [
   { id: "doc", label: "Гугдок" },
 ];
 
+/*
+  Выбор режима и таба живёт на уровне модуля, а не в state компонента: при
+  переходе между страницами разных модулей страница на миг уходит в «Загрузка…»,
+  инструмент перемонтируется — и без этого таб сбрасывался бы на «Источник».
+  Так режим просмотра (например JSON) сохраняется при навигации.
+*/
+let lastMode: Mode = "site";
+let lastTab: RefView = "source";
+
 /* Узел дерева по пути «0.2.1» (как в ResultView/JsonView). */
 function nodeAtPath(doc: Doc, path: string): Node | SectionNode | null {
   const parts = path.split(".").map(Number);
@@ -107,8 +116,13 @@ export function SiteInspector({
   pageDoc: Doc;
   tocItems: TocItem[];
 }) {
-  const [mode, setMode] = React.useState<Mode>("site");
+  const [mode, setMode] = React.useState<Mode>(lastMode);
   const [exporting, setExporting] = React.useState(false);
+
+  // Запоминаем выбранный режим, чтобы он пережил переход между страницами.
+  React.useEffect(() => {
+    lastMode = mode;
+  }, [mode]);
 
   // Инструмент накрывает всю страницу — гасим прокрутку «фона» под ним.
   React.useEffect(() => {
@@ -251,9 +265,14 @@ function SiteMode({
   pageDoc: Doc;
   tocItems: TocItem[];
 }) {
-  const [tab, setTab] = React.useState<RefView>("source");
+  const [tab, setTab] = React.useState<RefView>(lastTab);
   const [selected, setSelected] = React.useState<string | null>(null);
   const blocks = usePageBlocks(page.module, page.sections);
+
+  // Запоминаем открытый таб, чтобы он пережил переход между страницами.
+  React.useEffect(() => {
+    lastTab = tab;
+  }, [tab]);
   // Контейнеры прокрутки держим СОСТОЯНИЕМ (не ref): левая панель пересоздаётся
   // при смене таба, и синхрон должен переподключиться на новый узел сам.
   const [leftBox, setLeftBox] = React.useState<HTMLDivElement | null>(null);
