@@ -1,10 +1,9 @@
 import { useLocation } from "react-router-dom";
 import type { Doc, SectionNode } from "@/editor-source/source/contentTree";
-import type { TocItem } from "@/lib/toc";
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
 import { SiteInspector } from "./SiteInspector";
-import { pageChildren, sectionTitle } from "./pageStructure";
+import { pageChildren, pageToc } from "./pageStructure";
 
 /*
   СТРАНИЦА САЙТА ИЗ ИСТОЧНИКА — сразу разворачивается в инструмент сверки.
@@ -34,10 +33,8 @@ export function GeneratedPage() {
   );
   const chosen = page.sections.map((a) => byAnchor.get(a)).filter(Boolean) as SectionNode[];
 
-  /* Оглавление «На этой странице» (правое меню) — все секции страницы. */
-  const tocItems: TocItem[] = chosen
-    .map((s) => ({ label: sectionTitle(s) ?? "", anchor: s.anchor ?? "" }))
-    .filter((t) => t.label && t.anchor);
+  /* Оглавление «На этой странице» (правое меню) — секции H2 и подзаголовки H3. */
+  const tocItems = pageToc(chosen);
 
   // Полная страница одним деревом: обвязка + секции. module оставляем в Doc для
   // сборки (правки/логотипы), но в JSON/выгрузку он не попадает.

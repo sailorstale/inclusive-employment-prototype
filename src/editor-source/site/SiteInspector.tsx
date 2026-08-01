@@ -12,7 +12,7 @@ import { SourcePage } from "@/editor-source/source/SourcePage";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { SidebarNav } from "@/components/shell/SidebarNav";
 import { cn } from "@/lib/utils";
-import type { TocItem } from "@/lib/toc";
+import type { TocEntry } from "./pageStructure";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
@@ -116,7 +116,7 @@ export function SiteInspector({
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
-  tocItems: TocItem[];
+  tocItems: TocEntry[];
 }) {
   const [mode, setMode] = React.useState<Mode>(lastMode);
   const [exporting, setExporting] = React.useState(false);
@@ -252,13 +252,34 @@ function SiteRail({
   items,
   pane,
 }: {
-  items: TocItem[];
+  items: TocEntry[];
   pane: HTMLDivElement | null;
 }) {
+  // Scrollspy: активный пункт — последний заголовок (H2-секция или H3), чьё
+  // начало уже прошло верх панели. Якорь H2 стоит на Section Container, H3 —
+  // на самом заголовке (см. ResultView).
+  const [active, setActive] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (!pane) return;
+    const anchors = items.map((i) => i.anchor);
+    const spy = () => {
+      const top = pane.getBoundingClientRect().top;
+      let cur: string | null = null;
+      for (const a of anchors) {
+        const el = pane.querySelector(`[id="${CSS.escape(a)}"]`);
+        if (el && el.getBoundingClientRect().top - top <= 96) cur = a;
+      }
+      setActive(cur);
+    };
+    spy();
+    pane.addEventListener("scroll", spy, { passive: true });
+    return () => pane.removeEventListener("scroll", spy);
+  }, [pane, items]);
+
   if (items.length < 2) return null;
   const go = (anchor: string) => {
     if (!pane) return;
-    const el = pane.querySelector(`section[id="${CSS.escape(anchor)}"]`);
+    const el = pane.querySelector(`[id="${CSS.escape(anchor)}"]`);
     if (el)
       pane.scrollTop +=
         el.getBoundingClientRect().top - pane.getBoundingClientRect().top - 12;
@@ -274,7 +295,13 @@ function SiteRail({
             <button
               type="button"
               onClick={() => go(t.anchor)}
-              className="-ml-px block border-l border-transparent py-0.5 pl-3 text-left leading-snug text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+              className={cn(
+                "-ml-px block border-l py-0.5 text-left leading-snug transition-colors",
+                t.level === 3 ? "pl-6" : "pl-3",
+                active === t.anchor
+                  ? "border-foreground font-medium text-foreground"
+                  : "border-transparent text-muted-foreground hover:border-foreground hover:text-foreground",
+              )}
             >
               {t.label}
             </button>
@@ -293,7 +320,7 @@ function SiteMode({
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
-  tocItems: TocItem[];
+  tocItems: TocEntry[];
 }) {
   const [tab, setTab] = React.useState<RefView>(lastTab);
   const [selected, setSelected] = React.useState<string | null>(null);

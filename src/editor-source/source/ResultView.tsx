@@ -137,7 +137,16 @@ function NodeView({ node, path }: { node: Node; path: string }) {
 function NodeBody({ node, path }: { node: Node; path: string }) {
   switch (node.component) {
     case "Heading":
-      return <Heading level={node.level}>{renderInline(node.text)}</Heading>;
+      // id-якорь для H3–H5 (для оглавления/scrollspy); у H2 якорь уже на
+      // Section Container — второй такой же id не заводим.
+      return (
+        <Heading
+          level={node.level}
+          id={node.level === "H2" ? undefined : node.anchor}
+        >
+          {renderInline(node.text)}
+        </Heading>
+      );
 
     case "Text":
       return <Text size={node.size}>{renderInline(node.text)}</Text>;

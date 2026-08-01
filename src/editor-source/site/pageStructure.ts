@@ -28,6 +28,33 @@ export function pageTopics(chosen: SectionNode[]): string[] {
     .filter((t): t is string => Boolean(t));
 }
 
+export type TocEntry = { label: string; anchor: string; level: 2 | 3 };
+
+/*
+  Оглавление «На этой странице» — секции (H2) и их подзаголовки (H3), по порядку.
+  H3 берём рекурсивно из узлов Heading (не из вопросов аккордеона и не из
+  заголовков карточек — там своё поле). Якорь H3 уже стоит на самом заголовке
+  (см. ResultView), по нему и прокрутка, и подсветка.
+*/
+export function pageToc(chosen: SectionNode[]): TocEntry[] {
+  const out: TocEntry[] = [];
+  const walkH3 = (nodes: (Node | SectionNode)[]) => {
+    for (const n of nodes) {
+      const node = n as Node;
+      if (node.component === "Heading" && node.level === "H3" && node.anchor)
+        out.push({ label: stripDecourse(node.text), anchor: node.anchor, level: 3 });
+      const kids = (n as { children?: (Node | SectionNode)[] }).children;
+      if (kids) walkH3(kids);
+    }
+  };
+  for (const sec of chosen) {
+    const h2 = sectionTitle(sec);
+    if (h2 && sec.anchor) out.push({ label: h2, anchor: sec.anchor, level: 2 });
+    walkH3(sec.children);
+  }
+  return out;
+}
+
 function pageSummaryNode(chosen: SectionNode[]): Node {
   return {
     component: "Page Summary",
