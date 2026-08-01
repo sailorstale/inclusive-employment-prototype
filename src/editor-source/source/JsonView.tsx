@@ -154,16 +154,27 @@ export function JsonView({
   doc,
   selected,
   onSelect,
+  heading,
 }: {
   doc: Doc;
   /** Путь выбранного узла — тот же, что у компонента в правой колонке. */
   selected?: string | null;
   onSelect?: (path: string) => void;
+  /**
+   * Верхние поля вместо «module». На сайте — { slug, h1 }: это страница сайта,
+   * а не модуль курса. Если не задано — старое поведение (module) для редактора.
+   */
+  heading?: Record<string, unknown>;
 }) {
   // Разбор тяжёлый (десятки тысяч знаков) — считаем только при смене дерева.
   const { head, secs, tail } = React.useMemo(() => {
     const ex = docToExport(doc) as { module: string; children: NodeLike[] };
     const children = ex.children ?? [];
+    // Верхние поля: заданные снаружи (slug/h1) или, по умолчанию, module.
+    const fields = heading ?? { module: ex.module };
+    const headLines = Object.entries(fields)
+      .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},\n`)
+      .join("");
     /*
       Нумеруем ТОЛЬКО Section Container: перед секциями в дереве может лежать
       Page Summary, и если считать якорь по индексу в children, все секции
@@ -171,7 +182,7 @@ export function JsonView({
     */
     let n = -1;
     return {
-      head: `{\n  "module": ${JSON.stringify(ex.module)},\n  "children": [\n`,
+      head: `{\n${headLines}  "children": [\n`,
       secs: children.map((c) => {
         const isSection = c?.component === "Section Container";
         if (isSection) n += 1;
@@ -179,7 +190,7 @@ export function JsonView({
       }),
       tail: children.length ? "\n  ]\n}" : "  ]\n}",
     };
-  }, [doc]);
+  }, [doc, heading]);
 
   return (
     <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-[1.65] text-muted-foreground">

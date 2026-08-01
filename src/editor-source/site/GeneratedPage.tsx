@@ -1,10 +1,10 @@
 import { useLocation } from "react-router-dom";
-import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
+import type { Doc, SectionNode } from "@/editor-source/source/contentTree";
 import type { TocItem } from "@/lib/toc";
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
-import { stripDecourse } from "./decourse";
 import { SiteInspector } from "./SiteInspector";
+import { pageChildren, sectionTitle } from "./pageStructure";
 
 /*
   СТРАНИЦА САЙТА ИЗ ИСТОЧНИКА — сразу разворачивается в инструмент сверки.
@@ -13,20 +13,10 @@ import { SiteInspector } from "./SiteInspector";
   источника по карте страниц — сайт растёт из компонентного результата, а не
   пишется руками. Главную (/) не трогаем — она отдельная.
 
-  Инструмент — ДВА окна: слева источник/JSON/гугдок, СПРАВА сама страница
-  (титул + «На этой странице вы узнаете» + контент из источника, рисуется
-  напрямую). Текст контента — байт в байт; раскурсовка помечена.
+  Страница = ОДНО дерево узлов (pageChildren): «вы узнаете» + секции + форма
+  мнения + «Читайте также». И сайт, и JSON, и выгрузка строятся из него —
+  поэтому совпадают. Термина «модуль» на сайте нет: он остаётся в редакторе.
 */
-
-/** Заголовок секции (H2) — для списка «вы узнаете». */
-function sectionTitle(sec: SectionNode): string | null {
-  const h = sec.children.find(
-    (n): n is Extract<Node, { component: "Heading" }> =>
-      (n as Node).component === "Heading",
-  );
-  // Метки раскурсовки убираем: в заголовке/«вы узнаете» — чистый текст.
-  return h ? stripDecourse(h.text) : null;
-}
 
 export function GeneratedPage() {
   const { pathname } = useLocation();
@@ -44,24 +34,14 @@ export function GeneratedPage() {
   );
   const chosen = page.sections.map((a) => byAnchor.get(a)).filter(Boolean) as SectionNode[];
 
-  /*
-    «На этой странице вы узнаете» — из заголовков секций. Итоги в список не
-    берём: это не тема, а завершение. Сгенерированная обёртка (сорт C), контент
-    источника не подмешиваем.
-  */
-  const topics = chosen
-    .filter((s) => s.anchor !== "podvedem-itogi")
-    .map(sectionTitle)
-    .filter((t): t is string => Boolean(t));
-
   /* Оглавление «На этой странице» (правое меню) — все секции страницы. */
   const tocItems: TocItem[] = chosen
     .map((s) => ({ label: sectionTitle(s) ?? "", anchor: s.anchor ?? "" }))
     .filter((t) => t.label && t.anchor);
 
-  const pageDoc: Doc = { module: page.module, children: chosen };
+  // Полная страница одним деревом: обвязка + секции. module оставляем в Doc для
+  // сборки (правки/логотипы), но в JSON/выгрузку он не попадает.
+  const pageDoc: Doc = { module: page.module, children: pageChildren(chosen, page.slug) };
 
-  return (
-    <SiteInspector page={page} pageDoc={pageDoc} topics={topics} tocItems={tocItems} />
-  );
+  return <SiteInspector page={page} pageDoc={pageDoc} tocItems={tocItems} />;
 }

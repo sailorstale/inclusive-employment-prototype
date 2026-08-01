@@ -1,5 +1,4 @@
 import * as React from "react";
-import { PageSummary, ListItem, Feedback, ReadMore, ReadMoreItem } from "@/figma";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
@@ -16,7 +15,6 @@ import type { TocItem } from "@/lib/toc";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
-import { relatedFor } from "./relatedPages";
 import { buildOsnovyExport } from "./siteExport";
 import { downloadJson } from "@/editor-source/source/JsonView";
 
@@ -103,12 +101,10 @@ function matchBlock(blocks: SourceBlock[], comp: string): number | null {
 export function SiteInspector({
   page,
   pageDoc,
-  topics,
   tocItems,
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
-  topics: string[];
   tocItems: TocItem[];
 }) {
   const [mode, setMode] = React.useState<Mode>("site");
@@ -158,7 +154,7 @@ export function SiteInspector({
       </div>
       <div className="min-h-0 flex-1">
         {mode === "site" ? (
-          <SiteMode page={page} pageDoc={pageDoc} topics={topics} tocItems={tocItems} />
+          <SiteMode page={page} pageDoc={pageDoc} tocItems={tocItems} />
         ) : (
           <ModuleMode module={page.module} />
         )}
@@ -249,12 +245,10 @@ function SiteRail({
 function SiteMode({
   page,
   pageDoc,
-  topics,
   tocItems,
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
-  topics: string[];
   tocItems: TocItem[];
 }) {
   const [tab, setTab] = React.useState<RefView>("source");
@@ -268,7 +262,6 @@ function SiteMode({
   const paused = React.useRef(false);
 
   const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
-  const related = relatedFor(page.slug);
 
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
@@ -290,8 +283,11 @@ function SiteMode({
       const er = el.getBoundingClientRect();
       const pr = pane.getBoundingClientRect();
       pane.scrollTop += er.top - pr.top - pr.height / 2 + er.height / 2;
-      window.setTimeout(() => (paused.current = false), 120);
     });
+    // Снятие паузы — обычным таймером, НЕ внутри rAF: если rAF отложен (вкладка
+    // свёрнута), пауза иначе залипла бы навсегда и синхрон бы умер.
+    const t = window.setTimeout(() => (paused.current = false), 200);
+    return () => window.clearTimeout(t);
   }, [selected, srcHighlight, tab, leftBox]);
 
   /*
@@ -325,7 +321,12 @@ function SiteMode({
         <div ref={setLeftBox} className="min-h-0 flex-1 overflow-y-auto">
           {tab === "json" ? (
             <div className="px-5 py-4">
-              <JsonView doc={pageDoc} selected={selected} onSelect={setSelected} />
+              <JsonView
+                doc={pageDoc}
+                selected={selected}
+                onSelect={setSelected}
+                heading={{ slug: page.slug, h1: page.title }}
+              />
             </div>
           ) : tab === "doc" ? (
             docId ? (
@@ -359,37 +360,15 @@ function SiteMode({
               </div>
             </aside>
 
-            {/* Контент страницы */}
+            {/* Контент страницы. h1 — заголовок страницы (не узел дерева: в
+                данных он едет полем h1). Всё остальное — одним деревом через
+                ResultView: «вы узнаете» + секции + форма мнения + «Читайте
+                также». */}
             <div className="min-w-0">
-              <div className="figma-scope mx-auto max-w-[var(--column-width)]">
+              <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pt-8">
                 <h1 className="ds-h1 text-[color:var(--text-primary)]">{page.title}</h1>
-                {topics.length > 0 && (
-                  <PageSummary>
-                    {topics.map((t, i) => (
-                      <ListItem key={i}>{t}</ListItem>
-                    ))}
-                  </PageSummary>
-                )}
               </div>
               <ResultView doc={pageDoc} pick={{ selected, onSelect: setSelected }} />
-
-              {/* Обвязка низа страницы (как титул/«вы узнаете» — не из
-                  источника): форма обратной связи, затем «Читайте также». */}
-              <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pb-16">
-                <Feedback />
-                {related.length > 0 && (
-                  <ReadMore>
-                    {related.map((r) => (
-                      <ReadMoreItem
-                        key={r.href}
-                        title={r.title}
-                        description={r.description}
-                        href={r.href}
-                      />
-                    ))}
-                  </ReadMore>
-                )}
-              </div>
             </div>
 
             {/* Правое меню — оглавление страницы */}
