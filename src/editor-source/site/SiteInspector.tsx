@@ -27,6 +27,11 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
   const [tab, setTab] = React.useState<RefView>("source");
   const [selected, setSelected] = React.useState<string | null>(null);
   const blocks = usePageBlocks(page.module, page.sections);
+  const leftRef = React.useRef<HTMLDivElement>(null);
+  const frameRef = React.useRef<HTMLIFrameElement>(null);
+
+  const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
+  const siteSrc = window.location.href.split("#")[0] + "#" + page.slug;
 
   // Клик по компоненту на сайте (iframe) → подсветить его код в JSON.
   React.useEffect(() => {
@@ -40,45 +45,63 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
     return () => window.removeEventListener("message", onMsg);
   }, []);
 
-  // Подсветить компонент в iframe в ответ (двусторонняя связь) + подвести JSON.
-  const frameSelect = React.useRef<string | null>(null);
+  // Подвести JSON к выбранному узлу.
   React.useEffect(() => {
-    if (selected === frameSelect.current) return;
-    frameSelect.current = selected;
-    if (tab === "json")
+    if (tab === "json" && selected)
       requestAnimationFrame(() => {
         leftRef.current
           ?.querySelector(`[data-json-path="${selected}"]`)
           ?.scrollIntoView({ block: "center" });
       });
   }, [selected, tab]);
-  const leftRef = React.useRef<HTMLDivElement>(null);
-  const frameRef = React.useRef<HTMLIFrameElement>(null);
-  const busy = React.useRef(false);
 
-  const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
-  const siteSrc = window.location.href.split("#")[0] + "#" + page.slug;
-
-  // Связанный скролл: левая колонка ↔ окно сайта в iframe (тот же origin).
+  /*
+    Связанный скролл. Для «Источника» — ПОСЕКЦИОННО (у заголовков слева и секций
+    справа один якорь), это точнее пропорции. Для JSON — пропорционально. Мягкая
+    блокировка на 150 мс гасит эхо: программный скролл одной стороны не дёргает
+    вторую в ответ.
+  */
   React.useEffect(() => {
     const l = leftRef.current;
     const win = frameRef.current?.contentWindow;
     if (!l || !win) return;
+    let until = 0;
+    const held = () => Date.now() < until;
+    const hold = () => (until = Date.now() + 150);
+
+    const topId = (els: Element[], top: number): string | null => {
+      let best: Element | null = null;
+      let bestD = -Infinity;
+      for (const el of els) {
+        const d = el.getBoundingClientRect().top - top;
+        if (d <= 8 && d > bestD) (bestD = d), (best = el);
+      }
+      return (best ?? els[0])?.id || null;
+    };
+
     const onL = () => {
-      if (busy.current) return;
-      busy.current = true;
-      const max = l.scrollHeight - l.clientHeight || 1;
-      const de = win.document.documentElement;
-      win.scrollTo(0, (l.scrollTop / max) * (de.scrollHeight - win.innerHeight));
-      requestAnimationFrame(() => (busy.current = false));
+      if (held()) return;
+      hold();
+      if (tab === "source") {
+        const id = topId([...l.querySelectorAll("h2[id]")], l.getBoundingClientRect().top);
+        const el = id && win.document.getElementById(id);
+        if (el) win.scrollTo(0, win.scrollY + el.getBoundingClientRect().top - 8);
+      } else {
+        const max = l.scrollHeight - l.clientHeight || 1;
+        win.scrollTo(0, (l.scrollTop / max) * (win.document.documentElement.scrollHeight - win.innerHeight));
+      }
     };
     const onR = () => {
-      if (busy.current) return;
-      busy.current = true;
-      const de = win.document.documentElement;
-      const max = de.scrollHeight - win.innerHeight || 1;
-      l.scrollTop = (win.scrollY / max) * (l.scrollHeight - l.clientHeight);
-      requestAnimationFrame(() => (busy.current = false));
+      if (held()) return;
+      hold();
+      if (tab === "source") {
+        const id = topId([...win.document.querySelectorAll("section[id]")], 0);
+        const el = id && l.querySelector(`h2[id="${id}"]`);
+        if (el) l.scrollTop += el.getBoundingClientRect().top - l.getBoundingClientRect().top - 8;
+      } else {
+        const max = win.document.documentElement.scrollHeight - win.innerHeight || 1;
+        l.scrollTop = (win.scrollY / max) * (l.scrollHeight - l.clientHeight);
+      }
     };
     l.addEventListener("scroll", onL, { passive: true });
     win.addEventListener("scroll", onR, { passive: true });
@@ -86,16 +109,13 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
       l.removeEventListener("scroll", onL);
       win.removeEventListener("scroll", onR);
     };
-  }, [tab, pageDoc]);
+  }, [tab, pageDoc, blocks]);
 
   return (
-    <div className="fixed inset-0 z-30 grid grid-cols-[minmax(360px,40%)_1fr] divide-x bg-background">
-      {/* ЛЕВО — колонка сверки с табами */}
+    <div className="fixed inset-0 z-50 grid grid-cols-[minmax(0,48rem)_1fr] divide-x bg-background">
+      {/* ЛЕВО — колонка сверки с табами (ширина как у колонки сайта) */}
       <section className="flex min-h-0 flex-col">
-        <div className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2">
-          <span className="mr-1 text-xs font-semibold text-muted-foreground">
-            {page.title}
-          </span>
+        <div className="flex items-center gap-1 border-b bg-muted/40 px-3 py-2">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -113,7 +133,9 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
         </div>
         <div ref={leftRef} className="min-h-0 flex-1 overflow-y-auto">
           {tab === "json" ? (
-            <JsonView doc={pageDoc} selected={selected} onSelect={setSelected} />
+            <div className="px-5 py-4">
+              <JsonView doc={pageDoc} selected={selected} onSelect={setSelected} />
+            </div>
           ) : tab === "doc" ? (
             docId ? (
               <iframe

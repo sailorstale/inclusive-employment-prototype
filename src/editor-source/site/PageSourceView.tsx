@@ -18,7 +18,12 @@ function Block({ block }: { block: SourceBlock }) {
   switch (block.kind) {
     case "heading": {
       const Tag = `h${block.level}` as "h2" | "h3" | "h4";
-      return <Tag className={headingClass(block.level)}>{renderInline(block.md)}</Tag>;
+      // id по якорю — для посекционной синхронизации скролла с сайтом.
+      return (
+        <Tag id={block.anchor} className={headingClass(block.level)}>
+          {renderInline(block.md)}
+        </Tag>
+      );
     }
     case "paragraph":
       return <p className="leading-relaxed text-foreground">{renderInline(block.md)}</p>;
