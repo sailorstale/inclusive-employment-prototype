@@ -75,9 +75,36 @@ export function GeneratedPage() {
   // (embedded) рисуем её ГОЛОЙ — её и показывает правая панель инструмента.
   if (!embedded) return <SiteInspector page={page} pageDoc={pageDoc} />;
 
+  return <EmbeddedPage page={page} pageDoc={pageDoc} topics={topics} tocItems={tocItems} />;
+}
+
+/*
+  Голая страница внутри iframe инструмента. Компоненты кликабельны (pick): по
+  клику подсвечиваем сам компонент и сообщаем путь родителю (postMessage) —
+  инструмент подсветит этот код в JSON. Путь тот же, что у JSON: оба на pageDoc.
+*/
+function EmbeddedPage({
+  page,
+  pageDoc,
+  topics,
+  tocItems,
+}: {
+  page: ReturnType<typeof pageBySlug> & object;
+  pageDoc: Doc;
+  topics: string[];
+  tocItems: TocItem[];
+}) {
+  const [picked, setPicked] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.__inspect === "select") setPicked(e.data.path ?? null);
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
   return (
     <div>
-      {/* Регистрирует оглавление в правый рейл (TocRail в Layout). */}
       <PageToc items={tocItems} minItems={2} />
       <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
         <h1 className="ds-h1 pt-10 text-[color:var(--text-primary)]">{page.title}</h1>
@@ -89,7 +116,16 @@ export function GeneratedPage() {
           </PageSummary>
         )}
       </div>
-      <ResultView doc={pageDoc} />
+      <ResultView
+        doc={pageDoc}
+        pick={{
+          selected: picked,
+          onSelect: (p) => {
+            setPicked(p);
+            window.parent.postMessage({ __inspect: "pick", path: p }, window.location.origin);
+          },
+        }}
+      />
     </div>
   );
 }

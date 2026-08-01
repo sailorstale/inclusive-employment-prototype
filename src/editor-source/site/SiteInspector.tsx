@@ -25,7 +25,33 @@ const TABS: { id: RefView; label: string }[] = [
 
 export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Doc }) {
   const [tab, setTab] = React.useState<RefView>("source");
+  const [selected, setSelected] = React.useState<string | null>(null);
   const blocks = usePageBlocks(page.module, page.sections);
+
+  // Клик по компоненту на сайте (iframe) → подсветить его код в JSON.
+  React.useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.__inspect === "pick") {
+        setSelected(e.data.path);
+        setTab("json");
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
+  // Подсветить компонент в iframe в ответ (двусторонняя связь) + подвести JSON.
+  const frameSelect = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (selected === frameSelect.current) return;
+    frameSelect.current = selected;
+    if (tab === "json")
+      requestAnimationFrame(() => {
+        leftRef.current
+          ?.querySelector(`[data-json-path="${selected}"]`)
+          ?.scrollIntoView({ block: "center" });
+      });
+  }, [selected, tab]);
   const leftRef = React.useRef<HTMLDivElement>(null);
   const frameRef = React.useRef<HTMLIFrameElement>(null);
   const busy = React.useRef(false);
@@ -87,7 +113,7 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
         </div>
         <div ref={leftRef} className="min-h-0 flex-1 overflow-y-auto">
           {tab === "json" ? (
-            <JsonView doc={pageDoc} />
+            <JsonView doc={pageDoc} selected={selected} onSelect={setSelected} />
           ) : tab === "doc" ? (
             docId ? (
               <iframe
