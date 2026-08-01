@@ -90,7 +90,10 @@ export function ResultView({ doc, pick }: { doc: Doc; pick?: Pick }) {
     <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pb-16">
       {doc.children.map((n, i) =>
         n.component === "Section Container" ? (
-          <SectionContainer key={(n as SectionNode).anchor ?? `s-${i}`}>
+          <SectionContainer
+            key={(n as SectionNode).anchor ?? `s-${i}`}
+            id={(n as SectionNode).anchor}
+          >
             {(n as SectionNode).children.map((c, j) => (
               <NodeView key={j} node={c} path={`${i}.${j}`} />
             ))}

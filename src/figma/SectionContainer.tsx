@@ -19,13 +19,16 @@ import { cn } from "@/lib/utils";
 type Props = {
   children?: React.ReactNode;
   className?: string;
+  /** Якорь секции — для оглавления «На этой странице» и скролла к секции. */
+  id?: string;
 };
 
-export function SectionContainer({ children, className }: Props) {
+export function SectionContainer({ children, className, id }: Props) {
   return (
     <section
+      id={id}
       data-component="Section Container"
-      className={cn("w-full pt-[var(--space-56)]", className)}
+      className={cn("w-full pt-[var(--space-56)]", id && "scroll-mt-20", className)}
     >
       {/* Slot — дети встык, без gap: отступы у детей свои */}
       <div className="flex w-full flex-col">{children}</div>

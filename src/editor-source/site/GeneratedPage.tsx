@@ -1,6 +1,8 @@
 import * as React from "react";
 import { useLocation } from "react-router-dom";
 import { PageSummary, ListItem } from "@/figma";
+import { PageToc } from "@/components/PageToc";
+import type { TocItem } from "@/lib/toc";
 import { ResultView } from "@/editor-source/source/ResultView";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
 import { pageBySlug } from "./pageMap";
@@ -54,10 +56,17 @@ export function GeneratedPage() {
     .map(sectionTitle)
     .filter((t): t is string => Boolean(t));
 
+  /* Оглавление «На этой странице» — все секции страницы (для правого рейла). */
+  const tocItems: TocItem[] = chosen
+    .map((s) => ({ label: sectionTitle(s) ?? "", anchor: s.anchor ?? "" }))
+    .filter((t) => t.label && t.anchor);
+
   const pageDoc: Doc = { module: page.module, children: chosen };
 
   return (
     <div>
+      {/* Регистрирует оглавление в правый рейл (TocRail в Layout). */}
+      <PageToc items={tocItems} minItems={2} />
       <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
         <h1 className="ds-h1 pt-10 text-[color:var(--text-primary)]">{page.title}</h1>
         {topics.length > 0 && (
