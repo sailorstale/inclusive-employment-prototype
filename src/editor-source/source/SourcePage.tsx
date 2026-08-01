@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useParams, useLocation, Navigate } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
 import { Paragraph, BulletList, OrderedList } from "@/editor-source/Prose";
 import { Editable } from "@/editor-source/Editable";
@@ -201,8 +201,11 @@ function DocFrame({ meta }: { meta: SourceModuleMeta }) {
   );
 }
 
-export function SourcePage() {
-  const { moduleId } = useParams<{ moduleId: string }>();
+export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {}) {
+  // moduleId из пропа (встроенный редактор в инспекторе сайта) или из маршрута
+  // (настоящая страница /source/:moduleId).
+  const params = useParams<{ moduleId: string }>();
+  const moduleId = moduleIdProp ?? params.moduleId;
   const meta: SourceModuleMeta | undefined = sourceModulesMeta.find(
     (m) => m.id === moduleId
   );
@@ -219,8 +222,9 @@ export function SourcePage() {
   const [directives, setDirectives] = React.useState<Directive[]>([]);
   const [err, setErr] = React.useState<string | null>(null);
 
-  const { pathname } = useLocation();
-  const resolve = useMdResolver();
+  // Канонический адрес модуля — id правок считаются от него (см. useMdResolver).
+  const pathname = `/source/${moduleId ?? ""}`;
+  const resolve = useMdResolver(pathname);
 
   /*
     Скролл-области колонок 1 (наша копия) и 2 (плейграунд) — для синхронного

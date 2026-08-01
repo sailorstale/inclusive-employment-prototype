@@ -4,19 +4,28 @@ import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/sou
 import { JsonView } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
+import { EditorProvider } from "@/editor-source/EditorProvider";
+import { CommentsProvider } from "@/editor-source/CommentsProvider";
+import { EditorToast } from "@/editor-source/EditorNotices";
+import { EditorDock } from "@/editor-source/EditorDock";
+import { SourcePage } from "@/editor-source/source/SourcePage";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
 
 /*
-  ИНСТРУМЕНТ СВЕРКИ САЙТА С ИСТОЧНИКОМ — всегда включён, ДВА окна.
+  ИНСТРУМЕНТ — ДВА РЕЖИМА, тумблер сверху.
 
-  Справа — сайт (рисуется НАПРЯМУЮ, не в iframe: тогда синхрон скролла работает
-  как в модульном редакторе — две обычные колонки-div, а не окно iframe). Слева —
-  колонка с табами: Источник · JSON · Гугдок. Клик по компоненту справа
-  подсвечивает его блок слева в открытом табе (JSON-узел или блок источника).
-  Скролл связан посекционно.
+  «Модули» — старый редактор источника (три колонки: правки контента в модуле).
+  «Сайт» — новый инспектор: справа сама страница (рисуется НАПРЯМУЮ, не в iframe:
+  тогда синхрон скролла работает как в модульном редакторе — две колонки-div),
+  слева табы Источник · JSON · Гугдок. Клик по компоненту справа подсвечивает
+  его блок слева в открытом табе; скролл связан посекционно.
+
+  Оба режима держат одни и те же правки (scope «source») — редактируешь в
+  «Модулях», видишь на сайте.
 */
+type Mode = "site" | "module";
 type RefView = "source" | "json" | "doc";
 const TABS: { id: RefView; label: string }[] = [
   { id: "source", label: "Источник" },
@@ -93,14 +102,9 @@ export function SiteInspector({
   pageDoc: Doc;
   topics: string[];
 }) {
-  const [tab, setTab] = React.useState<RefView>("source");
-  const [selected, setSelected] = React.useState<string | null>(null);
-  const blocks = usePageBlocks(page.module, page.sections);
-  const leftRef = React.useRef<HTMLDivElement>(null);
-  const rightRef = React.useRef<HTMLDivElement>(null);
+  const [mode, setMode] = React.useState<Mode>("site");
 
-  // Инструмент накрывает всю страницу — гасим прокрутку «фона» под ним, чтобы
-  // колесо всегда попадало в панель, а не в оболочку сайта позади.
+  // Инструмент накрывает всю страницу — гасим прокрутку «фона» под ним.
   React.useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -108,6 +112,88 @@ export function SiteInspector({
       document.body.style.overflow = prev;
     };
   }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      {/* Тумблер режимов — общий верхний бар. */}
+      <div className="flex shrink-0 items-center gap-1 border-b bg-muted/40 px-3 py-1.5">
+        <div className="flex items-center gap-0.5 rounded-md border bg-background p-0.5">
+          <ModeBtn active={mode === "module"} onClick={() => setMode("module")}>
+            Модули
+          </ModeBtn>
+          <ModeBtn active={mode === "site"} onClick={() => setMode("site")}>
+            Сайт
+          </ModeBtn>
+        </div>
+        <span className="ml-2 truncate text-xs text-muted-foreground">
+          {mode === "site" ? page.title : "Редактура источника"}
+        </span>
+      </div>
+      <div className="min-h-0 flex-1">
+        {mode === "site" ? (
+          <SiteMode page={page} pageDoc={pageDoc} topics={topics} />
+        ) : (
+          <ModuleMode module={page.module} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ModeBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
+        active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* Режим «Модули» — старый редактор источника со своими провайдерами (scope
+   source): правки контента модуля, три колонки. moduleId — прямым пропом. */
+function ModuleMode({ module }: { module: string }) {
+  return (
+    <EditorProvider scope="source">
+      <CommentsProvider scope="source">
+        <div className="h-full min-h-0">
+          <SourcePage moduleId={module} />
+        </div>
+        {/* Плавающий док: карандаш включает режим правки (как на /source). */}
+        <EditorDock sourceMode />
+        <EditorToast />
+      </CommentsProvider>
+    </EditorProvider>
+  );
+}
+
+/* Режим «Сайт» — инспектор: слева источник/JSON/гугдок, справа сама страница. */
+function SiteMode({
+  page,
+  pageDoc,
+  topics,
+}: {
+  page: OsnovyPage;
+  pageDoc: Doc;
+  topics: string[];
+}) {
+  const [tab, setTab] = React.useState<RefView>("source");
+  const [selected, setSelected] = React.useState<string | null>(null);
+  const blocks = usePageBlocks(page.module, page.sections);
+  const leftRef = React.useRef<HTMLDivElement>(null);
+  const rightRef = React.useRef<HTMLDivElement>(null);
 
   const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
 
@@ -192,7 +278,7 @@ export function SiteInspector({
   }, [tab, pageDoc, blocks]);
 
   return (
-    <div className="fixed inset-0 z-50 grid grid-cols-[minmax(0,48rem)_1fr] divide-x bg-background">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,48rem)_1fr] divide-x">
       {/* ЛЕВО — колонка сверки с табами */}
       <section className="flex min-h-0 flex-col">
         <div className="flex items-center gap-1 border-b bg-muted/40 px-3 py-2">

@@ -39,9 +39,13 @@ export function makeMdResolver(
   };
 }
 
-export function useMdResolver(): ResolveMd {
+export function useMdResolver(pathnameOverride?: string): ResolveMd {
   const { edits } = useEditor();
-  const { pathname } = useLocation();
+  const loc = useLocation();
+  // Встроенный редактор модуля (внутри инспектора сайта) живёт на чужом адресе,
+  // но id правок считаются от pathname — берём канонический /source/<модуль>,
+  // чтобы правки совпадали с настоящим маршрутом /source.
+  const pathname = pathnameOverride ?? loc.pathname;
   return React.useCallback(makeMdResolver(edits, pathname), [edits, pathname]);
 }
 

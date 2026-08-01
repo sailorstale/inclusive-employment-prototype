@@ -10,7 +10,7 @@ import { useComments } from "./CommentsProvider";
 // ощущение сайта. Комментарии теперь живут внутри редслоя (панель блока), а не
 // отдельным режимом-пином — поэтому кнопки «Комментарии» здесь нет.
 
-export function EditorDock() {
+export function EditorDock({ sourceMode = false }: { sourceMode?: boolean } = {}) {
   const { editorMode, toggleEditorMode, editedCount, edits } = useEditor();
   const { openCount, deletedCount } = useComments();
   const { pathname } = useLocation();
@@ -25,8 +25,9 @@ export function EditorDock() {
     deletedCount;
 
   // «Инвентарь» и «Унификация» — служебные инструменты сайта. В обособленном
-  // инструменте «Редактура источника» (/source) они лишние — не показываем.
-  const isSource = pathname.startsWith("/source");
+  // инструменте «Редактура источника» (/source или встроенный режим «Модули»
+  // в инспекторе сайта) они лишние — не показываем.
+  const isSource = sourceMode || pathname.startsWith("/source");
 
   return (
     <div
