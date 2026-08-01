@@ -1,3 +1,4 @@
+import * as React from "react";
 import { renderInline } from "@/editor-source/richText";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 
@@ -88,11 +89,28 @@ function Block({ block }: { block: SourceBlock }) {
   }
 }
 
-export function PageSourceView({ blocks }: { blocks: SourceBlock[] }) {
+export function PageSourceView({
+  blocks,
+  highlight,
+}: {
+  blocks: SourceBlock[];
+  /** Индекс блока, который подсветить (клик по компоненту на сайте). */
+  highlight?: number | null;
+}) {
   return (
     <div className="space-y-3 px-6 py-5">
       {blocks.map((b, i) => (
-        <Block key={i} block={b} />
+        <div
+          key={i}
+          data-hl={i === highlight ? "1" : undefined}
+          className={
+            i === highlight
+              ? "-mx-2 rounded-sm bg-[color:var(--pick-bg)] px-2"
+              : undefined
+          }
+        >
+          <Block block={b} />
+        </div>
       ))}
     </div>
   );

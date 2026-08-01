@@ -1,10 +1,72 @@
 import * as React from "react";
-import { sourceModulesMeta } from "@/editor-source/content/source.generated";
+import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
-import type { Doc } from "@/editor-source/source/contentTree";
+import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
+
+/* Узел компонентного дерева по пути «0.2.1» (как в ResultView/JsonView). */
+function nodeAtPath(doc: Doc, path: string): Node | SectionNode | null {
+  const parts = path.split(".").map(Number);
+  let cur: unknown = doc.children[parts[0]];
+  for (let i = 1; i < parts.length; i++)
+    cur = (cur as { children?: unknown[] })?.children?.[parts[i]];
+  return (cur as Node) ?? null;
+}
+
+/* Весь текст узла (для сопоставления с блоком источника). */
+function nodeText(n: unknown): string {
+  const o = n as Record<string, unknown>;
+  if (!o) return "";
+  const parts: string[] = [];
+  for (const k of ["text", "title", "question", "author", "role"])
+    if (typeof o[k] === "string") parts.push(o[k] as string);
+  if (Array.isArray(o.paragraphs)) parts.push((o.paragraphs as string[]).join(" "));
+  if (Array.isArray(o.items))
+    parts.push((o.items as { text?: string }[]).map((i) => i.text ?? "").join(" "));
+  if (Array.isArray(o.children)) parts.push((o.children as unknown[]).map(nodeText).join(" "));
+  return parts.join(" ");
+}
+
+/* Сравнимый вид: без разметки, ссылок, меток раскурсовки, регистра. */
+const norm = (s: string) =>
+  s
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/[*_#>`•-]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+const blockText = (b: SourceBlock): string =>
+  b.kind === "list"
+    ? b.items.map((i) => i.md).join(" ")
+    : b.kind === "table"
+      ? [...b.header, ...b.rows.flat()].join(" ")
+      : b.kind === "image"
+        ? b.alt || ""
+        : b.md;
+
+/* Индекс блока источника, соответствующего компоненту (по совпадению текста). */
+function matchBlock(blocks: SourceBlock[], comp: string): number | null {
+  const c = norm(comp);
+  if (c.length < 4) return null;
+  let best = -1;
+  let bestLen = 0;
+  blocks.forEach((b, i) => {
+    const t = norm(blockText(b));
+    if (t.length < 4) return;
+    const overlap =
+      c.startsWith(t.slice(0, 30)) || t.startsWith(c.slice(0, 30)) || t.includes(c.slice(0, 40))
+        ? Math.min(t.length, c.length)
+        : 0;
+    if (overlap > bestLen) {
+      bestLen = overlap;
+      best = i;
+    }
+  });
+  return best >= 0 ? best : null;
+}
 
 /*
   ИНСТРУМЕНТ СВЕРКИ САЙТА С ИСТОЧНИКОМ — всегда включён, не переключается.
@@ -33,27 +95,39 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
   const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
   const siteSrc = window.location.href.split("#")[0] + "#" + page.slug;
 
-  // Клик по компоненту на сайте (iframe) → подсветить его код в JSON.
+  // Клик по компоненту на сайте (iframe) → запомнить путь. Подсветим в том
+  // табе, что открыт: JSON или Источник (таб НЕ переключаем).
   React.useEffect(() => {
     const onMsg = (e: MessageEvent) => {
-      if (e.data?.__inspect === "pick") {
-        setSelected(e.data.path);
-        setTab("json");
-      }
+      if (e.data?.__inspect === "pick") setSelected(e.data.path);
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
   }, []);
 
-  // Подвести JSON к выбранному узлу.
+  // Индекс блока источника, соответствующего выбранному компоненту.
+  const srcHighlight = React.useMemo(() => {
+    if (!selected || !blocks) return null;
+    return matchBlock(blocks, nodeText(nodeAtPath(pageDoc, selected)));
+  }, [selected, blocks, pageDoc]);
+
+  // Подвести панель к подсвеченному месту (JSON-узел или блок источника).
+  // Скроллим САМУ панель вручную — scrollIntoView в этом раскладе цепляет не ту
+  // прокрутку и оставляет подсветку за кадром.
   React.useEffect(() => {
-    if (tab === "json" && selected)
-      requestAnimationFrame(() => {
-        leftRef.current
-          ?.querySelector(`[data-json-path="${selected}"]`)
-          ?.scrollIntoView({ block: "center" });
-      });
-  }, [selected, tab]);
+    const pane = leftRef.current;
+    if (!pane) return;
+    const el =
+      tab === "json"
+        ? selected && pane.querySelector(`[data-json-path="${selected}"]`)
+        : srcHighlight != null && pane.querySelector('[data-hl="1"]');
+    if (!el) return;
+    requestAnimationFrame(() => {
+      const er = el.getBoundingClientRect();
+      const pr = pane.getBoundingClientRect();
+      pane.scrollTop += er.top - pr.top - pr.height / 2 + er.height / 2;
+    });
+  }, [selected, srcHighlight, tab]);
 
   /*
     Связанный скролл. Для «Источника» — ПОСЕКЦИОННО (у заголовков слева и секций
@@ -150,7 +224,7 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
               <div className="p-6 text-sm text-muted-foreground">У модуля нет docId.</div>
             )
           ) : blocks ? (
-            <PageSourceView blocks={blocks} />
+            <PageSourceView blocks={blocks} highlight={srcHighlight} />
           ) : (
             <div className="p-6 text-sm text-muted-foreground">Загрузка…</div>
           )}
