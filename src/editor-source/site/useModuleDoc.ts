@@ -29,6 +29,34 @@ function toSections(blocks: SourceBlock[]): Section[] {
   return out;
 }
 
+/*
+  Сырые блоки страницы (только её секции) — для панели «Источник» инструмента
+  сверки. Без директив и без раскурсовки: это наш дословный источник, каким он
+  пришёл. Нормализацию заголовков-ставших-списком применяем (это починка парсинга,
+  а не правка контента).
+*/
+export function usePageBlocks(module: string, sectionAnchors: string[]): SourceBlock[] | null {
+  const [blocks, setBlocks] = React.useState<SourceBlock[] | null>(null);
+  const key = sectionAnchors.join("|");
+  React.useEffect(() => {
+    let alive = true;
+    setBlocks(null);
+    moduleLoaders[module]?.().then((m) => {
+      if (!alive) return;
+      const wanted = new Set(sectionAnchors);
+      const out: SourceBlock[] = [];
+      for (const s of toSections(normalizeSourceBlocks(m.blocks)))
+        if (s.anchor && wanted.has(s.anchor)) out.push(...s.blocks);
+      setBlocks(out);
+    });
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [module, key]);
+  return blocks;
+}
+
 /** Собранный doc модуля (с директивами) — или null, пока грузится. */
 export function useModuleDoc(moduleId: string): Doc | null {
   // Правки грузим напрямую (не через контекст редактора): так хук работает и в

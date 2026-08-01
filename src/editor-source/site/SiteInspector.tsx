@@ -1,9 +1,10 @@
 import * as React from "react";
 import { sourceModulesMeta } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
-import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
+import type { Doc } from "@/editor-source/source/contentTree";
 import type { OsnovyPage } from "./pageMap";
-import { stripDecourse } from "./decourse";
+import { usePageBlocks } from "./useModuleDoc";
+import { PageSourceView } from "./PageSourceView";
 
 /*
   ИНСТРУМЕНТ СВЕРКИ САЙТА С ИСТОЧНИКОМ — всегда включён, не переключается.
@@ -22,41 +23,9 @@ const TABS: { id: RefView; label: string }[] = [
   { id: "doc", label: "Гугдок" },
 ];
 
-/** Дословный текст страницы — панель «Источник». Метки раскурсовки убраны. */
-function docToText(doc: Doc): string {
-  const line = (n: Node): string => {
-    switch (n.component) {
-      case "Heading":
-        return `\n${"#".repeat(Number(n.level[1]) || 2)} ${n.text}`;
-      case "Text":
-      case "Phrase":
-        return n.text;
-      case "List Item":
-        return `• ${n.text}`;
-      case "Quote":
-        return n.paragraphs.map((p) => `» ${p}`).join("\n");
-      case "note":
-        return "";
-      default:
-        return "children" in n && Array.isArray(n.children)
-          ? n.children.map(line).filter(Boolean).join("\n")
-          : "";
-    }
-  };
-  return stripDecourse(
-    doc.children
-      .map((n) =>
-        (n as SectionNode).component === "Section Container"
-          ? (n as SectionNode).children.map(line).filter(Boolean).join("\n")
-          : line(n as Node),
-      )
-      .filter(Boolean)
-      .join("\n"),
-  );
-}
-
 export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Doc }) {
   const [tab, setTab] = React.useState<RefView>("source");
+  const blocks = usePageBlocks(page.module, page.sections);
   const leftRef = React.useRef<HTMLDivElement>(null);
   const frameRef = React.useRef<HTMLIFrameElement>(null);
   const busy = React.useRef(false);
@@ -129,10 +98,10 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
             ) : (
               <div className="p-6 text-sm text-muted-foreground">У модуля нет docId.</div>
             )
+          ) : blocks ? (
+            <PageSourceView blocks={blocks} />
           ) : (
-            <pre className="whitespace-pre-wrap px-5 py-4 font-mono text-[13px] leading-relaxed text-foreground">
-              {docToText(pageDoc)}
-            </pre>
+            <div className="p-6 text-sm text-muted-foreground">Загрузка…</div>
           )}
         </div>
       </section>
