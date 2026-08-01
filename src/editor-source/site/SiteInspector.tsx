@@ -11,6 +11,7 @@ import { EditorDock } from "@/editor-source/EditorDock";
 import { SourcePage } from "@/editor-source/source/SourcePage";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { SidebarNav } from "@/components/shell/SidebarNav";
+import { cn } from "@/lib/utils";
 import type { TocItem } from "@/lib/toc";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
@@ -201,13 +202,41 @@ function ModeBtn({
 }
 
 /* Режим «Модули» — старый редактор источника со своими провайдерами (scope
-   source): правки контента модуля, три колонки. moduleId — прямым пропом. */
+   source): правки контента модуля, три колонки. Сверху — разделение на модули
+   табами (как в исходном инструменте); стартует с модуля текущей страницы,
+   переключение локальное (не уводит из инструмента). */
 function ModuleMode({ module }: { module: string }) {
+  const [moduleId, setModuleId] = React.useState(module);
   return (
     <EditorProvider scope="source">
       <CommentsProvider scope="source">
-        <div className="h-full min-h-0">
-          <SourcePage moduleId={module} />
+        <div className="flex h-full min-h-0 flex-col">
+          {/* Разделение на модули */}
+          <nav
+            aria-label="Модули"
+            className="flex shrink-0 items-center gap-1 overflow-x-auto border-b bg-muted/40 px-3 py-1.5"
+          >
+            <span className="mr-1 shrink-0 text-xs text-muted-foreground">Модуль</span>
+            {sourceModulesMeta.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setModuleId(m.id)}
+                title={m.title ? `Модуль ${m.label}. ${m.title}` : `Модуль ${m.label}`}
+                className={cn(
+                  "shrink-0 rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
+                  moduleId === m.id
+                    ? "bg-[hsl(var(--brand)/0.12)] text-brand"
+                    : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
+                )}
+              >
+                {m.label}
+              </button>
+            ))}
+          </nav>
+          <div className="min-h-0 flex-1">
+            <SourcePage moduleId={moduleId} />
+          </div>
         </div>
         {/* Плавающий док: карандаш включает режим правки (как на /source). */}
         <EditorDock sourceMode />
