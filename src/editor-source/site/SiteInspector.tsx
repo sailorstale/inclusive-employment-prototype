@@ -74,7 +74,10 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
       let bestD = -Infinity;
       for (const el of els) {
         const d = el.getBoundingClientRect().top - top;
-        if (d <= 8 && d > bestD) (bestD = d), (best = el);
+        if (d <= 8 && d > bestD) {
+          bestD = d;
+          best = el;
+        }
       }
       return (best ?? els[0])?.id || null;
     };
