@@ -85,7 +85,9 @@ function renderPlain(text: string): React.ReactNode {
         !href ? (
           m[1]
         ) : isExternalHref(href) ? (
-          <ExternalLink key={key} href={href}>
+          // brand-цвет явно: вне .figma-scope (панель «Источник») переменная
+          // --link-default не определена и ссылка иначе стала бы чёрной.
+          <ExternalLink key={key} href={href} className="text-brand">
             {m[1]}
           </ExternalLink>
         ) : (
