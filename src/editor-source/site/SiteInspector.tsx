@@ -1,12 +1,30 @@
 import * as React from "react";
+import { PageSummary, ListItem } from "@/figma";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
+import { ResultView } from "@/editor-source/source/ResultView";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
 
-/* Узел компонентного дерева по пути «0.2.1» (как в ResultView/JsonView). */
+/*
+  ИНСТРУМЕНТ СВЕРКИ САЙТА С ИСТОЧНИКОМ — всегда включён, ДВА окна.
+
+  Справа — сайт (рисуется НАПРЯМУЮ, не в iframe: тогда синхрон скролла работает
+  как в модульном редакторе — две обычные колонки-div, а не окно iframe). Слева —
+  колонка с табами: Источник · JSON · Гугдок. Клик по компоненту справа
+  подсвечивает его блок слева в открытом табе (JSON-узел или блок источника).
+  Скролл связан посекционно.
+*/
+type RefView = "source" | "json" | "doc";
+const TABS: { id: RefView; label: string }[] = [
+  { id: "source", label: "Источник" },
+  { id: "json", label: "JSON" },
+  { id: "doc", label: "Гугдок" },
+];
+
+/* Узел дерева по пути «0.2.1» (как в ResultView/JsonView). */
 function nodeAtPath(doc: Doc, path: string): Node | SectionNode | null {
   const parts = path.split(".").map(Number);
   let cur: unknown = doc.children[parts[0]];
@@ -15,7 +33,7 @@ function nodeAtPath(doc: Doc, path: string): Node | SectionNode | null {
   return (cur as Node) ?? null;
 }
 
-/* Весь текст узла (для сопоставления с блоком источника). */
+/* Весь текст узла — для сопоставления с блоком источника. */
 function nodeText(n: unknown): string {
   const o = n as Record<string, unknown>;
   if (!o) return "";
@@ -29,11 +47,10 @@ function nodeText(n: unknown): string {
   return parts.join(" ");
 }
 
-/* Сравнимый вид: без разметки, ссылок, меток раскурсовки, регистра. */
 const norm = (s: string) =>
   s
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/[*_#>`•-]/g, "")
+    .replace(/[*_#>`•-]/g, "")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
@@ -47,7 +64,6 @@ const blockText = (b: SourceBlock): string =>
         ? b.alt || ""
         : b.md;
 
-/* Индекс блока источника, соответствующего компоненту (по совпадению текста). */
 function matchBlock(blocks: SourceBlock[], comp: string): number | null {
   const c = norm(comp);
   if (c.length < 4) return null;
@@ -68,52 +84,39 @@ function matchBlock(blocks: SourceBlock[], comp: string): number | null {
   return best >= 0 ? best : null;
 }
 
-/*
-  ИНСТРУМЕНТ СВЕРКИ САЙТА С ИСТОЧНИКОМ — всегда включён, не переключается.
-
-  Справа — сам сайт (реальная страница в своей оболочке, iframe той же
-  страницы). Слева — колонка с табами: Источник · JSON · Гугдок — с чем сверяем.
-  Скролл связан. Всё по СТРАНИЦЕ (её секции), не по всему модулю.
-
-  Страница сама разворачивается в этот инструмент на верхнем уровне; внутри
-  iframe (window.top !== self) она рисуется голой — её и показываем справа.
-*/
-type RefView = "source" | "json" | "doc";
-const TABS: { id: RefView; label: string }[] = [
-  { id: "source", label: "Источник" },
-  { id: "json", label: "JSON" },
-  { id: "doc", label: "Гугдок" },
-];
-
-export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Doc }) {
+export function SiteInspector({
+  page,
+  pageDoc,
+  topics,
+}: {
+  page: OsnovyPage;
+  pageDoc: Doc;
+  topics: string[];
+}) {
   const [tab, setTab] = React.useState<RefView>("source");
   const [selected, setSelected] = React.useState<string | null>(null);
   const blocks = usePageBlocks(page.module, page.sections);
   const leftRef = React.useRef<HTMLDivElement>(null);
-  const frameRef = React.useRef<HTMLIFrameElement>(null);
+  const rightRef = React.useRef<HTMLDivElement>(null);
 
-  const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
-  const siteSrc = window.location.href.split("#")[0] + "#" + page.slug;
-
-  // Клик по компоненту на сайте (iframe) → запомнить путь. Подсветим в том
-  // табе, что открыт: JSON или Источник (таб НЕ переключаем).
+  // Инструмент накрывает всю страницу — гасим прокрутку «фона» под ним, чтобы
+  // колесо всегда попадало в панель, а не в оболочку сайта позади.
   React.useEffect(() => {
-    const onMsg = (e: MessageEvent) => {
-      if (e.data?.__inspect === "pick") setSelected(e.data.path);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
     };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
   }, []);
 
-  // Индекс блока источника, соответствующего выбранному компоненту.
+  const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
+
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
     return matchBlock(blocks, nodeText(nodeAtPath(pageDoc, selected)));
   }, [selected, blocks, pageDoc]);
 
-  // Подвести панель к подсвеченному месту (JSON-узел или блок источника).
-  // Скроллим САМУ панель вручную — scrollIntoView в этом раскладе цепляет не ту
-  // прокрутку и оставляет подсветку за кадром.
+  // Подвести левую панель к подсветке (узел JSON или блок источника).
   React.useEffect(() => {
     const pane = leftRef.current;
     if (!pane) return;
@@ -130,67 +133,67 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
   }, [selected, srcHighlight, tab]);
 
   /*
-    Связанный скролл. Для «Источника» — ПОСЕКЦИОННО (у заголовков слева и секций
-    справа один якорь), это точнее пропорции. Для JSON — пропорционально. Мягкая
-    блокировка на 150 мс гасит эхо: программный скролл одной стороны не дёргает
-    вторую в ответ.
+    Связанный скролл двух колонок. Для «Источника» — посекционно (у заголовков
+    слева и секций справа общий якорь), как в редакторе. Для JSON/гугдока —
+    пропорционально. Мягкая блокировка 120 мс гасит эхо.
   */
   React.useEffect(() => {
     const l = leftRef.current;
-    const win = frameRef.current?.contentWindow;
-    if (!l || !win) return;
+    const r = rightRef.current;
+    if (!l || !r) return;
     let until = 0;
     const held = () => Date.now() < until;
-    const hold = () => (until = Date.now() + 150);
+    const hold = () => (until = Date.now() + 120);
 
-    const topId = (els: Element[], top: number): string | null => {
+    const topId = (box: HTMLElement, sel: string): string | null => {
+      const bTop = box.getBoundingClientRect().top;
       let best: Element | null = null;
       let bestD = -Infinity;
-      for (const el of els) {
-        const d = el.getBoundingClientRect().top - top;
+      box.querySelectorAll(sel).forEach((el) => {
+        const d = el.getBoundingClientRect().top - bTop;
         if (d <= 8 && d > bestD) {
           bestD = d;
           best = el;
         }
-      }
-      return (best ?? els[0])?.id || null;
+      });
+      return (best as Element | null)?.id || null;
+    };
+    const scrollToId = (box: HTMLElement, id: string) => {
+      const el = box.querySelector(`[id="${CSS.escape(id)}"]`);
+      if (el) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+    };
+    const prop = (from: HTMLElement, to: HTMLElement) => {
+      const max = from.scrollHeight - from.clientHeight || 1;
+      to.scrollTop = (from.scrollTop / max) * (to.scrollHeight - to.clientHeight);
     };
 
     const onL = () => {
       if (held()) return;
       hold();
       if (tab === "source") {
-        const id = topId([...l.querySelectorAll("h2[id]")], l.getBoundingClientRect().top);
-        const el = id && win.document.getElementById(id);
-        if (el) win.scrollTo(0, win.scrollY + el.getBoundingClientRect().top - 8);
-      } else {
-        const max = l.scrollHeight - l.clientHeight || 1;
-        win.scrollTo(0, (l.scrollTop / max) * (win.document.documentElement.scrollHeight - win.innerHeight));
-      }
+        const id = topId(l, "h2[id]");
+        if (id) scrollToId(r, id);
+      } else prop(l, r);
     };
     const onR = () => {
       if (held()) return;
       hold();
       if (tab === "source") {
-        const id = topId([...win.document.querySelectorAll("section[id]")], 0);
-        const el = id && l.querySelector(`h2[id="${id}"]`);
-        if (el) l.scrollTop += el.getBoundingClientRect().top - l.getBoundingClientRect().top - 8;
-      } else {
-        const max = win.document.documentElement.scrollHeight - win.innerHeight || 1;
-        l.scrollTop = (win.scrollY / max) * (l.scrollHeight - l.clientHeight);
-      }
+        const id = topId(r, "section[id]");
+        if (id) scrollToId(l, id);
+      } else prop(r, l);
     };
     l.addEventListener("scroll", onL, { passive: true });
-    win.addEventListener("scroll", onR, { passive: true });
+    r.addEventListener("scroll", onR, { passive: true });
     return () => {
       l.removeEventListener("scroll", onL);
-      win.removeEventListener("scroll", onR);
+      r.removeEventListener("scroll", onR);
     };
   }, [tab, pageDoc, blocks]);
 
   return (
     <div className="fixed inset-0 z-50 grid grid-cols-[minmax(0,48rem)_1fr] divide-x bg-background">
-      {/* ЛЕВО — колонка сверки с табами (ширина как у колонки сайта) */}
+      {/* ЛЕВО — колонка сверки с табами */}
       <section className="flex min-h-0 flex-col">
         <div className="flex items-center gap-1 border-b bg-muted/40 px-3 py-2">
           {TABS.map((t) => (
@@ -231,9 +234,21 @@ export function SiteInspector({ page, pageDoc }: { page: OsnovyPage; pageDoc: Do
         </div>
       </section>
 
-      {/* ПРАВО — сам сайт (та же страница, в iframe рисуется голой) */}
+      {/* ПРАВО — сам сайт (рисуется напрямую) */}
       <section className="min-h-0">
-        <iframe ref={frameRef} title="Сайт" src={siteSrc} className="h-full w-full border-0" />
+        <div ref={rightRef} className="h-full overflow-y-auto">
+          <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
+            <h1 className="ds-h1 pt-8 text-[color:var(--text-primary)]">{page.title}</h1>
+            {topics.length > 0 && (
+              <PageSummary>
+                {topics.map((t, i) => (
+                  <ListItem key={i}>{t}</ListItem>
+                ))}
+              </PageSummary>
+            )}
+          </div>
+          <ResultView doc={pageDoc} pick={{ selected, onSelect: setSelected }} />
+        </div>
       </section>
     </div>
   );
