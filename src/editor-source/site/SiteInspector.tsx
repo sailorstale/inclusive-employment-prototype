@@ -3,6 +3,7 @@ import { PageSummary, ListItem } from "@/figma";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
+import { useScrollSync } from "@/editor-source/source/scrollSync";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
 import { EditorProvider } from "@/editor-source/EditorProvider";
 import { CommentsProvider } from "@/editor-source/CommentsProvider";
@@ -130,9 +131,6 @@ export function SiteInspector({
             Сайт
           </ModeBtn>
         </div>
-        <span className="ml-2 truncate text-xs text-muted-foreground">
-          {mode === "site" ? page.title : "Редактура источника"}
-        </span>
       </div>
       <div className="min-h-0 flex-1">
         {mode === "site" ? (
@@ -188,14 +186,13 @@ function ModuleMode({ module }: { module: string }) {
    панель к секции (обычный in-page скролл в контейнере, без внешнего роутинга). */
 function SiteRail({
   items,
-  paneRef,
+  pane,
 }: {
   items: TocItem[];
-  paneRef: React.RefObject<HTMLDivElement>;
+  pane: HTMLDivElement | null;
 }) {
   if (items.length < 2) return null;
   const go = (anchor: string) => {
-    const pane = paneRef.current;
     if (!pane) return;
     const el = pane.querySelector(`section[id="${CSS.escape(anchor)}"]`);
     if (el)
@@ -239,8 +236,12 @@ function SiteMode({
   const [tab, setTab] = React.useState<RefView>("source");
   const [selected, setSelected] = React.useState<string | null>(null);
   const blocks = usePageBlocks(page.module, page.sections);
-  const leftRef = React.useRef<HTMLDivElement>(null);
-  const rightRef = React.useRef<HTMLDivElement>(null);
+  // Контейнеры прокрутки держим СОСТОЯНИЕМ (не ref): левая панель пересоздаётся
+  // при смене таба, и синхрон должен переподключиться на новый узел сам.
+  const [leftBox, setLeftBox] = React.useState<HTMLDivElement | null>(null);
+  const [rightBox, setRightBox] = React.useState<HTMLDivElement | null>(null);
+  // Пауза синхрона на время точной наводки на выбранный блок.
+  const paused = React.useRef(false);
 
   const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
 
@@ -249,80 +250,32 @@ function SiteMode({
     return matchBlock(blocks, nodeText(nodeAtPath(pageDoc, selected)));
   }, [selected, blocks, pageDoc]);
 
-  // Подвести левую панель к подсветке (узел JSON или блок источника).
+  // Подвести левую панель к подсветке (узел JSON или блок источника). На время
+  // наводки синхрон паузим — иначе он сбил бы точную прокрутку.
   React.useEffect(() => {
-    const pane = leftRef.current;
+    const pane = leftBox;
     if (!pane) return;
     const el =
       tab === "json"
         ? selected && pane.querySelector(`[data-json-path="${selected}"]`)
         : srcHighlight != null && pane.querySelector('[data-hl="1"]');
     if (!el) return;
+    paused.current = true;
     requestAnimationFrame(() => {
       const er = el.getBoundingClientRect();
       const pr = pane.getBoundingClientRect();
       pane.scrollTop += er.top - pr.top - pr.height / 2 + er.height / 2;
+      window.setTimeout(() => (paused.current = false), 120);
     });
-  }, [selected, srcHighlight, tab]);
+  }, [selected, srcHighlight, tab, leftBox]);
 
   /*
-    Связанный скролл двух колонок. Для «Источника» — посекционно (у заголовков
-    слева и секций справа общий якорь), как в редакторе. Для JSON/гугдока —
-    пропорционально. Мягкая блокировка 120 мс гасит эхо.
+    Связанный скролл — посекционно (секция + доля прокрутки ВНУТРИ неё), тот же
+    механизм, что в модульном редакторе: колонки едут непрерывно, а не скачут к
+    заголовкам. Слева начала секций помечены data-sec, справа их находят по
+    Section Container. Работает для всех табов (источник/JSON — свои data-sec).
   */
-  React.useEffect(() => {
-    const l = leftRef.current;
-    const r = rightRef.current;
-    if (!l || !r) return;
-    let until = 0;
-    const held = () => Date.now() < until;
-    const hold = () => (until = Date.now() + 120);
-
-    const topId = (box: HTMLElement, sel: string): string | null => {
-      const bTop = box.getBoundingClientRect().top;
-      let best: Element | null = null;
-      let bestD = -Infinity;
-      box.querySelectorAll(sel).forEach((el) => {
-        const d = el.getBoundingClientRect().top - bTop;
-        if (d <= 8 && d > bestD) {
-          bestD = d;
-          best = el;
-        }
-      });
-      return (best as Element | null)?.id || null;
-    };
-    const scrollToId = (box: HTMLElement, id: string) => {
-      const el = box.querySelector(`[id="${CSS.escape(id)}"]`);
-      if (el) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-    };
-    const prop = (from: HTMLElement, to: HTMLElement) => {
-      const max = from.scrollHeight - from.clientHeight || 1;
-      to.scrollTop = (from.scrollTop / max) * (to.scrollHeight - to.clientHeight);
-    };
-
-    const onL = () => {
-      if (held()) return;
-      hold();
-      if (tab === "source") {
-        const id = topId(l, "h2[id]");
-        if (id) scrollToId(r, id);
-      } else prop(l, r);
-    };
-    const onR = () => {
-      if (held()) return;
-      hold();
-      if (tab === "source") {
-        const id = topId(r, "section[id]");
-        if (id) scrollToId(l, id);
-      } else prop(r, l);
-    };
-    l.addEventListener("scroll", onL, { passive: true });
-    r.addEventListener("scroll", onR, { passive: true });
-    return () => {
-      l.removeEventListener("scroll", onL);
-      r.removeEventListener("scroll", onR);
-    };
-  }, [tab, pageDoc, blocks]);
+  useScrollSync(leftBox, rightBox, paused);
 
   return (
     <div className="grid h-full min-h-0 grid-cols-[minmax(0,40rem)_minmax(0,1fr)] divide-x">
@@ -344,7 +297,7 @@ function SiteMode({
             </button>
           ))}
         </div>
-        <div ref={leftRef} className="min-h-0 flex-1 overflow-y-auto">
+        <div ref={setLeftBox} className="min-h-0 flex-1 overflow-y-auto">
           {tab === "json" ? (
             <div className="px-5 py-4">
               <JsonView doc={pageDoc} selected={selected} onSelect={setSelected} />
@@ -371,7 +324,7 @@ function SiteMode({
           контент + оглавление «На этой странице» справа (рисуется напрямую, не
           в iframe — чтобы синхрон и клик работали). Меню и шапка липкие. */}
       <section className="min-h-0">
-        <div ref={rightRef} className="h-full overflow-y-auto">
+        <div ref={setRightBox} className="h-full overflow-y-auto">
           <AppHeader />
           <div className="mx-auto grid max-w-7xl grid-cols-[15rem_minmax(0,1fr)_13rem] gap-x-8 px-6 py-8">
             {/* Левое меню — навигация по разделам сайта */}
@@ -399,7 +352,7 @@ function SiteMode({
             {/* Правое меню — оглавление страницы */}
             <aside className="min-w-0">
               <div className="sticky top-20">
-                <SiteRail items={tocItems} paneRef={rightRef} />
+                <SiteRail items={tocItems} pane={rightBox} />
               </div>
             </aside>
           </div>

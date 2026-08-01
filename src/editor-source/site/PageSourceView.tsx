@@ -97,21 +97,29 @@ export function PageSourceView({
   /** Индекс блока, который подсветить (клик по компоненту на сайте). */
   highlight?: number | null;
 }) {
+  // Начало каждой секции (заголовок H2) помечаем data-sec с её номером — общий
+  // якорь для посекционного синхрона с правой колонкой (см. useScrollSync).
+  let sec = -1;
   return (
     <div className="space-y-3 px-6 py-5">
-      {blocks.map((b, i) => (
-        <div
-          key={i}
-          data-hl={i === highlight ? "1" : undefined}
-          className={
-            i === highlight
-              ? "-mx-2 rounded-sm bg-[color:var(--pick-bg)] px-2"
-              : undefined
-          }
-        >
-          <Block block={b} />
-        </div>
-      ))}
+      {blocks.map((b, i) => {
+        const isSecStart = b.kind === "heading" && b.level === 2;
+        if (isSecStart) sec += 1;
+        return (
+          <div
+            key={i}
+            data-sec={isSecStart ? sec : undefined}
+            data-hl={i === highlight ? "1" : undefined}
+            className={
+              i === highlight
+                ? "-mx-2 rounded-sm bg-[color:var(--pick-bg)] px-2"
+                : undefined
+            }
+          >
+            <Block block={b} />
+          </div>
+        );
+      })}
     </div>
   );
 }
