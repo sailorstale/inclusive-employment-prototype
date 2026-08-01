@@ -24,6 +24,7 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
 import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
+import { markRe } from "@/editor-source/richText";
 import {
   findSlug,
   findPhotoSlug,
@@ -2638,6 +2639,11 @@ const INLINE_MD =
 const escapeAttr = (t: string) => escapeText(t).replace(/"/g, "&quot;");
 
 export function mdToTags(text: string): string {
+  // Метки раскурсовки — только для показа замен на сайте (<mark> с подсказкой).
+  // В данные разработчику уходит ЧИСТЫЙ новый текст: убираем метки и оригинал,
+  // оставляя замену (группа 1). Иначе в JSON текли бы невидимые символы U+E000
+  // и задвоенный текст «замена+оригинал».
+  text = text.replace(markRe(), "$1");
   let out = "";
   let last = 0;
   let m: RegExpExecArray | null;
