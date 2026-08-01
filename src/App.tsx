@@ -26,7 +26,7 @@ import { A11yPage } from "./pages/A11yPage";
 // Страницы общей базы физически лежат в pages/companies/ (исторически), но
 // монтируются под /general/* и служат обоим ролевым трекам.
 import { CompaniesHubPage } from "./pages/companies/CompaniesHubPage";
-import { CompaniesStartPage } from "./pages/companies/CompaniesStartPage";
+import { GeneratedPage } from "./editor-source/site/GeneratedPage";
 import { CompaniesHowPage } from "./pages/companies/CompaniesHowPage";
 import { LegalHubPage } from "./pages/companies/LegalHubPage";
 import { ContractPage } from "./pages/companies/ContractPage";
@@ -98,7 +98,8 @@ export default function App() {
             path="/general"
             element={<Navigate to="/general/start" replace />}
           />
-          <Route path="/general/start" element={<CompaniesStartPage />} />
+          {/* «Основы» врастают из источника (перенос М1–4). Главную не трогаем. */}
+          <Route path="/general/start" element={<GeneratedPage />} />
           <Route path="/general/how" element={<CompaniesHowPage />} />
           <Route path="/general/legal" element={<LegalHubPage />} />
           <Route path="/general/legal/contract" element={<ContractPage />} />

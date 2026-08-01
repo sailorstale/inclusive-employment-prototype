@@ -3,7 +3,7 @@ import { moduleLoaders, type SourceBlock } from "@/editor-source/content/source.
 import { normalizeSourceBlocks } from "@/editor-source/source/normalizeBlocks";
 import { placeDirectives, buildDoc, type Doc } from "@/editor-source/source/contentTree";
 import { makeMdResolver } from "@/editor-source/source/blockResolve";
-import { useEditor } from "@/editor-source/EditorProvider";
+import { loadEdits } from "@/editor-source/store";
 import { useLogoIndex, useAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives, type Directive } from "@/editor-source/directives";
 
@@ -30,9 +30,22 @@ function toSections(blocks: SourceBlock[]): Section[] {
 
 /** Собранный doc модуля (с директивами) — или null, пока грузится. */
 export function useModuleDoc(moduleId: string): Doc | null {
-  const { edits } = useEditor();
+  // Правки грузим напрямую (не через контекст редактора): так хук работает и в
+  // инструменте, и на самом сайте, где EditorProvider нет. Scope «source» —
+  // те же правки «нашей редакции», что и в модулях.
+  const [edits, setEdits] = React.useState<Record<string, { text: string; status: string }>>({});
   const [blocks, setBlocks] = React.useState<SourceBlock[] | null>(null);
   const [directives, setDirectives] = React.useState<Directive[]>([]);
+
+  React.useEffect(() => {
+    let alive = true;
+    loadEdits("source").then((m) => {
+      if (alive) setEdits(m);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   React.useEffect(() => {
     let alive = true;
