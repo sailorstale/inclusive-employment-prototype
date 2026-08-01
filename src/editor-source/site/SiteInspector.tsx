@@ -9,6 +9,7 @@ import { CommentsProvider } from "@/editor-source/CommentsProvider";
 import { EditorToast } from "@/editor-source/EditorNotices";
 import { EditorDock } from "@/editor-source/EditorDock";
 import { SourcePage } from "@/editor-source/source/SourcePage";
+import { AppHeader } from "@/components/shell/AppHeader";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
@@ -320,9 +321,12 @@ function SiteMode({
         </div>
       </section>
 
-      {/* ПРАВО — сам сайт (рисуется напрямую) */}
+      {/* ПРАВО — сам сайт: шапка сайта с навигацией + страница (рисуется
+          напрямую, не в iframe — чтобы синхрон и клик работали). Шапка липкая,
+          остаётся на месте при скролле, как на настоящем сайте. */}
       <section className="min-h-0">
         <div ref={rightRef} className="h-full overflow-y-auto">
+          <AppHeader />
           <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6">
             <h1 className="ds-h1 pt-8 text-[color:var(--text-primary)]">{page.title}</h1>
             {topics.length > 0 && (
