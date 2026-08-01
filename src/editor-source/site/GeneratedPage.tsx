@@ -7,6 +7,7 @@ import { ResultView } from "@/editor-source/source/ResultView";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
+import { stripDecourse } from "./decourse";
 
 /*
   СТРАНИЦА САЙТА ИЗ ИСТОЧНИКА.
@@ -27,7 +28,8 @@ function sectionTitle(sec: SectionNode): string | null {
     (n): n is Extract<Node, { component: "Heading" }> =>
       (n as Node).component === "Heading",
   );
-  return h ? h.text : null;
+  // Метки раскурсовки убираем: в заголовке/оглавлении/«вы узнаете» — чистый текст.
+  return h ? stripDecourse(h.text) : null;
 }
 
 export function GeneratedPage() {

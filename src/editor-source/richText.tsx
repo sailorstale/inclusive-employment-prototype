@@ -24,7 +24,43 @@ import { isExternalHref } from "./safeUrl";
 const RE =
   /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_|\{\{([^{}|]+)\|([^{}|]+)(?:\|([^{}|]+))?\}\}/g;
 
+/*
+  Метки раскурсовки (сорт D): заменённый кусок → <mark> с подсказкой «было: …».
+  Символы приватные (Private Use Area), в контенте не встречаются. Ветка ниже
+  включается ТОЛЬКО когда метки есть (их ставит decourse) — обычный текст не
+  затрагивается вовсе.
+*/
+export const MARK_A = String.fromCodePoint(0xe000);
+export const MARK_B = String.fromCodePoint(0xe001);
+export const MARK_C = String.fromCodePoint(0xe002);
+export const markRe = () =>
+  new RegExp(`${MARK_A}([^${MARK_B}]*)${MARK_B}([^${MARK_C}]*)${MARK_C}`, "g");
+
 export function renderInline(text: string): React.ReactNode {
+  if (!text.includes(MARK_A)) return renderPlain(text);
+  const out: React.ReactNode[] = [];
+  const re = markRe();
+  let last = 0;
+  let k = 0;
+  let mk: RegExpExecArray | null;
+  while ((mk = re.exec(text))) {
+    if (mk.index > last) out.push(renderPlain(text.slice(last, mk.index)));
+    out.push(
+      <mark
+        key={`mk${k++}`}
+        title={`было: ${mk[2]}`}
+        className="rounded-[3px] bg-[hsl(45_93%_85%)] px-0.5 underline decoration-amber-600 decoration-dotted underline-offset-2"
+      >
+        {renderPlain(mk[1])}
+      </mark>,
+    );
+    last = re.lastIndex;
+  }
+  if (last < text.length) out.push(renderPlain(text.slice(last)));
+  return out;
+}
+
+function renderPlain(text: string): React.ReactNode {
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let i = 0;

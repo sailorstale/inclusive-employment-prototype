@@ -3,6 +3,7 @@ import { moduleLoaders, type SourceBlock } from "@/editor-source/content/source.
 import { normalizeSourceBlocks } from "@/editor-source/source/normalizeBlocks";
 import { placeDirectives, buildDoc, type Doc } from "@/editor-source/source/contentTree";
 import { makeMdResolver } from "@/editor-source/source/blockResolve";
+import { decourse } from "./decourse";
 import { loadEdits } from "@/editor-source/store";
 import { useLogoIndex, useAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives, type Directive } from "@/editor-source/directives";
@@ -69,7 +70,13 @@ export function useModuleDoc(moduleId: string): Doc | null {
   }, []);
 
   const pathname = `/source/${moduleId}`;
-  const resolve = React.useMemo(() => makeMdResolver(edits, pathname), [edits, pathname]);
+  // Раскурсовка (сорт D) поверх правок: текст сайта де-курсуется, каждая замена
+  // помечается. Инструмент-источник этот резолвер не использует — он остаётся сырым.
+  const resolve = React.useMemo(() => {
+    const base = makeMdResolver(edits, pathname);
+    return (type: string, text: string, md: string, anchor?: string) =>
+      decourse(base(type, text, md, anchor));
+  }, [edits, pathname]);
   const sections = React.useMemo(() => (blocks ? toSections(blocks) : []), [blocks]);
   const directiveAt = React.useMemo(
     () => placeDirectives(sections, pathname, moduleId, directives),
