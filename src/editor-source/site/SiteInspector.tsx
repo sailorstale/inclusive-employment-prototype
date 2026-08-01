@@ -17,6 +17,8 @@ import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
 import { relatedFor } from "./relatedPages";
+import { buildOsnovyExport } from "./siteExport";
+import { downloadJson } from "@/editor-source/source/JsonView";
 
 /*
   ИНСТРУМЕНТ — ДВА РЕЖИМА, тумблер сверху.
@@ -110,6 +112,7 @@ export function SiteInspector({
   tocItems: TocItem[];
 }) {
   const [mode, setMode] = React.useState<Mode>("site");
+  const [exporting, setExporting] = React.useState(false);
 
   // Инструмент накрывает всю страницу — гасим прокрутку «фона» под ним.
   React.useEffect(() => {
@@ -119,6 +122,17 @@ export function SiteInspector({
       document.body.style.overflow = prev;
     };
   }, []);
+
+  // Единый JSON всего раздела «Основы» — одно ТЗ разработчику на все страницы.
+  const exportAll = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      downloadJson("osnovy.json", await buildOsnovyExport());
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
@@ -132,6 +146,15 @@ export function SiteInspector({
             Сайт
           </ModeBtn>
         </div>
+        {/* Экспорт всего раздела одним файлом — для передачи разработчику. */}
+        <button
+          type="button"
+          onClick={exportAll}
+          disabled={exporting}
+          className="ml-auto rounded-md border bg-background px-3 py-1 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground disabled:opacity-60"
+        >
+          {exporting ? "Собираю…" : "Скачать JSON раздела"}
+        </button>
       </div>
       <div className="min-h-0 flex-1">
         {mode === "site" ? (
