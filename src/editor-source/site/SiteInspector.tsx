@@ -523,7 +523,12 @@ function SiteMode({
       </section>
 
       {/* Комментарии клиента/разработчика: ховер по компоненту → кнопка → тред. */}
-      <SiteComments slug={page.slug} pane={rightBox} pageDoc={pageDoc} />
+      <SiteComments
+        slug={page.slug}
+        pane={rightBox}
+        pageDoc={pageDoc}
+        selected={selected}
+      />
     </div>
   );
 }
@@ -534,25 +539,24 @@ const uid = () =>
 const snippet = (s?: string | null) =>
   s ? s.replace(/\s+/g, " ").trim().slice(0, 60) : "";
 
-/* Комментарии клиента/разработчика в режиме «Сайт» (поток «review»). Наведение
-   на компонент справа → кнопка «Комментировать» рядом → окно-тред. В треде
-   несколько комментов от разных людей; при первом автор представляется. */
+/* Комментарии клиента/разработчика в режиме «Сайт» (поток «review»). При
+   ВЫДЕЛЕНИИ компонента (клик) в его правом верхнем углу появляется иконка —
+   клик по ней открывает окно-тред. В треде несколько комментов от разных
+   людей; при первом автор представляется. */
 function SiteComments({
   slug,
   pane,
   pageDoc,
+  selected,
 }: {
   slug: string;
   pane: HTMLDivElement | null;
   pageDoc: Doc;
+  selected: string | null;
 }) {
   const { comments, setComment } = useComments();
-  const [hover, setHover] = React.useState<{
-    path: string;
-    top: number;
-    right: number;
-  } | null>(null);
   const [openPath, setOpenPath] = React.useState<string | null>(null);
+  const [pos, setPos] = React.useState<{ top: number; right: number } | null>(null);
   const [author, setAuthor] = React.useState<string>(() => {
     try {
       return localStorage.getItem(REVIEW_AUTHOR_KEY) || "";
@@ -561,37 +565,28 @@ function SiteComments({
     }
   });
 
-  // Наведение на компонент справа → координаты для кнопки. Уход гасим с
-  // задержкой, чтобы успеть перевести курсор на саму кнопку (она вне панели).
-  const clearRef = React.useRef(0);
+  // Позиция иконки — правый верхний угол ВЫДЕЛЕННОГО компонента. Следим за
+  // прокруткой/ресайзом, чтобы иконка держалась на углу.
   React.useEffect(() => {
-    if (!pane) return;
-    const onMove = (e: MouseEvent) => {
-      const el = (e.target as HTMLElement).closest?.(
-        "[data-json-path]",
-      ) as HTMLElement | null;
-      if (!el) return; // над самой иконкой/не-компонентом — ничего не трогаем
-      window.clearTimeout(clearRef.current);
-      const path = el.getAttribute("data-json-path") as string;
-      // Пересчитываем позицию ТОЛЬКО при смене компонента — иначе иконка
-      // дёргалась бы на каждом пикселе движения (моргание).
-      setHover((prev) => {
-        if (prev && prev.path === path) return prev;
-        const box = (el.firstElementChild as HTMLElement) || el;
-        const r = box.getBoundingClientRect();
-        return { path, top: r.top, right: r.right };
-      });
+    if (!pane || !selected) {
+      setPos(null);
+      return;
+    }
+    const update = () => {
+      const el = pane.querySelector(`[data-json-path="${CSS.escape(selected)}"]`);
+      if (!el) return setPos(null);
+      const box = (el.firstElementChild as HTMLElement) || (el as HTMLElement);
+      const r = box.getBoundingClientRect();
+      setPos({ top: r.top, right: r.right });
     };
-    const onLeave = () => {
-      clearRef.current = window.setTimeout(() => setHover(null), 300);
-    };
-    pane.addEventListener("mousemove", onMove, { passive: true });
-    pane.addEventListener("mouseleave", onLeave);
+    update();
+    pane.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
     return () => {
-      pane.removeEventListener("mousemove", onMove);
-      pane.removeEventListener("mouseleave", onLeave);
+      pane.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
     };
-  }, [pane]);
+  }, [pane, selected]);
 
   const threadOf = (path: string) =>
     comments
@@ -612,22 +607,21 @@ function SiteComments({
 
   return (
     <>
-      {hover && openPath !== hover.path && (
+      {selected && pos && openPath !== selected && (
         <button
           type="button"
           style={{
             position: "fixed",
-            top: hover.top + 6,
-            left: hover.right - 40,
+            top: pos.top + 6,
+            left: pos.right - 40,
             zIndex: 60,
           }}
-          onMouseEnter={() => window.clearTimeout(clearRef.current)}
-          onClick={() => setOpenPath(hover.path)}
+          onClick={() => setOpenPath(selected)}
           aria-label="Комментировать"
           title="Комментировать"
           className={cn(
             "flex h-9 w-9 items-center justify-center rounded-lg border bg-card transition-colors hover:bg-accent",
-            threadOf(hover.path).length > 0
+            threadOf(selected).length > 0
               ? "border-[color:var(--comment-line)] text-[color:var(--comment-line)]"
               : "text-muted-foreground hover:text-foreground",
           )}
