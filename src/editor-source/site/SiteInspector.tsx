@@ -1,5 +1,5 @@
 import * as React from "react";
-import { PageSummary, ListItem } from "@/figma";
+import { PageSummary, ListItem, Feedback, ReadMore, ReadMoreItem } from "@/figma";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
@@ -16,6 +16,7 @@ import type { TocItem } from "@/lib/toc";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
 import { PageSourceView } from "./PageSourceView";
+import { relatedFor } from "./relatedPages";
 
 /*
   ИНСТРУМЕНТ — ДВА РЕЖИМА, тумблер сверху.
@@ -244,6 +245,7 @@ function SiteMode({
   const paused = React.useRef(false);
 
   const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
+  const related = relatedFor(page.slug);
 
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
@@ -347,6 +349,24 @@ function SiteMode({
                 )}
               </div>
               <ResultView doc={pageDoc} pick={{ selected, onSelect: setSelected }} />
+
+              {/* Обвязка низа страницы (как титул/«вы узнаете» — не из
+                  источника): форма обратной связи, затем «Читайте также». */}
+              <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pb-16">
+                <Feedback />
+                {related.length > 0 && (
+                  <ReadMore>
+                    {related.map((r) => (
+                      <ReadMoreItem
+                        key={r.href}
+                        title={r.title}
+                        description={r.description}
+                        href={r.href}
+                      />
+                    ))}
+                  </ReadMore>
+                )}
+              </div>
             </div>
 
             {/* Правое меню — оглавление страницы */}
