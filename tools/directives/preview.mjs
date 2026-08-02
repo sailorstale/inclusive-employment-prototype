@@ -40,20 +40,25 @@ const directives = spec.proposals.map((p, i) => {
   };
 });
 
-// Раскладка адресует блоки так же, как страница: по непрерывному участку id.
+/*
+  Размещение как в приложении: непрерывный участок id + занятые позиции.
+  Без учёта занятости две директивы на одинаковые блоки («Что делать» дважды
+  в модуле) ложились на одно и то же место, и превью врало.
+*/
 const pathname = `/source/${spec.module}`;
+const idsAll = flat.map((it) => it.id);
+const busy = new Set();
 const byKey = new Map();
-{
-  const ids = flat.map((it) => it.id);
-  for (const d of directives) {
-    const want = d.blocks.map((b) => b.id);
-    for (let s = 0; s + want.length <= ids.length; s++) {
-      if (want.every((id, k) => ids[s + k] === id)) {
-        for (let k = 0; k < want.length; k++)
-          byKey.set(`${flat[s + k].si}:${flat[s + k].bi}`, d);
-        break;
-      }
+for (const d of directives) {
+  const want = d.blocks.map((b) => b.id);
+  for (let s2 = 0; s2 + want.length <= idsAll.length; s2++) {
+    if (!want.every((id, k) => idsAll[s2 + k] === id)) continue;
+    if (Array.from({ length: want.length }, (_, k) => s2 + k).some((i) => busy.has(i))) continue;
+    for (let k = 0; k < want.length; k++) {
+      busy.add(s2 + k);
+      byKey.set(`${flat[s2 + k].si}:${flat[s2 + k].bi}`, d);
     }
+    break;
   }
 }
 

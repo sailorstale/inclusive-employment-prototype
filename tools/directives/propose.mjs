@@ -36,26 +36,47 @@ if (!specPath) {
 const spec = JSON.parse(await fs.readFile(specPath, "utf8"));
 const { flat } = await loadModule(spec.module);
 
-// Что уже занято директивами дизайнера — поверх чужой разметки не предлагаем.
+/*
+  РАЗМЕЩЕНИЕ, как в приложении: директива ищет НЕПРЕРЫВНЫЙ участок документа,
+  совпадающий со списком её блоков. Сравнивать сами id нельзя — одинаковые
+  строки («Обратная связь к варианту 1») дают одинаковые id, и три разных квиза
+  выглядели бы как спор за одни блоки. Считаем занятыми ПОЗИЦИИ.
+*/
+const ids = flat.map((it) => it.id);
+const taken = new Set();
+
+/** Позиции, с которых список id ложится на документ подряд. */
+const placesOf = (want) => {
+  const out = [];
+  for (let p = 0; p + want.length <= ids.length; p++)
+    if (want.every((id, k) => ids[p + k] === id)) out.push(p);
+  return out;
+};
+const occupy = (p, len) => {
+  for (let k = 0; k < len; k++) taken.add(p + k);
+};
+const freePlace = (at, len) => at.find((p) => !Array.from({ length: len }, (_, k) => p + k).some((i) => taken.has(i)));
+
+// Сначала на документ ложатся уже существующие директивы — поверх них не лезем.
 const existing = await fetch(API)
   .then((r) => (r.ok ? r.json() : {}))
   .catch(() => ({}));
-const takenIds = new Set();
 for (const d of Object.values(existing)) {
-  if (d.module !== spec.module || d.review === "rejected") continue;
-  for (const b of d.blocks) takenIds.add(b.id);
+  if (d.module !== spec.module || d.review === "rejected" || !d.blocks.length) continue;
+  const at = placesOf(d.blocks.map((b) => b.id));
+  const p = freePlace(at, d.blocks.length);
+  if (p !== undefined) occupy(p, d.blocks.length);
 }
 
 const problems = [];
 const ready = [];
-const usedHere = new Set();
 
 for (const [i, p] of spec.proposals.entries()) {
   const nums = parseRange(p.blocks);
   const where = `предложение ${i + 1} (${p.target ?? "без цели"}, блоки ${p.blocks})`;
 
-  const gap = nums.some((n, k) => k > 0 && n !== nums[k - 1] + 1);
-  if (gap) problems.push(`${where}: блоки идут не подряд`);
+  if (nums.some((n, k) => k > 0 && n !== nums[k - 1] + 1))
+    problems.push(`${where}: блоки идут не подряд`);
 
   const items = nums.map((n) => flat[n]);
   if (items.some((it) => !it)) {
@@ -63,26 +84,18 @@ for (const [i, p] of spec.proposals.entries()) {
     continue;
   }
 
-  const clash = items.filter((it) => takenIds.has(it.id));
-  if (clash.length)
-    problems.push(
-      `${where}: блок уже размечен существующей директивой — «${clash[0].text.slice(0, 60)}…»`,
-    );
-
-  const twice = items.filter((it) => usedHere.has(it.id));
-  if (twice.length) problems.push(`${where}: блок уже занят другим предложением`);
-  items.forEach((it) => usedHere.add(it.id));
-
-  // Место в документе должно определяться однозначно: если такая же
-  // последовательность id встречается дважды, директива может лечь не туда.
-  const ids = items.map((it) => it.id);
-  let places = 0;
-  for (let s = 0; s + ids.length <= flat.length; s++) {
-    if (ids.every((id, k) => flat[s + k].id === id)) places++;
+  const at = placesOf(items.map((it) => it.id));
+  if (!at.length) problems.push(`${where}: место не найдено (сбой адресов)`);
+  const free = freePlace(at, items.length);
+  if (at.length && free === undefined)
+    problems.push(`${where}: все подходящие места уже заняты другой директивой`);
+  else if (free !== undefined) {
+    if (free !== nums[0])
+      problems.push(
+        `${where}: ляжет не на те блоки (${free} вместо ${nums[0]}) — возьмите соседний блок для однозначности`,
+      );
+    occupy(free, items.length);
   }
-  if (places === 0) problems.push(`${where}: место не найдено (сбой адресов)`);
-  if (places > 1)
-    problems.push(`${where}: ${places} одинаковых мест в модуле — возьмите соседний блок для однозначности`);
 
   ready.push({
     id: randomUUID(),

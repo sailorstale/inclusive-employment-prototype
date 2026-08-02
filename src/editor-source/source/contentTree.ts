@@ -622,6 +622,14 @@ const explicitTitle = (d?: Directive): string | undefined => {
 const isExplainLabel = (t: string) =>
   /^[*_\s]*пояснени\p{L}*\s*:?[*_\s]*$/iu.test(t);
 
+/*
+  «Обратная связь к варианту 2» — служебная подпись в квизе: она говорит, к
+  какому варианту относится разбор, и в результат не идёт. Страж потерь должен
+  знать об этом, иначе ругается на каждую такую строку.
+*/
+const isOptionFeedbackLabel = (t: string) =>
+  /^[*_\s]*обратн\p{L}*\s+связ\p{L}*\s+к\s+вариант\p{L}*\s*\d+[*_\s.:]*$/iu.test(t.trim());
+
 const isDroppedLabel = (raw: string, labels: string[]) => {
   const bare = raw.replace(/[*_]/g, "").replace(/:$/, "").trim().toLowerCase();
   return bare.length > 0 && labels.includes(bare);
@@ -1234,7 +1242,7 @@ export function buildDoc(
     const lost = g.items.filter((it) => {
       const raw = itemText(it);
       if (drop.length && isDroppedLabel(raw, drop)) return false;
-      if (isExplainLabel(raw)) return false;
+      if (isExplainLabel(raw) || isOptionFeedbackLabel(raw)) return false;
       const sig = signature(raw);
       // Короткие служебные подписи («Миф», «Правда») проверять бессмысленно:
       // они и так растворяются в тексте соседей и дают ложные тревоги.
@@ -2247,6 +2255,99 @@ export function buildDoc(
           строка «Верные: …» в комментарии не нужна. Жирность с текста
           снимается — она была пометкой для нас, а не выделением для читателя.
         */
+        /*
+          ФОРМАТ «РАЗБОР КАЖДОГО ВАРИАНТА» (М6.2). В источнике:
+
+            заголовок «Вопрос 1»                    → начало квиза;
+            абзац под ним                            → сам вопрос;
+            список                                   → варианты ответа;
+            заголовок «Обратная связь к варианту 2»  → разбор ИМЕННО этого
+            и абзацы за ним                            варианта.
+
+          Верный вариант виден из разбора: он начинается со слова «Верно».
+          Гадать не нужно, и строка «Верные: …» тут не обязательна — но если
+          она есть, слово дизайнера сильнее.
+        */
+        const OPT_FEEDBACK =
+          /^[*_\s]*обратн\p{L}*\s+связ\p{L}*\s+к\s+вариант\p{L}*\s*(\d+)/iu;
+        const optFeedbackNo = (it: Item) =>
+          it.b.kind === "heading"
+            ? Number(OPT_FEEDBACK.exec(md(it, fix))?.[1] ?? 0)
+            : 0;
+
+        if (items.some((it) => optFeedbackNo(it) > 0)) {
+          type Opt = NonNullable<Extract<Node, { component: "Quiz" }>["items"]>[number];
+          type Q = { title: string; qParts: string[]; options: Opt[] };
+          const quizzes: Q[] = [];
+          let cur: Q | null = null;
+          let optIdx = -1;
+
+          for (const it of items) {
+            const raw = md(it, fix).trim();
+            if (!raw && it.b.kind !== "list") continue;
+
+            const no = optFeedbackNo(it);
+            if (no > 0) {
+              optIdx = no - 1;
+              continue;
+            }
+            if (it.b.kind === "heading") {
+              cur = { title: headingText(raw, fix), qParts: [], options: [] };
+              quizzes.push(cur);
+              optIdx = -1;
+              continue;
+            }
+            if (!cur) continue;
+            if (it.b.kind === "list") {
+              cur.options.push(
+                ...it.b.items.map((li) => ({
+                  text: stripBold(applyFix(liText(it, li), fix).trim()),
+                })),
+              );
+              continue;
+            }
+            if (optIdx >= 0 && cur.options[optIdx]) {
+              const o = cur.options[optIdx];
+              o.feedback = o.feedback ? `${o.feedback}\n\n${stripBold(raw)}` : stripBold(raw);
+            } else cur.qParts.push(stripBold(raw));
+          }
+
+          const names = correctNames();
+          const out: Node[] = quizzes
+            .filter((q) => q.options.length)
+            .map((q, i) => {
+              const want = names[i];
+              const byNum = want && /^\d+$/.test(want) ? Number(want) : 0;
+              const options = q.options.map((o, k) => {
+                const right = want
+                  ? byNum
+                    ? k === byNum - 1
+                    : isWanted(o.text, want)
+                  : /^\s*верно\b|^\s*верно[.,!]/iu.test(o.feedback ?? "");
+                return right ? { ...o, correct: true } : o;
+              });
+              return {
+                component: "Quiz" as const,
+                ...(q.title ? { title: q.title } : {}),
+                question: q.qParts.filter(Boolean).join("\n\n"),
+                mode: (options.filter((o) => o.correct).length > 1
+                  ? "multiple"
+                  : "single") as "single" | "multiple",
+                items: options,
+              };
+            });
+          const wantQuiz = quizCount(dir);
+          return wantQuiz && out.length !== wantQuiz
+            ? [
+                ...out,
+                {
+                  component: "note",
+                  text: `просили ${wantQuiz} квизов, получилось ${out.length} — проверьте`,
+                },
+              ]
+            : out;
+        }
+
         /*
           ФОРМАТ «КРУЖКИ» (М5.2, М5.3). Самый распространённый вид самопроверки
           в источнике — 106 вариантов в двух модулях:
