@@ -384,8 +384,25 @@ const headingsToBold = (d?: Directive): string[] => {
   «Все в одну карточку», «В одну карточку» — обратное делению: автоматика
   разложила бы набор по жирным лидам и заголовкам, а дизайнер хочет один блок.
 */
+/** «Это одна фраза» — слить выделенные блоки в одну врезку. */
+const wantsOnePhrase = (d?: Directive) => /одна\s+фраз/iu.test(d?.comment || "");
+
 const wantsMerge = (d?: Directive) =>
-  /в\s+одну\s+карточ|одной\s+карточк|все\s+в\s+одну/iu.test(d?.comment || "");
+  // «Одна карточка» — та же просьба, сказанная короче.
+  /в\s+одну\s+карточ|одной\s+карточк|все\s+в\s+одну|одна\s+карточк/iu.test(
+    d?.comment || "",
+  );
+
+/*
+  «Предложение начинается с Нейросети…» — дизайнер называет слово, с которого
+  должно начинаться тело. Всё, что было до него (служебный зачин вроде «Важно
+  помнить, что»), уходит: ярлык уже стал заголовком карточки, и повторять его
+  в первой строке незачем.
+*/
+const bodyStartsFrom = (d?: Directive): string | undefined =>
+  /предложени\p{L}*\s+начина\p{L}*\s+с\p{L}*\s+([^\n.…]{3,40})/iu
+    .exec(d?.comment || "")?.[1]
+    ?.trim();
 
 /*
   «Эту таблицу сложно читать, сделай из неё текст с заголовками, перечисления —
@@ -421,6 +438,8 @@ const commentRecognized = (d?: Directive): boolean =>
   linkPhrase(d) !== undefined ||
   wantsDecaps(d) ||
   wantsMergeParagraph(d) ||
+  wantsOnePhrase(d) ||
+  bodyStartsFrom(d) !== undefined ||
   wantsImageToList(d) ||
   labelToTitle(d) !== undefined ||
   addedLinkUrl(d) !== undefined ||
@@ -532,6 +551,12 @@ const splitTitleBody = (text: string): { title?: string; body: string } => {
 */
 const explicitTitle = (d?: Directive): string | undefined => {
   if (!d?.target || wantsSplit(d)) return undefined;
+  /*
+    «Важно В ЗАГОЛОВОК» — это не «добавь заголовок X», а перенос ярлыка из
+    начала абзаца. Без этой проверки правило хватало весь хвост комментария и
+    заголовком становилась инструкция целиком.
+  */
+  if (labelToTitle(d) !== undefined) return undefined;
   // «заг» принимаем только целым словом: иначе «загрузить» дало бы заголовок.
   const m = /(?:заг(?=\s)|загол\p{L}*|заглов\p{L}*|загов\p{L}*|заглав\p{L}*)\s+(?:[«"'])?([^«»"'.,;:!?\n]+)/iu.exec(
     withoutRemovals(d.comment || ""),
@@ -1380,8 +1405,27 @@ export function buildDoc(
     */
     const dropWord = leadWordToDrop(dir);
     const capBody = wantsCapitalize(dir);
+    /*
+      «Предложение начинается с Нейросети…» — обрезаем зачин до названного
+      слова и поднимаем регистр: слово стало первым в предложении. Режем только
+      ПЕРВЫЙ блок и только если слово в нём действительно есть.
+    */
+    const startFrom = bodyStartsFrom(dir);
+    /*
+      Функция ИДЕМПОТЕНТНА намеренно: bodyText вызывают по два раза на один и
+      тот же текст (сначала «есть ли что показывать», потом сам текст). С
+      флагом «уже отрезали» второй вызов возвращал текст целиком — и обрезка
+      пропадала. После первой обрезки слово стоит в начале, и повторный вызов
+      уже ничего не делает.
+    */
+    const cutToStart = (t: string) => {
+      if (!startFrom) return t;
+      const at = t.toLowerCase().indexOf(startFrom.toLowerCase());
+      return at > 0 ? capitalizeFirst(t.slice(at).trim()) : t;
+    };
     const bodyText = (t: string) => {
       let out = dropWord ? stripLeadWord(t, dropWord) : t;
+      out = cutToStart(out);
       if (capBody) out = capitalizeFirst(out);
       return out.trim();
     };
@@ -1428,7 +1472,8 @@ export function buildDoc(
         */
         const cards: Node[] = [];
         const bg = typeof mods.bg === "string" ? mods.bg : "blue";
-        const forcedTitle = explicitTitle(dir);
+        // «X в заголовок» — ярлык из начала абзаца работает так же, как явный заголовок.
+    const forcedTitle = explicitTitle(dir) ?? labelToTitle(dir);
         const noColon = wantsNoColon(dir);
         /** Хвостовое двоеточие заголовка — по просьбе «без двоеточия». */
         const titleFix = (t?: string) =>
@@ -1799,6 +1844,25 @@ export function buildDoc(
             author = name.trim() || undefined;
             role = restRole.join(",").trim() || undefined;
           }
+          /*
+            АВТОРСТВО, СКЛЕЕННОЕ С РЕЧЬЮ В ОДИН АБЗАЦ. В источнике встречается
+            «**Имя Фамилия,** **должность в Компании*** **дальше сама речь…*» —
+            перевод строки потерялся ещё в исходном документе. Отдельной строки
+            авторства тут нет, поэтому цитата уезжала вовсе без имени.
+
+            Режем по разметке, а не по смыслу: имя и должность — два первых
+            жирных куска, речь — всё, что после них. Не совпало — ничего не
+            трогаем, останется пометка «дополнить авторство».
+          */
+          const glued = hasAuthor
+            ? null
+            : /^\s*\*\*([^*]{3,80}?),\s*\*\*\s*\*\*([^*]{3,200}?)\*{2,3}\s*([\s\S]+)$/u.exec(
+                parsed[ai].text,
+              );
+          if (glued) {
+            author = glued[1].trim();
+            role = glued[2].trim();
+          }
 
           /*
             Организация: ссылка в самой строке авторства или блок-ссылка в
@@ -1857,7 +1921,9 @@ export function buildDoc(
             if (p.it.b.kind === "list")
               p.it.b.items.forEach((li) => speech.push("• " + stripQuotes(liText(p.it, li))));
             else {
-              const s = stripQuotes(stripEmph(p.text));
+              // Склеенный абзац: авторство уже забрали, в речь идёт остаток.
+              const raw = glued && j === 0 ? glued[3] : p.text;
+              const s = stripQuotes(stripEmph(raw));
               if (s) speech.push(s);
             }
           });
@@ -1910,7 +1976,7 @@ export function buildDoc(
         const size = mods.size === "M" ? "M" : "L";
         // «Это одна фраза» в комментарии — слить все выделенные блоки в ОДИН
         // компонент врезки (абзацы внутри разделяем пустой строкой).
-        if (/одна\s+фраз/iu.test(dir.comment || "")) {
+        if (wantsOnePhrase(dir)) {
           const text = items.map((it) => md(it, fix)).filter(Boolean).join("\n\n");
           return [{ component: "Phrase", size, text }];
         }
@@ -2053,6 +2119,75 @@ export function buildDoc(
           stripBold(t.replace(/^\s*(?:\*\*)?\s*ОС\s*[:.]\s*(?:\*\*)?\s*/iu, ""));
         const isOS = (it: Item) => it.b.kind !== "list" && OS_RE.test(md(it, fix).trim());
         const hasPerOption = items.some(isOS);
+
+        /*
+          ФОРМАТ «ТЕМА → ВАРИАНТЫ → ОБРАТНАЯ СВЯЗЬ» (М3). В источнике:
+            заголовок «Зрение»            → тема, она же вопрос квиза;
+            список                        → варианты, ЖИРНЫЕ — верные;
+            заголовок «Обратная связь»    → служебный ярлык, в результат не идёт;
+            абзацы за ним                 → разбор.
+
+          Здесь верные варианты помечены в самом источнике жирным, поэтому
+          строка «Верные: …» в комментарии не нужна. Жирность с текста
+          снимается — она была пометкой для нас, а не выделением для читателя.
+        */
+        const isFeedbackHeading = (it: Item) =>
+          it.b.kind === "heading" && isFeedbackLabel(md(it, fix));
+        if (items.some(isFeedbackHeading)) {
+          type Opt = NonNullable<Extract<Node, { component: "Quiz" }>["items"]>[number];
+          type Q = { question: string; qParts: string[]; options: Opt[]; expl: string[] };
+          const quizzes: Q[] = [];
+          let cur: Q | null = null;
+          let mode: "question" | "explanation" = "question";
+
+          for (const it of items) {
+            if (it.b.kind === "heading") {
+              if (isFeedbackHeading(it)) {
+                mode = "explanation";
+                continue;
+              }
+              cur = { question: headingText(md(it, fix), fix), qParts: [], options: [], expl: [] };
+              quizzes.push(cur);
+              mode = "question";
+              continue;
+            }
+            if (!cur) continue;
+            if (it.b.kind === "list") {
+              cur.options.push(
+                ...it.b.items.map((li) => {
+                  const raw = applyFix(liText(it, li), fix).trim();
+                  const correct = WHOLE_BOLD.test(raw);
+                  return { text: stripBold(raw), ...(correct ? { correct: true } : {}) };
+                }),
+              );
+              continue;
+            }
+            const raw = md(it, fix).trim();
+            if (!raw) continue;
+            if (mode === "explanation") cur.expl.push(stripBold(raw));
+            else cur.qParts.push(stripBold(raw));
+          }
+
+          const out: Node[] = quizzes
+            .filter((q) => q.options.length)
+            .map((q) => ({
+              component: "Quiz",
+              question: [q.question, ...q.qParts].filter(Boolean).join("\n\n"),
+              mode: q.options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
+              items: q.options,
+              ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
+            }));
+          const wantQuiz = quizCount(dir);
+          return wantQuiz && out.length !== wantQuiz
+            ? [
+                ...out,
+                {
+                  component: "note",
+                  text: `просили ${wantQuiz} квизов, получилось ${out.length} — проверьте`,
+                },
+              ]
+            : out;
+        }
 
         // Формат «Ситуация» — весь квиз абзацами, без списков.
         if (items.some((it) => isSituationLabel(md(it, fix)))) {
