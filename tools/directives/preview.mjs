@@ -74,7 +74,7 @@ const mineAnchors = new Set(
 const show = (node, depth) => {
   const pad = "  ".repeat(depth);
   const text = node.text ?? node.title ?? node.question ?? "";
-  const extra = [node.marker, node.icon, node.type, node.size].filter(Boolean).join("/");
+  const extra = [node.level, node.marker, node.icon, node.type, node.size].filter(Boolean).join("/");
   console.log(
     `${pad}${node.component}${extra ? " ["+extra+"]" : ""}${text ? " · " + String(text).replace(/\s+/g, " ").slice(0, 100) : ""}`,
   );

@@ -1990,14 +1990,21 @@ export function buildDoc(
           const quoted = hasAuthor
             ? /[«„"]([^»“"]{2,60})[»“"]/u.exec(stripEmph(parsed[ai].bare))?.[1]
             : undefined;
-          if (quoted) orgName = quoted.trim();
+          /*
+            Кавычки — запасной признак, а не главный: если организация уже
+            названа ССЫЛКОЙ, она и есть организация. Иначе в строке «Алла
+            Сотникова, куратор проекта «Трудоустройство», [фонд борьбы с
+            инсультом ОРБИ](…)» организацией становилось название проекта, а
+            настоящий фонд пропадал — и страж потерь справедливо ругался.
+          */
+          if (quoted && !inline) orgName = quoted.trim();
           /*
             Ссылка может стоять на ВСЕЙ строке авторства («Денис Роза,
             основатель… в РООИ «Перспектива»»). Тогда название организации — то,
             что в кавычках, а не вся строка: иначе логотип ищется по фразе
             с именем и должностью и, конечно, не находится.
           */
-          if (!quoted && orgName && orgName.includes(",")) {
+          if (orgName && orgName.includes(",")) {
             const inQuotes = /[«„"]([^»“"]{2,60})[»“"]/u.exec(orgName)?.[1];
             if (inQuotes) orgName = inQuotes.trim();
           }
@@ -2380,15 +2387,35 @@ export function buildDoc(
             else cur.qParts.push(stripBold(raw));
           }
 
+          /*
+            Верные варианты здесь помечены ЖИРНЫМ в самом источнике. Но тот же
+            формат встречается и без пометок (М6.1: «Ситуация» → список →
+            «Обратная связь»), и тогда решение принимает человек — строкой
+            «Верные: …» в комментарии, номером или именем варианта.
+          */
+          const names = correctNames();
           const out: Node[] = quizzes
             .filter((q) => q.options.length)
-            .map((q) => ({
-              component: "Quiz",
-              question: [q.question, ...q.qParts].filter(Boolean).join("\n\n"),
-              mode: q.options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
-              items: q.options,
-              ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
-            }));
+            .map((q, i) => {
+              const want = names[i];
+              const byNum = want && /^\d+$/.test(want) ? Number(want) : 0;
+              const options = q.options.some((o) => o.correct)
+                ? q.options
+                : q.options.map((o, k) =>
+                    (byNum ? k === byNum - 1 : want && isWanted(o.text, want))
+                      ? { ...o, correct: true }
+                      : o,
+                  );
+              return {
+                component: "Quiz" as const,
+                question: [q.question, ...q.qParts].filter(Boolean).join("\n\n"),
+                mode: (options.filter((o) => o.correct).length > 1
+                  ? "multiple"
+                  : "single") as "single" | "multiple",
+                items: options,
+                ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
+              };
+            });
           const wantQuiz = quizCount(dir);
           return wantQuiz && out.length !== wantQuiz
             ? [
