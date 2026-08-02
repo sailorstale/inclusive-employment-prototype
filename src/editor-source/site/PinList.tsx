@@ -71,8 +71,6 @@ export function PinList({
   selected: string | null;
   onSelect: (path: string) => void;
 }) {
-  if (!pins.length) return null;
-
   const go = (path: string) => {
     onSelect(path);
     const el = pane?.querySelector(`[data-json-path="${path}"]`);
@@ -90,6 +88,17 @@ export function PinList({
         <MessageCircle className="h-3.5 w-3.5" />
         Пины {open ? `· ${open}` : null}
       </p>
+      {/*
+        Пустой блок показываем НАМЕРЕННО: пока пинов нет, список прятался
+        целиком — и найти его было невозможно. Подсказка объясняет, откуда
+        берётся пин.
+      */}
+      {!pins.length ? (
+        <p className="text-xs leading-snug text-muted-foreground">
+          Кликните компонент на странице и напишите комментарий — он появится
+          здесь, чтобы к нему можно было быстро вернуться.
+        </p>
+      ) : null}
       <ul className="space-y-1">
         {pins.map((p) => (
           <li key={p.path}>
