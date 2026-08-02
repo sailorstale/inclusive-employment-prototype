@@ -113,10 +113,17 @@ export function TableRow({ header = false, children, className }: TableRowProps)
     <tr
       data-component="Table Row"
       className={cn(
-        // Вся разлиновка таблицы — эта одна линия. Вертикальных нет.
-        // Ни зебры, ни подсветки при наведении в системе тоже нет.
-        // У строки-шапки линии нет: её роль играет border-top первой строки тела.
-        !header && "border-t border-[color:var(--border-divider)]",
+        /*
+          Вся внутренняя разлиновка — эта одна линия. Вертикальных нет, зебры и
+          подсветки при наведении в системе тоже. У строки-шапки линии нет: её
+          роль играет верхняя граница первой строки тела.
+
+          Линия висит на ЯЧЕЙКАХ, а не на самой строке: у таблицы раздельные
+          границы (нужны ради внешней рамки), а в этой модели браузер границы
+          <tr> не рисует вообще.
+        */
+        !header &&
+          "[&>td]:border-t [&>th]:border-t [&>*]:border-[color:var(--border-divider)]",
         className,
       )}
     >
@@ -165,9 +172,15 @@ export function Table({ headers, caption, children, className }: TableProps) {
           тексте, особенно когда колонок две и они читаются как две колонки
           вёрстки. Внутренняя разлиновка прежняя: горизонтальные линии между
           строками, вертикальных нет.
+
+          ВАЖНО, border-separate. При border-collapse рамка самой таблицы
+          браузером не рисуется вовсе (её «схлопывает» с нулевыми границами
+          ячеек), и скругление тоже не работает. Поэтому границы раздельные, а
+          линии между строками живут на ЯЧЕЙКАХ (см. TableRow) — на <tr> в этой
+          модели границы не рисуются.
         */
-        "w-full border-collapse overflow-hidden rounded-[var(--radius-m)]",
-        "border border-[color:var(--border-divider)]",
+        "w-full border-separate border-spacing-0 overflow-hidden",
+        "rounded-[var(--radius-m)] border border-[color:var(--border-divider)]",
         className,
       )}
     >
