@@ -589,10 +589,12 @@ const explicitTitle = (d?: Directive): string | undefined => {
   */
   if (labelToTitle(d) !== undefined) return undefined;
   // «заг» принимаем только целым словом: иначе «загрузить» дало бы заголовок.
-  const m = /(?:заг(?=\s)|загол\p{L}*|заглов\p{L}*|загов\p{L}*|заглав\p{L}*)\s+(?:[«"'])?([^«»"'.,;:!?\n]+)/iu.exec(
+  const m = /(?:заг(?=\s)|загол\p{L}*|заглов\p{L}*|загов\p{L}*|заглав\p{L}*)\s+([«"'])?([^«»"'.,;:!?\n]+)/iu.exec(
     withoutRemovals(d.comment || ""),
   );
-  const t = m?.[1]?.replace(/[*_]/g, "").trim();
+  // Заголовок в КАВЫЧКАХ — явная граница, поставленная человеком.
+  const quoted = Boolean(m?.[1]);
+  const t = m?.[2]?.replace(/[*_]/g, "").trim();
   if (!t || t.length < 2 || t.length > 60) return undefined;
   /*
     Заголовок — короткая подпись («Важно», «Пример»), а не кусок фразы. Без этой
@@ -601,10 +603,14 @@ const explicitTitle = (d?: Directive): string | undefined => {
 
     Отсекаем по двум признакам: слишком много слов и начало со служебного слова
     (в осмысленной подписи его не бывает).
+
+    КАВЫЧКИ ОТМЕНЯЮТ обе проверки: границу назвал человек, догадываться не о чем.
+    Без этого «Добавь заголовок На этом этапе важно» молча не срабатывало —
+    подпись начинается с предлога «на», а он в списке служебных слов.
   */
   const words = t.split(/\s+/);
   const FILLER = /^(и|а|но|или|там|тут|где|что|как|это|эти|все|всё|ещё|еще|же|в|на|с|со|для|по|из)$/iu;
-  if (words.length > 4 || FILLER.test(words[0])) return undefined;
+  if (!quoted && (words.length > 4 || FILLER.test(words[0]))) return undefined;
   return t;
 };
 
@@ -1553,6 +1559,24 @@ export function buildDoc(
         /** Хвостовое двоеточие заголовка — по просьбе «без двоеточия». */
         const titleFix = (t?: string) =>
           t && noColon ? t.replace(/\s*[:：]\s*$/, "").trim() || t : t;
+        /*
+          Заголовок назвали комментарием, а первая строка тела — та же фраза:
+          «Добавь заголовок На этом этапе важно» при абзаце «На этом этапе
+          важно:». В источнике это была подпись к списку, в карточке подпись —
+          уже заголовок, и повторять её незачем. Сверяем по сути: без разметки,
+          хвостового двоеточия и регистра.
+        */
+        const sameAsTitle = (t: string | undefined, body: string) => {
+          if (!t) return false;
+          const norm = (s: string) =>
+            s
+              .replace(/[*_]/g, "")
+              .replace(/\s+/g, " ")
+              .replace(/\s*[:.：]\s*$/, "")
+              .trim()
+              .toLowerCase();
+          return norm(t) === norm(body);
+        };
         // Иконки лежат в директиве в том же порядке, что и блоки.
         const iconOf = (it: Item) =>
           dir.blocks.find((x) => x.snippet && md(it).startsWith(x.snippet.slice(0, 20)))
@@ -1590,7 +1614,7 @@ export function buildDoc(
           const firstBody = headIsLabel ? "" : forcedTitle ? t0 : auto.body;
           const icon = iconOf(head);
           const kids: Node[] = [];
-          if (bodyText(firstBody))
+          if (bodyText(firstBody) && !sameAsTitle(title, firstBody))
             kids.push({ component: "Text", size: "M", text: bodyText(firstBody) });
           for (const it of tail) kids.push(...plainNodes(it, fix, true));
           return [
@@ -1720,11 +1744,12 @@ export function buildDoc(
               bgColor: bg,
               icon: mods.icon && icon ? icon : undefined,
               title,
-              children: bodyText(rest)
-                ? [{ component: "Text", size: "M", text: bodyText(rest) }]
-                : ownText
-                  ? []
-                  : plainNodes(it, fix, true),
+              children:
+                bodyText(rest) && !sameAsTitle(title, rest)
+                  ? [{ component: "Text", size: "M", text: bodyText(rest) }]
+                  : ownText
+                    ? []
+                    : plainNodes(it, fix, true),
             });
           } else {
             const last = cards[cards.length - 1] as Extract<
