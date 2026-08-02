@@ -4,6 +4,8 @@ import "@/figma/tokens.css";
 import { renderInline } from "@/editor-source/richText";
 import { DirectiveCard, type DirectiveDraft } from "./DirectiveCard";
 import { ResultView } from "./ResultView";
+import { PinLayer } from "@/editor-source/pins";
+import { nodeLabelOf } from "./nodeLabel";
 import type { Doc } from "./contentTree";
 import { iconByName } from "./iconForText";
 import {
@@ -117,6 +119,9 @@ export function PlaygroundColumn({
   const contentRef = React.useRef<HTMLDivElement>(null);
   const resolve = useMdResolver();
 
+  // Выбранный компонент в режиме «Результат» — под него ставится пин.
+  const [pickedPath, setPickedPath] = React.useState<string | null>(null);
+  const [resultBox, setResultBox] = React.useState<HTMLDivElement | null>(null);
   const [marquee, setMarquee] = React.useState<Box | null>(null);
   const [groupBox, setGroupBox] = React.useState<Box | null>(null);
   // «Блоки» — разметка (выделение рамкой); «Результат» — как выглядит с
@@ -135,6 +140,8 @@ export function PlaygroundColumn({
   const setBoxRef = React.useCallback(
     (el: HTMLDivElement | null) => {
       boxRef.current = el;
+      // Тот же элемент нужен слою пинов — держим его состоянием.
+      setResultBox(el);
       if (typeof scrollRef === "function") scrollRef(el);
       else if (scrollRef)
         (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
@@ -363,7 +370,13 @@ export function PlaygroundColumn({
         ].join(" ")}
       >
         {mode === "result" ? (
-          <ResultView doc={doc} />
+          <ResultView
+            doc={doc}
+            pick={{
+              selected: pickedPath,
+              onSelect: (p) => setPickedPath((cur) => (cur === p ? null : p)),
+            }}
+          />
         ) : (
         <div
           ref={contentRef}
@@ -448,6 +461,17 @@ export function PlaygroundColumn({
           />
         )}
       </div>
+
+      {/* Пины к компонентам — только в «Результате»: в «Блоках» компонентов ещё нет. */}
+      {mode === "result" && (
+        <PinLayer
+          page={moduleId}
+          pane={resultBox}
+          selected={pickedPath}
+          onSelect={setPickedPath}
+          labelOf={(path) => nodeLabelOf(doc, path)}
+        />
+      )}
 
       {selected.size > 0 && (
         <div className="flex shrink-0 items-center justify-between gap-3 border-t bg-background px-4 py-2">

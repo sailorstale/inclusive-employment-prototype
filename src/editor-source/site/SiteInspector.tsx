@@ -3,7 +3,7 @@ import { MessageSquarePlus } from "lucide-react";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
-import { PinList, pinsOfPage } from "./PinList";
+import { PinLayer } from "@/editor-source/pins";
 import { useScrollSync } from "@/editor-source/source/scrollSync";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
 import { EditorProvider } from "@/editor-source/EditorProvider";
@@ -392,11 +392,6 @@ function SiteMode({
     [comments, page.slug],
   );
 
-  // Те же комментарии, но списком «куда вернуться» — в правом меню страницы.
-  const pins = React.useMemo(
-    () => pinsOfPage(comments, page.slug),
-    [comments, page.slug],
-  );
 
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
@@ -519,16 +514,10 @@ function SiteMode({
               />
             </div>
 
-            {/* Правое меню — оглавление страницы и пины к компонентам */}
+            {/* Правое меню — оглавление страницы */}
             <aside className="min-w-0">
               <div className="sticky top-20">
                 <SiteRail items={tocItems} pane={rightBox} />
-                <PinList
-                  pins={pins}
-                  pane={rightBox}
-                  selected={selected}
-                  onSelect={setSelected}
-                />
               </div>
             </aside>
           </div>
@@ -541,6 +530,15 @@ function SiteMode({
         pane={rightBox}
         pageDoc={pageDoc}
         selected={selected}
+      />
+      {/* Пины — закладки «сюда вернуться». Иконка левее комментария, чтобы не наезжали. */}
+      <PinLayer
+        page={page.slug}
+        pane={rightBox}
+        selected={selected}
+        onSelect={setSelected}
+        labelOf={(path) => nodeText(nodeAtPath(pageDoc, path)).slice(0, 120)}
+        offset={44}
       />
     </div>
   );

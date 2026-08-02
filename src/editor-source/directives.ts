@@ -13,6 +13,10 @@ export type DirectiveBlock = {
   icon?: string;
 };
 export type DirectiveStatus = "new" | "applied" | "verified";
+/** Кто завёл директиву: дизайнер (по умолчанию) или Claude — предложением. */
+export type DirectiveOrigin = "designer" | "claude";
+/** Судьба предложения: ждёт решения дизайнера → принято или отклонено. */
+export type DirectiveReview = "proposed" | "accepted" | "rejected";
 
 export type Directive = {
   id: string;
@@ -23,6 +27,12 @@ export type Directive = {
   modifiers: Record<string, string | boolean>;
   comment: string;
   status: DirectiveStatus;
+  /** Нет поля — завёл дизайнер (так у всех директив до появления предложений). */
+  origin?: DirectiveOrigin;
+  /** Только у предложений Claude. Отклонённое в раскладку не идёт. */
+  review?: DirectiveReview;
+  /** Выключена: остаётся в списке и держит свои блоки, но не применяется. */
+  off?: boolean;
   createdAt: string;
   updatedAt?: string;
 };
@@ -36,6 +46,13 @@ export type DirectiveInput = {
   targetLabel: string | null;
   modifiers: Record<string, string | boolean>;
   comment: string;
+};
+
+/** Поля, которые меняются точечно, не трогая разметку директивы. */
+export type DirectivePatch = {
+  status?: DirectiveStatus;
+  review?: DirectiveReview;
+  off?: boolean;
 };
 
 const API = "/api/source/directives";
@@ -93,10 +110,13 @@ export async function saveDirective(input: DirectiveInput): Promise<Directive> {
   }
   const m = readLocal();
   const now = new Date().toISOString();
+  const prev = m[input.id];
   const rec: Directive = {
+    // Служебные поля (кто завёл, решение, выключение) переживают правку разметки.
+    ...prev,
     ...input,
-    status: m[input.id]?.status ?? "new",
-    createdAt: m[input.id]?.createdAt ?? now,
+    status: prev?.status ?? "new",
+    createdAt: prev?.createdAt ?? now,
     updatedAt: now,
   };
   m[input.id] = rec;
@@ -117,25 +137,33 @@ export async function deleteDirective(id: string): Promise<void> {
   writeLocal(m);
 }
 
-export async function setDirectiveStatus(
+/*
+  Точечная правка служебных полей: статус переноса, решение по предложению,
+  выключение. Разметку (блоки, цель, модификаторы, комментарий) не трогает —
+  для неё saveDirective.
+*/
+export async function patchDirective(
   id: string,
-  status: DirectiveStatus,
+  patch: DirectivePatch,
 ): Promise<Directive | null> {
   if (mode === "server") {
-    const r = await apiFetch(`${API}/${encodeURIComponent(id)}/status`, {
+    const r = await apiFetch(`${API}/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(patch),
     });
-    if (!r.ok) throw new Error(`Смена статуса не удалась: ${r.status}`);
+    if (!r.ok) throw new Error(`Правка директивы не удалась: ${r.status}`);
     return (await r.json()) as Directive;
   }
   const m = readLocal();
-  const rec = m[id];
-  if (!rec) return null;
-  rec.status = status;
-  rec.updatedAt = new Date().toISOString();
+  const prev = m[id];
+  if (!prev) return null;
+  // Иммутабельно: запись пересобираем, а не мутируем на месте.
+  const rec: Directive = { ...prev, ...patch, updatedAt: new Date().toISOString() };
   m[id] = rec;
   writeLocal(m);
   return rec;
 }
+
+export const setDirectiveStatus = (id: string, status: DirectiveStatus) =>
+  patchDirective(id, { status });

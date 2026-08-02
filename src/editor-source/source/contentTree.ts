@@ -151,8 +151,17 @@ export type Doc = {
 type Item = { b: SourceBlock; anchor?: string };
 type Group = { dir?: Directive; items: Item[] };
 
+/*
+  Директива работает, если она перенесена в раскладку и её не отменяли.
+  ПРЕДЛОЖЕНИЕ Claude (review: "proposed") тоже работает — иначе его нечем
+  проверить: судить о раскладке можно только по «Результату». Отклонённое и
+  выключенное молчит.
+*/
 const isActive = (d?: Directive) =>
-  !!d && (d.status === "applied" || d.status === "verified");
+  !!d &&
+  !d.off &&
+  d.review !== "rejected" &&
+  (d.status === "applied" || d.status === "verified");
 
 /*
   Инструкции из комментария, которые исполняются механически.

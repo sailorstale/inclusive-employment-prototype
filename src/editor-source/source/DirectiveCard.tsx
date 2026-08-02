@@ -1,23 +1,21 @@
 import * as React from "react";
-import {
-  TARGET_GROUPS,
-  findTarget,
-  defaultModifiers,
-} from "./componentTargets";
-import { iconForText } from "./iconForText";
+import { TargetFields, type DirectiveDraft } from "./TargetFields";
 
 /*
   Карточка-директива: для выделенных блоков задаёт «во что превратить +
   модификаторы + комментарий». Текст блоков не трогает — только разметку.
   Сохранение (сборку блоков, id, отправку на сервер) делает SourcePage; карточка
-  лишь собирает черновик и отдаёт его наверх.
+  лишь собирает черновик и отдаёт его наверх. Сами поля — общие с правкой уже
+  сохранённой директивы (TargetFields).
 */
 
-export type DirectiveDraft = {
-  target: string | null;
-  targetLabel: string | null;
-  modifiers: Record<string, string | boolean>;
-  comment: string;
+export type { DirectiveDraft } from "./TargetFields";
+
+const EMPTY: DirectiveDraft = {
+  target: null,
+  targetLabel: null,
+  modifiers: {},
+  comment: "",
 };
 
 export function DirectiveCard({
@@ -30,30 +28,13 @@ export function DirectiveCard({
   blockTexts?: string[];
   onSave: (draft: DirectiveDraft) => void;
 }) {
-  const [target, setTarget] = React.useState("");
-  const [modifiers, setModifiers] = React.useState<
-    Record<string, string | boolean>
-  >({});
-  const [comment, setComment] = React.useState("");
+  const [draft, setDraft] = React.useState<DirectiveDraft>(EMPTY);
 
-  const t = findTarget(target || null);
-  const canSave = Boolean(target) || comment.trim().length > 0;
-
-  const pickTarget = (v: string) => {
-    setTarget(v);
-    setModifiers(v ? defaultModifiers(v) : {});
-  };
+  const canSave = Boolean(draft.target) || draft.comment.trim().length > 0;
 
   const save = () => {
-    onSave({
-      target: target || null,
-      targetLabel: t?.label ?? null,
-      modifiers,
-      comment: comment.trim(),
-    });
-    setTarget("");
-    setModifiers({});
-    setComment("");
+    onSave({ ...draft, comment: draft.comment.trim() });
+    setDraft(EMPTY);
   };
 
   return (
@@ -62,92 +43,7 @@ export function DirectiveCard({
         Новая директива · {count} блок(ов)
       </div>
 
-      <label className="mt-3 block text-xs font-medium text-muted-foreground">
-        Во что превратить
-      </label>
-      <select
-        value={target}
-        onChange={(e) => pickTarget(e.target.value)}
-        className="mt-1 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-      >
-        <option value="">— не менять (только комментарий) —</option>
-        {TARGET_GROUPS.map((g) => (
-          <optgroup key={g.group} label={g.group}>
-            {g.items.map((it) => (
-              <option key={it.value} value={it.value}>
-                {it.label}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-
-      {t?.modifiers?.length ? (
-        <div className="mt-3 space-y-2 rounded-md bg-muted/40 p-2">
-          {t.modifiers.map((m) => (
-            <div key={m.key} className="flex items-center justify-between gap-2">
-              <span className="text-xs text-muted-foreground">{m.label}</span>
-              {m.type === "select" ? (
-                <select
-                  value={String(modifiers[m.key] ?? m.default)}
-                  onChange={(e) =>
-                    setModifiers((p) => ({ ...p, [m.key]: e.target.value }))
-                  }
-                  className="rounded-md border bg-background px-2 py-1 text-sm"
-                >
-                  {m.options.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="checkbox"
-                  checked={Boolean(modifiers[m.key])}
-                  onChange={(e) =>
-                    setModifiers((p) => ({ ...p, [m.key]: e.target.checked }))
-                  }
-                  className="size-4"
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      {target === "GeneralCard" && modifiers.icon ? (
-        <div className="mt-3 rounded-md border bg-muted/30 p-2">
-          <div className="text-xs font-medium text-muted-foreground">
-            Иконки по тексту (Lucide)
-          </div>
-          <ul className="mt-1.5 space-y-1">
-            {blockTexts.map((txt, i) => {
-              const { Icon } = iconForText(txt);
-              return (
-                <li
-                  key={i}
-                  className="flex items-center gap-2 text-xs text-muted-foreground"
-                >
-                  <Icon className="size-4 shrink-0 text-foreground" />
-                  <span className="truncate">{txt}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ) : null}
-
-      <label className="mt-3 block text-xs font-medium text-muted-foreground">
-        Комментарий
-      </label>
-      <textarea
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        rows={3}
-        placeholder="Например: раскидай по карточкам, заголовки убери"
-        className="mt-1 w-full resize-y rounded-md border bg-background px-2 py-1.5 text-sm"
-      />
+      <TargetFields draft={draft} onChange={setDraft} blockTexts={blockTexts} />
 
       <button
         type="button"
