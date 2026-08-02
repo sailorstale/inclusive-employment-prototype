@@ -1247,8 +1247,15 @@ export function buildDoc(
     if (wantsMergeParagraph(g.dir) && commentTail(g.dir)) return out;
     const drop = labelsToDrop(g.dir);
     const produced = signature(out.map(nodeText).join(" "));
+    /*
+      Слово-ярлык, который просили снять («убираем слово „Ситуация"»), раскладка
+      срезает — значит и сверять надо БЕЗ него, иначе страж ругается на каждый
+      заголовок, где ярлык стоял.
+    */
+    const dropLead = leadWordToDrop(g.dir);
     const lost = g.items.filter((it) => {
-      const raw = itemText(it);
+      const raw0 = itemText(it);
+      const raw = dropLead ? stripLeadWord(raw0, dropLead) : raw0;
       if (drop.length && isDroppedLabel(raw, drop)) return false;
       if (isExplainLabel(raw) || isOptionFeedbackLabel(raw)) return false;
       const sig = signature(raw);
