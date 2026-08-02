@@ -267,9 +267,15 @@ export function Quote({
           ) : null}
 
           <span className="flex min-w-0 flex-col">
-            {author ? (
+            {/*
+              Цитата бывает не от человека, а ОТ ОРГАНИЗАЦИИ («ОРБИ, фонд
+              борьбы с инсультом»): в источнике на месте авторства стоит только
+              название фонда. Тогда подписью работает оно — иначе от цитаты
+              остаётся один логотип, и кто это сказал, читателю неоткуда узнать.
+            */}
+            {author || org ? (
               <span className="ds-body-m-bold text-[color:var(--text-primary)]">
-                {author}
+                {author || org}
               </span>
             ) : null}
             {role ? (

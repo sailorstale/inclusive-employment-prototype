@@ -159,7 +159,17 @@ export function Table({ headers, caption, children, className }: TableProps) {
   return (
     <table
       data-component="Table"
-      className={cn("w-full border-collapse", className)}
+      className={cn(
+        /*
+          Внешняя рамка — решение дизайнера: без неё таблица растворялась в
+          тексте, особенно когда колонок две и они читаются как две колонки
+          вёрстки. Внутренняя разлиновка прежняя: горизонтальные линии между
+          строками, вертикальных нет.
+        */
+        "w-full border-collapse overflow-hidden rounded-[var(--radius-m)]",
+        "border border-[color:var(--border-divider)]",
+        className,
+      )}
     >
       {caption && <caption className="sr-only">{caption}</caption>}
       {hasHead && (
