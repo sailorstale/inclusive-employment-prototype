@@ -1001,6 +1001,21 @@ function mergeSiblings(nodes: Node[]): Node[] {
   return out;
 }
 
+/*
+  ЯЧЕЙКА ТАБЛИЦЫ С ПЕРЕЧИСЛЕНИЕМ. В клиентском документе переносы строк внутри
+  ячейки потерялись, и пункты слиплись в одну строку: «…дублировать письменно.•
+  Если обратная связь даётся устно…». Ставим перенос перед каждым пунктом — и
+  превью, и выгрузка дальше показывают их по одному в строке.
+
+  Маркер «•» остаётся в тексте: ячейка в наборе компонентов — лист, положить
+  внутрь настоящий список нечем (см. КОМПОНЕНТЫ.md). Поэтому чиним переносы, а
+  не структуру: так превью и то, что уедет разработчику, остаются одинаковыми.
+*/
+export function cellWithLines(cell: string): string {
+  if (!cell.includes("•")) return cell;
+  return cell.replace(/\s*•\s*/g, "\n• ").replace(/^\s*\n/, "").trim();
+}
+
 export function buildDoc(
   moduleId: string,
   sections: Section[],
@@ -1077,7 +1092,13 @@ export function buildDoc(
           },
         ];
       case "table":
-        return [{ component: "Table", header: b.header, rows: b.rows }];
+        return [
+          {
+            component: "Table",
+            header: b.header,
+            rows: b.rows.map((r) => r.map(cellWithLines)),
+          },
+        ];
       case "image":
         return b.src
           ? [{ component: "Image", src: b.src, alt: b.alt }]

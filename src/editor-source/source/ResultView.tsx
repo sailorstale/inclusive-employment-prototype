@@ -121,6 +121,27 @@ export function ResultView({ doc, pick }: { doc: Doc; pick?: Pick }) {
   узел под курсором (внутренние гасят всплытие). display:contents — обёртка не
   создаёт своего блока, поэтому раскладка не меняется ни на пиксель.
 */
+/*
+  Содержимое ячейки таблицы. Перечисление внутри ячейки приходит одной строкой с
+  маркерами «•»; раскладка расставляет переносы, а здесь каждый пункт становится
+  отдельной строкой с висячим отступом — чтобы перенос длинного пункта не
+  сбивался под маркер. Текст при этом не меняется: превью и выгрузка совпадают.
+*/
+function cellContent(cell: string): React.ReactNode {
+  const lines = cell.split("\n");
+  if (lines.length === 1) return renderInline(cell);
+  return lines.map((line, i) => (
+    <span
+      key={i}
+      className={
+        line.trimStart().startsWith("•") ? "block pl-4 -indent-4" : "block"
+      }
+    >
+      {renderInline(line)}
+    </span>
+  ));
+}
+
 function NodeView({ node, path }: { node: Node; path: string }) {
   const pick = React.useContext(PickContext);
   const inner = <NodeBody node={node} path={path} />;
@@ -295,7 +316,7 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           {node.rows.map((r, ri) => (
             <TableRow key={ri}>
               {r.map((c, ci) => (
-                <TableCell key={ci}>{renderInline(c)}</TableCell>
+                <TableCell key={ci}>{cellContent(c)}</TableCell>
               ))}
             </TableRow>
           ))}
