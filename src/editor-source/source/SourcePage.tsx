@@ -210,6 +210,12 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
   // Сохранённые директивы (все модули; для текущего фильтруем при показе).
   const [directives, setDirectives] = React.useState<Directive[]>([]);
   const [err, setErr] = React.useState<string | null>(null);
+  /*
+    Куда прокрутить плейграунд по клику на директиву в «Разметке». Счётчик нужен,
+    чтобы повторный клик по той же директиве снова сработал: сам ключ блока при
+    этом не меняется, и без счётчика эффект бы не перезапустился.
+  */
+  const [focus, setFocus] = React.useState<{ key: string; n: number } | null>(null);
 
   // Канонический адрес модуля — id правок считаются от него (см. useMdResolver).
   const pathname = `/source/${moduleId ?? ""}`;
@@ -291,7 +297,7 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
     одного повторяющегося блока (шесть «**Почему это важно**») не отбирает
     место у той, которой деваться некуда.
   */
-  const directiveAt = React.useMemo(() => {
+  const placement = React.useMemo(() => {
     const flat: { key: string; id: string }[] = [];
     toSections(blocks ?? []).forEach((sec, si) =>
       sec.blocks.forEach((b, bi) =>
@@ -322,11 +328,17 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
       return out;
     };
 
+    // Обратная сторона раскладки: где легла каждая директива. Нужна, чтобы по
+    // клику в «Разметке» прокрутить плейграунд к её блокам.
+    const keys = new Map<string, string[]>();
     const place = (d: Directive, p: number) => {
+      const mineKeys: string[] = [];
       for (let k = 0; k < d.blocks.length; k++) {
         taken.add(p + k);
         map.set(flat[p + k].key, d);
+        mineKeys.push(flat[p + k].key);
       }
+      keys.set(d.id, mineKeys);
     };
 
     const pending: { d: Directive; at: number[] }[] = [];
@@ -342,8 +354,12 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
       if (free !== undefined) place(d, free);
     }
 
-    return (si: number, bi: number) => map.get(`${si}:${bi}`);
+    return {
+      at: (si: number, bi: number) => map.get(`${si}:${bi}`),
+      keysOf: (id: string) => keys.get(id) ?? [],
+    };
   }, [directives, moduleId, pathname, blocks]);
+  const directiveAt = placement.at;
 
   // Секции и дерево контента считаем ДО ранних return: это хуки.
   const sections = React.useMemo(
@@ -446,6 +462,22 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
     } catch {
       setErr("Не удалось сменить статус директивы — сервер недоступен.");
     }
+  };
+
+  /*
+    Клик по директиве в «Разметке» — переход к её блокам в плейграунде. Заодно
+    это честная проверка: если директива не нашла своё место в источнике (блоки
+    изменились после переверстки — грабли прохода 14), сказать об этом вслух, а
+    не молча никуда не поехать.
+  */
+  const handleGoTo = (id: string) => {
+    const keys = placement.keysOf(id);
+    if (!keys.length) {
+      setErr("Директива не нашла своё место в источнике — блоки изменились.");
+      return;
+    }
+    setErr(null);
+    setFocus((prev) => ({ key: keys[0], n: (prev?.n ?? 0) + 1 }));
   };
 
   /** Точечная правка служебных полей: решение по предложению, выключение. */
@@ -648,6 +680,7 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
           onCreateDirective={() => setRightTab("markup")}
           scrollRef={setPlayBox}
           directiveAt={directiveAt}
+          focus={focus}
           moduleId={moduleId}
           doc={doc}
         />
@@ -678,6 +711,7 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
               directives={moduleDirectives}
               onSaveDraft={handleSaveDraft}
               actions={{
+                onGoTo: handleGoTo,
                 onDelete: handleDelete,
                 onSetStatus: handleSetStatus,
                 onUpdate: handleUpdate,

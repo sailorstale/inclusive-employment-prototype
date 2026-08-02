@@ -10,6 +10,7 @@ import {
   Sparkles,
   ChevronRight,
   ChevronDown,
+  ArrowRight,
   X,
 } from "lucide-react";
 import { TargetFields, type DirectiveDraft } from "./TargetFields";
@@ -30,6 +31,8 @@ import type { Directive } from "@/editor-source/directives";
 */
 
 export type DirectiveActions = {
+  /** Перейти к блокам директивы в плейграунде. */
+  onGoTo: (id: string) => void;
   onDelete: (id: string) => void;
   onSetStatus: (id: string, status: Directive["status"]) => void;
   /** Правка разметки: цель, модификаторы, комментарий. */
@@ -174,11 +177,19 @@ function DirectiveRow({
   return (
     <li className={`rounded-md border bg-card p-2.5 text-sm ${accent}`}>
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        {/* Шапка — кнопка перехода: клик прокручивает плейграунд к блокам этой
+            директивы. Так список перестал быть просто перечнем. */}
+        <button
+          type="button"
+          onClick={() => actions.onGoTo(d.id)}
+          title="Показать блоки в плейграунде"
+          className="group min-w-0 flex-1 rounded px-1 py-0.5 text-left hover:bg-muted/60"
+        >
           <span className="font-medium text-foreground">
             {d.targetLabel ?? "Комментарий"}
           </span>
-          <span className="ml-2 text-xs text-muted-foreground">
+          <ArrowRight className="ml-1 inline size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+          <span className="ml-1 text-xs text-muted-foreground">
             {d.blocks.length} блок(ов) ·{" "}
             {proposal
               ? "предложение"
@@ -188,7 +199,7 @@ function DirectiveRow({
                   ? "выключена"
                   : STATUS_LABEL[d.status]}
           </span>
-        </div>
+        </button>
         <button
           type="button"
           onClick={() => actions.onDelete(d.id)}

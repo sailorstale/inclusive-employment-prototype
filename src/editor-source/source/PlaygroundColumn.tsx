@@ -91,6 +91,9 @@ type Props = {
   scrollRef?: React.Ref<HTMLDivElement>;
   /** Директива блока, если она есть — чтобы пометить блок прямо в теле страницы. */
   directiveAt?: (si: number, bi: number) => Directive | undefined;
+  /** Куда прокрутиться по клику на директиву в «Разметке»; счётчик — чтобы
+      повторный клик по той же директиве снова сработал. */
+  focus?: { key: string; n: number } | null;
   /** Текущий модуль — попадает в выгрузку и в имя файла. */
   moduleId: string;
   /** Дерево контента: считается один раз на странице (SourcePage). */
@@ -104,11 +107,15 @@ export function PlaygroundColumn({
   onCreateDirective,
   scrollRef,
   directiveAt,
+  focus,
   moduleId,
   doc,
 }: Props) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const resolve = useMdResolver();
+  // Блок, к которому только что перешли из «Разметки»: подсвечиваем на пару
+  // секунд, иначе после прокрутки непонятно, куда именно приехали.
+  const [pulse, setPulse] = React.useState<string | null>(null);
 
   // Выбранный компонент в режиме «Результат» — под него ставится пин.
   const [pickedPath, setPickedPath] = React.useState<string | null>(null);
@@ -213,6 +220,35 @@ export function PlaygroundColumn({
     const { top, height } = sectionSpan(els, a.i, box);
     box.scrollTop = top + a.frac * height;
   }, [mode, sectionEls]);
+
+  /*
+    ПЕРЕХОД К ДИРЕКТИВЕ из «Разметки». Блоки видны только в режиме «Блоки»,
+    поэтому сначала переключаем режим, а прокручиваем уже следующим проходом —
+    когда блоки отрисованы. Оба эффекта висят на `focus`, у которого свой
+    счётчик: повторный клик по той же директиве обязан сработать снова.
+  */
+  React.useEffect(() => {
+    if (focus && mode !== "blocks") setMode("blocks");
+    // mode намеренно не в зависимостях: реагируем на клик, а не на смену режима.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
+
+  React.useLayoutEffect(() => {
+    if (!focus || mode !== "blocks") return;
+    const el = contentRef.current?.querySelector<HTMLElement>(
+      `[data-pk="${focus.key}"]`,
+    );
+    if (!el) return;
+    /*
+      Прыжком, без плавной прокрутки: между колонками работает синхронизация
+      скролла, и она обрывает анимацию — плавный переход на 18 тысяч пикселей
+      просто не доезжал. Место приземления показывает подсветка.
+    */
+    el.scrollIntoView({ block: "center" });
+    setPulse(focus.key);
+    const t = setTimeout(() => setPulse(null), 2000);
+    return () => clearTimeout(t);
+  }, [focus, mode]);
 
   // Текущее выделение в ref — чтобы обработчики видели свежее значение.
   const selRef = React.useRef(selected);
@@ -405,6 +441,8 @@ export function PlaygroundColumn({
                         : dir
                           ? "border-brand/30 hover:border-brand/50"
                           : "border-transparent hover:border-border",
+                      // Куда только что перешли из «Разметки».
+                      pulse === key ? "ring-2 ring-brand ring-offset-2" : "",
                     ].join(" ")}
                   >
                     {/* Левый акцент — блок уже размечен директивой; у предложения
