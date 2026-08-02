@@ -1111,8 +1111,10 @@ export function buildDoc(
       .replace(/\]\([^)]*\)/g, " ")
       .replace(/https?:\/\/\S+/gi, " ")
       // Маркер списка — разметка, а не текст: в разборе квиза мы ставим его
-      // сами, и без этого страж считал бы пункты «потерянными».
-      .replace(/[*_`#>[\]()«»"'—–\-.,;:!?•·]/g, " ")
+      // сами, и без этого страж считал бы пункты «потерянными». Кружок «◯» из
+      // вариантов ответа — такой же маркер: без него короткий вариант
+      // («◯ Повторить вопрос громче.») давал ложную тревогу.
+      .replace(/[*_`#>[\]()«»"'—–\-.,;:!?•·◯○●]/g, " ")
       .replace(/\s+/g, " ")
       .trim()
       .toLowerCase();
@@ -2140,6 +2142,118 @@ export function buildDoc(
           строка «Верные: …» в комментарии не нужна. Жирность с текста
           снимается — она была пометкой для нас, а не выделением для читателя.
         */
+        /*
+          ФОРМАТ «КРУЖКИ» (М5.2, М5.3). Самый распространённый вид самопроверки
+          в источнике — 106 вариантов в двух модулях:
+
+            заголовок «Ситуация 1. …»          → название квиза (title);
+            абзацы под ним                      → сценарий, он же вопрос;
+            «**Ваши действия:**»                → служебный ярлык, в результат
+                                                  не идёт (что делать — и так
+                                                  ясно из вариантов);
+            «◯ Написать сотруднику: …»          → вариант ответа, кружок снимаем;
+            «**Обратная связь**»                → дальше общий разбор.
+
+          Отличие от формата «Ситуация» (М4): там вариант помечался ЖИРНЫМ и у
+          каждого был свой разбор. Здесь вариант помечен кружком, а разбор один
+          на квиз — поэтому это отдельная ветка, а не расширение старой.
+
+          Верный вариант в источнике не помечен: он читается только из разбора.
+          Берётся из комментария строкой «Верные: …» — по одному на квиз, по
+          порядку. Номером («Верные: 2, 4, 1») короче: варианты здесь — длинные
+          реплики, копировать их в комментарий неудобно.
+        */
+        const CIRCLE = /^\s*[◯○●]\s*/u;
+        const isCircleOption = (it: Item) =>
+          it.b.kind !== "list" && CIRCLE.test(md(it, fix).trim());
+        const isActionsLabel = (t: string) =>
+          /^[*_\s]*(ваши\s+действия|варианты\s+действий)[*_\s:.]*$/iu.test(t.trim());
+
+        if (items.some(isCircleOption)) {
+          type Opt = NonNullable<Extract<Node, { component: "Quiz" }>["items"]>[number];
+          type Q = { title: string; qParts: string[]; options: Opt[]; expl: string[] };
+          const quizzes: Q[] = [];
+          let cur: Q | null = null;
+          let mode: "question" | "explanation" = "question";
+
+          for (const it of items) {
+            const raw = md(it, fix).trim();
+            if (!raw) continue;
+
+            if (it.b.kind === "heading") {
+              // Заголовок «Обратная связь» тоже бывает — это не новый квиз.
+              if (isFeedbackLabel(raw)) {
+                mode = "explanation";
+                continue;
+              }
+              cur = { title: headingText(raw, fix), qParts: [], options: [], expl: [] };
+              quizzes.push(cur);
+              mode = "question";
+              continue;
+            }
+            // Кружки могут начаться и без заголовка — тогда квиз открывает первый вариант.
+            if (!cur) {
+              cur = { title: "", qParts: [], options: [], expl: [] };
+              quizzes.push(cur);
+              mode = "question";
+            }
+            if (isFeedbackLabel(raw)) {
+              mode = "explanation";
+              continue;
+            }
+            if (isCircleOption(it)) {
+              // Разбор кончился, пошли варианты нового квиза — значит квиз новый.
+              if (mode === "explanation") {
+                cur = { title: "", qParts: [], options: [], expl: [] };
+                quizzes.push(cur);
+                mode = "question";
+              }
+              cur.options.push({ text: stripBold(raw.replace(CIRCLE, "")) });
+              continue;
+            }
+            if (mode === "explanation") cur.expl.push(stripBold(raw));
+            else if (!isActionsLabel(raw)) cur.qParts.push(stripBold(raw));
+          }
+
+          const names = correctNames();
+          const out: Node[] = quizzes
+            .filter((q) => q.options.length)
+            .map((q, i) => {
+              const want = names[i];
+              // «Верные: 2» — номер варианта; иначе имя (целиком или куском).
+              const byNum = want && /^\d+$/.test(want) ? Number(want) : 0;
+              const options = q.options.map((o, k) =>
+                (byNum ? k === byNum - 1 : want && isWanted(o.text, want))
+                  ? { ...o, correct: true }
+                  : o,
+              );
+              return {
+                component: "Quiz" as const,
+                ...(q.title ? { title: q.title } : {}),
+                question: q.qParts.filter(Boolean).join("\n\n"),
+                mode: (options.filter((o) => o.correct).length > 1
+                  ? "multiple"
+                  : "single") as "single" | "multiple",
+                items: options,
+                ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
+              };
+            });
+          const missed = out.filter((_, i) => !names[i]).length;
+          const wantQuiz = quizCount(dir);
+          const notes: Node[] = [];
+          if (wantQuiz && out.length !== wantQuiz)
+            notes.push({
+              component: "note",
+              text: `просили ${wantQuiz} квизов, получилось ${out.length} — проверьте`,
+            });
+          if (missed)
+            notes.push({
+              component: "note",
+              text: `не указан верный вариант у ${missed} квиз(ов) — допишите в комментарий «Верные: …»`,
+            });
+          return [...out, ...notes];
+        }
+
         const isFeedbackHeading = (it: Item) =>
           it.b.kind === "heading" && isFeedbackLabel(md(it, fix));
         if (items.some(isFeedbackHeading)) {

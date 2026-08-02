@@ -1,9 +1,6 @@
 import { promises as fs } from "node:fs";
-import path from "node:path";
-import os from "node:os";
-import { build } from "esbuild";
-import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadModule, snippetOf, parseRange } from "./lib.mjs";
+import { loadTree } from "./tree.mjs";
 
 /*
   ПРОГОН ДО ПРИМЕНЕНИЯ. Собирает настоящее дерево раскладки (contentTree) с
@@ -14,32 +11,6 @@ import { loadModule, snippetOf, parseRange } from "./lib.mjs";
     node tools/directives/preview.mjs specs/m5-3.json          — только предложения
     node tools/directives/preview.mjs specs/m5-3.json --all    — весь модуль
 */
-
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, "..", "..");
-const SRC = path.join(ROOT, "src");
-
-async function loadTree() {
-  const entry = `
-    export { buildDoc } from "@/editor-source/source/contentTree";
-  `;
-  const out = path.join(
-    await fs.mkdtemp(path.join(os.tmpdir(), "directives-tree-")),
-    "tree.mjs",
-  );
-  await build({
-    stdin: { contents: entry, resolveDir: ROOT, loader: "ts" },
-    bundle: true,
-    format: "esm",
-    platform: "node",
-    outfile: out,
-    logLevel: "silent",
-    alias: { "@": SRC },
-    // Стили и картинки дереву не нужны — оно про данные.
-    loader: { ".css": "empty", ".svg": "empty" },
-  });
-  return import(pathToFileURL(out).href);
-}
 
 const [specPath, ...flags] = process.argv.slice(2);
 const all = flags.includes("--all");
@@ -108,7 +79,8 @@ const show = (node, depth) => {
     `${pad}${node.component}${extra ? " ["+extra+"]" : ""}${text ? " · " + String(text).replace(/\s+/g, " ").slice(0, 100) : ""}`,
   );
   for (const c of node.children ?? []) show(c, depth + 1);
-  for (const c of node.items ?? []) show({ component: "Quiz Item", ...c }, depth + 1);
+  for (const c of node.items ?? []) show({ component: c.correct ? "Quiz Item ✔ ВЕРНЫЙ" : "Quiz Item", ...c }, depth + 1);
+  if (node.explanation) console.log(pad + "  разбор · " + node.explanation.replace(/\s+/g," ").slice(0, 90));
 };
 
 for (const sec of doc.children) {
