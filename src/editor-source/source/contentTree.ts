@@ -532,7 +532,15 @@ const capitalizeFirst = (t: string) =>
   внутри предложения оно может быть по делу.
 */
 const leadWordToDrop = (d?: Directive): string | undefined => {
-  const m = /слов\p{L}*\s+[«"']?([^\s,.;:!?»"']+)[»"']?\s+убра/iu.exec(d?.comment || "");
+  const c = d?.comment || "";
+  /*
+    Порядок слов любой: и «слово Суть убрать», и «убираем слово «Ситуация»».
+    Живой комментарий пришёл вторым видом и молча не срабатывал — как обычно,
+    правило знало ровно ту формулировку, на которой его писали.
+  */
+  const m =
+    /слов\p{L}*\s+[«"']?([^\s,.;:!?»"']+)[»"']?\s+убра/iu.exec(c) ??
+    /(?:убра|убир|убер|снят|снима|снима)\p{L}*\s+слов\p{L}*\s+[«"']?([^\s,.;:!?»"']+)/iu.exec(c);
   const w = m?.[1]?.trim();
   return w && w.length >= 2 ? w : undefined;
 };
@@ -2433,9 +2441,17 @@ export function buildDoc(
                   ? { ...o, correct: true }
                   : o,
               );
+              /*
+                «Убираем слово „Ситуация"» — служебный ярлык убирается и из
+                НАЗВАНИЯ квиза, а не только из тела: в источнике «Ситуация 1.
+                Сотрудник не выходит на работу» ярлык нужен был, чтобы отделить
+                кейс от прозы, а в собранном квизе он только шумит.
+              */
+              const drop = leadWordToDrop(dir);
+              const title = drop && q.title ? stripLeadWord(q.title, drop) : q.title;
               return {
                 component: "Quiz" as const,
-                ...(q.title ? { title: q.title } : {}),
+                ...(title ? { title } : {}),
                 question: q.qParts.filter(Boolean).join("\n\n"),
                 mode: (options.filter((o) => o.correct).length > 1
                   ? "multiple"
