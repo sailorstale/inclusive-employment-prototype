@@ -32,7 +32,7 @@ const directives = spec.proposals.map((p, i) => {
     target: p.target ?? null,
     targetLabel: p.targetLabel ?? null,
     modifiers: p.modifiers ?? {},
-    comment: p.comment ?? "",
+    comment: [p.comment, p.why && `Почему: ${p.why}`].filter(Boolean).join("\n"),
     status: "applied",
     review: "proposed",
     origin: "claude",

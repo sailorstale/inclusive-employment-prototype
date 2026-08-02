@@ -441,6 +441,28 @@ const wantsTableToText = (d?: Directive) => {
   Список намеренно перечисляет все правила поимённо: добавили новое — допишите
   сюда, иначе оно будет считаться «непонятым» и давать ложную заметку.
 */
+/*
+  КОММЕНТАРИЙ = ИНСТРУКЦИЯ + необязательное ОБЪЯСНЕНИЕ.
+
+  Объяснение отделяется строкой, которая начинается со слова «Почему», и
+  правилами НЕ читается. Без этой границы рассказ про раскладку сам становился
+  раскладкой: в предложении «…в карточке ей место в заголовке» правило «добавь
+  заголовок X» находило слово «заголовке» и делало заголовком карточки слово
+  «место».
+
+  Граница нужна именно потому, что предложение Claude и комментарий — теперь
+  один текст: дизайнер правит его целиком, и объяснение живёт рядом с
+  инструкцией, а не отдельным полем.
+*/
+// Без \b: в JS это ASCII-граница, и после кириллического «у» её не бывает —
+// «Почему:» не совпадало. Те же грабли, что в проходе 17.
+const WHY_LINE = /^[ \t]*почему/iu;
+export function instructionOf(comment: string): string {
+  const lines = (comment || "").split("\n");
+  const i = lines.findIndex((l) => WHY_LINE.test(l));
+  return (i < 0 ? lines : lines.slice(0, i)).join("\n").trim();
+}
+
 const commentRecognized = (d?: Directive): boolean =>
   wantsDelete(d) ||
   wantsUnlink(d) ||
@@ -984,9 +1006,25 @@ export function buildDoc(
   sections: Section[],
   resolve: ResolveMd,
   logoIndex: LogoEntry[],
-  directiveAt?: (si: number, bi: number) => Directive | undefined,
+  directiveAtRaw?: (si: number, bi: number) => Directive | undefined,
   avatarIndex: AvatarEntry[] = [],
 ): Doc {
+  /*
+    Единственная точка, где комментарий попадает в раскладку, — здесь. Срезаем
+    объяснение («Почему: …») один раз на входе, чтобы каждое из трёх десятков
+    правил не думало об этом само.
+  */
+  const trimmed = new WeakMap<Directive, Directive>();
+  const directiveAt = (si: number, bi: number): Directive | undefined => {
+    const d = directiveAtRaw?.(si, bi);
+    if (!d) return undefined;
+    const seen = trimmed.get(d);
+    if (seen) return seen;
+    const cut: Directive = { ...d, comment: instructionOf(d.comment) };
+    trimmed.set(d, cut);
+    return cut;
+  };
+
   /** Актуальная разметка блока (с учётом правок) + чистки из комментария. */
   const md = (it: Item, fix: TextFix = NO_FIX): string => {
     const b = it.b;
@@ -1125,10 +1163,15 @@ export function buildDoc(
       Комментарий, в котором ни одно правило ничего не узнало, — не «пожелание
       в воздух»: дизайнер его написал и ждёт результата. Показываем прямо в
       превью, иначе просьба исчезает бесследно (так и случилось с таблицей).
+
+      Исключение — комментарий ПРЕДЛОЖЕНИЯ (его написал Claude). Там текст
+      объясняет, что директива уже делает, и ждать от него исполнения нечего.
+      Как только дизайнер правит комментарий, авторство переходит к нему
+      (origin: "designer") и страховка включается обратно.
     */
     const comment = (g.dir?.comment || "").trim();
     const out: Node[] =
-      comment && !commentRecognized(g.dir)
+      comment && g.dir?.origin !== "claude" && !commentRecognized(g.dir)
         ? [
             ...base,
             {

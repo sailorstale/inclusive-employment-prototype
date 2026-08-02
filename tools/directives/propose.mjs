@@ -11,7 +11,13 @@ import { loadModule, snippetOf, parseRange } from "./lib.mjs";
     node tools/directives/propose.mjs specs/m5-3.json         — залить
 
   Спека: { "module": "m5-3", "proposals": [ { "blocks": "15-18",
-  "target": "Compare", "modifiers": {}, "comment": "…" } ] }
+  "target": "Accordion", "modifiers": {}, "comment": "инструкция",
+  "why": "объяснение" } ] }
+
+  comment и why склеиваются в ОДИН комментарий директивы: сначала инструкция,
+  под ней строка «Почему: …». Это и есть предложение — дизайнер правит его
+  целиком. Всё от «Почему» и ниже раскладка не читает: иначе рассказ про
+  заголовки сам становится заголовком.
 
   Блоки директивы обязаны идти ПОДРЯД: раскладка ищет непрерывный участок
   документа, совпадающий со списком её блоков (см. directiveAt в SourcePage).
@@ -89,8 +95,7 @@ for (const [i, p] of spec.proposals.entries()) {
     target: p.target ?? null,
     targetLabel: p.targetLabel ?? null,
     modifiers: p.modifiers ?? {},
-    comment: p.comment ?? "",
-    note: p.why ?? "",
+    comment: [p.comment, p.why && `Почему: ${p.why}`].filter(Boolean).join("\n"),
     origin: "claude",
     review: "proposed",
   });

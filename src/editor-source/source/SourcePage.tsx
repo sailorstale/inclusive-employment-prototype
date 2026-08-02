@@ -510,6 +510,13 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
         targetLabel: draft.targetLabel,
         modifiers: draft.modifiers,
         comment: draft.comment,
+        /*
+          Правя комментарий предложения, дизайнер забирает его себе: дальше это
+          его слова, и страховка «комментарий не разобран» включается обратно.
+        */
+        ...(d.origin === "claude" && draft.comment !== (d.comment ?? "")
+          ? { origin: "designer" as const }
+          : {}),
       });
       setDirectives((prev) => prev.map((x) => (x.id === id ? saved : x)));
       setErr(null);

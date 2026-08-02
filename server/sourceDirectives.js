@@ -26,7 +26,6 @@ export function upsert(id, patch) {
       // не должна стирать «кто завёл», решение по предложению и выключение.
       origin: patch.origin ?? prev?.origin,
       review: patch.review ?? prev?.review,
-      note: patch.note ?? prev?.note,
       off: typeof patch.off === "boolean" ? patch.off : prev?.off,
       createdAt: prev?.createdAt ?? now,
       updatedAt: now,

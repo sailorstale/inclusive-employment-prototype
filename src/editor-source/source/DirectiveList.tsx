@@ -229,13 +229,6 @@ function DirectiveRow({
         </div>
       )}
 
-      {/* Зачем предложено — словами для дизайнера. В раскладку не идёт. */}
-      {d.note && (
-        <div className="mt-1.5 rounded-md bg-muted/50 px-2 py-1.5 text-xs text-muted-foreground">
-          {d.note}
-        </div>
-      )}
-
       {editing ? (
         <EditForm
           d={d}
@@ -245,15 +238,25 @@ function DirectiveRow({
         />
       ) : (
         <>
-          {d.comment ? (
-            <div className="mt-1 whitespace-pre-line text-sm text-foreground/80">
-              {d.comment}
-            </div>
-          ) : (
-            <div className="mt-1 text-sm text-muted-foreground">
-              без комментария
-            </div>
-          )}
+          {/* Комментарий — главный текст директивы и единственное место, где
+              живёт замысел. У предложения его пишет Claude, дизайнер правит
+              прямо здесь: клик открывает ту же форму, что кнопка «Изменить». */}
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            title="Изменить комментарий"
+            className="mt-1 block w-full rounded px-1 py-0.5 text-left hover:bg-muted/60"
+          >
+            {d.comment ? (
+              <span className="whitespace-pre-line text-sm text-foreground/80">
+                {d.comment}
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                + комментарий
+              </span>
+            )}
+          </button>
 
           {/* Состав директивы — какие именно блоки она забрала. Свёрнут: у
               больших директив это десятки строк. */}
