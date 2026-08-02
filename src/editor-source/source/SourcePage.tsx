@@ -12,10 +12,10 @@ import {
 } from "@/editor-source/source/PlaygroundColumn";
 import {
   useMdResolver,
-  blockRefId,
   blockSnippet,
   iconTextOf,
 } from "@/editor-source/source/blockResolve";
+import { blockRefId, toSections } from "@/editor-source/source/blockId";
 import { iconForText } from "@/editor-source/source/iconForText";
 import { docToExport } from "@/editor-source/source/contentTree";
 import { normalizeSourceBlocks } from "@/editor-source/source/normalizeBlocks";
@@ -31,9 +31,11 @@ import {
   saveDirective,
   deleteDirective,
   setDirectiveStatus,
+  patchDirective,
   newId,
   type Directive,
   type DirectiveBlock,
+  type DirectivePatch,
 } from "@/editor-source/directives";
 import {
   sourceModulesMeta,
@@ -158,21 +160,8 @@ function BlockView({ block }: { block: SourceBlock }) {
 
 // Разбивка на секции по h2 — каждая получает id-якорь и AnchorScope (адрес
 // блока учитывает раздел: одинаковый текст в разных разделах не путается).
-type Section = { anchor?: string; blocks: SourceBlock[] };
-function toSections(blocks: SourceBlock[]): Section[] {
-  const sections: Section[] = [];
-  let cur: Section = { blocks: [] };
-  for (const b of blocks) {
-    if (b.kind === "heading" && b.level === 2) {
-      if (cur.blocks.length) sections.push(cur);
-      cur = { anchor: b.anchor, blocks: [b] };
-    } else {
-      cur.blocks.push(b);
-    }
-  }
-  if (cur.blocks.length) sections.push(cur);
-  return sections;
-}
+// Сама разбивка — в blockId.ts, рядом с адресами: оффлайн-утилита разметки
+// обязана резать модуль ровно так же, иначе якоря в id разъедутся.
 
 /** Ссылка на редактируемый оригинал в Google — по docId модуля. */
 const docEditUrl = (docId: string) =>
@@ -310,7 +299,11 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
       ),
     );
 
-    const mine = directives.filter((d) => d.module === moduleId && d.blocks.length);
+    // Отклонённое предложение места не занимает — иначе оно молча держало бы
+    // блоки, а раскладки на них не было бы (грабли прохода 14).
+    const mine = directives.filter(
+      (d) => d.module === moduleId && d.blocks.length && d.review !== "rejected",
+    );
     const taken = new Set<number>();
     const map = new Map<string, Directive>();
 
@@ -386,6 +379,9 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
   }
 
   const moduleDirectives = directives.filter((d) => d.module === moduleId);
+  // Предложения работают в раскладке ДО решения — иначе их нечем проверить.
+  // Значит они попадают и в выгрузку, и об этом надо сказать вслух.
+  const pending = moduleDirectives.filter((d) => d.review === "proposed").length;
 
   // Собрать ссылки на выделенные блоки (стабильный id + тип + подпись). Текст в
   // директиве не хранится — только id-ссылки, снипет лишь для показа.
@@ -452,25 +448,89 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
     }
   };
 
-  // Комментарий можно дописывать и после сохранения — директива уточняется,
-  // остальные поля (блоки, цель, модификаторы, статус) остаются как были.
-  const handleEditComment = async (id: string, comment: string) => {
+  /** Точечная правка служебных полей: решение по предложению, выключение. */
+  const patchOne = async (id: string, patch: DirectivePatch, what: string) => {
+    try {
+      const saved = await patchDirective(id, patch);
+      if (saved)
+        setDirectives((prev) => prev.map((x) => (x.id === id ? saved : x)));
+      setErr(null);
+    } catch {
+      setErr(`Не удалось ${what} — сервер недоступен.`);
+    }
+  };
+
+  /*
+    Полная правка директивы: цель, модификаторы, комментарий. Блоки остаются
+    свои, но иконки пересчитываются: «General Card с иконкой» подбирает их по
+    тексту блока, и при смене цели старые иконки были бы от прошлой разметки.
+  */
+  const handleUpdate = async (id: string, draft: DirectiveDraft) => {
     const d = directives.find((x) => x.id === id);
     if (!d) return;
+    const withIcon = draft.target === "GeneralCard" && Boolean(draft.modifiers.icon);
     try {
       const saved = await saveDirective({
         id: d.id,
         module: d.module,
-        blocks: d.blocks,
-        target: d.target,
-        targetLabel: d.targetLabel,
-        modifiers: d.modifiers,
-        comment,
+        blocks: reIcon(d.blocks, withIcon),
+        target: draft.target,
+        targetLabel: draft.targetLabel,
+        modifiers: draft.modifiers,
+        comment: draft.comment,
       });
       setDirectives((prev) => prev.map((x) => (x.id === id ? saved : x)));
       setErr(null);
     } catch {
-      setErr("Не удалось сохранить комментарий — сервер недоступен.");
+      setErr("Не удалось сохранить директиву — сервер недоступен.");
+    }
+  };
+
+  /** Иконки блоков по текущей разметке: включена иконка — подбираем, нет — снимаем. */
+  const reIcon = (blocks: DirectiveBlock[], withIcon: boolean): DirectiveBlock[] => {
+    if (!withIcon) return blocks.map(({ icon: _icon, ...rest }) => rest);
+    const byId = new Map<string, { b: SourceBlock; anchor?: string }>();
+    sections.forEach((sec) =>
+      sec.blocks.forEach((b) =>
+        byId.set(blockRefId(b, pathname, sec.anchor), { b, anchor: sec.anchor }),
+      ),
+    );
+    return blocks.map((ref) => {
+      const found = byId.get(ref.id);
+      if (!found) return ref; // блок не нашёлся в источнике — иконку не трогаем
+      return {
+        ...ref,
+        icon: iconForText(iconTextOf(found.b, found.anchor, resolve)).name,
+      };
+    });
+  };
+
+  /*
+    Заменить блоки директивы текущим выделением. Так правится состав, не теряя
+    саму директиву: раньше «не те блоки» лечились только удалением и заводом
+    заново, вместе с историей и статусом.
+  */
+  const handleReplaceBlocks = async (id: string) => {
+    const d = directives.find((x) => x.id === id);
+    if (!d) return;
+    const withIcon = d.target === "GeneralCard" && Boolean(d.modifiers.icon);
+    const blocksRef = buildBlocks(withIcon);
+    if (blocksRef.length === 0) return;
+    try {
+      const saved = await saveDirective({
+        id: d.id,
+        module: d.module,
+        blocks: blocksRef,
+        target: d.target,
+        targetLabel: d.targetLabel,
+        modifiers: d.modifiers,
+        comment: d.comment,
+      });
+      setDirectives((prev) => prev.map((x) => (x.id === id ? saved : x)));
+      setSelected(new Set());
+      setErr(null);
+    } catch {
+      setErr("Не удалось заменить блоки директивы — сервер недоступен.");
     }
   };
 
@@ -550,7 +610,15 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
             {blocks === null ? (
               <p className="text-muted-foreground">Загрузка модуля…</p>
             ) : leftTab === "json" ? (
-              <JsonView doc={doc} />
+              <>
+                {pending > 0 && (
+                  <div className="mb-3 rounded-md border border-[hsl(var(--warn))] bg-[hsl(var(--warn)/0.1)] px-3 py-2 text-xs text-foreground">
+                    В этой выгрузке {pending} непринятых предложений — примите или
+                    отклоните их во вкладке «Разметка».
+                  </div>
+                )}
+                <JsonView doc={doc} />
+              </>
             ) : (
               sections.map((sec, i) => (
                 <section
@@ -609,9 +677,16 @@ export function SourcePage({ moduleId: moduleIdProp }: { moduleId?: string } = {
               selected={selected}
               directives={moduleDirectives}
               onSaveDraft={handleSaveDraft}
-              onDelete={handleDelete}
-              onSetStatus={handleSetStatus}
-              onEditComment={handleEditComment}
+              actions={{
+                onDelete: handleDelete,
+                onSetStatus: handleSetStatus,
+                onUpdate: handleUpdate,
+                onReplaceBlocks: handleReplaceBlocks,
+                onReview: (id, review) =>
+                  patchOne(id, { review }, "сохранить решение"),
+                onToggleOff: (id, off) =>
+                  patchOne(id, { off }, off ? "выключить директиву" : "включить директиву"),
+              }}
             />
           )}
         </div>

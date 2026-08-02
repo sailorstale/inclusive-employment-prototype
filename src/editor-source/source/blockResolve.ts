@@ -49,35 +49,22 @@ export function useMdResolver(pathnameOverride?: string): ResolveMd {
   return React.useCallback(makeMdResolver(edits, pathname), [edits, pathname]);
 }
 
-// Тип блока в адресе (id): как в Editable — цитата адресуется как paragraph.
-export function blockType(b: SourceBlock): string {
-  return b.kind === "heading" ? `h${b.level}` : "paragraph";
-}
+/** Подпись типа блока — общая для плейграунда и панели «Разметка». */
+export const KIND_LABEL: Record<SourceBlock["kind"], string> = {
+  heading: "Заголовок",
+  paragraph: "Абзац",
+  quote: "Цитата",
+  list: "Список",
+  table: "Таблица",
+  image: "Картинка",
+};
 
 /*
-  Стабильный id блока для директив — на него ссылается директива, чтобы «Применить»
-  находило блок по содержимому, а не по позиции. Для текстовых блоков совпадает с
-  адресом редактора (autoId), для списков/таблиц/картинок — контент-хэш их данных.
+  Адреса блоков живут в blockId.ts — чистом модуле без React, чтобы те же id
+  считала и оффлайн-утилита разметки. Здесь только пере-экспорт: для страницы
+  «Редактура источника» это по-прежнему один вход.
 */
-export function blockRefId(
-  b: SourceBlock,
-  pathname: string,
-  anchor?: string,
-): string {
-  switch (b.kind) {
-    case "heading":
-      return autoId(pathname, `h${b.level}`, b.text, anchor);
-    case "paragraph":
-    case "quote":
-      return autoId(pathname, "paragraph", b.text, anchor);
-    case "list":
-      return autoId(pathname, "list", b.items.map((i) => i.text).join(" ¶ "), anchor);
-    case "table":
-      return autoId(pathname, "table", [...b.header, ...b.rows.flat()].join(" | "), anchor);
-    case "image":
-      return autoId(pathname, "image", b.src, anchor);
-  }
-}
+export { blockType, blockRefId } from "./blockId";
 
 /** Полный текст блока (с учётом правок) — для подбора иконки по смыслу. */
 export function iconTextOf(

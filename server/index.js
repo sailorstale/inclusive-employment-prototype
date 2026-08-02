@@ -182,12 +182,36 @@ sourceApi.delete("/directives/:id", async (req, res) => {
   await sourceDirectives.remove(req.params.id);
   res.json({ ok: true });
 });
-sourceApi.patch("/directives/:id/status", async (req, res) => {
-  const status = req.body?.status;
-  if (!["new", "applied", "verified"].includes(status)) {
-    return res.status(400).json({ error: "status: new|applied|verified" });
+/*
+  Точечная правка директивы: статус переноса, решение по предложению Claude,
+  выключение. Пустое или незнакомое тело отбиваем — иначе «правка» молча
+  ничего не меняла бы, а клиент считал бы её успешной.
+*/
+sourceApi.patch("/directives/:id", async (req, res) => {
+  const body = req.body || {};
+  const fields = {};
+  if (body.status !== undefined) {
+    if (!["new", "applied", "verified"].includes(body.status)) {
+      return res.status(400).json({ error: "status: new|applied|verified" });
+    }
+    fields.status = body.status;
   }
-  const rec = await sourceDirectives.setStatus(req.params.id, status);
+  if (body.review !== undefined) {
+    if (!["proposed", "accepted", "rejected"].includes(body.review)) {
+      return res.status(400).json({ error: "review: proposed|accepted|rejected" });
+    }
+    fields.review = body.review;
+  }
+  if (body.off !== undefined) {
+    if (typeof body.off !== "boolean") {
+      return res.status(400).json({ error: "off: true|false" });
+    }
+    fields.off = body.off;
+  }
+  if (Object.keys(fields).length === 0) {
+    return res.status(400).json({ error: "нечего менять: status|review|off" });
+  }
+  const rec = await sourceDirectives.patch(req.params.id, fields);
   if (!rec) return res.status(404).json({ error: "не найдено" });
   res.json(rec);
 });

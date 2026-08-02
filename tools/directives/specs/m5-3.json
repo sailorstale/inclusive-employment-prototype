@@ -1,0 +1,75 @@
+{
+  "module": "m5-3",
+  "proposals": [
+    {
+      "blocks": "3-4",
+      "target": "PageSummary",
+      "targetLabel": "Page Summary — вступление",
+      "comment": "",
+      "why": "Начало шага 5: «В этом разделе вы узнаете» + список — это ровно то, для чего сделан Page Summary (зелёная карточка-анонс в начале страницы)."
+    },
+    {
+      "blocks": "56-57",
+      "target": "GeneralCard",
+      "targetLabel": "General Card",
+      "modifiers": {
+        "orient": "Vertical",
+        "bg": "blue",
+        "icon": false,
+        "step": false
+      },
+      "comment": "без двоеточия",
+      "why": "Договорённости с НКО — короткий чек-лист внутри длинной прозы. В карточке его видно, в сплошном тексте он теряется. Заголовком станет жирная строка над списком."
+    },
+    {
+      "blocks": "190-191",
+      "target": "GeneralCard",
+      "targetLabel": "General Card",
+      "modifiers": {
+        "orient": "Vertical",
+        "bg": "blue",
+        "icon": false,
+        "step": false
+      },
+      "comment": "Добавь заголовок Главное",
+      "why": "Итог шага 5: пять пунктов, ради которых читали раздел. Заголовка в источнике нет — предлагаю «Главное»."
+    },
+    {
+      "blocks": "212-213",
+      "target": "PageSummary",
+      "targetLabel": "Page Summary — вступление",
+      "comment": "",
+      "why": "То же начало, но у шага 6."
+    },
+    {
+      "blocks": "224-225",
+      "target": "GeneralCard",
+      "targetLabel": "General Card",
+      "modifiers": {
+        "orient": "Vertical",
+        "bg": "blue",
+        "icon": false,
+        "step": false
+      },
+      "comment": "Добавь заголовок Затраты, удалить Затраты",
+      "why": "«Затраты:» — это подпись, а не абзац: в карточке ей место в заголовке. Дальше в разделе таких блоков ещё несколько — если приём подойдёт, размечу так же."
+    },
+    {
+      "blocks": "315",
+      "target": "List",
+      "targetLabel": "Список",
+      "modifiers": {
+        "marker": "Icon"
+      },
+      "comment": "вместо галочки иконка ссылки",
+      "why": "Шесть телеграм-каналов ссылками. Галочка тут ни при чём — по смыслу это переходы наружу."
+    },
+    {
+      "blocks": "319",
+      "target": "Video",
+      "targetLabel": "Video",
+      "comment": "",
+      "why": "На месте пометки «ВИДЕО» — ролик с напутствием авторов, о нём говорит абзац выше."
+    }
+  ]
+}

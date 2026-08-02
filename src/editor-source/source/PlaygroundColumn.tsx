@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Trash2, Check, Eye, Undo2 } from "lucide-react";
 import "@/figma/tokens.css";
 import { renderInline } from "@/editor-source/richText";
 import { DirectiveCard, type DirectiveDraft } from "./DirectiveCard";
@@ -7,13 +6,14 @@ import { ResultView } from "./ResultView";
 import { PinLayer } from "@/editor-source/pins";
 import { nodeLabelOf } from "./nodeLabel";
 import type { Doc } from "./contentTree";
-import { iconByName } from "./iconForText";
 import {
   useMdResolver,
   blockType,
   iconTextOf,
+  KIND_LABEL,
   type ResolveMd,
 } from "./blockResolve";
+import { DirectiveList, type DirectiveActions } from "./DirectiveList";
 import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 
@@ -31,15 +31,6 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 */
 
 export type Section = { anchor?: string; blocks: SourceBlock[] };
-
-const KIND_LABEL: Record<SourceBlock["kind"], string> = {
-  heading: "Заголовок",
-  paragraph: "Абзац",
-  quote: "Цитата",
-  list: "Список",
-  table: "Таблица",
-  image: "Картинка",
-};
 
 // Где помним выбранный режим плейграунда между перезагрузками.
 const MODE_KEY = "inclusion-source-playground-mode";
@@ -416,11 +407,17 @@ export function PlaygroundColumn({
                           : "border-transparent hover:border-border",
                     ].join(" ")}
                   >
-                    {/* Левый акцент — блок уже размечен директивой. */}
+                    {/* Левый акцент — блок уже размечен директивой; у предложения
+                        Claude он другого цвета: видно, что решение ещё не принято. */}
                     {dir && (
                       <span
                         aria-hidden
-                        className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-brand/70"
+                        className={[
+                          "pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md",
+                          dir.review === "proposed"
+                            ? "bg-[hsl(var(--warn))]"
+                            : "bg-brand/70",
+                        ].join(" ")}
                       />
                     )}
                     {/* Шильдик — справа, поверх контента; тип блока + модификатор. */}
@@ -436,7 +433,11 @@ export function PlaygroundColumn({
                           → {dir.targetLabel ?? "директива"}
                         </span>
                         <span className="text-[10px] text-muted-foreground">
-                          {STATUS_LABEL[dir.status]}
+                          {dir.review === "proposed"
+                            ? "предложение"
+                            : dir.off
+                              ? "выключена"
+                              : STATUS_LABEL[dir.status]}
                         </span>
                       </div>
                     )}
@@ -510,17 +511,14 @@ export function MarkupPanel({
   selected,
   directives,
   onSaveDraft,
-  onDelete,
-  onSetStatus,
-  onEditComment,
+  actions,
 }: {
   sections: Section[];
   selected: Set<string>;
   directives: Directive[];
   onSaveDraft: (draft: DirectiveDraft) => void;
-  onDelete: (id: string) => void;
-  onSetStatus: (id: string, status: Directive["status"]) => void;
-  onEditComment: (id: string, comment: string) => void;
+  /** Работа с уже сохранёнными директивами — правка, статусы, приёмка. */
+  actions: DirectiveActions;
 }) {
   const resolve = useMdResolver();
   const picked: { block: SourceBlock; anchor?: string }[] = [];
@@ -579,22 +577,11 @@ export function MarkupPanel({
       )}
 
       {directives.length > 0 && (
-        <div>
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Сохранённые директивы · {directives.length}
-          </div>
-          <ul className="mt-2 space-y-2">
-            {directives.map((d) => (
-              <DirectiveRow
-                key={d.id}
-                d={d}
-                onDelete={onDelete}
-                onSetStatus={onSetStatus}
-                onEditComment={onEditComment}
-              />
-            ))}
-          </ul>
-        </div>
+        <DirectiveList
+          directives={directives}
+          selectedCount={picked.length}
+          actions={actions}
+        />
       )}
     </div>
   );
@@ -605,153 +592,6 @@ const STATUS_LABEL: Record<Directive["status"], string> = {
   applied: "применена",
   verified: "проверена",
 };
-
-// Шаг статуса назад — на случай ошибочного клика (панель — единственная поверхность).
-const PREV_STATUS: Record<Directive["status"], Directive["status"] | null> = {
-  new: null,
-  applied: "new",
-  verified: "applied",
-};
-
-function DirectiveRow({
-  d,
-  onDelete,
-  onSetStatus,
-  onEditComment,
-}: {
-  d: Directive;
-  onDelete: (id: string) => void;
-  onSetStatus: (id: string, status: Directive["status"]) => void;
-  onEditComment: (id: string, comment: string) => void;
-}) {
-  const prev = PREV_STATUS[d.status];
-  // Комментарий можно дописывать и после сохранения — директива живёт и уточняется.
-  const [editing, setEditing] = React.useState(false);
-  const [draft, setDraft] = React.useState(d.comment || "");
-  const mods = Object.entries(d.modifiers)
-    .filter(([, v]) => v !== false && v !== "" && v != null)
-    .map(([k, v]) => (v === true ? k : `${k}: ${v}`))
-    .join(" · ");
-
-  return (
-    <li className="rounded-md border bg-card p-2.5 text-sm">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <span className="font-medium text-foreground">
-            {d.targetLabel ?? "Комментарий"}
-          </span>
-          <span className="ml-2 text-xs text-muted-foreground">
-            {d.blocks.length} блок(ов) · {STATUS_LABEL[d.status]}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => onDelete(d.id)}
-          aria-label="Удалить директиву"
-          className="shrink-0 text-muted-foreground hover:text-[hsl(var(--bad))]"
-        >
-          <Trash2 className="size-4" />
-        </button>
-      </div>
-      {mods && <div className="mt-0.5 text-xs text-muted-foreground">{mods}</div>}
-      {d.blocks.some((b) => b.icon) && (
-        <div className="mt-1 flex flex-wrap gap-1.5">
-          {d.blocks
-            .filter((b) => b.icon)
-            .map((b, i) => {
-              const Icon = iconByName(b.icon);
-              return (
-                <Icon
-                  key={i}
-                  className="size-4 text-muted-foreground"
-                  aria-label={b.snippet}
-                />
-              );
-            })}
-        </div>
-      )}
-      {editing ? (
-        <div className="mt-1">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            rows={3}
-            autoFocus
-            placeholder="Что уточнить в этой директиве"
-            className="w-full resize-y rounded-md border bg-background px-2 py-1.5 text-sm"
-          />
-          <div className="mt-1 flex gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                onEditComment(d.id, draft.trim());
-                setEditing(false);
-              }}
-              className="rounded-md bg-brand px-2 py-1 text-xs font-medium text-brand-foreground hover:bg-brand/90"
-            >
-              Сохранить
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDraft(d.comment || "");
-                setEditing(false);
-              }}
-              className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
-            >
-              Отмена
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="mt-1 block w-full rounded px-1 py-0.5 text-left text-sm hover:bg-muted/60"
-        >
-          {d.comment ? (
-            <span className="text-foreground/80">{d.comment}</span>
-          ) : (
-            <span className="text-muted-foreground">+ комментарий</span>
-          )}
-        </button>
-      )}
-
-      {/* Статус: новая → применена → проверена. Разработчик отмечает по мере
-          переноса в конструктор; шаг назад — на случай ошибки. */}
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        {d.status === "new" && (
-          <button
-            type="button"
-            onClick={() => onSetStatus(d.id, "applied")}
-            className="inline-flex items-center gap-1 rounded-md bg-brand px-2 py-1 text-xs font-medium text-brand-foreground hover:bg-brand/90"
-          >
-            <Check className="size-3.5" /> Применена
-          </button>
-        )}
-        {d.status === "applied" && (
-          <button
-            type="button"
-            onClick={() => onSetStatus(d.id, "verified")}
-            className="inline-flex items-center gap-1 rounded-md border border-brand/40 px-2 py-1 text-xs font-medium text-brand hover:bg-brand/10"
-          >
-            <Eye className="size-3.5" /> Проверена
-          </button>
-        )}
-        {prev && (
-          <button
-            type="button"
-            onClick={() => onSetStatus(d.id, prev)}
-            aria-label="Вернуть статус на шаг назад"
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <Undo2 className="size-3.5" /> вернуть
-          </button>
-        )}
-      </div>
-    </li>
-  );
-}
 
 /*
   Компактный предпросмотр блока — теми же типографскими стилями DS, что у наших
