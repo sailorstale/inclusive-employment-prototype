@@ -169,7 +169,7 @@ export function SiteInspector({
             type="button"
             onClick={() => setMarkupOpen((v) => !v)}
             className={cn(
-              "rounded-md border px-3 py-1 text-sm font-medium transition-colors",
+              "ml-auto rounded-md border px-3 py-1 text-sm font-medium transition-colors",
               markupOpen
                 ? "border-transparent bg-primary text-primary-foreground"
                 : "bg-background text-foreground/80 hover:text-foreground",
@@ -538,10 +538,10 @@ function SiteMode({
     <div
       className={cn(
         "grid h-full min-h-0 divide-x",
-        /* С открытой разметкой колонка сверки ужимается: сейчас работают с
-           самой страницей, а не с источником построчно. */
+        /* Колонка сверки сохраняет свою ширину: панель разметки прибавляется
+           справа, а не отъедает у источника. */
         markupOpen
-          ? "grid-cols-[minmax(0,19rem)_minmax(0,1fr)_21rem]"
+          ? "grid-cols-[minmax(0,40rem)_minmax(0,1fr)_21rem]"
           : "grid-cols-[minmax(0,40rem)_minmax(0,1fr)]",
       )}
     >
