@@ -37,7 +37,7 @@ export type HeadingLevel = "H2" | "H3" | "H4" | "H5";
 export type TextSize = "XL" | "L" | "M" | "S";
 export type PhraseSize = "L" | "M";
 
-export type Node =
+type NodeKind =
   /*
     anchor — якорь заголовка, уникальный в пределах страницы: по нему
     разработчик вешает id и скроллит оглавление. У H2, открывающего секцию,
@@ -141,11 +141,23 @@ export type Node =
   /** Пометка инструмента для редактора. В выгрузку не попадает. */
   | { component: "note"; text: string };
 
+/*
+  ОТКУДА УЗЕЛ ВЗЯЛСЯ — адреса блоков источника («секция:блок»), из которых он
+  собран. Нужно, чтобы разметку можно было заводить прямо на сайте: дизайнер
+  кликает по компоненту, а директива всё равно ложится на блоки источника —
+  раскладка умеет только их.
+
+  Поле служебное: в выгрузку разработчику не едет (см. toExport).
+*/
+type Origin = { at?: string[] };
+
+export type Node = NodeKind & Origin;
+
 export type SectionNode = {
   component: "Section Container";
   anchor?: string;
   children: Node[];
-};
+} & Origin;
 
 export type Doc = {
   module: string;
@@ -157,7 +169,8 @@ export type Doc = {
   children: (SectionNode | Node)[];
 };
 
-type Item = { b: SourceBlock; anchor?: string };
+/** at — адрес блока в модуле («секция:блок»), нужен разметке с сайта. */
+type Item = { b: SourceBlock; anchor?: string; at?: string };
 type Group = { dir?: Directive; items: Item[] };
 
 /*
@@ -860,7 +873,7 @@ function groupsOfDoc(
     sec.blocks.forEach((b, bi) => {
       const d = directiveAt?.(si, bi);
       const active = isActive(d) ? d : undefined;
-      const item = { b, anchor: sec.anchor };
+      const item = { b, anchor: sec.anchor, at: `${si}:${bi}` };
       if (active && cur?.dir?.id === active.id) {
         cur.items.push(item);
       } else {
@@ -1231,8 +1244,19 @@ export function buildDoc(
       .trim()
       .toLowerCase();
 
+  /*
+    Адреса блоков группы вешаем на её узлы: по ним сайт понимает, на какие
+    блоки источника ложится директива, заведённая кликом по компоненту.
+    Группа без директивы — это ровно один блок, поэтому адрес получается
+    точным, а не «куда-то в этот абзац».
+  */
+  const stamp = (nodes: Node[], g: Group): Node[] => {
+    const at = g.items.map((it) => it.at).filter((x): x is string => Boolean(x));
+    return at.length ? nodes.map((n) => ({ ...n, at })) : nodes;
+  };
+
   const guarded = (g: Group): Node[] => {
-    const base = groupNodes(g);
+    const base = stamp(groupNodes(g), g);
     /*
       Комментарий, в котором ни одно правило ничего не узнало, — не «пожелание
       в воздух»: дизайнер его написал и ждёт результата. Показываем прямо в
@@ -3347,8 +3371,9 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
     const out: Record<string, unknown> = {};
     for (const [rawKey, v] of Object.entries(n)) {
       const k = rename[rawKey] ?? rawKey;
-      // Пометка склейки — служебная: она уже сделала своё дело в дереве.
-      if (k === "join") continue;
+      // Служебные пометки инструмента: склейка конвертов и адрес блоков
+      // источника. В дереве они нужны, разработчику — нет.
+      if (k === "join" || k === "at") continue;
       if (v === undefined || v === null || v === false) continue;
       if (Array.isArray(v) && v.length === 0) continue;
       if (typeof v === "string" && !v.trim()) continue;
