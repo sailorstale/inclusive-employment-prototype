@@ -55,7 +55,16 @@ export type Node =
       icon?: string;
       text: string;
     }
-  | { component: "Block"; orientation: "Vertical" | "Horizontal"; children: Node[] }
+  | {
+      component: "Block";
+      orientation: "Vertical" | "Horizontal";
+      /*
+        Служебная пометка инструмента, в выгрузку не едет: «этот конверт можно
+        склеить с соседним, даже если роли (фоны) у карточек разные».
+      */
+      join?: boolean;
+      children: Node[];
+    }
   | { component: "Page Summary"; children: Node[] }
   | {
       /*
@@ -894,6 +903,19 @@ function needsCard(g: Group): boolean {
   return k === "table" || k === "image";
 }
 
+/*
+  «Поставить в один card container» — просьба склеить конверт с соседним ВОПРЕКИ
+  правилу ролей. Обычно разные фоны означают разные по сущности блоки, и общий
+  конверт им вреден. Но пара «Физическая инвалидность» и «Ментальная
+  инвалидность» — это одно противопоставление, разбитое на две карточки: цвет
+  тут различает стороны сравнения, а не роль. Исключение включается словами, а
+  не догадкой.
+*/
+const wantsSameContainer = (d?: Directive) =>
+  /(?:один|одном|одного)\s+(?:card\s*container|конверт\p{L}*|контейнер\p{L}*)/iu.test(
+    d?.comment || "",
+  );
+
 const cardOrientation = (g: Group): "Vertical" | "Horizontal" =>
   g.dir?.target === "GeneralCard" && g.dir.modifiers?.orient === "Horizontal"
     ? "Horizontal"
@@ -1002,17 +1024,26 @@ function mergeSiblings(nodes: Node[]): Node[] {
     // Роль (фон карточек) — часть условия: разные по сущности блоки не сливаем.
     const ra = soleRole(prev);
     const rb = soleRole(n);
+    /*
+      Исключение по просьбе: «поставить в один card container». Роли тогда не
+      сверяем — дизайнер уже сказал, что эти карточки об одном. Тип и ориентация
+      остаются обязательными: склеить карточку с аккордеоном не просили.
+    */
+    const joined =
+      (prev?.component === "Block" && prev.join) ||
+      (n.component === "Block" && n.join);
     if (
       ka &&
       ka === kb &&
-      ra !== undefined &&
-      ra === rb &&
+      (joined || (ra !== undefined && ra === rb)) &&
       prev!.component === "Block" &&
       n.component === "Block" &&
       prev!.orientation === n.orientation
     ) {
       out[out.length - 1] = {
         ...prev!,
+        // Пометку несёт и склейка: иначе третья карточка ряда не приклеилась бы.
+        join: joined || undefined,
         children: [...prev!.children, ...n.children],
       };
       continue;
@@ -2942,6 +2973,7 @@ export function buildDoc(
         kids.push({
           component: "Block",
           orientation: cardOrientation(g),
+          join: wantsSameContainer(g.dir) || undefined,
           children: nodes,
         });
       else kids.push(...nodes);
@@ -3315,6 +3347,8 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
     const out: Record<string, unknown> = {};
     for (const [rawKey, v] of Object.entries(n)) {
       const k = rename[rawKey] ?? rawKey;
+      // Пометка склейки — служебная: она уже сделала своё дело в дереве.
+      if (k === "join") continue;
       if (v === undefined || v === null || v === false) continue;
       if (Array.isArray(v) && v.length === 0) continue;
       if (typeof v === "string" && !v.trim()) continue;
