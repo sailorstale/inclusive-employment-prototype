@@ -122,7 +122,6 @@ export function SiteInspector({
   tocItems: TocEntry[];
 }) {
   const [mode, setMode] = React.useState<Mode>(lastMode);
-  const [exporting, setExporting] = React.useState(false);
 
   // Запоминаем выбранный режим, чтобы он пережил переход между страницами.
   React.useEffect(() => {
@@ -138,17 +137,6 @@ export function SiteInspector({
     };
   }, []);
 
-  // Единый JSON всего раздела «Основы» — одно ТЗ разработчику на все страницы.
-  const exportAll = async () => {
-    if (exporting) return;
-    setExporting(true);
-    try {
-      downloadJson("osnovy.json", await buildOsnovyExport());
-    } finally {
-      setExporting(false);
-    }
-  };
-
   return (
     <CommentsProvider scope="review">
       <div className="fixed inset-0 z-50 flex flex-col bg-background">
@@ -162,15 +150,6 @@ export function SiteInspector({
             Сайт
           </ModeBtn>
         </div>
-        {/* Экспорт всего раздела одним файлом — для передачи разработчику. */}
-        <button
-          type="button"
-          onClick={exportAll}
-          disabled={exporting}
-          className="ml-auto rounded-md border bg-background px-3 py-1 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground disabled:opacity-60"
-        >
-          {exporting ? "Собираю…" : "Скачать JSON раздела"}
-        </button>
       </div>
       <div className="min-h-0 flex-1">
         {mode === "site" ? (
@@ -362,7 +341,19 @@ function SiteMode({
 }) {
   const [tab, setTab] = React.useState<RefView>(lastTab);
   const [selected, setSelected] = React.useState<string | null>(null);
+  const [exporting, setExporting] = React.useState(false);
   const blocks = usePageBlocks(page.module, page.sections);
+
+  // Единый JSON всего раздела «Основы» — одно ТЗ разработчику на все страницы.
+  const exportAll = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      downloadJson("osnovy.json", await buildOsnovyExport());
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Запоминаем открытый таб, чтобы он пережил переход между страницами.
   React.useEffect(() => {
@@ -447,6 +438,15 @@ function SiteMode({
               {t.label}
             </button>
           ))}
+          {/* Экспорт всего раздела одним файлом — для передачи разработчику. */}
+          <button
+            type="button"
+            onClick={exportAll}
+            disabled={exporting}
+            className="ml-auto rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 transition-colors hover:text-foreground disabled:opacity-60"
+          >
+            {exporting ? "Собираю…" : "Полный JSON"}
+          </button>
         </div>
         <div ref={setLeftBox} className="min-h-0 flex-1 overflow-y-auto">
           {tab === "json" ? (
