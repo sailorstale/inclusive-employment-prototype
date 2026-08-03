@@ -40,8 +40,10 @@ export type PhraseSize = "L" | "M";
 type NodeKind =
   /*
     anchor — якорь заголовка, уникальный в пределах страницы: по нему
-    разработчик вешает id и скроллит оглавление. У H2, открывающего секцию,
-    якорь совпадает с якорем самой секции — это одно и то же место.
+    разработчик вешает id и скроллит оглавление. Внутри дерева якорь H2,
+    открывающего секцию, совпадает с якорем самой секции (это одно и то же
+    место), но в выгрузку якорь секции не едет — иначе id дублируются
+    (см. toExport).
   */
   | { component: "Heading"; level: HeadingLevel; text: string; anchor?: string }
   | { component: "Text"; size: TextSize; text: string }
@@ -3367,6 +3369,7 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
   const clean = (n: Node | SectionNode): unknown | null => {
     if ((n as Node).component === "note") return null;
     const component = (n as Node).component;
+    const isSection = (n as SectionNode).component === "Section Container";
     const rename = RENAME_KEYS[component] ?? {};
     const out: Record<string, unknown> = {};
     for (const [rawKey, v] of Object.entries(n)) {
@@ -3374,6 +3377,12 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
       // Служебные пометки инструмента: склейка конвертов и адрес блоков
       // источника. В дереве они нужны, разработчику — нет.
       if (k === "join" || k === "at") continue;
+      /*
+        Якорь едет ТОЛЬКО у заголовков: разработчик делает из него id элемента.
+        У секции он повторял якорь её первого H2 (одно и то же место), и id
+        получались неуникальными — просьба разработчика 3 августа 2026.
+      */
+      if (k === "anchor" && isSection) continue;
       if (v === undefined || v === null || v === false) continue;
       if (Array.isArray(v) && v.length === 0) continue;
       if (typeof v === "string" && !v.trim()) continue;

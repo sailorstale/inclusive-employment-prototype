@@ -56,8 +56,12 @@ type Props = {
   title: React.ReactNode;
   /** Сюжет иллюстрации-стикера 64×64 в углу. Не задан — картинки нет. */
   image?: SmallImageName;
-  /** Метка шага, например «1 шаг». Рисуется ЗАГЛАВНЫМИ. Не задана — метки нет. */
-  step?: string;
+  /**
+   * Короткая метка над телом карточки, например «1 шаг». Рисуется ЗАГЛАВНЫМИ.
+   * Не задана — метки нет. В Figma свойство зовётся Step, но в данных имя `tag`
+   * (решение разработчика 3 августа 2026: метка не обязана быть шагом).
+   */
+  tag?: string;
   /** Иконка 32 из lucide-react в белом круге 64. Не задана — круга нет. */
   iconNode?: React.ReactNode;
   /** Slot: Text, Stack, Button. */
@@ -70,7 +74,7 @@ export function GeneralCard({
   bgColor = "blue",
   title,
   image,
-  step,
+  tag,
   iconNode,
   children,
   className,
@@ -89,18 +93,18 @@ export function GeneralCard({
       {image ? <SmallImage name={image} size={64} /> : null}
 
       {/*
-        Метка шага и круг с иконкой — ЧАСТИ карточки, а не отдельные компоненты
+        Метка (tag) и круг с иконкой — ЧАСТИ карточки, а не отдельные компоненты
         и не её варианты. Шильдик им не ставим: имя вроде «General Card · Step»
         читалось бы как вариант компонента и вводило бы разработчика в
         заблуждение — такого варианта в Figma нет.
       */}
-      {step ? (
+      {tag ? (
         <div
           className={cn(
             "ds-caps-m shrink-0 text-[color:var(--text-secondary)]",
           )}
         >
-          {step}
+          {tag}
         </div>
       ) : null}
 

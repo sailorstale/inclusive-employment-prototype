@@ -231,7 +231,7 @@ export function CardsSection() {
           className="min-w-[380px] flex-1"
           title="Карточка со всеми украшениями"
           bgColor="blue"
-          step="1 шаг"
+          tag="1 шаг"
           image="Собеседование"
           iconNode={<ShieldCheck />}
         >
