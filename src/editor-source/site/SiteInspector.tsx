@@ -130,6 +130,12 @@ export function SiteInspector({
   tocItems: TocEntry[];
 }) {
   const [mode, setMode] = React.useState<Mode>(lastMode);
+  /*
+    Тумблер разметки живёт здесь, а не внутри режима «Сайт»: кнопка должна быть
+    в общем верхнем баре. В полоске над колонкой сверки её не находили — она
+    там рядом с выгрузкой и читается как её продолжение.
+  */
+  const [markupOpen, setMarkupOpen] = React.useState(false);
 
   // Запоминаем выбранный режим, чтобы он пережил переход между страницами.
   React.useEffect(() => {
@@ -158,10 +164,29 @@ export function SiteInspector({
             Сайт
           </ModeBtn>
         </div>
+        {mode === "site" && (
+          <button
+            type="button"
+            onClick={() => setMarkupOpen((v) => !v)}
+            className={cn(
+              "rounded-md border px-3 py-1 text-sm font-medium transition-colors",
+              markupOpen
+                ? "border-transparent bg-primary text-primary-foreground"
+                : "bg-background text-foreground/80 hover:text-foreground",
+            )}
+          >
+            Разметка
+          </button>
+        )}
       </div>
       <div className="min-h-0 flex-1">
         {mode === "site" ? (
-          <SiteMode page={page} pageDoc={pageDoc} tocItems={tocItems} />
+          <SiteMode
+            page={page}
+            pageDoc={pageDoc}
+            tocItems={tocItems}
+            markupOpen={markupOpen}
+          />
         ) : (
           <ModuleMode module={page.module} />
         )}
@@ -359,10 +384,12 @@ function SiteMode({
   page,
   pageDoc,
   tocItems,
+  markupOpen,
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
   tocItems: TocEntry[];
+  markupOpen: boolean;
 }) {
   const [tab, setTab] = React.useState<RefView>(lastTab);
   const [selected, setSelected] = React.useState<string | null>(null);
@@ -372,7 +399,6 @@ function SiteMode({
     всегда охватывает несколько блоков подряд.
   */
   const [picked, setPicked] = React.useState<Set<string>>(new Set());
-  const [markupOpen, setMarkupOpen] = React.useState(false);
   const [exporting, setExporting] = React.useState(false);
   const markup = useSiteMarkup(page.module);
   const blocks = usePageBlocks(page.module, page.sections);
@@ -536,25 +562,12 @@ function SiteMode({
               {t.label}
             </button>
           ))}
-          {/* Разметка страницы: выделяем компоненты справа, заводим директиву. */}
-          <button
-            type="button"
-            onClick={() => setMarkupOpen((v) => !v)}
-            className={cn(
-              "ml-auto rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
-              markupOpen
-                ? "border-transparent bg-primary text-primary-foreground"
-                : "bg-background text-foreground/80 hover:text-foreground",
-            )}
-          >
-            Разметка{picked.size ? ` · ${picked.size}` : ""}
-          </button>
           {/* Экспорт всего раздела одним файлом — для передачи разработчику. */}
           <button
             type="button"
             onClick={exportAll}
             disabled={exporting}
-            className="rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 transition-colors hover:text-foreground disabled:opacity-60"
+            className="ml-auto rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 transition-colors hover:text-foreground disabled:opacity-60"
           >
             {exporting ? "Собираю…" : "Полный JSON"}
           </button>
@@ -642,7 +655,7 @@ function SiteMode({
         <section className="flex min-h-0 flex-col">
           <div className="flex shrink-0 items-center gap-2 border-b bg-muted/40 px-3 py-2">
             <span className="text-xs font-medium text-muted-foreground">
-              Разметка страницы
+              Разметка страницы{picked.size ? ` · выбрано ${picked.size}` : ""}
             </span>
             {picked.size > 0 && (
               <button
