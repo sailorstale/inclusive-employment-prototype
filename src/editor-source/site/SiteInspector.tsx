@@ -19,6 +19,9 @@ import { cn } from "@/lib/utils";
 import type { TocEntry } from "./pageStructure";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
+import { useSiteMarkup } from "./useSiteMarkup";
+import { MarkupPanel } from "@/editor-source/source/PlaygroundColumn";
+import { blockRefId } from "@/editor-source/source/blockId";
 import { PageSourceView } from "./PageSourceView";
 import { buildOsnovyExport } from "./siteExport";
 import { coverFor } from "./covers";
@@ -363,7 +366,15 @@ function SiteMode({
 }) {
   const [tab, setTab] = React.useState<RefView>(lastTab);
   const [selected, setSelected] = React.useState<string | null>(null);
+  /*
+    Набор компонентов для разметки. Отдельно от `selected`: тот показывает
+    ОДИН выбранный компонент (подсветка, комментарий, пин), а директива почти
+    всегда охватывает несколько блоков подряд.
+  */
+  const [picked, setPicked] = React.useState<Set<string>>(new Set());
+  const [markupOpen, setMarkupOpen] = React.useState(false);
   const [exporting, setExporting] = React.useState(false);
+  const markup = useSiteMarkup(page.module);
   const blocks = usePageBlocks(page.module, page.sections);
 
   // Единый JSON всего сайта — одно ТЗ разработчику на все страницы сразу.
@@ -406,6 +417,62 @@ function SiteMode({
   );
 
 
+  /*
+    Клик по компоненту: подсвечиваем его и добавляем в набор для разметки.
+    Повторный клик снимает — тот же жест, что и в плейграунде «Модулей».
+  */
+  const onPick = React.useCallback((path: string) => {
+    setSelected(path);
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  }, []);
+
+  /*
+    Компонент → адреса блоков источника («секция:блок»). Адрес несёт сам узел
+    (поле at), но у вложенных узлов его нет — тогда поднимаемся по пути к
+    ближайшему предку, у которого он есть.
+  */
+  const addressOf = React.useCallback(
+    (path: string): string[] => {
+      const parts = path.split(".");
+      for (let i = parts.length; i > 0; i--) {
+        const n = nodeAtPath(pageDoc, parts.slice(0, i).join("."));
+        if (n?.at?.length) return n.at;
+      }
+      return [];
+    },
+    [pageDoc],
+  );
+
+  /** Набор блоков для панели разметки — в том же виде, что в «Модулях». */
+  const markupSelected = React.useMemo(
+    () => new Set([...picked].flatMap(addressOf)),
+    [picked, addressOf],
+  );
+
+  /*
+    Директивы ЭТОЙ страницы: страница — часть модуля, и чужие разделы в панели
+    только мешали бы. Сверяем по ссылкам на блоки: у директивы они те же, что
+    посчитает blockRefId для блоков выбранных секций.
+  */
+  const pageDirectives = React.useMemo(() => {
+    const wanted = new Set(page.sections);
+    const ids = new Set<string>();
+    markup.sections.forEach((sec) => {
+      if (!sec.anchor || !wanted.has(sec.anchor)) return;
+      sec.blocks.forEach((b) =>
+        ids.add(blockRefId(b, `/source/${page.module}`, sec.anchor)),
+      );
+    });
+    return markup.directives.filter(
+      (d) => d.module === page.module && d.blocks.some((b) => ids.has(b.id)),
+    );
+  }, [markup.sections, markup.directives, page.sections, page.module]);
+
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
     return matchBlock(blocks, nodeText(nodeAtPath(pageDoc, selected)));
@@ -442,7 +509,16 @@ function SiteMode({
   useScrollSync(leftBox, rightBox, paused);
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,40rem)_minmax(0,1fr)] divide-x">
+    <div
+      className={cn(
+        "grid h-full min-h-0 divide-x",
+        /* С открытой разметкой колонка сверки ужимается: сейчас работают с
+           самой страницей, а не с источником построчно. */
+        markupOpen
+          ? "grid-cols-[minmax(0,19rem)_minmax(0,1fr)_21rem]"
+          : "grid-cols-[minmax(0,40rem)_minmax(0,1fr)]",
+      )}
+    >
       {/* ЛЕВО — колонка сверки с табами */}
       <section className="flex min-h-0 flex-col">
         <div className="flex items-center gap-1 border-b bg-muted/40 px-3 py-2">
@@ -460,12 +536,25 @@ function SiteMode({
               {t.label}
             </button>
           ))}
+          {/* Разметка страницы: выделяем компоненты справа, заводим директиву. */}
+          <button
+            type="button"
+            onClick={() => setMarkupOpen((v) => !v)}
+            className={cn(
+              "ml-auto rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
+              markupOpen
+                ? "border-transparent bg-primary text-primary-foreground"
+                : "bg-background text-foreground/80 hover:text-foreground",
+            )}
+          >
+            Разметка{picked.size ? ` · ${picked.size}` : ""}
+          </button>
           {/* Экспорт всего раздела одним файлом — для передачи разработчику. */}
           <button
             type="button"
             onClick={exportAll}
             disabled={exporting}
-            className="ml-auto rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 transition-colors hover:text-foreground disabled:opacity-60"
+            className="rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 transition-colors hover:text-foreground disabled:opacity-60"
           >
             {exporting ? "Собираю…" : "Полный JSON"}
           </button>
@@ -532,7 +621,7 @@ function SiteMode({
               </div>
               <ResultView
                 doc={pageDoc}
-                pick={{ selected, onSelect: setSelected, commented }}
+                pick={{ selected, onSelect: onPick, commented }}
               />
             </div>
 
@@ -545,6 +634,79 @@ function SiteMode({
           </div>
         </div>
       </section>
+
+      {/* ТРЕТЬЯ КОЛОНКА — разметка страницы. Та же панель, что в «Модулях»:
+          она принимает набор блоков источника, а его нам даёт клик по
+          компоненту (каждый узел помнит, из каких блоков собран). */}
+      {markupOpen && (
+        <section className="flex min-h-0 flex-col">
+          <div className="flex shrink-0 items-center gap-2 border-b bg-muted/40 px-3 py-2">
+            <span className="text-xs font-medium text-muted-foreground">
+              Разметка страницы
+            </span>
+            {picked.size > 0 && (
+              <button
+                type="button"
+                onClick={() => setPicked(new Set())}
+                className="ml-auto rounded-md border bg-background px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Снять выделение
+              </button>
+            )}
+          </div>
+          {markup.err && (
+            <div className="shrink-0 border-b bg-[hsl(var(--bad)/0.1)] px-3 py-1.5 text-xs text-[hsl(var(--bad))]">
+              {markup.err}
+            </div>
+          )}
+          <div className="min-h-0 flex-1">
+            {picked.size === 0 && pageDirectives.length === 0 ? (
+              <p className="p-4 text-sm text-muted-foreground">
+                Кликните по компоненту страницы — он попадёт в выделение.
+                Повторный клик снимает.
+              </p>
+            ) : (
+              /*
+                Панель просит резолвер правок (useMdResolver) — он живёт в
+                EditorProvider, а в режиме «Сайт» его нет. Поднимаем провайдер
+                вокруг самой панели, в том же скоупе «source», что и «Модули»:
+                правки у них общие.
+              */
+              <EditorProvider scope="source">
+              <MarkupPanel
+                sections={markup.sections}
+                selected={markupSelected}
+                directives={pageDirectives}
+                onSaveDraft={(draft) => {
+                  void markup.saveDraft(draft, markupSelected);
+                  setPicked(new Set());
+                }}
+                actions={{
+                  /* Переход к блокам: на сайте это сам компонент — он уже под
+                     курсором, отдельного «поехали» не нужно. */
+                  onGoTo: () => {},
+                  onDelete: (id) => void markup.remove(id),
+                  onSetStatus: (id, status) => void markup.setStatus(id, status),
+                  onUpdate: (id, draft) => void markup.update(id, draft),
+                  /* Заменить блоки выделением — из пространства сайта пока не
+                     даём: набор компонентов и набор блоков директивы это разные
+                     вещи, и подменять одно другим вслепую опасно. */
+                  onReplaceBlocks: () => {},
+                  onReview: (id, review) =>
+                    void markup.patch(id, { review }, "сохранить решение"),
+                  onToggleOff: (id, off) =>
+                    void markup.patch(
+                      id,
+                      { off },
+                      off ? "выключить директиву" : "включить директиву",
+                    ),
+                }}
+              />
+              </EditorProvider>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Комментарии клиента/разработчика: ховер по компоненту → кнопка → тред. */}
       <SiteComments
