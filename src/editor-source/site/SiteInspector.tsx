@@ -13,7 +13,7 @@ import { EditorToast } from "@/editor-source/EditorNotices";
 import { EditorDock } from "@/editor-source/EditorDock";
 import { SourcePage } from "@/editor-source/source/SourcePage";
 import { SamplePage } from "@/editor-source/source/SamplePage";
-import { AppHeader } from "@/components/shell/AppHeader";
+import { PageHeroBand } from "@/components/shell/PageHeroBand";
 import { SidebarNav } from "@/components/shell/SidebarNav";
 import { cn } from "@/lib/utils";
 import type { TocEntry } from "./pageStructure";
@@ -603,47 +603,41 @@ function SiteMode({
         </div>
       </section>
 
-      {/* ПРАВО — сам сайт, полная раскладка: шапка + меню разделов слева +
-          контент + оглавление «На этой странице» справа (рисуется напрямую, не
-          в iframe — чтобы синхрон и клик работали). Меню и шапка липкие. */}
+      {/* ПРАВО — сам сайт, полная раскладка: баннер с фото (в нём шапка сайта и
+          заголовок H1), под ним меню разделов слева + контент + оглавление «На
+          этой странице» справа (рисуется напрямую, не в iframe — чтобы синхрон
+          и клик работали). Контент наезжает на низ баннера, как в макете. */}
       <section className="min-h-0">
         <div ref={setRightBox} className="h-full overflow-y-auto">
-          <AppHeader />
-          <div className="mx-auto grid max-w-7xl grid-cols-[15rem_minmax(0,1fr)_13rem] gap-x-8 px-6 py-8">
-            {/* Левое меню — навигация по разделам сайта */}
-            <aside className="min-w-0">
-              <div className="sticky top-20">
-                <SidebarNav />
-              </div>
-            </aside>
+          {/* Заголовок страницы и обложка — в баннере (не узлы дерева: в данных
+              они едут полем header). Всё остальное — одним деревом через
+              ResultView: «вы узнаете» + секции + форма мнения + «Читайте также». */}
+          <PageHeroBand title={page.title} cover={cover} />
 
-            {/* Контент страницы. h1 — заголовок страницы (не узел дерева: в
-                данных он едет полем h1). Всё остальное — одним деревом через
-                ResultView: «вы узнаете» + секции + форма мнения + «Читайте
-                также». */}
-            <div className="min-w-0">
-              <div className="figma-scope mx-auto max-w-[var(--column-width)] px-6 pt-8">
-                {cover.src && (
-                  <img
-                    src={cover.src}
-                    alt={cover.alt}
-                    className="mb-6 h-auto w-full rounded-[var(--radius-l)] object-cover"
-                  />
-                )}
-                <h1 className="ds-h1 text-[color:var(--text-primary)]">{page.title}</h1>
+          <div className="relative z-10 -mt-20 rounded-t-[2rem] bg-background">
+            <div className="mx-auto grid max-w-7xl grid-cols-[15rem_minmax(0,1fr)_13rem] gap-x-8 px-6 py-10">
+              {/* Левое меню — навигация по разделам сайта */}
+              <aside className="min-w-0">
+                <div className="sticky top-8">
+                  <SidebarNav />
+                </div>
+              </aside>
+
+              {/* Контент страницы */}
+              <div className="min-w-0">
+                <ResultView
+                  doc={pageDoc}
+                  pick={{ selected, onSelect: onPick, commented }}
+                />
               </div>
-              <ResultView
-                doc={pageDoc}
-                pick={{ selected, onSelect: onPick, commented }}
-              />
+
+              {/* Правое меню — оглавление страницы */}
+              <aside className="min-w-0">
+                <div className="sticky top-8">
+                  <SiteRail items={tocItems} pane={rightBox} />
+                </div>
+              </aside>
             </div>
-
-            {/* Правое меню — оглавление страницы */}
-            <aside className="min-w-0">
-              <div className="sticky top-20">
-                <SiteRail items={tocItems} pane={rightBox} />
-              </div>
-            </aside>
           </div>
         </div>
       </section>
