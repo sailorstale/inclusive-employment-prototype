@@ -55,6 +55,9 @@ const TABS: { id: RefView; label: string }[] = [
 */
 let lastMode: Mode = "site";
 let lastTab: RefView = "source";
+/* Открыта ли панель разметки — по той же причине снаружи компонента: иначе
+   она закрывалась на каждом переходе между страницами сайта. */
+let lastMarkup = false;
 
 /* Псевдо-«модуль» для эталонной страницы: id заведомо не совпадает ни с одним
    реальным модулем, поэтому годится как значение того же переключателя. */
@@ -135,12 +138,16 @@ export function SiteInspector({
     в общем верхнем баре. В полоске над колонкой сверки её не находили — она
     там рядом с выгрузкой и читается как её продолжение.
   */
-  const [markupOpen, setMarkupOpen] = React.useState(false);
+  const [markupOpen, setMarkupOpen] = React.useState(lastMarkup);
 
   // Запоминаем выбранный режим, чтобы он пережил переход между страницами.
   React.useEffect(() => {
     lastMode = mode;
   }, [mode]);
+
+  React.useEffect(() => {
+    lastMarkup = markupOpen;
+  }, [markupOpen]);
 
   // Инструмент накрывает всю страницу — гасим прокрутку «фона» под ним.
   React.useEffect(() => {
