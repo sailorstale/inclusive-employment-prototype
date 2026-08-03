@@ -506,6 +506,80 @@ function SiteMode({
     );
   }, [markup.sections, markup.directives, page.sections, page.module]);
 
+  /*
+    ПЕРЕХОД К КОМПОНЕНТУ ПО ДИРЕКТИВЕ. Директива хранит ссылки на блоки
+    источника, а на странице нам нужен собранный из них компонент. Обратный
+    путь: ссылка блока → его адрес «секция:блок» → узел, который этот адрес
+    носит → его место в дереве.
+  */
+  const addressById = React.useMemo(() => {
+    const map = new Map<string, string>();
+    markup.sections.forEach((sec, si) =>
+      sec.blocks.forEach((b, bi) =>
+        map.set(blockRefId(b, `/source/${page.module}`, sec.anchor), `${si}:${bi}`),
+      ),
+    );
+    return map;
+  }, [markup.sections, page.module]);
+
+  const pathOfAddress = React.useCallback(
+    (addr: string): string | null => {
+      const walk = (nodes: unknown[], prefix: string): string | null => {
+        for (let i = 0; i < nodes.length; i++) {
+          const n = nodes[i] as Node & { children?: unknown[] };
+          const path = prefix ? `${prefix}.${i}` : String(i);
+          if (n?.at?.includes(addr)) return path;
+          if (Array.isArray(n?.children)) {
+            const deep = walk(n.children, path);
+            if (deep) return deep;
+          }
+        }
+        return null;
+      };
+      return walk(pageDoc.children, "");
+    },
+    [pageDoc],
+  );
+
+  const goToDirective = React.useCallback(
+    (id: string) => {
+      const d = markup.directives.find((x) => x.id === id);
+      const addr = d?.blocks.map((b) => addressById.get(b.id)).find(Boolean);
+      const path = addr ? pathOfAddress(addr) : null;
+      if (!path) return;
+      setSelected(path);
+      /*
+        Синхрон колонок на время перехода молчит: иначе он тут же возвращает
+        правую колонку к позиции левой, и прокрутка выглядит как «не сработало».
+      */
+      paused.current = true;
+      window.setTimeout(() => (paused.current = false), 600);
+      /*
+        Отпускаем ход, чтобы подсветка выбранного успела перерисоваться: без
+        этого считалось старое положение узла. Обычная задержка, а не кадр
+        отрисовки: кадры не выдаются, пока вкладка не на виду.
+
+        Прокручиваем к ПЕРВОМУ РЕБЁНКУ: сама обёртка компонента размечена как
+        display: contents — собственной рамки у неё нет, и scrollIntoView по
+        ней молча ничего не делает. Тот же обход, что в эталонной странице.
+      */
+      window.setTimeout(() => {
+        const el = rightBox?.querySelector(`[data-json-path="${path}"]`);
+        const target = el?.firstElementChild ?? el;
+        if (!rightBox || !target) return;
+        /*
+          Двигаем колонку сами, а не через scrollIntoView: он ищет ближайший
+          прокручиваемый предок и в этой раскладке промахивался. Та же
+          арифметика, что при наводке на блок слева.
+        */
+        const er = target.getBoundingClientRect();
+        const pr = rightBox.getBoundingClientRect();
+        rightBox.scrollTop += er.top - pr.top - pr.height / 2 + er.height / 2;
+      }, 0);
+    },
+    [markup.directives, addressById, pathOfAddress, rightBox],
+  );
+
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
     return matchBlock(blocks, nodeText(nodeAtPath(pageDoc, selected)));
@@ -696,9 +770,7 @@ function SiteMode({
                   setPicked(new Set());
                 }}
                 actions={{
-                  /* Переход к блокам: на сайте это сам компонент — он уже под
-                     курсором, отдельного «поехали» не нужно. */
-                  onGoTo: () => {},
+                  onGoTo: goToDirective,
                   onDelete: (id) => void markup.remove(id),
                   onSetStatus: (id, status) => void markup.setStatus(id, status),
                   onUpdate: (id, draft) => void markup.update(id, draft),
