@@ -16,11 +16,22 @@ export type Modifier =
 export type Target = { value: string; label: string; modifiers?: Modifier[] };
 export type TargetGroup = { group: string; items: Target[] };
 
+/*
+  Уровень заголовка. Подписи не «H2/H3/H4» — сами по себе они дизайнеру ничего
+  не говорят. Пишем, чем уровень оборачивается на странице: раздел попадает в
+  меню «На этой странице», подзаголовок — тоже, а всё мельче в меню не идёт и
+  живёт внутри своего раздела.
+*/
 const level: Modifier = {
   key: "level",
   label: "Уровень",
   type: "select",
-  options: ["H2", "H3", "H4", "H5"].map((v) => ({ value: v, label: v })),
+  options: [
+    { value: "H2", label: "H2 — раздел страницы (виден в меню справа)" },
+    { value: "H3", label: "H3 — подзаголовок (виден в меню справа)" },
+    { value: "H4", label: "H4 — подпункт внутри подзаголовка (в меню не идёт)" },
+    { value: "H5", label: "H5 — самый мелкий, внутри подпункта" },
+  ],
   default: "H2",
 };
 
