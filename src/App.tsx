@@ -28,22 +28,10 @@ import { A11yPage } from "./pages/A11yPage";
 import { CompaniesHubPage } from "./pages/companies/CompaniesHubPage";
 import { GeneratedPage } from "./editor-source/site/GeneratedPage";
 import { HireHubPage } from "./pages/companies/HireHubPage";
-import { Step1Page } from "./pages/companies/Step1Page";
-import { Step2Page } from "./pages/companies/Step2Page";
-import { Step3Page } from "./pages/companies/Step3Page";
-import { Step4Page } from "./pages/companies/Step4Page";
-import { Step5Page } from "./pages/companies/Step5Page";
-import { Step6Page } from "./pages/companies/Step6Page";
 
 // Трек «Для НКО» — Программа НКО (М6). Общая база М1–М4 — в разделе
 // «Общая информация» (/general/*), НКО-дубли удалены.
 import { NgoHubPage } from "./pages/ngo/NgoHubPage";
-import { NgoStartPage } from "./pages/ngo/NgoStartPage";
-import { NgoCandidatesPage } from "./pages/ngo/NgoCandidatesPage";
-import { NgoEmployersPage } from "./pages/ngo/NgoEmployersPage";
-import { NgoSupportPage } from "./pages/ngo/NgoSupportPage";
-import { NgoScalePage } from "./pages/ngo/NgoScalePage";
-import { NgoFundingPage } from "./pages/ngo/NgoFundingPage";
 
 // Трек «Для соискателей» — заглушка (раздел не проработан, без подразделов).
 import { JobseekersStubPage } from "./pages/jobseekers/JobseekersStubPage";
@@ -103,24 +91,27 @@ export default function App() {
           <Route path="/general/legal/faq" element={<GeneratedPage />} />
           <Route path="/general/team" element={<GeneratedPage />} />
 
-          {/* Для компаний (М5 — Наём по шагам) */}
+          {/* Для компаний (М5 — Наём по шагам). Страницы шагов, как и «Основы»,
+              врастают из источника: та же GeneratedPage по карте (pageMap).
+              Хабы раздела остаются собранными руками — это навигация, а не
+              материал. */}
           <Route path="/companies" element={<CompaniesHubPage />} />
           <Route path="/companies/hire" element={<HireHubPage />} />
-          <Route path="/companies/hire/step-1" element={<Step1Page />} />
-          <Route path="/companies/hire/step-2" element={<Step2Page />} />
-          <Route path="/companies/hire/step-3" element={<Step3Page />} />
-          <Route path="/companies/hire/step-4" element={<Step4Page />} />
-          <Route path="/companies/hire/step-5" element={<Step5Page />} />
-          <Route path="/companies/hire/step-6" element={<Step6Page />} />
+          <Route path="/companies/hire/step-1" element={<GeneratedPage />} />
+          <Route path="/companies/hire/step-2" element={<GeneratedPage />} />
+          <Route path="/companies/hire/step-3" element={<GeneratedPage />} />
+          <Route path="/companies/hire/step-4" element={<GeneratedPage />} />
+          <Route path="/companies/hire/step-5" element={<GeneratedPage />} />
+          <Route path="/companies/hire/step-6" element={<GeneratedPage />} />
 
-          {/* Для НКО (М6 — Программа НКО) */}
+          {/* Для НКО (М6 — Программа НКО). Тоже из источника; хаб — руками. */}
           <Route path="/ngo" element={<NgoHubPage />} />
-          <Route path="/ngo/start" element={<NgoStartPage />} />
-          <Route path="/ngo/candidates" element={<NgoCandidatesPage />} />
-          <Route path="/ngo/employers" element={<NgoEmployersPage />} />
-          <Route path="/ngo/support" element={<NgoSupportPage />} />
-          <Route path="/ngo/scale" element={<NgoScalePage />} />
-          <Route path="/ngo/funding" element={<NgoFundingPage />} />
+          <Route path="/ngo/start" element={<GeneratedPage />} />
+          <Route path="/ngo/candidates" element={<GeneratedPage />} />
+          <Route path="/ngo/employers" element={<GeneratedPage />} />
+          <Route path="/ngo/support" element={<GeneratedPage />} />
+          <Route path="/ngo/scale" element={<GeneratedPage />} />
+          <Route path="/ngo/funding" element={<GeneratedPage />} />
 
           {/* Для соискателей — заглушка. Подразделов нет; старые адреса
               /jobseekers/* ведут на заглушку, чтобы не было битых ссылок. */}

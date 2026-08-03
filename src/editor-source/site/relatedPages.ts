@@ -24,6 +24,31 @@ const BLURB: Record<string, string> = {
   "/general/legal/faq": "Частые вопросы, ответы и короткая самопроверка.",
   "/general/team":
     "Как корректно говорить и общаться, инклюзивные мероприятия.",
+
+  "/companies/hire/step-1":
+    "С какой вакансии начать инклюзивный наём и как её выбрать.",
+  "/companies/hire/step-2":
+    "Аудит рабочей среды, процессов и материалов — и типичные ошибки.",
+  "/companies/hire/step-3":
+    "Инклюзивная среда: что меняют в помещении, процессах и общении.",
+  "/companies/hire/step-4":
+    "Описание вакансии, где искать кандидатов, собеседование и оформление.",
+  "/companies/hire/step-5":
+    "Адаптация новичка, кто помогает и что делать, если идёт не по плану.",
+  "/companies/hire/step-6":
+    "Первоначальные и регулярные расходы и как их оптимизировать.",
+
+  "/ngo/start":
+    "Роль НКО, этапы работы, анализ аудитории и каналы продвижения.",
+  "/ngo/candidates":
+    "Первичное интервью, профориентация, подбор вакансий и собеседование.",
+  "/ngo/employers":
+    "Где искать работодателей, как говорить с ними и отвечать на возражения.",
+  "/ngo/support":
+    "Два формата сопровождения, кризис-менеджмент и дорожная карта.",
+  "/ngo/scale":
+    "Как вырасти, не теряя качества, и поделиться своей экспертизой.",
+  "/ngo/funding": "Затраты программы и как сделать проект устойчивым.",
 };
 
 // Три релевантных соседа для каждой страницы.
@@ -61,6 +86,45 @@ const RELATED: Record<string, string[]> = {
     "/general/legal/quotas",
   ],
   "/general/team": ["/general/how", "/general/start", "/general/legal"],
+
+  // Внутри трека ведём читателя по шагам: следующий, через один и предыдущий.
+  "/companies/hire/step-1": [
+    "/companies/hire/step-2",
+    "/companies/hire/step-3",
+    "/general/how",
+  ],
+  "/companies/hire/step-2": [
+    "/companies/hire/step-3",
+    "/companies/hire/step-4",
+    "/companies/hire/step-1",
+  ],
+  "/companies/hire/step-3": [
+    "/companies/hire/step-4",
+    "/companies/hire/step-5",
+    "/companies/hire/step-2",
+  ],
+  "/companies/hire/step-4": [
+    "/companies/hire/step-5",
+    "/companies/hire/step-6",
+    "/companies/hire/step-3",
+  ],
+  "/companies/hire/step-5": [
+    "/companies/hire/step-6",
+    "/companies/hire/step-4",
+    "/general/team",
+  ],
+  "/companies/hire/step-6": [
+    "/companies/hire/step-1",
+    "/companies/hire/step-5",
+    "/general/legal/quotas",
+  ],
+
+  "/ngo/start": ["/ngo/candidates", "/ngo/employers", "/ngo/scale"],
+  "/ngo/candidates": ["/ngo/employers", "/ngo/support", "/ngo/start"],
+  "/ngo/employers": ["/ngo/support", "/ngo/candidates", "/general/how"],
+  "/ngo/support": ["/ngo/scale", "/ngo/funding", "/ngo/employers"],
+  "/ngo/scale": ["/ngo/funding", "/ngo/start", "/ngo/support"],
+  "/ngo/funding": ["/ngo/scale", "/ngo/start", "/ngo/candidates"],
 };
 
 export type RelatedCard = { title: string; description: string; href: string };

@@ -366,12 +366,12 @@ function SiteMode({
   const [exporting, setExporting] = React.useState(false);
   const blocks = usePageBlocks(page.module, page.sections);
 
-  // Единый JSON всего раздела «Основы» — одно ТЗ разработчику на все страницы.
+  // Единый JSON всего сайта — одно ТЗ разработчику на все страницы сразу.
   const exportAll = async () => {
     if (exporting) return;
     setExporting(true);
     try {
-      downloadJson("osnovy.json", await buildOsnovyExport());
+      downloadJson("sayt.json", await buildOsnovyExport());
     } finally {
       setExporting(false);
     }

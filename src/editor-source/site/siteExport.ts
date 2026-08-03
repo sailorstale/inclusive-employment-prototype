@@ -16,7 +16,8 @@ import { pageChildren } from "./pageStructure";
 import { coverFor, type Cover } from "./covers";
 
 /*
-  ЕДИНЫЙ JSON ВСЕГО РАЗДЕЛА «ОСНОВЫ» — одно ТЗ разработчику на все страницы.
+  ЕДИНЫЙ JSON ВСЕГО САЙТА — одно ТЗ разработчику на все страницы сразу:
+  «Основы» и оба трека, «Для компаний» и «Для НКО».
 
   Каждая страница собирается тем же конвейером и деревом (pageChildren), что и
   сайт: «вы узнаете» + секции + форма мнения + «Читайте также». В выгрузке — slug
@@ -45,7 +46,7 @@ export type PageExport = {
 };
 export type OsnovyExport = { section: string; pages: PageExport[] };
 
-/** Построить единый экспорт раздела «Основы» (все страницы). */
+/** Построить единый экспорт всех страниц сайта. */
 export async function buildOsnovyExport(): Promise<OsnovyExport> {
   const [edits, directives, logoIndex, avatarIndex] = await Promise.all([
     loadEdits("source"),
@@ -84,5 +85,5 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     });
   }
 
-  return { section: "Основы", pages };
+  return { section: "Сайт", pages };
 }

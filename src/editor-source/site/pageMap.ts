@@ -1,7 +1,13 @@
-// СГЕНЕРИРОВАНО скриптом из заголовков M1–4. Не редактировать руками.
-// Раздел «Основы»: страница сайта → секции источника (по якорям H2).
-// Пока только ВЫБОР секций, без правок текста. Мета о курсе и заголовки
-// «Модуль N» исключены; «Подведём итоги» перенесён как есть.
+// КАРТА СТРАНИЦ САЙТА: страница → секции источника (по якорям H2).
+//
+// «Основы» (М1–4) сгенерированы скриптом из заголовков. Треки «Для компаний»
+// (М5) и «Для НКО» (М6) добавлены тем же приёмом, но разложены руками: там
+// страницы уже были названы в меню, и секции разносились по ним по смыслу.
+//
+// Только ВЫБОР секций, без правок текста. Исключены строительные леса курса:
+// заголовки «Модуль N», «Введение», «Заключение», дубли-оглавления в начале
+// модуля и служебное «Остались вопросы или пожелания?». «Подведём итоги»
+// переносится как есть — это содержательная сводка.
 
 export type OsnovyPage = { slug: string; title: string; module: string; sections: string[] };
 
@@ -77,6 +83,136 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     'chto-govoryat-sotrudniki-s-invalidnostyu',
     'kak-podgotovit-i-provesti-meropriyatie-s-uchasti',
     'podvedem-itogi',
+  ] },
+
+  // ── Для компаний: наём по шагам (М5) ────────────────────────────────────
+  { slug: '/companies/hire/step-1', title: 'Шаг 1. Выбор вакансии', module: 'm5-1', sections: [
+    'shag-1-vybor-vakansii-dlya-inklyuzivnogo-nayma',
+    'podvedem-itogi',
+  ] },
+  { slug: '/companies/hire/step-2', title: 'Шаг 2. Аудит готовности', module: 'm5-1', sections: [
+    'shag-2-vnutrenniy-audit-rabochey-sredy-processov',
+    'tipichnye-oshibki-rabotodateley-pri-provedenii-a',
+    'podvedem-itogi-2',
+  ] },
+  { slug: '/companies/hire/step-3', title: 'Шаг 3. Создание среды', module: 'm5-2', sections: [
+    'shag-3-sozdanie-inklyuzivnoy-sredy',
+    'chto-govorit-biznes-2',
+    'chto-govoryat-lyudi-s-invalidnostyu',
+    'chto-govoryat-lyudi-s-invalidnostyu-2',
+    'chto-govoryat-lyudi-s-invalidnostyu-3',
+    'chto-govorit-biznes-3',
+    'chto-govorit-biznes-4',
+  ] },
+  { slug: '/companies/hire/step-4', title: 'Шаг 4. Поиск и оформление', module: 'm5-2', sections: [
+    'shag-4-poisk-kandidatov-provedenie-sobesedovaniy',
+    'kak-sostavit-vakansiyu-i-gde-nayti-kandidatov-s-',
+    'kak-sostavit-opisanie-vakansii',
+    'prakticheskoe-zadanie',
+    'kak-sostavit-opisanie-vakansii-2',
+    'gde-iskat-kandidatov-s-invalidnostyu',
+    'kak-podgotovit-i-provesti-sobesedovanie-s-kandid',
+    'chto-govorit-biznes-5',
+    'proforientacionnaya-ekskursiya',
+    'oformlenie-sotrudnikov-s-invalidnostyu',
+    'podvedem-itogi-3',
+    'prakticheskoe-zadanie-dlya-rabotodateley',
+  ] },
+  { slug: '/companies/hire/step-5', title: 'Шаг 5. Онбординг', module: 'm5-3', sections: [
+    'shag-5-onbording-i-soprovozhdenie-sotrudnika-s-i',
+    'pochemu-adaptaciya-vazhna-dlya-novichkov',
+    'pochemu-adaptaciya-vazhna-dlya-sotrudnikov-s-pri',
+    'kto-mozhet-pomoch-adaptirovatsya-sotrudniku-s-in',
+    'chto-govoryat-lyudi-s-invalidnostyu-4',
+    'chto-delat-esli-adaptaciya-idet-ne-po-planu',
+    'chto-govorit-biznes-6',
+    'podvedem-itogi-4',
+    'prakticheskoe-zadanie-dlya-rabotodatelya',
+  ] },
+  { slug: '/companies/hire/step-6', title: 'Шаг 6. Затраты', module: 'm5-3', sections: [
+    'shag-6-kakie-zatraty-zhdut-kompaniyu-pervonachal',
+    'kakie-pervonachalnye-zatraty-mogut-vozniknut-i-k',
+    'kakie-regulyarnye-rashody-nuzhno-uchityvat-i-moz',
+    'podvedem-itogi-5',
+    'prakticheskoe-zadanie-dlya-rabotodateley-2',
+  ] },
+
+  // ── Для НКО: программа трудоустройства (М6) ─────────────────────────────
+  { slug: '/ngo/start', title: 'Запустить программу', module: 'm6-1', sections: [
+    'rol-nko-v-programmah-trudoustroystva-lyudey-s-in',
+    'programma-trudoustroystva-v-nko',
+    'etapy-raboty-nko',
+    'pochemu-nko-vazhno-vystraivat-partnerskie-otnosh',
+    'pochemu-dlya-nko-vazhen-inklyuzivnyy-podhod',
+    'prakticheskoe-zadanie-dlya-predstaviteley-nko',
+    'analiz-auditorii-nko',
+    'kak-ponyat-svoyu-tekuschuyu-auditoriyu-i-ne-pere',
+    'kak-segmentirovat-auditoriyu-i-vydelit-ee-yadro',
+    's-kem-nachinat-rabotat',
+    'rabota-s-vneshney-auditoriey',
+    'pochemu-vazhno-zaranee-opredelit-obem-uslug',
+    'gde-iskat-auditoriyu',
+    'kanaly-prodvizheniya-programmy',
+    'kak-ocenit-effektivnost-privlecheniya',
+    'prakticheskoe-zadanie-dlya-predstaviteley-nko-2',
+    'podvedem-itogi',
+  ] },
+  { slug: '/ngo/candidates', title: 'Работать с соискателем', module: 'm6-2', sections: [
+    'pervichnoe-intervyu-s-soiskatelem',
+    'provedenie-pervichnogo-intervyu',
+    'nachalo-razgovora',
+    'sostavlenie-portreta-soiskatelya',
+    'kak-zavershit-pervuyu-vstrechu',
+    'podvedem-itog',
+    'proforientaciya-i-psihologicheskaya-podderzhka',
+    'chto-takoe-proforientaciya-i-kogda-ona-nuzhna',
+    'kogda-neobhodima-proforientaciya',
+    'kak-provodit-proforientaciyu-poshagovyy-plan-dly',
+    'osobennosti-proforientacii-lyudey-s-mentalnoy-in',
+    'psihologicheskaya-podderzhka-soiskatelya-s-inval',
+    'kak-nko-mozhet-pomoch',
+    'podvedem-itogi-2',
+    'podbor-vakansiy-i-podgotovka-k-sobesedovaniyu',
+    'shag-1-opredelenie-prioritetov',
+    'shag-2-poisk-vakansiy-na-podhodyaschih-ploschadk',
+    'shag-3-pomosch-kandidatu-v-ponimanii-opisaniya-v',
+    'shag-4-sostavlenie-ili-obnovlenie-rezyume',
+    'shag-5-soglasovanie-resheniya-ob-otklike',
+    'shag-6-podgotovka-k-sobesedovaniyu',
+    'shag-7-provedenie-sobesedovaniya',
+    'shag-8-posle-sobesedovaniya',
+    'podvedem-itogi-3',
+  ] },
+  { slug: '/ngo/employers', title: 'Выходить на работодателей', module: 'm6-3', sections: [
+    'poisk-rabotodateley',
+    'kak-nayti-rabotodateley',
+    'vzaimodeystvie-s-rabotodatelyami',
+    'kak-podgotovitsya-k-razgovoru-s-rabotodatelem',
+    'pervoe-obschenie-s-rabotodatelem',
+    'kakie-formaty-sotrudnichestva-mogut-byt',
+    'kak-predstavit-kandidata-s-invalidnostyu-rabotod',
+    'kak-otvechat-na-vozrazheniya-rabotodatelya',
+    'posle-vstrechi-s-rabotodatelem',
+    'rabotodatel-ne-otvechaet-posle-vstrechi-chto-del',
+    'chto-delat-esli-vam-otkazali',
+    'podvedem-itogi-5',
+  ] },
+  { slug: '/ngo/support', title: 'Сопровождать сотрудника', module: 'm6-4', sections: [
+    'soprovozhdenie-na-etape-trudoustroystva',
+    'dva-formata-soprovozhdeniya',
+    'chto-dalshe-krizis-menedzhment-na-rabochem-meste',
+    'podvedem-itog-2',
+    'dorozhnaya-karta',
+    'podvedem-itogi-6',
+  ] },
+  { slug: '/ngo/scale', title: 'Развивать и масштабировать', module: 'm6-4', sections: [
+    'masshtabirovanie-i-ustoychivost-kak-vyrasti-ne-t',
+    'kak-podelitsya-svoey-ekspertizoy',
+    'podvedem-itogi-7',
+  ] },
+  { slug: '/ngo/funding', title: 'Финансировать программу', module: 'm6-4', sections: [
+    'zatraty-i-finansirovanie-kak-sdelat-proekt-ustoy',
+    'podvedem-itogi-8',
   ] },
 ];
 
