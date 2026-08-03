@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 // клиентский поиск по заголовкам страниц (не заглушка). Фильтр — из @/lib/search
 // (общий с мобильным меню).
 
-export function SiteSearch() {
+export function SiteSearch({ onDark = false }: { onDark?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -39,6 +39,10 @@ export function SiteSearch() {
         aria-label="Поиск по сайту"
         aria-expanded={open}
         onClick={() => (open ? close() : setOpen(true))}
+        // В баннере кнопка лежит на фото — иначе тёмная иконка на нём теряется.
+        className={cn(
+          onDark && "text-white hover:bg-white/15 hover:text-white",
+        )}
       >
         {open ? <X /> : <Search />}
       </Button>

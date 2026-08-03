@@ -19,7 +19,7 @@ export function TocRail() {
   return (
     <nav
       aria-label="На этой странице"
-      className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto"
+      className="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto"
     >
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         На этой странице
