@@ -789,6 +789,16 @@ const wantsImageToList = (d?: Directive) =>
 const labelToTitle = (d?: Directive): string | undefined =>
   /([\p{Lu}][\p{L}]{2,20})\s+в\s+заголов/iu.exec(d?.comment || "")?.[1];
 
+/**
+ * Тот ли это ярлык: «Пример» из комментария и «Пример.» из жирного лида —
+ * одно и то же слово. Сверяем без разметки, хвостовой пунктуации и регистра.
+ */
+const sameLabel = (a?: string, b?: string): boolean => {
+  const norm = (s?: string) =>
+    (s || "").replace(/[*_]/g, "").replace(/[.:;!?\s]+$/u, "").trim().toLowerCase();
+  return Boolean(a) && norm(a) === norm(b);
+};
+
 /** «Собрать эти три в один абзац» — склейка группы в один блок текста. */
 /*
   \b здесь не годится: в JS граница слова считается по [A-Za-z0-9_], и перед
@@ -1787,6 +1797,19 @@ export function buildDoc(
             */
             const forced = cards.length === 0 ? forcedTitle : undefined;
             /*
+              «Пример в заголовок» — это НЕ новый заголовок, а перенос ярлыка,
+              который уже стоит жирным в начале абзаца («**Пример.** Во время
+              аудита…»). Раз он уехал в заголовок, в теле его быть не должно:
+              иначе слово читается дважды подряд. Отличаем от «добавь заголовок
+              X», где X приходит со стороны, а жирный лид — настоящий текст,
+              терять который нельзя.
+            */
+            const movedLead =
+              cards.length === 0 &&
+              explicitTitle(dir) === undefined &&
+              Boolean(lead) &&
+              sameLabel(labelToTitle(dir), lead![1]);
+            /*
               Блок-ярлык («Важно:») — это заголовок, а не текст. Если заголовок
               уже задан комментарием, ярлык просто выбрасываем: иначе слово
               стоит дважды — заголовком и первой строкой тела.
@@ -1806,11 +1829,13 @@ export function buildDoc(
             */
             const rest = labelOnly
               ? ""
-              : forced
-                ? lead && !after.trim()
-                  ? lead[1]
-                  : t
-                : lead
+              : movedLead
+                ? after
+                : forced
+                  ? lead && !after.trim()
+                    ? lead[1]
+                    : t
+                  : lead
                   ? after
                   : it.b.kind === "heading"
                     ? ""
