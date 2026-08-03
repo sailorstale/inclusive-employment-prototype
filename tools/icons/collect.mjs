@@ -16,18 +16,25 @@
   Папка каждый раз пересобирается с нуля: иконку убрали из кода — её файл
   исчезает. Ручные добавления сюда класть нельзя, их сотрёт.
 
+  Вторая копия — папка «Иконки» в корне проекта: дизайнеру нужен набор под
+  рукой, а не внутри кода. Кладём её только если рядом действительно наш проект
+  (проверяем по «Доска задач.md») — иначе скрипт писал бы в чужую папку.
+
   Запуск: npm run icons
 */
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as lucide from "lucide-react";
-import { readdir, readFile, writeFile, rm, mkdir } from "node:fs/promises";
+import { readdir, readFile, writeFile, rm, mkdir, cp, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const SRC = path.join(ROOT, "src");
 const OUT = path.join(ROOT, "public/figma/icons");
+/** Копия для дизайнера — «Иконки» рядом с «Аватарки для цитат» и «logos». */
+const PROJECT = path.resolve(ROOT, "..");
+const MIRROR = path.join(PROJECT, "Иконки");
 
 /** Импорт из lucide-react целиком — вместе с переносами строк. */
 const IMPORT_RE = /import\s*\{([^}]*)\}\s*from\s*["']lucide-react["']/g;
@@ -133,4 +140,17 @@ await writeFile(
   "utf8",
 );
 
-console.log(`Иконок собрано: ${byIcon.size} → public/figma/icons/`);
+/* Копия в корне проекта — только если это действительно наша папка. */
+const isProjectFolder = await access(path.join(PROJECT, "Доска задач.md")).then(
+  () => true,
+  () => false,
+);
+if (isProjectFolder) {
+  await rm(MIRROR, { recursive: true, force: true });
+  await cp(OUT, MIRROR, { recursive: true });
+}
+
+console.log(
+  `Иконок собрано: ${byIcon.size} → public/figma/icons/` +
+    (isProjectFolder ? ' и «Иконки» в корне проекта' : ""),
+);
