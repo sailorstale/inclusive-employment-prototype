@@ -7,8 +7,8 @@ import { Button } from "./Button";
   Figma: component set «Prompt» (6470:8718), свойство Platform (берём Desktop).
 
   Врезка с готовым текстом-заготовкой, который читатель уносит себе: формулировка
-  в договор, шаблон запроса, промпт для ИИ. Суть — пара «предупреждение + кнопка
-  Скопировать»: отдаём сырьё и сразу говорим, что вслепую применять нельзя.
+  в договор, шаблон запроса, промпт для ИИ. Суть — пара «подзаголовок + кнопка
+  Скопировать»: отдаём сырьё и сразу поясняем, что это за заготовка.
   НЕ берут для обычной цитаты или примера — если текст не для копирования,
   это просто абзац.
 
@@ -39,14 +39,14 @@ const LABEL: Record<CopyState, string> = {
 type Props = {
   /** Заголовок врезки — Desktop/H4. В макете «ИИ промпт». */
   title: React.ReactNode;
-  /** Строка предупреждения — Desktop/Body L. Обязательна: в этом смысл врезки. */
-  warning: React.ReactNode;
+  /** Подзаголовок — Desktop/Body L. Обязателен: он объясняет, что за заготовка. */
+  subtitle: React.ReactNode;
   /** Текст-заготовка в белой плашке. Он же уходит в буфер обмена. */
   children: string;
   className?: string;
 };
 
-export function Prompt({ title, warning, children, className }: Props) {
+export function Prompt({ title, subtitle, children, className }: Props) {
   const [state, setState] = React.useState<CopyState>("idle");
   const timer = React.useRef<number | undefined>(undefined);
 
@@ -81,7 +81,7 @@ export function Prompt({ title, warning, children, className }: Props) {
       {/* Description */}
       <div className="flex w-full flex-col gap-[var(--space-xs)]">
         <p className="ds-h4 text-[color:var(--text-primary)]">{title}</p>
-        <p className="ds-body-l text-[color:var(--text-primary)]">{warning}</p>
+        <p className="ds-body-l text-[color:var(--text-primary)]">{subtitle}</p>
       </div>
 
       {/* Input Container: текст и кнопка — одна группа, кнопка принадлежит тексту. */}

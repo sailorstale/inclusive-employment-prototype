@@ -331,7 +331,7 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
 
     case "Prompt":
       return (
-        <Prompt title={node.title} warning={node.warning}>
+        <Prompt title={node.title} subtitle={node.subtitle}>
           {node.text}
         </Prompt>
       );

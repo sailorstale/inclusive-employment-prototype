@@ -100,7 +100,7 @@ export type Node =
   | { component: "Table"; caption?: string; header: string[]; rows: string[][] }
   | { component: "Image"; src: string; alt?: string }
   | { component: "Video"; href?: string }
-  | { component: "Prompt"; title: string; warning: string; text: string }
+  | { component: "Prompt"; title: string; subtitle: string; text: string }
   /*
     Компоненты, которых раскладка пока не собирает из источника, но которые есть
     в библиотеке и обязаны быть в формате: разработчик должен знать их поля,
@@ -2856,7 +2856,7 @@ export function buildDoc(
           {
             component: "Prompt",
             title: head,
-            warning: "Проверьте текст перед использованием — вслепую применять нельзя.",
+            subtitle: "Проверьте текст перед использованием — вслепую применять нельзя.",
             text: text || head,
           },
         ];
@@ -3195,7 +3195,7 @@ const TEXT_KEYS = new Set([
   "author",
   "role",
   "org",
-  "warning",
+  "subtitle",
   // Подпись таблицы для скринридера — обычный текст, но экранировать надо.
   "caption",
   // Квиз: вводный текст и разбор тоже несут разметку источника.
