@@ -162,6 +162,12 @@ export const sidebars: Record<Track, SidebarSpec> = {
       },
     ],
   },
+  /*
+    Меню НКО двухуровневое: большие темы («работа с соискателем», «выход на
+    работодателей») разрезаны на несколько страниц, и заголовок группы держит
+    их вместе. Заголовок группы — не ссылка: страницы-обёртки для него нет, и
+    выдумывать её только ради пункта меню незачем.
+  */
   ngo: {
     title: "Для НКО",
     track: "ngo",
@@ -169,8 +175,33 @@ export const sidebars: Record<Track, SidebarSpec> = {
       {
         items: [
           { label: "Запустить программу", path: "/ngo/start" },
-          { label: "Работать с соискателем", path: "/ngo/candidates" },
-          { label: "Выходить на работодателей", path: "/ngo/employers" },
+          { label: "Аудитория программы", path: "/ngo/audience" },
+        ],
+      },
+      {
+        label: "Работа с соискателем",
+        items: [
+          { label: "Первичное интервью", path: "/ngo/candidates" },
+          { label: "Профориентация", path: "/ngo/candidates/guidance" },
+          {
+            label: "Психологическая поддержка",
+            path: "/ngo/candidates/psychology",
+          },
+          {
+            label: "Подбор вакансий и собеседование",
+            path: "/ngo/candidates/vacancies",
+          },
+        ],
+      },
+      {
+        label: "Работодатели",
+        items: [
+          { label: "Поиск работодателей", path: "/ngo/employers" },
+          { label: "Разговор с работодателем", path: "/ngo/employers/talks" },
+        ],
+      },
+      {
+        items: [
           { label: "Сопровождать сотрудника", path: "/ngo/support" },
           { label: "Развивать и масштабировать", path: "/ngo/scale" },
           { label: "Финансировать программу", path: "/ngo/funding" },

@@ -137,7 +137,14 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     'prakticheskoe-zadanie-dlya-rabotodateley-2',
   ] },
 
-  // ── Для НКО: программа трудоустройства (М6) ─────────────────────────────
+  /*
+    Для НКО: программа трудоустройства (М6).
+
+    Модули 6.1–6.3 разрезаны на страницы по СВОИМ главам: в источнике это
+    заголовки верхнего уровня, и они же оказались естественным швом. Без
+    разреза выходили полотна на сто тысяч знаков — вчетверо больше самой
+    длинной страницы «Основ».
+  */
   { slug: '/ngo/start', title: 'Запустить программу', module: 'm6-1', sections: [
     'rol-nko-v-programmah-trudoustroystva-lyudey-s-in',
     'programma-trudoustroystva-v-nko',
@@ -145,6 +152,8 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     'pochemu-nko-vazhno-vystraivat-partnerskie-otnosh',
     'pochemu-dlya-nko-vazhen-inklyuzivnyy-podhod',
     'prakticheskoe-zadanie-dlya-predstaviteley-nko',
+  ] },
+  { slug: '/ngo/audience', title: 'Аудитория программы', module: 'm6-1', sections: [
     'analiz-auditorii-nko',
     'kak-ponyat-svoyu-tekuschuyu-auditoriyu-i-ne-pere',
     'kak-segmentirovat-auditoriyu-i-vydelit-ee-yadro',
@@ -157,21 +166,27 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     'prakticheskoe-zadanie-dlya-predstaviteley-nko-2',
     'podvedem-itogi',
   ] },
-  { slug: '/ngo/candidates', title: 'Работать с соискателем', module: 'm6-2', sections: [
+  { slug: '/ngo/candidates', title: 'Первичное интервью', module: 'm6-2', sections: [
     'pervichnoe-intervyu-s-soiskatelem',
     'provedenie-pervichnogo-intervyu',
     'nachalo-razgovora',
     'sostavlenie-portreta-soiskatelya',
     'kak-zavershit-pervuyu-vstrechu',
     'podvedem-itog',
+  ] },
+  { slug: '/ngo/candidates/guidance', title: 'Профориентация', module: 'm6-2', sections: [
     'proforientaciya-i-psihologicheskaya-podderzhka',
     'chto-takoe-proforientaciya-i-kogda-ona-nuzhna',
     'kogda-neobhodima-proforientaciya',
     'kak-provodit-proforientaciyu-poshagovyy-plan-dly',
     'osobennosti-proforientacii-lyudey-s-mentalnoy-in',
+  ] },
+  { slug: '/ngo/candidates/psychology', title: 'Психологическая поддержка', module: 'm6-2', sections: [
     'psihologicheskaya-podderzhka-soiskatelya-s-inval',
     'kak-nko-mozhet-pomoch',
     'podvedem-itogi-2',
+  ] },
+  { slug: '/ngo/candidates/vacancies', title: 'Подбор вакансий и собеседование', module: 'm6-2', sections: [
     'podbor-vakansiy-i-podgotovka-k-sobesedovaniyu',
     'shag-1-opredelenie-prioritetov',
     'shag-2-poisk-vakansiy-na-podhodyaschih-ploschadk',
@@ -183,9 +198,11 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     'shag-8-posle-sobesedovaniya',
     'podvedem-itogi-3',
   ] },
-  { slug: '/ngo/employers', title: 'Выходить на работодателей', module: 'm6-3', sections: [
+  { slug: '/ngo/employers', title: 'Поиск работодателей', module: 'm6-3', sections: [
     'poisk-rabotodateley',
     'kak-nayti-rabotodateley',
+  ] },
+  { slug: '/ngo/employers/talks', title: 'Разговор с работодателем', module: 'm6-3', sections: [
     'vzaimodeystvie-s-rabotodatelyami',
     'kak-podgotovitsya-k-razgovoru-s-rabotodatelem',
     'pervoe-obschenie-s-rabotodatelem',

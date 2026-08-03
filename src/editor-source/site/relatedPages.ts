@@ -38,12 +38,20 @@ const BLURB: Record<string, string> = {
   "/companies/hire/step-6":
     "Первоначальные и регулярные расходы и как их оптимизировать.",
 
-  "/ngo/start":
-    "Роль НКО, этапы работы, анализ аудитории и каналы продвижения.",
+  "/ngo/start": "Роль НКО, программа трудоустройства и этапы работы.",
+  "/ngo/audience":
+    "Кто ваша аудитория, где её искать и как оценить привлечение.",
   "/ngo/candidates":
-    "Первичное интервью, профориентация, подбор вакансий и собеседование.",
-  "/ngo/employers":
-    "Где искать работодателей, как говорить с ними и отвечать на возражения.",
+    "Как провести первую встречу и собрать портрет соискателя.",
+  "/ngo/candidates/guidance":
+    "Когда нужна профориентация и пошаговый план для НКО.",
+  "/ngo/candidates/psychology":
+    "Как поддержать соискателя, которому мешает страх и неуверенность.",
+  "/ngo/candidates/vacancies":
+    "Восемь шагов: от приоритетов до разбора состоявшегося собеседования.",
+  "/ngo/employers": "Где искать компании, готовые к сотрудничеству.",
+  "/ngo/employers/talks":
+    "Как готовиться к разговору, представить кандидата и отвечать на возражения.",
   "/ngo/support":
     "Два формата сопровождения, кризис-менеджмент и дорожная карта.",
   "/ngo/scale":
@@ -119,12 +127,33 @@ const RELATED: Record<string, string[]> = {
     "/general/legal/quotas",
   ],
 
-  "/ngo/start": ["/ngo/candidates", "/ngo/employers", "/ngo/scale"],
-  "/ngo/candidates": ["/ngo/employers", "/ngo/support", "/ngo/start"],
-  "/ngo/employers": ["/ngo/support", "/ngo/candidates", "/general/how"],
-  "/ngo/support": ["/ngo/scale", "/ngo/funding", "/ngo/employers"],
+  "/ngo/start": ["/ngo/audience", "/ngo/candidates", "/ngo/employers"],
+  "/ngo/audience": ["/ngo/candidates", "/ngo/employers", "/ngo/start"],
+  "/ngo/candidates": [
+    "/ngo/candidates/guidance",
+    "/ngo/candidates/psychology",
+    "/ngo/candidates/vacancies",
+  ],
+  "/ngo/candidates/guidance": [
+    "/ngo/candidates/psychology",
+    "/ngo/candidates/vacancies",
+    "/ngo/candidates",
+  ],
+  "/ngo/candidates/psychology": [
+    "/ngo/candidates/vacancies",
+    "/ngo/candidates/guidance",
+    "/ngo/candidates",
+  ],
+  "/ngo/candidates/vacancies": [
+    "/ngo/employers",
+    "/ngo/candidates",
+    "/ngo/candidates/guidance",
+  ],
+  "/ngo/employers": ["/ngo/employers/talks", "/ngo/support", "/general/how"],
+  "/ngo/employers/talks": ["/ngo/support", "/ngo/employers", "/general/how"],
+  "/ngo/support": ["/ngo/scale", "/ngo/funding", "/ngo/employers/talks"],
   "/ngo/scale": ["/ngo/funding", "/ngo/start", "/ngo/support"],
-  "/ngo/funding": ["/ngo/scale", "/ngo/start", "/ngo/candidates"],
+  "/ngo/funding": ["/ngo/scale", "/ngo/start", "/ngo/audience"],
 };
 
 export type RelatedCard = { title: string; description: string; href: string };

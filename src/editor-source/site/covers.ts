@@ -28,8 +28,13 @@ const COVERS: Record<string, Cover> = {
   "/companies/hire/step-6": { src: "", alt: "" },
 
   "/ngo/start": { src: "", alt: "" },
+  "/ngo/audience": { src: "", alt: "" },
   "/ngo/candidates": { src: "", alt: "" },
+  "/ngo/candidates/guidance": { src: "", alt: "" },
+  "/ngo/candidates/psychology": { src: "", alt: "" },
+  "/ngo/candidates/vacancies": { src: "", alt: "" },
   "/ngo/employers": { src: "", alt: "" },
+  "/ngo/employers/talks": { src: "", alt: "" },
   "/ngo/support": { src: "", alt: "" },
   "/ngo/scale": { src: "", alt: "" },
   "/ngo/funding": { src: "", alt: "" },

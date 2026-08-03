@@ -104,11 +104,18 @@ export default function App() {
           <Route path="/companies/hire/step-5" element={<GeneratedPage />} />
           <Route path="/companies/hire/step-6" element={<GeneratedPage />} />
 
-          {/* Для НКО (М6 — Программа НКО). Тоже из источника; хаб — руками. */}
+          {/* Для НКО (М6 — Программа НКО). Тоже из источника; хаб — руками.
+              Модули 6.1–6.3 разрезаны на страницы по своим главам: одним
+              полотном они не читались. */}
           <Route path="/ngo" element={<NgoHubPage />} />
           <Route path="/ngo/start" element={<GeneratedPage />} />
+          <Route path="/ngo/audience" element={<GeneratedPage />} />
           <Route path="/ngo/candidates" element={<GeneratedPage />} />
+          <Route path="/ngo/candidates/guidance" element={<GeneratedPage />} />
+          <Route path="/ngo/candidates/psychology" element={<GeneratedPage />} />
+          <Route path="/ngo/candidates/vacancies" element={<GeneratedPage />} />
           <Route path="/ngo/employers" element={<GeneratedPage />} />
+          <Route path="/ngo/employers/talks" element={<GeneratedPage />} />
           <Route path="/ngo/support" element={<GeneratedPage />} />
           <Route path="/ngo/scale" element={<GeneratedPage />} />
           <Route path="/ngo/funding" element={<GeneratedPage />} />
