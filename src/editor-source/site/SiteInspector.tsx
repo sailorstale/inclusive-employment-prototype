@@ -12,6 +12,7 @@ import type { Comment } from "@/editor-source/comments";
 import { EditorToast } from "@/editor-source/EditorNotices";
 import { EditorDock } from "@/editor-source/EditorDock";
 import { SourcePage } from "@/editor-source/source/SourcePage";
+import { SamplePage } from "@/editor-source/source/SamplePage";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { SidebarNav } from "@/components/shell/SidebarNav";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,10 @@ const TABS: { id: RefView; label: string }[] = [
 */
 let lastMode: Mode = "site";
 let lastTab: RefView = "source";
+
+/* Псевдо-«модуль» для эталонной страницы: id заведомо не совпадает ни с одним
+   реальным модулем, поэтому годится как значение того же переключателя. */
+const SAMPLE = "sample";
 
 /* Узел дерева по пути «0.2.1» (как в ResultView/JsonView). */
 function nodeAtPath(doc: Doc, path: string): Node | SectionNode | null {
@@ -217,9 +222,26 @@ function ModuleMode({ module }: { module: string }) {
                 {m.label}
               </button>
             ))}
+
+            {/* Эталон формата для разработчика — отделён от модулей чертой:
+                это не часть курса, а тестовая страница (та же, что /source/sample). */}
+            <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-border" />
+            <button
+              type="button"
+              onClick={() => setModuleId(SAMPLE)}
+              title="Образец: все компоненты и JSON к ним"
+              className={cn(
+                "shrink-0 rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
+                moduleId === SAMPLE
+                  ? "bg-[hsl(var(--brand)/0.12)] text-brand"
+                  : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
+              )}
+            >
+              Образец
+            </button>
           </nav>
           <div className="min-h-0 flex-1">
-            <SourcePage moduleId={moduleId} />
+            {moduleId === SAMPLE ? <SamplePage /> : <SourcePage moduleId={moduleId} />}
           </div>
         </div>
         {/* Плавающий док: карандаш включает режим правки (как на /source). */}
