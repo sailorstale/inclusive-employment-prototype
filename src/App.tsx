@@ -27,7 +27,6 @@ import { A11yPage } from "./pages/A11yPage";
 // монтируются под /general/* и служат обоим ролевым трекам.
 import { CompaniesHubPage } from "./pages/companies/CompaniesHubPage";
 import { GeneratedPage } from "./editor-source/site/GeneratedPage";
-import { HireHubPage } from "./pages/companies/HireHubPage";
 
 // Трек «Для НКО» — Программа НКО (М6). Общая база М1–М4 — в разделе
 // «Общая информация» (/general/*), НКО-дубли удалены.
@@ -91,12 +90,17 @@ export default function App() {
           <Route path="/general/legal/faq" element={<GeneratedPage />} />
           <Route path="/general/team" element={<GeneratedPage />} />
 
-          {/* Для компаний (М5 — Наём по шагам). Страницы шагов, как и «Основы»,
-              врастают из источника: та же GeneratedPage по карте (pageMap).
-              Хабы раздела остаются собранными руками — это навигация, а не
-              материал. */}
+          {/* Для компаний (М5 — Наём по шагам). Хаб трека и есть страница найма
+              по шагам: она сама разводит по шести шагам, отдельной развилки над
+              ней нет. Старый адрес /companies/hire ведёт сюда же.
+              Страницы шагов, как и «Основы», врастают из источника: та же
+              GeneratedPage по карте (pageMap). Хаб собран руками — это
+              навигация, а не материал. */}
           <Route path="/companies" element={<CompaniesHubPage />} />
-          <Route path="/companies/hire" element={<HireHubPage />} />
+          <Route
+            path="/companies/hire"
+            element={<Navigate to="/companies" replace />}
+          />
           <Route path="/companies/hire/step-1" element={<GeneratedPage />} />
           <Route path="/companies/hire/step-2" element={<GeneratedPage />} />
           <Route path="/companies/hire/step-3" element={<GeneratedPage />} />

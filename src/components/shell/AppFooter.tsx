@@ -10,7 +10,7 @@ const columns: { title: string; links: { label: string; to: string }[] }[] = [
     links: [
       { label: "Реалии и мифы", to: "/general/start" },
       { label: "Правила оформления", to: "/general/legal" },
-      { label: "Наём по шагам", to: "/companies/hire" },
+      { label: "Наём по шагам", to: "/companies" },
       { label: "Команда", to: "/general/team" },
     ],
   },

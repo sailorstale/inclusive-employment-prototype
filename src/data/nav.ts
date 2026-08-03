@@ -20,9 +20,10 @@ export const routeTitles: Record<string, string> = {
   "/general/legal/faq": "Вопросы и ответы",
   "/general/team": "Команда и коммуникация",
 
-  // Трек «Для компаний» (М5 — Наём по шагам)
+  // Трек «Для компаний» (М5 — Наём по шагам). Хаб трека = страница найма по
+  // шагам; отдельной страницы «Наём по шагам» больше нет (старый адрес
+  // /companies/hire ведёт на /companies).
   "/companies": "Для компаний",
-  "/companies/hire": "Наём по шагам",
   "/companies/hire/step-1": "Шаг 1. Выбор вакансии",
   "/companies/hire/step-2": "Шаг 2. Аудит готовности",
   "/companies/hire/step-3": "Шаг 3. Создание среды",
@@ -128,36 +129,26 @@ export const sidebars: Record<Track, SidebarSpec> = {
       },
     ],
   },
+  /*
+    Меню компаний одноуровневое: заголовок раздела «Для компаний» — это и есть
+    страница найма по шагам, а под ним сразу шаги. Промежуточного пункта «Наём
+    по шагам» больше нет: он повторял бы заголовок раздела.
+  */
   companies: {
     title: "Для компаний",
     track: "companies",
     groups: [
       {
         items: [
+          { label: "Шаг 1. Выбор вакансии", path: "/companies/hire/step-1" },
+          { label: "Шаг 2. Аудит готовности", path: "/companies/hire/step-2" },
+          { label: "Шаг 3. Создание среды", path: "/companies/hire/step-3" },
           {
-            label: "Наём по шагам",
-            path: "/companies/hire",
-            children: [
-              {
-                label: "Шаг 1. Выбор вакансии",
-                path: "/companies/hire/step-1",
-              },
-              {
-                label: "Шаг 2. Аудит готовности",
-                path: "/companies/hire/step-2",
-              },
-              {
-                label: "Шаг 3. Создание среды",
-                path: "/companies/hire/step-3",
-              },
-              {
-                label: "Шаг 4. Поиск и оформление",
-                path: "/companies/hire/step-4",
-              },
-              { label: "Шаг 5. Онбординг", path: "/companies/hire/step-5" },
-              { label: "Шаг 6. Затраты", path: "/companies/hire/step-6" },
-            ],
+            label: "Шаг 4. Поиск и оформление",
+            path: "/companies/hire/step-4",
           },
+          { label: "Шаг 5. Онбординг", path: "/companies/hire/step-5" },
+          { label: "Шаг 6. Затраты", path: "/companies/hire/step-6" },
         ],
       },
     ],
