@@ -31,7 +31,13 @@ import {
 import { renderInline } from "@/editor-source/richText";
 import { iconByName } from "./iconForText";
 import { useLogoIndex, useAvatarIndex } from "./orgLogo";
-import { buildDoc, type Doc, type Node, type SectionNode } from "./contentTree";
+import {
+  buildDoc,
+  type Doc,
+  type Node,
+  type SectionNode,
+  type TableCellValue,
+} from "./contentTree";
 import type { Directive } from "@/editor-source/directives";
 import type { Section } from "./PlaygroundColumn";
 import type { ResolveMd } from "./blockResolve";
@@ -127,7 +133,42 @@ export function ResultView({ doc, pick }: { doc: Doc; pick?: Pick }) {
   отдельной строкой с висячим отступом — чтобы перенос длинного пункта не
   сбивался под маркер. Текст при этом не меняется: превью и выгрузка совпадают.
 */
-function cellContent(cell: string): React.ReactNode {
+/*
+  СОДЕРЖИМОЕ ЯЧЕЙКИ. Ячейка с перечислением приходит узлами — рисуем их теми же
+  компонентами, что и на странице: Text для вступительной фразы, Stack с List
+  Item для списка. Собственные верхние отступы этих компонентов у первого узла
+  гасим: внутри ячейки свой отступ уже задан самой ячейкой.
+
+  Обёртки выбора (ds-pick) здесь нет намеренно: таблица выбирается целиком, как
+  и раньше. Иначе у ячейки появился бы адрес, которого нет в колонке JSON.
+*/
+function cellNodes(nodes: Node[]): React.ReactNode {
+  return nodes.map((n, i) => {
+    const flush = i === 0 ? "pt-0" : undefined;
+    if (n.component === "Stack")
+      return (
+        <Stack key={i} className={flush}>
+          {n.children.map((c, j) =>
+            c.component === "List Item" ? (
+              <ListItem key={j} size={c.size} type={c.type}>
+                {renderInline(c.text)}
+              </ListItem>
+            ) : null,
+          )}
+        </Stack>
+      );
+    if (n.component === "Text")
+      return (
+        <Text key={i} size={n.size} className={flush}>
+          {renderInline(n.text)}
+        </Text>
+      );
+    return null;
+  });
+}
+
+function cellContent(cell: TableCellValue): React.ReactNode {
+  if (typeof cell !== "string") return cellNodes(cell.children);
   const lines = cell.split("\n");
   if (lines.length === 1) return renderInline(cell);
   return lines.map((line, i) => {

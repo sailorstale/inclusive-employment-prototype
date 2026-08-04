@@ -108,7 +108,14 @@ type NodeKind =
     «все caption только для скринридеров, сгенерируй их сам, скрой визуально»).
     Собирается из ближайшего заголовка и шапки таблицы.
   */
-  | { component: "Table"; caption?: string; header: string[]; rows: string[][] }
+  | { component: "Table"; caption?: string; header: string[]; rows: TableCellValue[][] }
+  /*
+    Ячейка с перечислением. Обычная ячейка остаётся строкой — иначе выгрузка
+    толстеет на ровном месте: перечисления есть примерно в одной ячейке из
+    семи. А там, где перечисление есть, внутрь ложатся настоящие узлы:
+    вступительная фраза (Text) и список (Stack из List Item).
+  */
+  | { component: "Table cell"; children: Node[] }
   | { component: "Image"; src: string; alt?: string }
   | { component: "Video"; href?: string }
   | { component: "Prompt"; title: string; subtitle: string; text: string }
@@ -154,6 +161,16 @@ type NodeKind =
 type Origin = { at?: string[] };
 
 export type Node = NodeKind & Origin;
+
+/*
+  ЗНАЧЕНИЕ ЯЧЕЙКИ ТАБЛИЦЫ — строка или узел «Table cell» с содержимым.
+
+  Раньше ячейка всегда была строкой, и перечисления внутри неё лежали текстом
+  с маркерами «•». На странице это выглядело списком, но в выгрузке было одной
+  строкой — разработчик собрал бы абзац, а не список. Теперь такие ячейки едут
+  разобранными на узлы, а простые остаются строками.
+*/
+export type TableCellValue = string | Extract<Node, { component: "Table cell" }>;
 
 export type SectionNode = {
   component: "Section Container";
@@ -1104,12 +1121,8 @@ function mergeSiblings(nodes: Node[]): Node[] {
 /*
   ЯЧЕЙКА ТАБЛИЦЫ С ПЕРЕЧИСЛЕНИЕМ. В клиентском документе переносы строк внутри
   ячейки потерялись, и пункты слиплись в одну строку: «…дублировать письменно.•
-  Если обратная связь даётся устно…». Ставим перенос перед каждым пунктом — и
-  превью, и выгрузка дальше показывают их по одному в строке.
-
-  Маркер «•» остаётся в тексте: ячейка в наборе компонентов — лист, положить
-  внутрь настоящий список нечем (см. КОМПОНЕНТЫ.md). Поэтому чиним переносы, а
-  не структуру: так превью и то, что уедет разработчику, остаются одинаковыми.
+  Если обратная связь даётся устно…». Ставим перенос перед каждым пунктом —
+  дальше по этим переносам ячейка и разбирается на узлы (см. cellValue).
 */
 /*
   Подзаголовок внутри ячейки («**Санузел:**», «**1. Работа допускается…**») в том
@@ -1127,6 +1140,49 @@ export function cellWithLines(cell: string): string {
     ? cell.replace(/\s*•\s*/g, "\n• ").replace(/^\s*\n/, "").trim()
     : cell;
   return withBullets.replace(CELL_LABEL, "$1\n$2");
+}
+
+/*
+  ЗНАЧЕНИЕ ЯЧЕЙКИ. Ячейка без перечисления остаётся строкой. Если внутри есть
+  пункты, ячейка разбирается на узлы: строки с маркером собираются в список
+  (Stack из List Item), остальные становятся вступительным текстом (Text).
+  Групп может быть несколько — «фраза, список, фраза, список»; каждая новая
+  фраза закрывает предыдущий список.
+
+  Размер M, а не L: текст внутри ячейки на ступень мельче прозы страницы —
+  так же, как внутри карточки (сама ячейка нарисована стилем Body M).
+*/
+export function cellValue(cell: string): TableCellValue {
+  const text = cellWithLines(cell);
+  if (!text.includes("•")) return text;
+
+  const children: Node[] = [];
+  let items: Node[] = [];
+  const flushItems = () => {
+    if (!items.length) return;
+    // Нумерованных перечислений в ячейках нет — маркер всегда точка.
+    children.push({ component: "Stack", ordered: false, children: items });
+    items = [];
+  };
+
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith("•")) {
+      items.push({
+        component: "List Item",
+        size: "M",
+        type: "Dot",
+        text: line.replace(/^•\s*/, ""),
+      });
+      continue;
+    }
+    flushItems();
+    children.push({ component: "Text", size: "M", text: line });
+  }
+  flushItems();
+
+  return { component: "Table cell", children };
 }
 
 export function buildDoc(
@@ -1209,7 +1265,7 @@ export function buildDoc(
           {
             component: "Table",
             header: b.header,
-            rows: b.rows.map((r) => r.map(cellWithLines)),
+            rows: b.rows.map((r) => r.map(cellValue)),
           },
         ];
       case "image":
@@ -1256,7 +1312,14 @@ export function buildDoc(
       );
     if (Array.isArray(o.paragraphs)) parts.push((o.paragraphs as string[]).join(" "));
     if (Array.isArray(o.header)) parts.push((o.header as string[]).join(" "));
-    if (Array.isArray(o.rows)) parts.push((o.rows as string[][]).flat().join(" "));
+    if (Array.isArray(o.rows))
+      // Ячейка — либо строка, либо узел с содержимым (перечисление внутри).
+      parts.push(
+        (o.rows as TableCellValue[][])
+          .flat()
+          .map((c) => (typeof c === "string" ? c : nodeText(c)))
+          .join(" "),
+      );
     if (Array.isArray(o.children))
       parts.push((o.children as Node[]).map(nodeText).join(" "));
     return parts.join(" ");
@@ -3377,6 +3440,7 @@ const EXPORT_COMPONENTS: Record<
   Accordion: true,
   Quote: true,
   Table: true,
+  "Table cell": true,
   Image: true,
   Video: true,
   Prompt: true,
@@ -3511,7 +3575,16 @@ const cleanForExport = (
         continue;
       }
       if (k === "rows" && Array.isArray(v)) {
-        out[k] = (v as string[][]).map((row) => row.map(mdToTags));
+        /*
+          Ячейка с перечислением едет узлом — её чистим тем же обходом, что и
+          всё остальное. Адрес ей не заводим: таблица выбирается на странице
+          целиком, отдельных ячеек в выборе нет.
+        */
+        out[k] = (v as TableCellValue[][]).map((row, ri) =>
+          row.map((c, ci) =>
+            typeof c === "string" ? mdToTags(c) : cleanForExport(c, `${path}.${ri}.${ci}`),
+          ),
+        );
         continue;
       }
       // Варианты квиза — объекты {text, correct}: текст переводим в теги,
