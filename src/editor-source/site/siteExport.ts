@@ -12,6 +12,7 @@ import { loadDirectives } from "@/editor-source/directives";
 import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { decourse } from "./decourse";
+import { canonize } from "./canon";
 import { pageChildren } from "./pageStructure";
 import { pageParts } from "./pageOutline";
 import { coverFor, type Cover } from "./covers";
@@ -62,8 +63,11 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     const sourceSections = toSections(normalizeSourceBlocks(mod.blocks));
     const pathname = `/source/${page.module}`;
     const base = makeMdResolver(edits, pathname);
-    const resolve = (type: string, text: string, md: string, anchor?: string) =>
-      decourse(dropStepNumber(type, base(type, text, md, anchor), anchor), page.module);
+    const resolve = (type: string, text: string, md: string, anchor?: string) => {
+      const out = decourse(dropStepNumber(type, base(type, text, md, anchor), anchor), page.module);
+      // Единые названия повторяющихся блоков — как на сайте (см. canon.ts).
+      return type.startsWith("h") ? canonize(out) : out;
+    };
     // Тот же порядок, что на сайте: сначала разложить директивы по полному
     // источнику, потом убрать леса курса.
     const { sections, directiveAt } = dropScaffold(

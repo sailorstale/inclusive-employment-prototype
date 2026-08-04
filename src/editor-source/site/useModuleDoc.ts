@@ -4,6 +4,7 @@ import { normalizeSourceBlocks } from "@/editor-source/source/normalizeBlocks";
 import { placeDirectives, buildDoc, type Doc } from "@/editor-source/source/contentTree";
 import { makeMdResolver } from "@/editor-source/source/blockResolve";
 import { decourse } from "./decourse";
+import { canonize } from "./canon";
 import { dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { loadEdits } from "@/editor-source/store";
@@ -102,11 +103,14 @@ export function useModuleDoc(moduleId: string): Doc | null {
   const pathname = `/source/${moduleId}`;
   // Раскурсовка (сорт D) поверх правок: текст сайта де-курсуется, каждая замена
   // помечается. Инструмент-источник этот резолвер не использует — он остаётся сырым.
+  // Единые названия повторяющихся блоков (canon) — только для заголовков.
   const resolve = React.useMemo(() => {
     const base = makeMdResolver(edits, pathname);
-    return (type: string, text: string, md: string, anchor?: string) =>
-      decourse(dropStepNumber(type, base(type, text, md, anchor), anchor), moduleId);
-  }, [edits, pathname]);
+    return (type: string, text: string, md: string, anchor?: string) => {
+      const out = decourse(dropStepNumber(type, base(type, text, md, anchor), anchor), moduleId);
+      return type.startsWith("h") ? canonize(out) : out;
+    };
+  }, [edits, pathname, moduleId]);
   const sourceSections = React.useMemo(() => (blocks ? toSections(blocks) : []), [blocks]);
   // Директивы кладём на ПОЛНЫЙ источник, и только потом убираем леса курса:
   // порядок важен, иначе директивы теряют свои блоки (см. dropScaffold).
