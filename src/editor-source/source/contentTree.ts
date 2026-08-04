@@ -263,6 +263,20 @@ const wantsUnitalic = (d?: Directive) =>
 const wantsUnnumber = (d?: Directive) =>
   !!d && /(убра|убир|убер|сня|без)\p{L}*\s+(нумерац|нумирац|номер)/iu.test(d.comment || "");
 
+/*
+  «Пронумеровать заголовки» — обратная просьба. Источник перечисляет направления
+  словами («Первое — …», «Второе направление — …»), и в вёрстке этот зачин
+  выбрасывается: в ряду карточек порядок и так виден. Но иногда номер нужен явно,
+  и тогда его ставит раскладка — по месту карточки в ряду, а не по тексту.
+
+  Проверяем, что это не «убрать нумерацию»: слово «номер» есть в обеих просьбах,
+  а смысл у них противоположный.
+*/
+const wantsNumber = (d?: Directive) =>
+  !!d &&
+  !wantsUnnumber(d) &&
+  /(пронумер\p{L}*|нумерац\p{L}*|с\s+номер\p{L}*)/iu.test(instructionOf(d.comment || ""));
+
 const SERVICE_WORD =
   /^(заголов\p{L}*|загловк\p{L}*|подпис\p{L}*|надпис\p{L}*|слов\p{L}*|строк\p{L}*|текст\p{L}*|блок\p{L}*|эти|все|всё)$/iu;
 
@@ -517,6 +531,7 @@ const commentRecognized = (d?: Directive): boolean =>
   addedLinkUrl(d) !== undefined ||
   countHint(d) !== undefined ||
   wantsUnbold(d) ||
+  wantsNumber(d) ||
   wantsUnitalic(d) ||
   wantsUnnumber(d) ||
   wantsMerge(d) ||
@@ -1770,6 +1785,19 @@ export function buildDoc(
         const titleFix = (t?: string) =>
           t && noColon ? t.replace(/\s*[:：]\s*$/, "").trim() || t : t;
         /*
+          Нумерация заголовков — по месту карточки в ряду. Ставим в самом конце,
+          одним проходом по готовому ряду: так номера идут подряд независимо от
+          того, каким путём ряд собрался (по жирным лидам или явным делением).
+        */
+        const withNumbers = (list: Node[]): Node[] =>
+          wantsNumber(dir)
+            ? list.map((n, i) =>
+                n.component === "General Card" && n.title
+                  ? { ...n, title: `${i + 1}. ${n.title}` }
+                  : n,
+              )
+            : list;
+        /*
           Заголовок назвали комментарием, а первая строка тела — та же фраза:
           «Добавь заголовок На этом этапе важно» при абзаце «На этом этапе
           важно:». В источнике это была подпись к списку, в карточке подпись —
@@ -1863,7 +1891,7 @@ export function buildDoc(
         }
 
         if (units) {
-          return units.map(({ it, text }) => {
+          return withNumbers(units.map(({ it, text }) => {
             const { title, body } = splitTitleBody(text);
             const icon = iconOf(it);
             return {
@@ -1876,7 +1904,7 @@ export function buildDoc(
                 ? [{ component: "Text", size: "M", text: bodyText(body) }]
                 : [],
             };
-          });
+          }));
         }
 
         for (const it of items) {
@@ -2000,13 +2028,13 @@ export function buildDoc(
         */
         return want && cards.length !== want
           ? [
-              ...cards,
+              ...withNumbers(cards),
               {
                 component: "note" as const,
                 text: `просили ${want} карточек, получилось ${cards.length} — проверьте деление`,
               },
             ]
-          : cards;
+          : withNumbers(cards);
       }
 
       case "Accordion": {
