@@ -634,9 +634,20 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       "kak-podelitsya-svoey-ekspertizoy",
       "podvedem-itogi-7",
     ],
+    /*
+      «Анализ новой территории» и «Выбор формата работы» подняты в разделы.
+      Раньше они лежали внутри «Масштабирования географии», и девять их подтем
+      («Оценка аудитории», «Онлайн-сопровождение» и другие) проваливались на
+      уровень, где заголовок совпадает с обычным текстом по размеру и отличается
+      только жирностью. В навигацию они тоже не попадали: туда идут два верхних
+      уровня. Теперь подтемы поднялись на ступень и стали видны и глазом, и в
+      оглавлении.
+    */
     outline: {
       sections: [
         "masshtabirovanie-geografii-deyatelnosti",
+        "analiz-novoy-territorii",
+        "vybor-formata-raboty",
         "rabota-s-drugoy-formoy-invalidnosti",
         "kak-podelitsya-svoey-ekspertizoy",
         "podvedem-itogi-7",
