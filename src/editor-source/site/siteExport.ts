@@ -83,7 +83,8 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
       .filter((s): s is SectionNode => Boolean(s));
 
     // Та же структура, что рисует сайт: обвязка + секции, одним деревом.
-    const children = toExport(pageChildren(chosen, page.slug));
+    const intro = page.intro ? byAnchor.get(page.intro) : undefined;
+    const children = toExport(pageChildren(chosen, page.slug, intro));
     pages.push({
       slug: page.slug,
       header: { h1: page.title, cover: coverFor(page.slug) },

@@ -9,10 +9,21 @@
 // модуля и служебное «Остались вопросы или пожелания?». «Подведём итоги»
 // переносится как есть — это содержательная сводка.
 
-export type OsnovyPage = { slug: string; title: string; module: string; sections: string[] };
+/*
+  intro — секция источника, которая идёт ВСТУПЛЕНИЕМ: над списком «вы узнаете»,
+  без своего заголовка и без пункта в оглавлении. Так «Введение» модуля попадает
+  на страницу текстом, а не разделом наравне с материалом.
+*/
+export type OsnovyPage = {
+  slug: string;
+  title: string;
+  module: string;
+  sections: string[];
+  intro?: string;
+};
 
 export const OSNOVY_PAGES: OsnovyPage[] = [
-  { slug: '/general/start', title: 'Реалии и мифы', module: 'm1', sections: [
+  { slug: '/general/start', title: 'Реалии и мифы', module: 'm1', intro: 'vvedenie', sections: [
     'chto-takoe-invalidnost-medicinskiy-i-socialnyy-p',
     'kto-takie-soiskateli-s-invalidnostyu',
     'osobennosti-raznyh-form-invalidnosti',

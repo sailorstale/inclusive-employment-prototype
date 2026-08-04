@@ -79,12 +79,30 @@ function readMoreNode(slug: string): Node {
   };
 }
 
+/*
+  ВСТУПЛЕНИЕ СТРАНИЦЫ — секция источника, поставленная над списком «вы узнаете».
+
+  Свой заголовок она теряет: название страницы уже стоит в шапке, а «Введение» —
+  лес курса. Якорь тоже снимаем, чтобы вступление не ловил scrollspy: в темах и
+  в оглавлении его нет (pageToc и pageTopics считают только выбранные секции).
+*/
+function introSection(sec: SectionNode): SectionNode {
+  const i = sec.children.findIndex((n) => n.component === "Heading");
+  const children =
+    i === -1
+      ? sec.children
+      : [...sec.children.slice(0, i), ...sec.children.slice(i + 1)];
+  return { ...sec, anchor: undefined, children };
+}
+
 /** Полный список узлов страницы: обвязка + секции, в порядке показа. */
 export function pageChildren(
   chosen: SectionNode[],
   slug: string,
+  intro?: SectionNode,
 ): (SectionNode | Node)[] {
   return [
+    ...(intro ? [introSection(intro)] : []),
     pageSummaryNode(chosen),
     ...chosen,
     { component: "Feedback" },

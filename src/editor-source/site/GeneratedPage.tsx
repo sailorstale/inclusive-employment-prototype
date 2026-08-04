@@ -32,13 +32,19 @@ export function GeneratedPage() {
       .map((n) => [n.anchor ?? "", n]),
   );
   const chosen = page.sections.map((a) => byAnchor.get(a)).filter(Boolean) as SectionNode[];
+  // Вступление (если у страницы оно заявлено) — отдельно от секций: в темах и
+  // в оглавлении его быть не должно.
+  const intro = page.intro ? byAnchor.get(page.intro) : undefined;
 
   /* Оглавление «На этой странице» (правое меню) — секции H2 и подзаголовки H3. */
   const tocItems = pageToc(chosen);
 
   // Полная страница одним деревом: обвязка + секции. module оставляем в Doc для
   // сборки (правки/логотипы), но в JSON/выгрузку он не попадает.
-  const pageDoc: Doc = { module: page.module, children: pageChildren(chosen, page.slug) };
+  const pageDoc: Doc = {
+    module: page.module,
+    children: pageChildren(chosen, page.slug, intro),
+  };
 
   return <SiteInspector page={page} pageDoc={pageDoc} tocItems={tocItems} />;
 }
