@@ -861,6 +861,28 @@ const headingText = (t: string, fix: TextFix = NO_FIX) => {
 const stripEmph = (t: string) => t.replace(/^[*_]+|[*_]+$/g, "").trim();
 
 /*
+  Звёздочки ВНУТРИ строки. Разметка в источнике часто рваная: «**Ольга
+  Алексеевна Поварова****, специалист…**», «…вакансии.* * **Доверие…*». Краевые
+  маркеры снимает stripEmph, а внутренние остаются и читатель видит их как
+  мусор посреди фразы. В цитате разметка веса не нужна вовсе — карточка и так
+  набрана курсивом, — поэтому маркеры выделения снимаем целиком.
+*/
+const stripMarks = (t: string) =>
+  t
+    .replace(/\*+/g, "")
+    .replace(/^_+|_+$/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+/** Буквы и цифры в нижнем регистре — для сверки «упомянуто ли уже». */
+const flatten = (t: string) =>
+  t
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+
+/*
   Группы по ВСЕМУ модулю: подряд идущие блоки одной директивы — вместе.
 
   Почему сквозным проходом, а не внутри каждой секции. Директива — единое целое,
@@ -2007,10 +2029,19 @@ export function buildDoc(
             текста самой ссылки.
           */
           const bare = stripEmph(stripLink(head || t));
+          /*
+            То же самое, но БЕЗ отрезанной хвостовой ссылки: в ней обычно и
+            названа организация («…специалист по социальной работе [центра
+            адаптации людей с инвалидностью Мастер ОК](ссылка)»). Для
+            распознавания строки авторства она мешает (длина, точки), а для
+            самой подписи нужна — из неё берём должность вместе с местом работы.
+          */
+          const full = stripMarks(stripLink(t));
           return {
             it,
             text: t,
             bare,
+            full,
             isLinkOnly:
               it.b.kind === "paragraph" &&
               LINK_RE.test(t) &&
@@ -2054,7 +2085,7 @@ export function buildDoc(
           let author: string | undefined;
           let role: string | undefined;
           if (hasAuthor) {
-            const [name, ...restRole] = parsed[ai].bare.split(",");
+            const [name, ...restRole] = parsed[ai].full.split(",");
             author = name.trim() || undefined;
             role = restRole.join(",").trim() || undefined;
           }
@@ -2074,8 +2105,8 @@ export function buildDoc(
                 parsed[ai].text,
               );
           if (glued) {
-            author = glued[1].trim();
-            role = glued[2].trim();
+            author = stripMarks(glued[1]);
+            role = stripMarks(glued[2]);
           }
 
           /*
@@ -2134,6 +2165,22 @@ export function buildDoc(
           const logo = yandex ? "yandex" : orgName ? findSlug(orgName, logoIndex) : undefined;
           const photo = author ? findPhotoSlug(author, avatarIndex) : undefined;
 
+          /*
+            ОРГАНИЗАЦИЯ ВСЕГДА ВИДНА В ДОЛЖНОСТИ (решение дизайнера). По одному
+            логотипу читатель фонд не опознает, поэтому строка должности обязана
+            называть место работы словами: «руководитель проектов, Фонд борьбы
+            с лейкемией». Чаще всего организация уже стоит в самой строке
+            авторства — тогда ничего не дописываем, проверяем по буквам.
+            У цитаты без автора подписью работает само название организации
+            (см. Quote), второй раз его писать не нужно.
+          */
+          const roleText =
+            author && org && !flatten(role ?? "").includes(flatten(org))
+              ? role
+                ? `${role}, ${org}`
+                : org
+              : role;
+
           // Речь: абзацы сегмента, кроме строки авторства и блока-ссылки.
           // Список внутри речи раскрываем в пункты-строки «• …».
           const speech: string[] = [];
@@ -2144,7 +2191,7 @@ export function buildDoc(
             else {
               // Склеенный абзац: авторство уже забрали, в речь идёт остаток.
               const raw = glued && j === 0 ? glued[3] : p.text;
-              const s = stripQuotes(stripEmph(raw));
+              const s = stripQuotes(stripMarks(raw));
               if (s) speech.push(s);
             }
           });
@@ -2166,7 +2213,7 @@ export function buildDoc(
             component: "Quote",
             size: mods.size === "S" ? "S" : "L",
             author,
-            role,
+            role: roleText,
             org,
             logo,
             photo,

@@ -138,9 +138,44 @@ export function loadAvatarIndex(): Promise<AvatarEntry[]> {
 }
 
 /**
+ * Каталожное имя без номера варианта: у одного человека бывает два снимка
+ * («Мария Бурчакова 1», «Мария Бурчакова 2»). Номер — служебный, к имени
+ * отношения не имеет, и из-за него имя не совпадало с текстом вовсе.
+ */
+const catalogName = (name: string) => normalize(name).replace(/\s+\d+$/, "");
+
+/**
+ * Отличаются ли два слова не больше чем на одну букву (вставка, пропуск или
+ * замена). Нужно для расхождений в написании фамилии между текстом и каталогом.
+ */
+function withinOneEdit(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      i++;
+      j++;
+      continue;
+    }
+    if (++edits > 1) return false;
+    if (a.length > b.length) i++;
+    else if (a.length < b.length) j++;
+    else {
+      i++;
+      j++;
+    }
+  }
+  return true;
+}
+
+/**
  * Слаг аватара по имени автора. Сверяем нормализованные имена: точное
  * совпадение или совпадение по набору слов (порядок «Имя Фамилия» /
- * «Фамилия Имя» не важен). Имена короче 3 знаков не ищем.
+ * «Фамилия Имя» не важен, отчество в тексте не мешает). Имена короче 3 знаков
+ * не ищем.
  */
 export function findPhotoSlug(
   author: string,
@@ -148,17 +183,33 @@ export function findPhotoSlug(
 ): string | undefined {
   const want = normalize(author);
   if (want.length < 3) return undefined;
-  const words = new Set(want.split(" "));
+  const words = [...new Set(want.split(" ").filter(Boolean))];
+  const wordSet = new Set(words);
   for (const e of index) {
-    const n = normalize(e.name);
-    if (n === want) return e.slug;
+    if (catalogName(e.name) === want) return e.slug;
   }
   // Мягкое совпадение: все слова каталожного имени есть в имени автора.
   for (const e of index) {
-    const parts = normalize(e.name).split(" ").filter(Boolean);
-    if (parts.length >= 2 && parts.every((p) => words.has(p))) return e.slug;
+    const parts = catalogName(e.name).split(" ").filter(Boolean);
+    if (parts.length >= 2 && parts.every((p) => wordSet.has(p))) return e.slug;
   }
-  return undefined;
+  /*
+    Разное написание фамилии. В тексте «Ольга Алексеевна Поварова», в каталоге
+    «Ольга Поворова» — одна буква, и фото не находилось, хотя лежит в папке.
+    Допуск узкий, чтобы не подставить чужое лицо: длинные слова сверяем с
+    точностью до одной буквы, короткие (имена вроде «Ольга») — буква в букву,
+    и берём фото, только если подошла РОВНО одна карточка каталога.
+  */
+  const near = index.filter((e) => {
+    const parts = catalogName(e.name).split(" ").filter(Boolean);
+    if (parts.length < 2) return false;
+    return parts.every((p) =>
+      p.length >= 5
+        ? words.some((w) => withinOneEdit(p, w))
+        : wordSet.has(p),
+    );
+  });
+  return near.length === 1 ? near[0].slug : undefined;
 }
 
 export function useAvatarIndex(): AvatarEntry[] {
