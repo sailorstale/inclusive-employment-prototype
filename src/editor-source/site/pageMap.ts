@@ -92,30 +92,13 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       "chto-delat-esli-sotrudnichestvo-nko-i-rabotodate",
       "podvedem-itogi",
     ],
-    /*
-      Разделами объявлены и подтемы второго ряда — сценарии трудоустройства,
-      группы источников поиска и два пути партнёрства. Иначе их собственные
-      части («До выхода на работу», «Вузы и колледжи», «Шаг 1. Успешный опыт»)
-      проваливались на уровень, где заголовок совпадает с обычным текстом по
-      размеру, и в навигацию не попадали вовсе. Ряды сиблингов поднимаем
-      целиком, чтобы соседние по смыслу темы не оказались на разных ступенях.
-    */
     outline: {
       sections: [
         "uchastniki-inklyuzivnogo-trudoustroystva-i-ih-ro",
         "scenarii-poiska-raboty",
-        "trudoustroystvo-pri-podderzhke-sluzhby-zanyatost",
-        "trudoustroystvo-s-uchastiem-nekommercheskoy-orga",
-        "soprovozhdaemoe-trudoustroystvo",
         "gde-iskat-kandidatov-s-invalidnostyu",
-        "universalnye-platformy-dlya-poiska-raboty",
-        "gosudarstvennye-i-obrazovatelnye-uchrezhdeniya",
-        "profilnye-organizacii",
-        "pryamoy-poisk-i-netvorking",
         "vzaimodeystvie-rabotodateley-i-nko-kto-za-chto-o",
         "kak-vystroit-partnerskie-otnosheniya-mezhdu-rabo",
-        "put-ot-kandidata-nko-k-kompanii",
-        "put-ot-kompanii-k-nko",
         "chto-delat-esli-sotrudnichestvo-nko-i-rabotodate",
         "podvedem-itogi",
       ],
@@ -527,36 +510,11 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       "kak-provodit-proforientaciyu-poshagovyy-plan-dly",
       "osobennosti-proforientacii-lyudey-s-mentalnoy-in",
     ],
-    /*
-      Шесть этапов плана подняты в разделы: их собственные части («Разбор
-      реальных вакансий», «Переход к подбору вакансий», приёмы поиска гипотез)
-      иначе оказывались размером с обычный текст и в навигацию не попадали.
-      «Что делать, если гипотезы не появляются» — тоже раздел: под ним лежат три
-      приёма, и без подъёма они проваливались так же.
-
-      Разборы соискателей помечены врезками: они остаются на месте и читаются
-      как примеры, но отдельными пунктами в оглавлении не нужны — их четыре
-      подряд, и они забили бы навигацию этапа.
-    */
     outline: {
       sections: [
         "chto-takoe-proforientaciya-i-kogda-ona-nuzhna",
         "kak-provodit-proforientaciyu-poshagovyy-plan-dly",
-        "etap-1-soberite-dannye",
-        "etap-2-proanaliziruyte-portreta-soiskatelya",
-        "etap-3-obsudite-protivorechiya",
-        "etap-4-sformuliruyte-karernye-gipotezy",
-        "chto-delat-esli-gipotezy-ne-poyavlyayutsya",
-        "etap-5-proverte-gipotezy-na-praktike",
-        "etap-6-vyberite-napravlenie-raboty",
         "osobennosti-proforientacii-lyudey-s-mentalnoy-in",
-      ],
-      inline: [
-        "primer-1-soiskatel-s-invalidnostyu-oporno-dvigat",
-        "primer-2-soiskatel-s-invalidnostyu-po-sluhu",
-        "primer-3-soiskatel-s-invalidnostyu-po-zreniyu",
-        "primer-4-soiskatel-s-priobretennoy-invalidnostyu",
-        "primer-soiskatel-s-priobretennoy-invalidnostyu",
       ],
     },
   },
@@ -605,38 +563,13 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     title: "Поиск работодателей",
     module: "m6-3",
     sections: ["poisk-rabotodateley", "kak-nayti-rabotodateley"],
-    /*
-      Восемь мест поиска подняты в разделы. В источнике они сложены неверно:
-      «Текущие партнёры НКО» стоят ступенью ниже «Сайтов с вакансиями», а
-      «Службы занятости», «Малый и средний бизнес» и остальные — ВНУТРИ сайтов,
-      хотя сайтами не являются. Из-за этого шесть мест оказывались размером с
-      обычный текст и в навигацию не попадали, хотя ради них страницу и
-      открывают. Подняли все восемь в один ряд — и ошибка вложенности исчезла.
-
-      Два совета про контакты подняты следом: иначе они читались бы как часть
-      последнего места в списке. Пример и голос НКО остаются врезками.
-    */
     outline: {
       sections: [
         "zachem-nko-iskat-rabotodateley-zaranee",
         "kak-nayti-rabotodateley",
-        "etap-1-opredelite-kakie-rabotodateli-nuzhny-vash",
-        "etap-2-naydite-potencialnyh-rabotodateley",
-        "tekuschie-partnery-nko",
-        "sayty-s-vakansiyami",
-        "sluzhby-zanyatosti-naseleniya",
-        "kompanii-s-massovym-naymom",
-        "malyy-i-sredniy-biznes",
-        "kompanii-kotorye-uzhe-govoryat-ob-inklyuzii",
-        "biznes-soobschestva-i-professionalnye-obedineniy",
-        "konferencii-vstrechi-i-professionalnye-sobytiya",
-        "ischite-ne-tolko-kompaniyu-no-i-nuzhnogo-chelove",
-        "proyavlyayte-iniciativu-pri-poiske-kontaktov",
-        "etap-3-sostavte-spisok-rabotodateley",
-        "gde-iskat-informaciyu-o-kompanii",
         "podvedem-itogi-4",
       ],
-      inline: ["chto-govoryat-nko", "primer-2"],
+      inline: ["chto-govoryat-nko"],
     },
   },
   {
