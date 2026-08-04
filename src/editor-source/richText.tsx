@@ -15,6 +15,16 @@ import { ExternalLink } from "@/figma/ExternalLink";
 import { isExternalHref } from "./safeUrl";
 
 /*
+  АДРЕС ВНУТРЕННЕЙ ССЫЛКИ В ПРОТОТИПЕ. В данных внутренние ссылки лежат обычным
+  путём от корня («/general/legal») — именно такой адрес нужен разработчику на
+  боевом сайте. Сам прототип живёт на адресах с решёткой (HashRouter), поэтому
+  решётку приписываем ЗДЕСЬ, при показе, и только к путям от корня. Якорь на
+  этой же странице («#glossary») уже с решёткой — его не трогаем.
+*/
+export const previewHref = (href: string) =>
+  href.startsWith("/") ? `#${href}` : href;
+
+/*
   Тултип — пояснение термина прямо в абзаце: {{термин|описание}} либо
   {{термин|Заголовок|описание}}. Три поля по договорённости с разработчиком:
   видимый текст, необязательный заголовок пузыря и само описание.
@@ -93,7 +103,7 @@ function renderPlain(text: string): React.ReactNode {
         ) : (
           <a
             key={key}
-            href={href}
+            href={previewHref(href)}
             className="text-brand underline underline-offset-2"
           >
             {m[1]}

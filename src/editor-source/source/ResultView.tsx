@@ -28,11 +28,12 @@ import {
   Video,
   type GeneralCardBg,
 } from "@/figma";
-import { renderInline } from "@/editor-source/richText";
+import { renderInline, previewHref } from "@/editor-source/richText";
 import { iconByName } from "./iconForText";
 import { useLogoIndex, useAvatarIndex } from "./orgLogo";
 import {
   buildDoc,
+  textBlocks,
   type Doc,
   type Node,
   type SectionNode,
@@ -165,6 +166,31 @@ function cellNodes(nodes: Node[]): React.ReactNode {
       );
     return null;
   });
+}
+
+/*
+  ТЕКСТ КВИЗА. Вопрос и разбор приходят несколькими абзацами, внутри которых
+  бывают перечисления. Рисуем их тем же разбором, что уходит и в выгрузку
+  (textBlocks): абзацы отдельными блоками, строки с маркером — настоящим
+  списком. Раньше пункты слипались в строку, а «•» оставался символом в тексте.
+*/
+function quizText(text?: string): React.ReactNode {
+  if (!text) return text;
+  const blocks = textBlocks(text);
+  if (blocks.length <= 1 && blocks[0]?.kind !== "ul") return renderInline(text);
+  return blocks.map((b, i) =>
+    b.kind === "ul" ? (
+      <ul key={i} className="ml-5 list-disc space-y-1">
+        {b.lines.map((line, j) => (
+          <li key={j}>{renderInline(line)}</li>
+        ))}
+      </ul>
+    ) : (
+      <p key={i} className={i ? "mt-[var(--space-s)]" : undefined}>
+        {renderInline(b.lines[0])}
+      </p>
+    ),
+  );
 }
 
 function cellContent(cell: TableCellValue): React.ReactNode {
@@ -414,10 +440,10 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
       return (
         <Quiz
           title={node.title}
-          description={node.description}
-          question={node.question}
+          description={quizText(node.description)}
+          question={quizText(node.question)}
           items={node.items}
-          explanation={node.explanation}
+          explanation={quizText(node.explanation)}
         />
       );
 
@@ -438,7 +464,8 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
         <ReadMoreItem
           title={node.title}
           description={node.description}
-          href={node.href}
+          /* В данных путь от корня; решётку прототипа приписываем при показе. */
+          href={previewHref(node.href)}
         />
       );
 

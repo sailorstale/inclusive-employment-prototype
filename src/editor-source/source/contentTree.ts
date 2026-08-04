@@ -3425,6 +3425,53 @@ const INLINE_MD =
 /** В атрибут тега кавычка попасть не должна — экранируем её отдельно. */
 const escapeAttr = (t: string) => escapeText(t).replace(/"/g, "&quot;");
 
+/*
+  ТЕКСТ БЛОКАМИ — абзацы и перечисления внутри одного поля.
+
+  Вопрос квиза и разбор приходят из источника несколькими абзацами, а внутри
+  бывают перечисления. Раньше всё это лежало одной строкой: абзацы разделял
+  голый перенос, а пункты помечались символом «•» прямо в тексте. На странице
+  пункты слипались в одну строку, а разработчик получил бы абзац вместо списка.
+
+  Разбор один и для показа, и для выгрузки — иначе сайт и JSON разъедутся.
+*/
+export type TextBlock = { kind: "p" | "ul"; lines: string[] };
+
+export function textBlocks(text: string): TextBlock[] {
+  const out: TextBlock[] = [];
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith("•")) {
+      const item = line.replace(/^•\s*/, "");
+      const last = out[out.length - 1];
+      // Идущие подряд пункты — один список, а не список на каждый пункт.
+      if (last?.kind === "ul") last.lines.push(item);
+      else out.push({ kind: "ul", lines: [item] });
+      continue;
+    }
+    out.push({ kind: "p", lines: [line] });
+  }
+  return out;
+}
+
+/*
+  То же поле в выгрузку: один абзац без пунктов уезжает как раньше, обычной
+  строкой с тегами. Всё, что сложнее, — тегами блоков: <p> и <ul><li>. Поле и
+  так несёт разметку (<b>, <a>), поэтому список тегами ей не чужой.
+*/
+export function mdBlocksToTags(text: string): string {
+  const blocks = textBlocks(text);
+  if (blocks.length <= 1 && blocks[0]?.kind !== "ul") return mdToTags(text);
+  return blocks
+    .map((b) =>
+      b.kind === "ul"
+        ? `<ul>${b.lines.map((l) => `<li>${mdToTags(l)}</li>`).join("")}</ul>`
+        : `<p>${mdToTags(b.lines[0])}</p>`,
+    )
+    .join("");
+}
+
 export function mdToTags(text: string): string {
   // Метки раскурсовки — только для показа замен на сайте (<mark> с подсказкой).
   // В данные разработчику уходит ЧИСТЫЙ новый текст: убираем метки и оригинал,
@@ -3484,6 +3531,8 @@ const TEXT_KEYS = new Set([
 ]);
 /** Поля-массивы строк и таблица (массив массивов). */
 const TEXT_ARRAY_KEYS = new Set(["paragraphs", "header"]);
+/** Поля квиза, где текст идёт абзацами и перечислениями, а не одной фразой. */
+const BLOCK_TEXT_KEYS = new Set(["question", "explanation", "description"]);
 
 /*
   КОНТРАКТ ВЫГРУЗКИ (замечания разработчика к JSON).
@@ -3641,7 +3690,14 @@ const cleanForExport = (
       }
       // Текст уезжает разработчику с тегами; служебные поля — как есть.
       if (TEXT_KEYS.has(k) && typeof v === "string") {
-        out[k] = mdToTags(v);
+        /*
+          Вопрос и разбор квиза — не одна фраза, а несколько абзацев, внутри
+          которых бывают перечисления. Их размечаем блоками (<p>, <ul>), иначе
+          пункты уехали бы разработчику символами «•» посреди текста.
+        */
+        out[k] = component === "Quiz" && BLOCK_TEXT_KEYS.has(k)
+          ? mdBlocksToTags(v)
+          : mdToTags(v);
         continue;
       }
       if (TEXT_ARRAY_KEYS.has(k) && Array.isArray(v)) {

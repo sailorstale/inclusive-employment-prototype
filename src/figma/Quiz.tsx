@@ -40,16 +40,22 @@ export type QuizOption = {
   feedback?: string;
 };
 
+/*
+  Вопрос, вводный абзац и разбор принимают не только строку, но и готовую
+  разметку: в источнике это несколько абзацев, внутри которых бывают
+  перечисления, и раскладка передаёт их настоящими абзацами и списком.
+  Простая строка тоже работает — так их задают страницы-витрины.
+*/
 type Props = {
   /** Заголовок темы, H3. */
   title?: string;
   /** Вводный абзац, Body L. По смыслу опционален. */
-  description?: string;
+  description?: React.ReactNode;
   /** Сам вопрос, Body L Bold. */
-  question: string;
+  question: React.ReactNode;
   items: QuizOption[];
   /** Текст разбора, Body M — показывается после проверки. */
-  explanation?: string;
+  explanation?: React.ReactNode;
   className?: string;
 };
 
@@ -102,19 +108,24 @@ export function Quiz({
         <h3 className="ds-h3 text-[color:var(--text-primary)]">{title}</h3>
       ) : null}
       {description ? (
-        <p className="ds-body-l text-[color:var(--text-primary)]">
+        <div className="ds-body-l text-[color:var(--text-primary)]">
           {description}
-        </p>
+        </div>
       ) : null}
 
-      {/* Вопрос может быть из нескольких абзацев (сценарий-кейс + сам вопрос) —
-          переносы значимы, поэтому whitespace-pre-line. */}
-      <p
+      {/*
+        Вопрос бывает из нескольких абзацев (сценарий-кейс + сам вопрос), и
+        внутри бывает перечисление. Раскладка передаёт их готовой разметкой,
+        поэтому обёртка — блок, а не абзац: абзац в абзаце недопустим.
+        whitespace-pre-line оставлен для простой строки, которую передают
+        страницы-витрины.
+      */}
+      <div
         id={questionId}
         className="ds-body-l-bold whitespace-pre-line text-[color:var(--text-primary)]"
       >
         {question}
-      </p>
+      </div>
 
       {/* Options Container: стопка вариантов с зазором 4 — плотно, как единый список. */}
       <div
@@ -191,7 +202,7 @@ function Feedback({
 }: {
   items: QuizOption[];
   selected: boolean[];
-  explanation?: string;
+  explanation?: React.ReactNode;
   /** Показывать строку-вердикт («Верно» / «Частично верно» / «Неверно»). */
   showScore: boolean;
 }) {
@@ -235,9 +246,11 @@ function Feedback({
           ))
         : explanation
           ? (
-              <p className="ds-body-m text-[color:var(--text-primary)]">
+              /* Блок, а не абзац: разбор приходит готовой разметкой из абзацев
+                 и списка (см. вопрос выше). */
+              <div className="ds-body-m text-[color:var(--text-primary)]">
                 {explanation}
-              </p>
+              </div>
             )
           : null}
     </div>

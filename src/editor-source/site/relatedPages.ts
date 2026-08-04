@@ -4,7 +4,8 @@ import { OSNOVY_PAGES } from "./pageMap";
   «Читайте также» — какие страницы «Основ» предложить внизу каждой (по 3
   релевантных соседа) и короткая навигационная подпись к каждой. Подписи
   основаны на реальном содержании страниц; это обвязка страницы, не контент
-  источника. Ссылки хэшевые (HashRouter): `#` + slug.
+  источника. Адрес ссылки — путь от корня («/general/legal»), как нужно
+  разработчику; решётку прототипа приписывает показ, а не данные.
 */
 
 // Короткая подпись страницы для карточки «Читайте также».
@@ -164,7 +165,12 @@ export function relatedFor(slug: string): RelatedCard[] {
     .map((s) => {
       const page = OSNOVY_PAGES.find((p) => p.slug === s);
       if (!page) return null;
-      return { title: page.title, description: BLURB[s] ?? "", href: `#${s}` };
+      /*
+        Адрес — обычный путь от корня, без решётки: он уезжает разработчику, а
+        на боевом сайте решётки нет. Прототип приписывает её при показе сам
+        (previewHref в richText).
+      */
+      return { title: page.title, description: BLURB[s] ?? "", href: s };
     })
     .filter((x): x is RelatedCard => x !== null);
 }

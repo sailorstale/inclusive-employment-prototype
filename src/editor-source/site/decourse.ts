@@ -11,19 +11,25 @@ import { MARK_A, MARK_B, MARK_C, markRe } from "@/editor-source/richText";
 
   ССЫЛКАМИ, А НЕ СЛОВАМИ. «Подробнее об этом мы рассказывали в модуле 2» — на
   сайте модулей нет, а раздел есть, и до него один клик. Поэтому замена
-  подставляет не только название, но и ссылку на страницу (адрес с решёткой —
-  такой же, как в «Читайте также»). Разметку внутри замены рисует renderInline,
-  а в выгрузке разработчику остаётся обычная markdown-ссылка.
+  подставляет не только название, но и ссылку на страницу. Разметку внутри
+  замены рисует renderInline, а в выгрузке разработчику остаётся обычная
+  markdown-ссылка.
 */
 
-/** Куда ведут разделы сайта. Собрано здесь, чтобы адрес был в одном месте. */
+/*
+  Куда ведут разделы сайта. Собрано здесь, чтобы адрес был в одном месте.
+
+  Адрес — путь от корня, без решётки: именно такой нужен разработчику на боевом
+  сайте. Решётку своего адреса прототип приписывает при показе (previewHref в
+  richText), в данные она не попадает.
+*/
 const AT = {
-  start: "#/general/start",
-  how: "#/general/how",
-  legal: "#/general/legal",
-  team: "#/general/team",
-  companies: "#/companies",
-  step: (n: string) => `#/companies/hire/step-${n}`,
+  start: "/general/start",
+  how: "/general/how",
+  legal: "/general/legal",
+  team: "/general/team",
+  companies: "/companies",
+  step: (n: string) => `/companies/hire/step-${n}`,
 };
 
 type Rule = { re: RegExp; to: string | ((m: RegExpMatchArray) => string) };
