@@ -105,7 +105,7 @@ export function useModuleDoc(moduleId: string): Doc | null {
   const resolve = React.useMemo(() => {
     const base = makeMdResolver(edits, pathname);
     return (type: string, text: string, md: string, anchor?: string) =>
-      decourse(dropStepNumber(type, base(type, text, md, anchor), anchor));
+      decourse(dropStepNumber(type, base(type, text, md, anchor), anchor), moduleId);
   }, [edits, pathname]);
   const sourceSections = React.useMemo(() => (blocks ? toSections(blocks) : []), [blocks]);
   // Директивы кладём на ПОЛНЫЙ источник, и только потом убираем леса курса:

@@ -63,7 +63,7 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     const pathname = `/source/${page.module}`;
     const base = makeMdResolver(edits, pathname);
     const resolve = (type: string, text: string, md: string, anchor?: string) =>
-      decourse(dropStepNumber(type, base(type, text, md, anchor), anchor));
+      decourse(dropStepNumber(type, base(type, text, md, anchor), anchor), page.module);
     // Тот же порядок, что на сайте: сначала разложить директивы по полному
     // источнику, потом убрать леса курса.
     const { sections, directiveAt } = dropScaffold(
