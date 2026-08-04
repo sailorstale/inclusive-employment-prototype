@@ -85,8 +85,14 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     'proverte-sebya',
     'voprosy-i-otvety',
   ] },
+  /*
+    Секции «Что говорят компании и НКО» здесь нет намеренно: в источнике под её
+    заголовком лежат только ряд косых черт (авторская пометка) и список «в этом
+    модуле вы узнаете», который дизайнер удалил директивой. На сайте роль этого
+    списка играет блок «На этой странице вы узнаете», так что показывать было
+    нечего — оставался заголовок с косыми чертами.
+  */
   { slug: '/general/team', title: 'Команда и коммуникация', module: 'm3', sections: [
-    'chto-govoryat-kompanii-i-nko',
     'kak-govorit-o-lyudyah-s-invalidnostyu',
     'vyberite-kakie-slova-i-formulirovki-dopustimo-is',
     'kak-obschatsya-s-lyudmi-s-invalidnostyu',
