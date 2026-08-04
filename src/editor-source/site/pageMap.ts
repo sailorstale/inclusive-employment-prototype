@@ -298,6 +298,13 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "kak-sostavit-opisanie-vakansii",
         "prakticheskoe-zadanie",
         "kak-sostavit-opisanie-vakansii-2",
+        /*
+          Строка появилась из абзаца («Мы переделали описание вакансии…» →
+          разметка Heading + наша правка текста), поэтому якорь считается из
+          нового текста. Раздел нужен, чтобы два готовых описания вакансии не
+          читались как ещё одно правило написания вакансии.
+        */
+        "primery-vakansiy",
         "gde-iskat-kandidatov-s-invalidnostyu",
         "kak-podgotovit-i-provesti-sobesedovanie-s-kandid",
         "oformlenie-sotrudnikov-s-invalidnostyu",

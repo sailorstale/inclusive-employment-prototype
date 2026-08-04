@@ -26,14 +26,29 @@ const SCAFFOLD = [
 ];
 
 /*
+  ЯРЛЫК «Обратная связь» — вторая разновидность лесов. В курсе он отделял разбор
+  от задания, которое студент только что выполнил. На сайте задание не
+  выполняют: разбор идёт сразу за списком критериев, и ярлык сообщает читателю
+  ровно ничего.
+
+  Снимаем ТОЛЬКО с неразмеченных блоков. В квизе эта же строка — служебный
+  маркер: по ней раскладка понимает, где кончаются варианты ответа и начинается
+  общий разбор (см. contentTree). Там блок всегда накрыт директивой, и трогать
+  его нельзя — иначе квиз развалится.
+*/
+const FEEDBACK_LABEL = /^\s*обратная\s+связь\s*:?\s*$/iu;
+
+/*
   Заголовок h2 не выбрасываем, даже если он «Остались вопросы?»: по нему режется
   секция, и без него её содержимое слилось бы с предыдущей секцией и вылезло на
   чужую страницу. Такие секции и так не взяты в pageMap — они на сайт не идут.
 */
-const isScaffold = (b: SourceBlock): boolean => {
+const isScaffold = (b: SourceBlock, directive?: Directive): boolean => {
   if (b.kind === "heading" && b.level === 2) return false;
   const text = (b as { text?: string }).text;
-  return typeof text === "string" && SCAFFOLD.some((re) => re.test(text));
+  if (typeof text !== "string") return false;
+  if (SCAFFOLD.some((re) => re.test(text))) return true;
+  return !directive && FEEDBACK_LABEL.test(text);
 };
 
 type BlockSection = { anchor?: string; blocks: SourceBlock[] };
@@ -52,8 +67,8 @@ export function dropScaffold(
   sections: BlockSection[],
   at: DirectiveAt,
 ): { sections: BlockSection[]; directiveAt: DirectiveAt } {
-  const kept = sections.map((sec) =>
-    sec.blocks.flatMap((b, bi) => (isScaffold(b) ? [] : [bi])),
+  const kept = sections.map((sec, si) =>
+    sec.blocks.flatMap((b, bi) => (isScaffold(b, at(si, bi)) ? [] : [bi])),
   );
   return {
     sections: sections.map((sec, si) => ({
