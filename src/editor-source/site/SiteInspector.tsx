@@ -728,13 +728,13 @@ function SiteMode({
                 doc={pageDoc}
                 selected={selected}
                 onSelect={setSelected}
+                listKey="article"
                 heading={{
                   slug: page.slug,
-                  meta: {
-                    ...metaFor(page.slug, page.title),
-                    h1: page.title,
-                    cover: coverFor(page.slug),
-                  },
+                  meta: metaFor(page.slug, page.title).meta,
+                  "meta-og": metaFor(page.slug, page.title).og,
+                  h1: page.title,
+                  cover: coverFor(page.slug),
                 }}
               />
             </div>

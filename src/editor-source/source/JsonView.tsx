@@ -159,16 +159,22 @@ export function JsonView({
   selected,
   onSelect,
   heading,
+  listKey = "children",
 }: {
   doc: Doc;
   /** Путь выбранного узла — тот же, что у компонента в правой колонке. */
   selected?: string | null;
   onSelect?: (path: string) => void;
   /**
-   * Верхние поля вместо «module». На сайте — { slug, h1 }: это страница сайта,
-   * а не модуль курса. Если не задано — старое поведение (module) для редактора.
+   * Верхние поля вместо «module». На сайте — мета страницы и h1: это страница
+   * сайта, а не модуль курса. Если не задано — старое поведение (module).
    */
   heading?: Record<string, unknown>;
+  /**
+   * Имя массива с содержимым. На сайте это «article» (см. siteExport): у узлов
+   * внутри тоже есть children, и на верхнем уровне имя читалось двусмысленно.
+   */
+  listKey?: string;
 }) {
   // Разбор тяжёлый (десятки тысяч знаков) — считаем только при смене дерева.
   const { head, secs, tail } = React.useMemo(() => {
@@ -186,7 +192,7 @@ export function JsonView({
     */
     let n = -1;
     return {
-      head: `{\n${headLines}  "children": [\n`,
+      head: `{\n${headLines}  ${JSON.stringify(listKey)}: [\n`,
       secs: children.map((c, i) => {
         const isSection = c?.component === "Section Container";
         if (isSection) n += 1;
@@ -198,7 +204,7 @@ export function JsonView({
       }),
       tail: children.length ? "\n  ]\n}" : "  ]\n}",
     };
-  }, [doc, heading]);
+  }, [doc, heading, listKey]);
 
   return (
     <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-[1.65] text-muted-foreground">

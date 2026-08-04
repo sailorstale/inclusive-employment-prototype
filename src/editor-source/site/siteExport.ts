@@ -16,7 +16,7 @@ import { canonize } from "./canon";
 import { pageChildren } from "./pageStructure";
 import { pageParts } from "./pageOutline";
 import { coverFor, type Cover } from "./covers";
-import { metaFor, type PageMeta } from "./pageMeta";
+import { metaFor, type PageMeta, type PageMetaOg } from "./pageMeta";
 
 /*
   ЕДИНЫЙ JSON ВСЕГО САЙТА — одно ТЗ разработчику на все страницы сразу:
@@ -43,15 +43,24 @@ function toSections(blocks: SourceBlock[]): Section[] {
 }
 
 /*
-  Блок meta — всё, что описывает страницу целиком: заголовок вкладки, описание
-  для поисковой выдачи, видимый заголовок H1 и обложка шапки. Раньше он звался
-  header, и разработчик сказал, что имя сбивает с толку: это не шапка страницы,
-  а её описание. Содержимое страницы лежит отдельно, в children.
+  СТРАНИЦА В ВЫГРУЗКЕ — структура по предложению разработчика.
+
+  meta и meta-og — то, что о странице узнают браузер, поисковик и мессенджер
+  (см. pageMeta.ts). h1 и cover лежат отдельно и рядом: это видимая часть
+  страницы, шапка с заголовком поверх обложки, а не мета. Содержимое —
+  article: раньше поле звалось children, но у узлов внутри тоже есть children,
+  и на верхнем уровне это читалось как «дети чего?».
+
+  Обложку разработчик в своём примере не показал — она осталась там, где стояла,
+  рядом с h1. Если ей место внутри article, поле переедет одной строкой.
 */
 export type PageExport = {
   slug: string;
-  meta: PageMeta & { h1: string; cover: Cover };
-  children: unknown[];
+  meta: PageMeta;
+  "meta-og": PageMetaOg;
+  h1: string;
+  cover: Cover;
+  article: unknown[];
 };
 export type OsnovyExport = { section: string; pages: PageExport[] };
 
@@ -89,14 +98,14 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
 
     // Та же структура, что рисует сайт: обвязка + секции, одним деревом.
     const children = toExport(pageChildren(chosen, page.slug, intro));
+    const seo = metaFor(page.slug, page.title);
     pages.push({
       slug: page.slug,
-      meta: {
-        ...metaFor(page.slug, page.title),
-        h1: page.title,
-        cover: coverFor(page.slug),
-      },
-      children,
+      meta: seo.meta,
+      "meta-og": seo.og,
+      h1: page.title,
+      cover: coverFor(page.slug),
+      article: children,
     });
   }
 
