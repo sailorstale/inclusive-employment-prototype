@@ -1,5 +1,5 @@
 import * as React from "react";
-import { docToExport, type Doc } from "./contentTree";
+import { toExportWithPaths, type Doc, type ExportPath } from "./contentTree";
 
 /*
   ВИД JSON — общий для страниц модулей и эталонной страницы.
@@ -86,18 +86,22 @@ const isNodeList = (v: unknown): v is NodeLike[] =>
 
 function JsonNode({
   node,
-  path,
+  at,
   depth,
   selected,
   onSelect,
 }: {
   node: NodeLike;
-  path: string;
+  /* Адрес узла в ИСХОДНОМ дереве (вместе с адресами детей). Считать его по
+     месту в выгрузке нельзя: пометки инструмента в неё не попадают, и номера
+     разъезжаются с теми, по которым страница выбирает компонент. */
+  at: ExportPath;
   depth: number;
   selected?: string | null;
   onSelect?: (path: string) => void;
 }) {
   const entries = Object.entries(node);
+  const path = at.path;
   return (
     <span
       data-json-path={path}
@@ -126,7 +130,7 @@ function JsonNode({
                 <React.Fragment key={j}>
                   <JsonNode
                     node={c}
-                    path={`${path}.${j}`}
+                    at={at.children[j] ?? { path: `${path}.${j}`, children: [] }}
                     depth={depth + 2}
                     selected={selected}
                     onSelect={onSelect}
@@ -168,10 +172,10 @@ export function JsonView({
 }) {
   // Разбор тяжёлый (десятки тысяч знаков) — считаем только при смене дерева.
   const { head, secs, tail } = React.useMemo(() => {
-    const ex = docToExport(doc) as { module: string; children: NodeLike[] };
-    const children = ex.children ?? [];
+    const ex = toExportWithPaths(doc.children);
+    const children = (ex.nodes ?? []) as NodeLike[];
     // Верхние поля: заданные снаружи (slug/h1) или, по умолчанию, module.
-    const fields = heading ?? { module: ex.module };
+    const fields = heading ?? { module: doc.module };
     const headLines = Object.entries(fields)
       .map(([k, v]) => `  ${JSON.stringify(k)}: ${jsonValue(v, 1)},\n`)
       .join("");
@@ -183,10 +187,14 @@ export function JsonView({
     let n = -1;
     return {
       head: `{\n${headLines}  "children": [\n`,
-      secs: children.map((c) => {
+      secs: children.map((c, i) => {
         const isSection = c?.component === "Section Container";
         if (isSection) n += 1;
-        return { node: c, sec: isSection ? n : undefined };
+        return {
+          node: c,
+          sec: isSection ? n : undefined,
+          at: ex.paths[i] ?? { path: String(i), children: [] },
+        };
       }),
       tail: children.length ? "\n  ]\n}" : "  ]\n}",
     };
@@ -199,7 +207,7 @@ export function JsonView({
         <span key={i} data-sec={s.sec}>
           <JsonNode
             node={s.node}
-            path={String(i)}
+            at={s.at}
             depth={2}
             selected={selected}
             onSelect={onSelect}

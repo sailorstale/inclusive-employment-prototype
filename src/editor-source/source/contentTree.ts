@@ -3433,17 +3433,26 @@ const hoistListFields = (container: Record<string, unknown>): Record<string, unk
 };
 
 /*
-  Выгрузка для разработчика: то же дерево, но без служебных пометок инструмента
-  и без пустых полей. В JSON едет только контент — так решено, чтобы структура
-  была чёткой и без мусора.
+  АДРЕСА УЗЛОВ ВЫГРУЗКИ. Выгрузка теряет служебные пометки инструмента («note»),
+  поэтому номера узлов в ней не совпадают с номерами в дереве: всё, что стоит
+  после пометки, съезжает на позицию вверх. Колонке JSON нужны номера ИСХОДНОГО
+  дерева — иначе клик по компоненту на странице подсвечивал бы соседний узел.
+  Дерево адресов повторяет форму выгрузки узел в узел.
 */
-export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
-  const clean = (n: Node | SectionNode): unknown | null => {
+export type ExportPath = { path: string; children: ExportPath[] };
+
+const cleanForExport = (
+  n: Node | SectionNode,
+  path: string,
+  sink?: ExportPath[],
+): unknown | null => {
     if ((n as Node).component === "note") return null;
     const component = (n as Node).component;
     const isSection = (n as SectionNode).component === "Section Container";
     const rename = RENAME_KEYS[component] ?? {};
     const out: Record<string, unknown> = {};
+    // Адреса выживших детей — в том же порядке, что и они сами.
+    const kidPaths: ExportPath[] = [];
     for (const [rawKey, v] of Object.entries(n)) {
       const k = rename[rawKey] ?? rawKey;
       // Служебные пометки инструмента: склейка конвертов и адрес блоков
@@ -3459,7 +3468,9 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
       if (Array.isArray(v) && v.length === 0) continue;
       if (typeof v === "string" && !v.trim()) continue;
       if (k === "children") {
-        const kids = (v as Node[]).map(clean).filter(Boolean);
+        const kids = (v as Node[])
+          .map((c, j) => cleanForExport(c, `${path}.${j}`, kidPaths))
+          .filter(Boolean);
         if (kids.length) out.children = kids;
         continue;
       }
@@ -3501,9 +3512,28 @@ export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
       }
       out[k] = v;
     }
+    sink?.push({ path, children: kidPaths });
     return LIST_HOSTS.has(component) ? hoistListFields(out) : out;
+};
+
+/*
+  Выгрузка для разработчика: то же дерево, но без служебных пометок инструмента
+  и без пустых полей. В JSON едет только контент — так решено, чтобы структура
+  была чёткой и без мусора.
+*/
+export function toExport<T extends Node | SectionNode>(nodes: T[]): unknown[] {
+  return nodes.map((n, i) => cleanForExport(n, String(i))).filter(Boolean);
+}
+
+/** Та же выгрузка плюс дерево адресов исходных узлов — для колонки JSON. */
+export function toExportWithPaths<T extends Node | SectionNode>(
+  nodes: T[],
+): { nodes: unknown[]; paths: ExportPath[] } {
+  const paths: ExportPath[] = [];
+  return {
+    nodes: nodes.map((n, i) => cleanForExport(n, String(i), paths)).filter(Boolean),
+    paths,
   };
-  return nodes.map(clean).filter(Boolean);
 }
 
 export function docToExport(doc: Doc) {
