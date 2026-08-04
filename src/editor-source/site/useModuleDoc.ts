@@ -4,6 +4,7 @@ import { normalizeSourceBlocks } from "@/editor-source/source/normalizeBlocks";
 import { placeDirectives, buildDoc, type Doc } from "@/editor-source/source/contentTree";
 import { makeMdResolver } from "@/editor-source/source/blockResolve";
 import { decourse } from "./decourse";
+import { dropStepNumber } from "./pageMap";
 import { loadEdits } from "@/editor-source/store";
 import { useLogoIndex, useAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives, type Directive } from "@/editor-source/directives";
@@ -103,7 +104,7 @@ export function useModuleDoc(moduleId: string): Doc | null {
   const resolve = React.useMemo(() => {
     const base = makeMdResolver(edits, pathname);
     return (type: string, text: string, md: string, anchor?: string) =>
-      decourse(base(type, text, md, anchor));
+      decourse(dropStepNumber(type, base(type, text, md, anchor), anchor));
   }, [edits, pathname]);
   const sections = React.useMemo(() => (blocks ? toSections(blocks) : []), [blocks]);
   const directiveAt = React.useMemo(

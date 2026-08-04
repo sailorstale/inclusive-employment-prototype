@@ -10,7 +10,7 @@ import { makeMdResolver } from "@/editor-source/source/blockResolve";
 import { loadEdits } from "@/editor-source/store";
 import { loadLogoIndex, loadAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives } from "@/editor-source/directives";
-import { OSNOVY_PAGES } from "./pageMap";
+import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { decourse } from "./decourse";
 import { pageChildren } from "./pageStructure";
 import { coverFor, type Cover } from "./covers";
@@ -62,7 +62,7 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     const pathname = `/source/${page.module}`;
     const base = makeMdResolver(edits, pathname);
     const resolve = (type: string, text: string, md: string, anchor?: string) =>
-      decourse(base(type, text, md, anchor));
+      decourse(dropStepNumber(type, base(type, text, md, anchor), anchor));
     const directiveAt = placeDirectives(sections, pathname, page.module, directives);
     const doc = buildDoc(page.module, sections, resolve, logoIndex, directiveAt, avatarIndex);
 
