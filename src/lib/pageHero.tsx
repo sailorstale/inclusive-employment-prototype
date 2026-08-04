@@ -6,7 +6,12 @@ import * as React from "react";
 // который рисует оболочка (Layout → PageHeroBand). Механика та же, что у
 // оглавления (lib/toc.tsx): страница не знает про раскладку, заголовок один.
 
-export type HeroCover = { src: string; alt: string };
+/*
+  Обложка баннера — картинка декоративная, подписи (alt) у неё нет. Поверх неё
+  лежит заголовок страницы, он и несёт смысл; подпись повторяла бы его вторым
+  голосом для скринридера.
+*/
+export type HeroCover = { src: string };
 
 export type PageHeroData = {
   title: React.ReactNode;

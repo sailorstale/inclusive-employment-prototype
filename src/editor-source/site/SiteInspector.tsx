@@ -26,6 +26,7 @@ import { blockRefId } from "@/editor-source/source/blockId";
 import { PageSourceView } from "./PageSourceView";
 import { buildOsnovyExport } from "./siteExport";
 import { coverFor } from "./covers";
+import { metaFor } from "./pageMeta";
 import { downloadJson } from "@/editor-source/source/JsonView";
 
 /*
@@ -729,7 +730,11 @@ function SiteMode({
                 onSelect={setSelected}
                 heading={{
                   slug: page.slug,
-                  header: { h1: page.title, cover: coverFor(page.slug) },
+                  meta: {
+                    ...metaFor(page.slug, page.title),
+                    h1: page.title,
+                    cover: coverFor(page.slug),
+                  },
                 }}
               />
             </div>

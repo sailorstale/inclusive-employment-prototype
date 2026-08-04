@@ -88,9 +88,13 @@ function HeroBackdrop({ cover }: { cover?: HeroCover }) {
   if (cover?.src) {
     return (
       <>
+        {/*
+          Подписи нет намеренно: картинка декоративная, смысл несёт заголовок
+          поверх неё. Пустой alt — это и есть «читать не надо» для скринридера.
+        */}
         <img
           src={cover.src}
-          alt={cover.alt}
+          alt=""
           className="absolute inset-0 -z-10 h-full w-full object-cover"
         />
         {/* Затемнение: без него белый заголовок теряется на светлом фото. */}

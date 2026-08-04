@@ -16,6 +16,7 @@ import { canonize } from "./canon";
 import { pageChildren } from "./pageStructure";
 import { pageParts } from "./pageOutline";
 import { coverFor, type Cover } from "./covers";
+import { metaFor, type PageMeta } from "./pageMeta";
 
 /*
   ЕДИНЫЙ JSON ВСЕГО САЙТА — одно ТЗ разработчику на все страницы сразу:
@@ -41,9 +42,15 @@ function toSections(blocks: SourceBlock[]): Section[] {
   return out;
 }
 
+/*
+  Блок meta — всё, что описывает страницу целиком: заголовок вкладки, описание
+  для поисковой выдачи, видимый заголовок H1 и обложка шапки. Раньше он звался
+  header, и разработчик сказал, что имя сбивает с толку: это не шапка страницы,
+  а её описание. Содержимое страницы лежит отдельно, в children.
+*/
 export type PageExport = {
   slug: string;
-  header: { h1: string; cover: Cover };
+  meta: PageMeta & { h1: string; cover: Cover };
   children: unknown[];
 };
 export type OsnovyExport = { section: string; pages: PageExport[] };
@@ -84,7 +91,11 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     const children = toExport(pageChildren(chosen, page.slug, intro));
     pages.push({
       slug: page.slug,
-      header: { h1: page.title, cover: coverFor(page.slug) },
+      meta: {
+        ...metaFor(page.slug, page.title),
+        h1: page.title,
+        cover: coverFor(page.slug),
+      },
       children,
     });
   }
