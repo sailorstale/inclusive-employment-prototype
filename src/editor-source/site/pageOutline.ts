@@ -43,6 +43,13 @@ export type PageOutline = {
   sections: string[];
   /** Якоря заголовков-врезок: остаются в тексте, из навигации уходят. */
   inline?: string[];
+  /*
+    Якоря заголовков, которые со страницы снимаются совсем. Текст под ними
+    остаётся и продолжает свой раздел — уходит только сам заголовок. Нужно там,
+    где курс подводил промежуточный итог посреди главы: на странице итог уже
+    один, общий и в конце (см. recap.ts), и второй сбивает с толку.
+  */
+  drop?: string[];
 };
 
 const LEVEL: Record<HeadingLevel, number> = { H2: 2, H3: 3, H4: 4, H5: 5 };
@@ -87,6 +94,7 @@ export function recutSections(
 ): { intro: Node[]; sections: SectionNode[] } {
   const wanted = new Set(outline.sections);
   const inline = new Set(outline.inline ?? []);
+  const dropped = new Set(outline.drop ?? []);
   const intro: Node[] = [];
   const sections: SectionNode[] = [];
   let cur: SectionNode | null = null;
@@ -106,6 +114,8 @@ export function recutSections(
     }
     // Заголовок вступления снимаем — он повторяет название страницы.
     if (isHeading(node) && !cur) continue;
+    // Заголовок, снятый по карте: текст под ним остаётся в своём разделе.
+    if (isHeading(node) && node.anchor && dropped.has(node.anchor)) continue;
 
     const next: Node = !isHeading(node)
       ? node

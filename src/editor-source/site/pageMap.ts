@@ -145,17 +145,32 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     slug: "/general/legal/quotas",
     title: "Квоты и господдержка",
     module: "m2",
+    /*
+      Четыре меры поддержки («Компенсация расходов на оснащение рабочего места»
+      и далее) в карте не перечислены намеренно. В источнике это были секции, но
+      разметка собрала их в свёрнутые блоки внутри раздела про господдержку:
+      заголовков не осталось, а значит не осталось и секций. Записи в карте
+      указывали в пустоту, сборка их молча пропускала.
+    */
     sections: [
       "chto-takoe-kvoty-i-kak-ih-vypolnit",
       "kak-vypolnit-kvotu",
       "kak-i-kuda-podavat-otchetnost",
       "chto-proishodit-esli-kvota-ne-vypolnena",
       "na-kakie-subsidii-i-mery-gospodderzhki-mogut-ras",
-      "kompensaciya-rashodov-na-osnaschenie-rabochego-m",
-      "kompensaciya-zatrat-na-zarabotnuyu-platu",
-      "subsidii-dlya-socialnogo-predprinimatelstva",
-      "nalogovye-lgoty",
     ],
+    outline: {
+      sections: [
+        "chto-takoe-kvoty-i-kak-ih-vypolnit",
+        "kak-vypolnit-kvotu",
+        "kak-i-kuda-podavat-otchetnost",
+        "chto-proishodit-esli-kvota-ne-vypolnena",
+        "na-kakie-subsidii-i-mery-gospodderzhki-mogut-ras",
+      ],
+      // Промежуточный «Подведём итог» внутри господдержки: на странице итог уже
+      // есть, общий и в конце. Текст под заголовком остаётся на месте.
+      drop: ["podvedem-itog"],
+    },
   },
   {
     slug: "/general/legal/status",
