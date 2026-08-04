@@ -4,7 +4,7 @@ import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
 import { SiteInspector } from "./SiteInspector";
 import { pageChildren, pageToc } from "./pageStructure";
-import { pageParts } from "./pageOutline";
+import { hiddenFromToc, pageParts } from "./pageOutline";
 
 /*
   СТРАНИЦА САЙТА ИЗ ИСТОЧНИКА — сразу разворачивается в инструмент сверки.
@@ -33,8 +33,12 @@ export function GeneratedPage() {
   // должно.
   const { chosen, intro } = pageParts(doc, page);
 
-  /* Оглавление «На этой странице» (правое меню) — секции H2 и подзаголовки H3. */
-  const tocItems = pageToc(chosen, page.slug);
+  /*
+    Оглавление «На этой странице» (правое меню) — секции H2 и подзаголовки H3.
+    Врезки и другие заголовки, отмеченные в карте, из него убираем: уровень у
+    них при этом остаётся своим (см. hiddenFromToc).
+  */
+  const tocItems = pageToc(chosen, page.slug, hiddenFromToc(page));
 
   // Полная страница одним деревом: обвязка + секции. module оставляем в Doc для
   // сборки (правки/логотипы), но в JSON/выгрузку он не попадает.

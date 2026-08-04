@@ -45,12 +45,21 @@ export type TocEntry = { label: string; anchor: string; level: 2 | 3 };
   заголовков карточек — там своё поле). Якорь H3 уже стоит на самом заголовке
   (см. ResultView), по нему и прокрутка, и подсветка.
 */
-export function pageToc(chosen: SectionNode[], slug?: string): TocEntry[] {
+export function pageToc(
+  chosen: SectionNode[],
+  slug?: string,
+  hidden?: Set<string>,
+): TocEntry[] {
   const out: TocEntry[] = [];
   const walkH3 = (nodes: (Node | SectionNode)[]) => {
     for (const n of nodes) {
       const node = n as Node;
-      if (node.component === "Heading" && node.level === "H3" && node.anchor)
+      if (
+        node.component === "Heading" &&
+        node.level === "H3" &&
+        node.anchor &&
+        !hidden?.has(node.anchor)
+      )
         out.push({ label: stripDecourse(node.text), anchor: node.anchor, level: 3 });
       const kids = (n as { children?: (Node | SectionNode)[] }).children;
       if (kids) walkH3(kids);
@@ -118,15 +127,36 @@ function tailSection(sec: SectionNode, tail?: Recap["tail"]): SectionNode | null
       anchor: tail.anchor,
       children: [
         { component: "Heading", level: "H2", text: tail.title, anchor: tail.anchor },
-        ...sec.children.slice(i),
+        ...liftHeadings(sec.children.slice(i)),
       ],
     };
   const head = sec.children[i] as Extract<Node, { component: "Heading" }>;
   return {
     ...sec,
     anchor: head.anchor,
-    children: [{ ...head, level: "H2" }, ...sec.children.slice(i + 1)],
+    children: [{ ...head, level: "H2" }, ...liftHeadings(sec.children.slice(i + 1))],
   };
+}
+
+/*
+  Хвост стал разделом — значит его части обязаны подняться вместе с ним.
+
+  «Практическое задание» в источнике было подзаголовком (H3), а на странице
+  открывает раздел (H2). Его собственные части остались четвёртым уровнем, и в
+  структуре появлялся провал: сразу за вторым уровнем шёл четвёртый, третий
+  пропадал. Поднимаем их на ту же ступень, на которую поднялся сам хвост.
+
+  Только верхний ряд узлов: у заголовков внутри карточек и аккордеонов свой
+  уровень, заданный компонентом, и к структуре страницы он отношения не имеет.
+*/
+const LIFTED: Record<string, "H3" | "H4"> = { H4: "H3", H5: "H4" };
+
+function liftHeadings(nodes: Node[]): Node[] {
+  return nodes.map((n) =>
+    n.component === "Heading" && LIFTED[n.level]
+      ? { ...n, level: LIFTED[n.level] }
+      : n,
+  );
 }
 
 /*
