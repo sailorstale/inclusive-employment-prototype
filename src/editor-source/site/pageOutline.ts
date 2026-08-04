@@ -7,6 +7,7 @@ import type {
 import type { OsnovyPage } from "./pageMap";
 import { quizSection } from "./quizzes";
 import { recutQuestions } from "./questionGroups";
+import { liftHeadingLinks } from "./headingLinks";
 
 /*
   ПЕРЕКРОЙКА СТРАНИЦЫ — раздел определяет карта страницы, а не уровень в источнике.
@@ -155,8 +156,14 @@ export function pageParts(
     итогом (его добавляет pageStructure). Кому какой квиз — в quizzes.ts.
   */
   const quizzes = quizSection(doc, page.slug);
-  const withQuizzes = (list: SectionNode[]) =>
-    quizzes ? [...list, quizzes] : list;
+  /*
+    Общая доводка разделов страницы, одна для обеих веток (с перекройкой и без):
+    ссылки из заголовков уезжают вниз (headingLinks), после чего добавляется квиз.
+  */
+  const finish = (list: SectionNode[]) => {
+    const done = liftHeadingLinks(list);
+    return quizzes ? [...done, quizzes] : done;
+  };
 
   // Страница вопросов делится не заголовками, а самими вопросами (аккордеон).
   const cut = page.questions
@@ -168,7 +175,7 @@ export function pageParts(
   if (!cut)
     return {
       intro: page.intro ? byAnchor.get(page.intro) : undefined,
-      chosen: withQuizzes(picked),
+      chosen: finish(picked),
     };
 
   const { intro, sections } = cut;
@@ -189,6 +196,6 @@ export function pageParts(
           children,
         }
       : undefined,
-    chosen: withQuizzes(sections),
+    chosen: finish(sections),
   };
 }
