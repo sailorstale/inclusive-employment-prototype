@@ -1,4 +1,5 @@
 import type { PageOutline } from "./pageOutline";
+import type { QuestionGroup } from "./questionGroups";
 
 // КАРТА СТРАНИЦ САЙТА: страница → секции источника (по якорям H2).
 //
@@ -28,6 +29,12 @@ export type OsnovyPage = {
   sections: string[];
   intro?: string;
   outline?: PageOutline;
+  /*
+    questions — деление длинного списка вопросов на разделы по темам (см.
+    questionGroups.ts). Нужно там, где страница целиком состоит из аккордеона:
+    заголовков внутри него нет, и навигации не за что зацепиться.
+  */
+  questions?: QuestionGroup[];
 };
 
 export const OSNOVY_PAGES: OsnovyPage[] = [
@@ -160,10 +167,47 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     ],
   },
   {
+    /*
+      Секции «Проверьте себя» здесь нет намеренно: все восемь квизов разъехались
+      по страницам своих тем (см. quizzes.ts). От неё оставалась бы одна вводная
+      фраза про тест.
+
+      Четырнадцать вопросов подряд неудобно листать, а делить их в источнике
+      нечем: там сплошной список. Поэтому страница делит их сама — пятью своими
+      заголовками, по темам. Вопросы под ними остаются подзаголовками и в
+      оглавлении показываются внутри своей группы.
+    */
     slug: "/general/legal/faq",
     title: "Вопросы и ответы",
     module: "m2",
-    sections: ["proverte-sebya", "voprosy-i-otvety"],
+    sections: ["voprosy-i-otvety"],
+    questions: [
+      {
+        title: "Документы об инвалидности",
+        anchor: "voprosy-dokumenty",
+        from: "Может ли сотрудник не сообщать",
+      },
+      {
+        title: "Рабочее время и льготы",
+        anchor: "voprosy-rezhim-i-lgoty",
+        from: "Сотрудник с инвалидностью I группы дал письменное согласие",
+      },
+      {
+        title: "Квоты и выплаты",
+        anchor: "voprosy-kvoty-i-vyplaty",
+        from: "Как работодатель может выполнить квоту",
+      },
+      {
+        title: "Увольнение и особые ситуации",
+        anchor: "voprosy-uvolnenie",
+        from: "Можно ли уволить сотрудника с инвалидностью",
+      },
+      {
+        title: "Договор ГПХ и самозанятость",
+        anchor: "voprosy-gph-i-samozanyatost",
+        from: "Чем договор ГПХ отличается",
+      },
+    ],
   },
   /*
     Секции «Что говорят компании и НКО» здесь нет намеренно: в источнике под её

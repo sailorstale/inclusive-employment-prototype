@@ -5,6 +5,8 @@ import type {
   SectionNode,
 } from "@/editor-source/source/contentTree";
 import type { OsnovyPage } from "./pageMap";
+import { quizSection } from "./quizzes";
+import { recutQuestions } from "./questionGroups";
 
 /*
   ПЕРЕКРОЙКА СТРАНИЦЫ — раздел определяет карта страницы, а не уровень в источнике.
@@ -137,13 +139,29 @@ export function pageParts(
     .map((a) => byAnchor.get(a))
     .filter((s): s is SectionNode => Boolean(s));
 
-  if (!page.outline)
+  /*
+    Квизы приходят не из карты секций: в источнике они лежат кучей в конце
+    модуля, а на странице встают последним разделом — после материала, но перед
+    итогом (его добавляет pageStructure). Кому какой квиз — в quizzes.ts.
+  */
+  const quizzes = quizSection(doc, page.slug);
+  const withQuizzes = (list: SectionNode[]) =>
+    quizzes ? [...list, quizzes] : list;
+
+  // Страница вопросов делится не заголовками, а самими вопросами (аккордеон).
+  const cut = page.questions
+    ? recutQuestions(picked, page.questions)
+    : page.outline
+      ? recutSections(picked, page.outline)
+      : null;
+
+  if (!cut)
     return {
       intro: page.intro ? byAnchor.get(page.intro) : undefined,
-      chosen: picked,
+      chosen: withQuizzes(picked),
     };
 
-  const { intro, sections } = recutSections(picked, page.outline);
+  const { intro, sections } = cut;
   /*
     Вступление отдаём той же формой, что и секция-«Введение» модуля: контейнером.
     Слагаемых у него два, и оба необязательны: объявленное вступление страницы
@@ -161,6 +179,6 @@ export function pageParts(
           children,
         }
       : undefined,
-    chosen: sections,
+    chosen: withQuizzes(sections),
   };
 }
