@@ -11,6 +11,7 @@ import { loadEdits } from "@/editor-source/store";
 import { loadLogoIndex, loadAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives } from "@/editor-source/directives";
 import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
+import { dropScaffold } from "./dropScaffold";
 import { decourse } from "./decourse";
 import { pageChildren } from "./pageStructure";
 import { coverFor, type Cover } from "./covers";
@@ -58,12 +59,17 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
   const pages: PageExport[] = [];
   for (const page of OSNOVY_PAGES) {
     const mod = await moduleLoaders[page.module]();
-    const sections = toSections(normalizeSourceBlocks(mod.blocks));
+    const sourceSections = toSections(normalizeSourceBlocks(mod.blocks));
     const pathname = `/source/${page.module}`;
     const base = makeMdResolver(edits, pathname);
     const resolve = (type: string, text: string, md: string, anchor?: string) =>
       decourse(dropStepNumber(type, base(type, text, md, anchor), anchor));
-    const directiveAt = placeDirectives(sections, pathname, page.module, directives);
+    // Тот же порядок, что на сайте: сначала разложить директивы по полному
+    // источнику, потом убрать леса курса.
+    const { sections, directiveAt } = dropScaffold(
+      sourceSections,
+      placeDirectives(sourceSections, pathname, page.module, directives),
+    );
     const doc = buildDoc(page.module, sections, resolve, logoIndex, directiveAt, avatarIndex);
 
     // Секции страницы по якорям (тот же выбор, что и на сайте).

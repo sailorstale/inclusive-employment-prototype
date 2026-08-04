@@ -5,6 +5,7 @@ import { placeDirectives, buildDoc, type Doc } from "@/editor-source/source/cont
 import { makeMdResolver } from "@/editor-source/source/blockResolve";
 import { decourse } from "./decourse";
 import { dropStepNumber } from "./pageMap";
+import { dropScaffold } from "./dropScaffold";
 import { loadEdits } from "@/editor-source/store";
 import { useLogoIndex, useAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives, type Directive } from "@/editor-source/directives";
@@ -106,10 +107,16 @@ export function useModuleDoc(moduleId: string): Doc | null {
     return (type: string, text: string, md: string, anchor?: string) =>
       decourse(dropStepNumber(type, base(type, text, md, anchor), anchor));
   }, [edits, pathname]);
-  const sections = React.useMemo(() => (blocks ? toSections(blocks) : []), [blocks]);
-  const directiveAt = React.useMemo(
-    () => placeDirectives(sections, pathname, moduleId, directives),
-    [sections, pathname, moduleId, directives],
+  const sourceSections = React.useMemo(() => (blocks ? toSections(blocks) : []), [blocks]);
+  // Директивы кладём на ПОЛНЫЙ источник, и только потом убираем леса курса:
+  // порядок важен, иначе директивы теряют свои блоки (см. dropScaffold).
+  const { sections, directiveAt } = React.useMemo(
+    () =>
+      dropScaffold(
+        sourceSections,
+        placeDirectives(sourceSections, pathname, moduleId, directives),
+      ),
+    [sourceSections, pathname, moduleId, directives],
   );
   const logoIndex = useLogoIndex();
   const avatarIndex = useAvatarIndex();
