@@ -3237,9 +3237,31 @@ function bodyInsideAccordion(children: Node[]): Node[] {
   return out;
 }
 
+/*
+  ОДИН ПУНКТ, И ТОТ ЖИРНЫЙ, — это не список, а подпись к абзацу под ним.
+
+  В источнике так оформлены типичные вопросы работодателя («• Расскажите о
+  себе», следом абзац с разбором) и похожие ярлыки. Перечисления там нет:
+  пункт ровно один, а маркер достался ему от оформления в документе. На
+  странице он читается как обрывок списка, которого нет.
+
+  Убираем маркер, а жирную строку оставляем обычным текстом того же размера.
+*/
+const BOLD_LINE = /^\s*\*\*([^*]+)\*\*\s*$/;
+
+function boldLabelOfList(n: Node): Node | null {
+  if (n.component !== "Stack" || n.ordered || n.children.length !== 1) return null;
+  const item = n.children[0];
+  if (item.component !== "List Item" || !BOLD_LINE.test(item.text)) return null;
+  return { component: "Text", size: item.size, text: item.text, at: item.at };
+}
+
 function normalizeNode(n: Node): Node {
   if (n.component === "Accordion")
     return { ...n, children: bodyInsideAccordion(n.children) };
+
+  const label = boldLabelOfList(n);
+  if (label) return label;
   /*
     Размер цитаты определяется МЕСТОМ, а не желанием: S — спокойный вариант без
     подложки, он существует ради аккордеона, где кремовая подложка спорила бы с
