@@ -8,6 +8,7 @@ import * as unify from "./unify.js";
 import * as sourceStore from "./sourceStore.js";
 import * as sourceComments from "./sourceComments.js";
 import * as sourceDirectives from "./sourceDirectives.js";
+import * as reviewComments from "./reviewComments.js";
 
 // Локально читаем prototype/.env (пароль и т.п.). На хостинге переменные задаёт
 // сам хостинг — там .env нет, и это нормально. Реальные env-переменные имеют
@@ -99,8 +100,36 @@ api.patch("/comments/:id", async (req, res) => {
   if (!rec) return res.status(404).json({ error: "не найдено" });
   res.json(rec);
 });
+/*
+  Апсерт по адресу блока. Клиент (editor-source/comments.ts) сохраняет
+  комментарий именно так — PUT на адрес блока, — а на сервере метода не было, и
+  сохранение отвечало 404: комментарий не уходил.
+*/
+api.put("/comments/:id", async (req, res) => {
+  res.json(await comments.upsert(req.params.id, req.body || {}));
+});
 api.delete("/comments/:id", async (req, res) => {
   await comments.remove(req.params.id);
+  res.json({ ok: true });
+});
+
+/*
+  КОММЕНТАРИИ К СТРАНИЦАМ САЙТА (скоуп review) — разговор клиента и
+  разработчика о странице. Адрес записи — адрес блока, поэтому запись
+  апсертится через PUT (см. annotations.js), а не создаётся через POST.
+
+  Без этого маршрута клиент получал 404 и молча уходил в localStorage: комментарий
+  оставался в браузере автора, и до адресата не доходил.
+*/
+const reviewApi = express.Router();
+reviewApi.get("/comments", async (_req, res) => {
+  res.json(await reviewComments.getAll());
+});
+reviewApi.put("/comments/:id", async (req, res) => {
+  res.json(await reviewComments.upsert(req.params.id, req.body || {}));
+});
+reviewApi.delete("/comments/:id", async (req, res) => {
+  await reviewComments.remove(req.params.id);
   res.json({ ok: true });
 });
 
@@ -162,6 +191,10 @@ sourceApi.patch("/comments/:id", async (req, res) => {
   if (!rec) return res.status(404).json({ error: "не найдено" });
   res.json(rec);
 });
+// Апсерт по адресу блока — как на сайтовом скоупе (см. выше).
+sourceApi.put("/comments/:id", async (req, res) => {
+  res.json(await sourceComments.upsert(req.params.id, req.body || {}));
+});
 sourceApi.delete("/comments/:id", async (req, res) => {
   await sourceComments.remove(req.params.id);
   res.json({ ok: true });
@@ -217,6 +250,7 @@ sourceApi.patch("/directives/:id", async (req, res) => {
 });
 
 api.use("/source", sourceApi);
+api.use("/review", reviewApi);
 
 // Честный 404 на неизвестные /api/* (иначе SPA-фоллбэк отдаёт HTML со статусом
 // 200, и клиент принимает опечатку за «сервер есть»).

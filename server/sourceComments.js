@@ -1,4 +1,5 @@
 import { createJsonStore } from "./jsonStore.js";
+import { upsertInto } from "./annotations.js";
 
 // Комментарии-пины инструмента «Редактура источника» (скоуп source).
 // Отдельный файл source-comments.json. Логика идентична comments.js;
@@ -8,6 +9,9 @@ import { createJsonStore } from "./jsonStore.js";
 let counter = 0;
 const store = createJsonStore("source-comments.json", "source-comments");
 export const getAll = store.getAll;
+
+// Аннотация блока: id задаёт клиент (адрес блока), запись апсертится.
+export const upsert = upsertInto(store);
 
 export function create(data) {
   return store.enqueue((c) => {

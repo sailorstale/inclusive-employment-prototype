@@ -1,4 +1,5 @@
 import { createJsonStore } from "./jsonStore.js";
+import { upsertInto } from "./annotations.js";
 
 // Хранилище комментариев-пинов (Figma-стиль). Отдельный JSON-файл рядом с
 // правками. Та же модель: общий, без авторизации, атомарная запись через очередь.
@@ -6,6 +7,9 @@ import { createJsonStore } from "./jsonStore.js";
 let counter = 0;
 const store = createJsonStore("comments.json", "comments");
 export const getAll = store.getAll;
+
+// Аннотация блока: id задаёт клиент (адрес блока), запись апсертится.
+export const upsert = upsertInto(store);
 
 export function create(data) {
   return store.enqueue((c) => {
