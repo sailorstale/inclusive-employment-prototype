@@ -235,3 +235,20 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
 
 export const pageBySlug = (slug: string): OsnovyPage | undefined =>
   OSNOVY_PAGES.find((p) => p.slug === slug);
+
+/*
+  ХАБЫ ТРЕКОВ — «Для компаний» (/companies) и «Для НКО» (/ngo).
+
+  Их содержимое собрано руками: это навигация по треку, а не материал источника.
+  Поэтому в OSNOVY_PAGES их нет и в общую выгрузку они не идут. Но инструмент
+  сверки им нужен такой же, как остальным страницам, — иначе при переходе на хаб
+  интерфейс просто исчезал. Здесь описано, чем наполнить левую колонку: секция
+  «Введение» того модуля, из которого хаб и написан.
+*/
+export const HUB_PAGES: OsnovyPage[] = [
+  { slug: '/companies', title: 'Для компаний', module: 'm5-1', sections: ['vvedenie'] },
+  { slug: '/ngo', title: 'Для НКО', module: 'm6-1', sections: ['vvedenie'] },
+];
+
+export const hubBySlug = (slug: string): OsnovyPage | undefined =>
+  HUB_PAGES.find((p) => p.slug === slug);

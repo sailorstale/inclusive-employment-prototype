@@ -158,3 +158,19 @@
   outline-offset: 3px;
   border-radius: 6px;
 }
+
+/* То же выделение на страницах, написанных разметкой (хабы треков). Там обёртки
+   узла нет — компонент помечает себя сам, и рамка ложится прямо на него. */
+.ds-pick-flat {
+  cursor: pointer;
+}
+.ds-pick-flat.has-comment {
+  outline: 2px dashed var(--comment-line);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.ds-pick-flat.is-picked {
+  outline: 2px solid var(--pick-line);
+  outline-offset: 3px;
+  border-radius: 6px;
+}

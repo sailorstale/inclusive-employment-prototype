@@ -27,6 +27,9 @@ import { A11yPage } from "./pages/A11yPage";
 // монтируются под /general/* и служат обоим ролевым трекам.
 import { CompaniesHubPage } from "./pages/companies/CompaniesHubPage";
 import { GeneratedPage } from "./editor-source/site/GeneratedPage";
+// Хабы треков написаны руками — HubPage даёт им ту же обвязку инструмента
+// (источник слева, страница справа), что и врастающим из источника страницам.
+import { HubPage } from "./editor-source/site/HubPage";
 
 // Трек «Для НКО» — Программа НКО (М6). Общая база М1–М4 — в разделе
 // «Общая информация» (/general/*), НКО-дубли удалены.
@@ -96,7 +99,14 @@ export default function App() {
               Страницы шагов, как и «Основы», врастают из источника: та же
               GeneratedPage по карте (pageMap). Хаб собран руками — это
               навигация, а не материал. */}
-          <Route path="/companies" element={<CompaniesHubPage />} />
+          <Route
+            path="/companies"
+            element={
+              <HubPage>
+                <CompaniesHubPage />
+              </HubPage>
+            }
+          />
           <Route
             path="/companies/hire"
             element={<Navigate to="/companies" replace />}
@@ -111,7 +121,14 @@ export default function App() {
           {/* Для НКО (М6 — Программа НКО). Тоже из источника; хаб — руками.
               Модули 6.1–6.3 разрезаны на страницы по своим главам: одним
               полотном они не читались. */}
-          <Route path="/ngo" element={<NgoHubPage />} />
+          <Route
+            path="/ngo"
+            element={
+              <HubPage>
+                <NgoHubPage />
+              </HubPage>
+            }
+          />
           <Route path="/ngo/start" element={<GeneratedPage />} />
           <Route path="/ngo/audience" element={<GeneratedPage />} />
           <Route path="/ngo/candidates" element={<GeneratedPage />} />

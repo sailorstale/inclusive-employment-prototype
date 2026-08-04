@@ -15,6 +15,7 @@ import { SourcePage } from "@/editor-source/source/SourcePage";
 import { SamplePage } from "@/editor-source/source/SamplePage";
 import { PageHeroBand } from "@/components/shell/PageHeroBand";
 import { SidebarNav } from "@/components/shell/SidebarNav";
+import { TocProvider, useToc } from "@/lib/toc";
 import { cn } from "@/lib/utils";
 import type { TocEntry } from "./pageStructure";
 import type { OsnovyPage } from "./pageMap";
@@ -127,10 +128,17 @@ export function SiteInspector({
   page,
   pageDoc,
   tocItems,
+  body,
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
   tocItems: TocEntry[];
+  /*
+    Готовая разметка страницы вместо дерева узлов — для хабов треков, которые
+    написаны руками (HubPage). Тогда правая колонка рисует её как есть, а
+    оглавление берётся из того, что страница объявила через <PageToc>.
+  */
+  body?: React.ReactNode;
 }) {
   const [mode, setMode] = React.useState<Mode>(lastMode);
   /*
@@ -159,6 +167,7 @@ export function SiteInspector({
   }, []);
 
   return (
+    <TocProvider>
     <CommentsProvider scope="review">
       <div className="fixed inset-0 z-50 flex flex-col bg-background">
         {/* Тумблер режимов — общий верхний бар. */}
@@ -193,6 +202,7 @@ export function SiteInspector({
             pageDoc={pageDoc}
             tocItems={tocItems}
             markupOpen={markupOpen}
+            body={body}
           />
         ) : (
           <ModuleMode module={page.module} />
@@ -200,6 +210,7 @@ export function SiteInspector({
       </div>
       </div>
     </CommentsProvider>
+    </TocProvider>
   );
 }
 
@@ -392,11 +403,13 @@ function SiteMode({
   pageDoc,
   tocItems,
   markupOpen,
+  body,
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
   tocItems: TocEntry[];
   markupOpen: boolean;
+  body?: React.ReactNode;
 }) {
   const [tab, setTab] = React.useState<RefView>(lastTab);
   const [selected, setSelected] = React.useState<string | null>(null);
@@ -449,20 +462,67 @@ function SiteMode({
     [comments, page.slug],
   );
 
+  /*
+    Оглавление правого рейла. У страниц из источника оно посчитано по секциям
+    (tocItems). У хабов дерева нет — там пункты объявляет сама страница через
+    <PageToc>, и они приезжают сюда контекстом.
+  */
+  const { items: declaredToc } = useToc();
+  const rail = React.useMemo<TocEntry[]>(
+    () =>
+      body
+        ? declaredToc.map((i) => ({ label: i.label, anchor: i.anchor, level: 2 }))
+        : tocItems,
+    [body, declaredToc, tocItems],
+  );
+
+  /*
+    Текст и тип выбранного компонента. У страниц из источника берём их из
+    дерева, у ручных хабов — прямо со страницы: там у каждого компонента есть
+    метка data-component, а адрес ему раздаёт HandmadeBody.
+  */
+  const textAt = React.useCallback(
+    (path: string | null): string => {
+      if (!path) return "";
+      if (!body) return nodeText(nodeAtPath(pageDoc, path));
+      const el = rightBox?.querySelector(`[data-json-path="${CSS.escape(path)}"]`);
+      return (el?.textContent ?? "").replace(/\s+/g, " ").trim();
+    },
+    [body, pageDoc, rightBox],
+  );
+
+  const typeAt = React.useCallback(
+    (path: string): string | null => {
+      if (!body) return (nodeAtPath(pageDoc, path) as Node | null)?.component ?? null;
+      const el = rightBox?.querySelector<HTMLElement>(
+        `[data-json-path="${CSS.escape(path)}"]`,
+      );
+      return el?.dataset.component ?? null;
+    },
+    [body, pageDoc, rightBox],
+  );
 
   /*
     Клик по компоненту: подсвечиваем его и добавляем в набор для разметки.
     Повторный клик снимает — тот же жест, что и в плейграунде «Модулей».
+
+    На ручных хабах в набор для разметки не добавляем: их компоненты не собраны
+    из блоков источника, и директиве не за что зацепиться. Комментарии и пины
+    при этом работают — они держатся за сам компонент, а не за блок.
   */
-  const onPick = React.useCallback((path: string) => {
-    setSelected(path);
-    setPicked((prev) => {
-      const next = new Set(prev);
-      if (next.has(path)) next.delete(path);
-      else next.add(path);
-      return next;
-    });
-  }, []);
+  const onPick = React.useCallback(
+    (path: string) => {
+      setSelected(path);
+      if (body) return;
+      setPicked((prev) => {
+        const next = new Set(prev);
+        if (next.has(path)) next.delete(path);
+        else next.add(path);
+        return next;
+      });
+    },
+    [body],
+  );
 
   /*
     Компонент → адреса блоков источника («секция:блок»). Адрес несёт сам узел
@@ -582,8 +642,8 @@ function SiteMode({
 
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
-    return matchBlock(blocks, nodeText(nodeAtPath(pageDoc, selected)));
-  }, [selected, blocks, pageDoc]);
+    return matchBlock(blocks, textAt(selected));
+  }, [selected, blocks, textAt]);
 
   // Подвести левую панель к подсветке (узел JSON или блок источника). На время
   // наводки синхрон паузим — иначе он сбил бы точную прокрутку.
@@ -654,7 +714,14 @@ function SiteMode({
           </button>
         </div>
         <div ref={setLeftBox} className="min-h-0 flex-1 overflow-y-auto">
-          {tab === "json" ? (
+          {tab === "json" && body ? (
+            <p className="p-6 text-sm text-muted-foreground">
+              Хаб трека собран руками — это навигация по разделу, а не материал
+              источника. Дерева узлов у него нет, поэтому и JSON для него не
+              строится. В соседней вкладке «Источник» — вступление модуля, из
+              которого написан текст хаба.
+            </p>
+          ) : tab === "json" ? (
             <div className="px-5 py-4">
               <JsonView
                 doc={pageDoc}
@@ -706,16 +773,26 @@ function SiteMode({
 
               {/* Контент страницы */}
               <div className="min-w-0">
-                <ResultView
-                  doc={pageDoc}
-                  pick={{ selected, onSelect: onPick, commented }}
-                />
+                {body ? (
+                  <HandmadeBody
+                    selected={selected}
+                    commented={commented}
+                    onSelect={onPick}
+                  >
+                    {body}
+                  </HandmadeBody>
+                ) : (
+                  <ResultView
+                    doc={pageDoc}
+                    pick={{ selected, onSelect: onPick, commented }}
+                  />
+                )}
               </div>
 
               {/* Правое меню — оглавление страницы */}
               <aside className="min-w-0">
                 <div className="sticky top-8">
-                  <SiteRail items={tocItems} pane={rightBox} />
+                  <SiteRail items={rail} pane={rightBox} />
                 </div>
               </aside>
             </div>
@@ -798,8 +875,9 @@ function SiteMode({
       <SiteComments
         slug={page.slug}
         pane={rightBox}
-        pageDoc={pageDoc}
         selected={selected}
+        textAt={textAt}
+        typeAt={typeAt}
       />
       {/* Пины — закладки «сюда вернуться». Иконка левее комментария, чтобы не наезжали. */}
       <PinLayer
@@ -807,9 +885,67 @@ function SiteMode({
         pane={rightBox}
         selected={selected}
         onSelect={setSelected}
-        labelOf={(path) => nodeText(nodeAtPath(pageDoc, path)).slice(0, 120)}
+        labelOf={(path) => textAt(path).slice(0, 120)}
         offset={44}
       />
+    </div>
+  );
+}
+
+/*
+  РУЧНАЯ СТРАНИЦА В ИНСПЕКТОРЕ — хабы треков «Для компаний» и «Для НКО».
+
+  Они написаны разметкой, а не собраны из источника: это навигация по треку.
+  Дерева узлов, а значит и адресов вида «0.2.1», у них нет — поэтому адрес
+  каждому компоненту раздаём по факту отрисовки. Опереться есть на что: каждый
+  компонент дизайн-системы помечает себя атрибутом data-component (по нему же
+  работает тумблер «Компоненты»). Порядковый номер в этом списке и есть адрес.
+  Страницы статичные, порядок обхода от рендера к рендеру не меняется — значит
+  комментарии и пины держатся за свои компоненты.
+
+  Выделение ставим классами на сам элемент (у страниц из источника обёртка
+  прозрачная, display: contents, и рамка рисуется на её ребёнке — здесь обёртки
+  нет, поэтому отдельные правила .ds-pick-flat в globals.css).
+*/
+function HandmadeBody({
+  children,
+  selected,
+  commented,
+  onSelect,
+}: {
+  children: React.ReactNode;
+  selected: string | null;
+  commented: Set<string>;
+  onSelect: (path: string) => void;
+}) {
+  const rootRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Без списка зависимостей: адреса и подсветку переставляем на каждый показ —
+  // страница могла перерисоваться (раскрылся аккордеон, сменилась вкладка).
+  React.useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    root.querySelectorAll<HTMLElement>("[data-component]").forEach((el, i) => {
+      const path = `c${i}`;
+      el.dataset.jsonPath = path;
+      el.classList.add("ds-pick-flat");
+      el.classList.toggle("is-picked", path === selected);
+      el.classList.toggle("has-comment", commented.has(path));
+    });
+  });
+
+  return (
+    <div
+      ref={rootRef}
+      className="space-y-12"
+      onClick={(e) => {
+        // Ближайший компонент от места клика — то есть самый вложенный.
+        const el = (e.target as HTMLElement).closest<HTMLElement>("[data-component]");
+        const path = el?.dataset.jsonPath;
+        if (path) onSelect(path);
+      }}
+    >
+      {children}
     </div>
   );
 }
@@ -827,13 +963,17 @@ const snippet = (s?: string | null) =>
 function SiteComments({
   slug,
   pane,
-  pageDoc,
   selected,
+  textAt,
+  typeAt,
 }: {
   slug: string;
   pane: HTMLDivElement | null;
-  pageDoc: Doc;
   selected: string | null;
+  /* Текст и тип компонента по его адресу — считает вызывающий: у страниц из
+     источника это дерево узлов, у ручных хабов — сама разметка страницы. */
+  textAt: (path: string | null) => string;
+  typeAt: (path: string) => string | null;
 }) {
   const { comments, setComment } = useComments();
   const [openPath, setOpenPath] = React.useState<string | null>(null);
@@ -880,8 +1020,8 @@ function SiteComments({
         id: `${slug}::${path}::${uid()}`,
         page: slug,
         author: name,
-        blockType: (nodeAtPath(pageDoc, path) as Node | null)?.component ?? null,
-        original: snippet(nodeText(nodeAtPath(pageDoc, path))),
+        blockType: typeAt(path),
+        original: snippet(textAt(path)),
       },
       text,
     );
@@ -913,7 +1053,7 @@ function SiteComments({
 
       {openPath && (
         <ThreadWindow
-          about={snippet(nodeText(nodeAtPath(pageDoc, openPath)))}
+          about={snippet(textAt(openPath))}
           thread={threadOf(openPath)}
           author={author}
           onSubmit={(name, text) => {
