@@ -4,7 +4,6 @@ import {
   placeDirectives,
   buildDoc,
   toExport,
-  type SectionNode,
 } from "@/editor-source/source/contentTree";
 import { makeMdResolver } from "@/editor-source/source/blockResolve";
 import { loadEdits } from "@/editor-source/store";
@@ -14,6 +13,7 @@ import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { decourse } from "./decourse";
 import { pageChildren } from "./pageStructure";
+import { pageParts } from "./pageOutline";
 import { coverFor, type Cover } from "./covers";
 
 /*
@@ -72,18 +72,11 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     );
     const doc = buildDoc(page.module, sections, resolve, logoIndex, directiveAt, avatarIndex);
 
-    // Секции страницы по якорям (тот же выбор, что и на сайте).
-    const byAnchor = new Map(
-      doc.children
-        .filter((n): n is SectionNode => (n as SectionNode).component === "Section Container")
-        .map((n) => [n.anchor ?? "", n]),
-    );
-    const chosen = page.sections
-      .map((a) => byAnchor.get(a))
-      .filter((s): s is SectionNode => Boolean(s));
+    // Разделы страницы и вступление — тем же кодом, что и на сайте (включая
+    // перекройку по карте, см. pageOutline.ts), иначе выгрузка разъедется.
+    const { chosen, intro } = pageParts(doc, page);
 
     // Та же структура, что рисует сайт: обвязка + секции, одним деревом.
-    const intro = page.intro ? byAnchor.get(page.intro) : undefined;
     const children = toExport(pageChildren(chosen, page.slug, intro));
     pages.push({
       slug: page.slug,

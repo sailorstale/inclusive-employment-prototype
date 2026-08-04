@@ -6,26 +6,27 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadModule } from "./lib.mjs";
 
 /*
-  Оглавление страницы сайта («На этой странице») — тем же кодом, что и на сайте
-  (pageToc). Проверка результата после правки уровней: в оглавление идут секции
-  (H2) и подзаголовки H3, всё, что мельче, из него уходит.
+  ВСЕ ЗАГОЛОВКИ СТРАНИЦЫ САЙТА — с уровнями и якорями, в порядке показа.
 
-    node tools/directives/pagetoc.mjs /companies/hire/step-3
-    node tools/directives/pagetoc.mjs            — все страницы
+  Нужна, чтобы писать перекройку страницы (outline в pageMap.ts): там надо знать
+  якорь каждого заголовка и уровень, который он получил ПОСЛЕ разметки, а не в
+  гуглдоке. Оглавление (pagetoc.mjs) для этого не годится — оно показывает
+  только то, что попало в навигацию, а решение принимается по всему списку.
+
+    node tools/directives/pageheads.mjs /companies/hire/step-4
+    node tools/directives/pageheads.mjs            — все страницы
 */
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..", "..");
 const SRC = path.join(ROOT, "src");
 
-const out = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "toc-")), "toc.mjs");
+const out = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "heads-")), "heads.mjs");
 await build({
   stdin: {
     contents: `
       export { buildDoc } from "@/editor-source/source/contentTree";
-      export { pageToc, pageChildren } from "@/editor-source/site/pageStructure";
       export { pageBySlug, OSNOVY_PAGES } from "@/editor-source/site/pageMap";
-      export { pageParts } from "@/editor-source/site/pageOutline";
     `,
     resolveDir: ROOT,
     loader: "ts",
@@ -38,9 +39,11 @@ await build({
   alias: { "@": SRC },
   loader: { ".css": "empty", ".svg": "empty" },
 });
-const { buildDoc, pageToc, pageBySlug, pageParts, OSNOVY_PAGES } = await import(pathToFileURL(out).href);
+const { buildDoc, pageBySlug, OSNOVY_PAGES } = await import(pathToFileURL(out).href);
 
-const slugs = process.argv.slice(2).length ? process.argv.slice(2) : OSNOVY_PAGES.map((p) => p.slug);
+const slugs = process.argv.slice(2).length
+  ? process.argv.slice(2)
+  : OSNOVY_PAGES.map((p) => p.slug);
 const all = await fetch("http://localhost:8787/api/source/directives").then((r) => r.json());
 
 for (const slug of slugs) {
@@ -71,9 +74,28 @@ for (const slug of slugs) {
   const doc = buildDoc(page.module, sections, (_t, _x, md) => md, [], (si, bi) =>
     byKey.get(`${si}:${bi}`),
   );
-  // Разделы страницы — тем же кодом, что и на сайте (с перекройкой по карте).
-  const { chosen } = pageParts(doc, page);
+  const byAnchor = new Map(
+    doc.children
+      .filter((n) => n.component === "Section Container")
+      .map((n) => [n.anchor ?? "", n]),
+  );
+
   console.log(`\n### ${slug} — ${page.title} (${page.module})`);
-  for (const t of pageToc(chosen, page.slug))
-    console.log(`${t.level === 2 ? "" : "    "}H${t.level}  ${t.label.slice(0, 90)}`);
+  for (const a of page.sections) {
+    const sec = byAnchor.get(a);
+    if (!sec) {
+      console.log(`  ! секции нет в модуле: ${a}`);
+      continue;
+    }
+    const walk = (nodes) => {
+      for (const n of nodes) {
+        if (n.component === "Heading")
+          console.log(
+            `${"  ".repeat(Number(n.level[1]) - 2)}${n.level}  ${n.text.slice(0, 80)}  [${n.anchor ?? "—"}]`,
+          );
+        if (n.children) walk(n.children);
+      }
+    };
+    walk(sec.children);
+  }
 }

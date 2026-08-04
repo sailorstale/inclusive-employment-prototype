@@ -37,6 +37,53 @@ export function secEls(box: HTMLElement): HTMLElement[] {
   return out;
 }
 
+/*
+  ТОЧКИ ПРИВЯЗКИ ПО ЯКОРЯМ — общая система координат, которая переживает
+  перекройку страницы.
+
+  Номер секции годится, только пока обе колонки делят документ одинаково. На
+  странице с перекройкой (pageOutline.ts) это уже не так: слева секции
+  источника, справа разделы сайта, и одна секция источника может стать тремя
+  разделами. По номерам колонки уезжали друг от друга тем сильнее, чем ниже
+  прокрутка.
+
+  Якорь же у одного и того же места одинаков в обеих колонках: слева его несёт
+  заголовок источника, справа — контейнер раздела или заголовок внутри него.
+  Берём общие якоря по порядку и работаем с ними так же, как раньше с секциями.
+*/
+const ANCHORED = '[data-component="Section Container"][id], h2[id], h3[id], h4[id], h5[id]';
+
+export function anchorTops(box: HTMLElement): Map<string, HTMLElement> {
+  const out = new Map<string, HTMLElement>();
+  box.querySelectorAll<HTMLElement>(ANCHORED).forEach((el) => {
+    if (el.id && !out.has(el.id)) out.set(el.id, el);
+  });
+  return out;
+}
+
+/** Якоря, которые есть в обеих колонках, в порядке следования в первой. */
+function commonAnchors(from: HTMLElement, to: HTMLElement): string[] {
+  const there = anchorTops(to);
+  return [...anchorTops(from).keys()].filter((a) => there.has(a));
+}
+
+/** Верх элемента в координатах содержимого контейнера. */
+function topIn(el: HTMLElement, box: HTMLElement): number {
+  return el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+}
+
+/** Границы куска между якорем и следующим — в координатах содержимого. */
+function anchorSpan(
+  anchors: string[],
+  i: number,
+  map: Map<string, HTMLElement>,
+  box: HTMLElement,
+) {
+  const top = topIn(map.get(anchors[i])!, box);
+  const next = anchors[i + 1] ? topIn(map.get(anchors[i + 1])!, box) : null;
+  return { top, height: (next ?? box.scrollHeight) - top };
+}
+
 /** Границы секции i в координатах содержимого контейнера. */
 export function secSpan(els: HTMLElement[], i: number, box: HTMLElement) {
   const boxTop = box.getBoundingClientRect().top - box.scrollTop;
@@ -58,6 +105,27 @@ export function syncTarget(from: HTMLElement, to: HTMLElement): number | null {
   const fe = secEls(from);
   const te = secEls(to);
   let target: number;
+  /*
+    Сначала пробуем якоря: они точнее и не ломаются от перекройки. Двух общих
+    якорей мало для доли внутри куска, поэтому порог — три. Не набралось (колонки
+    модульного редактора: JSON и «Блоки» якорей не несут) — работаем по секциям.
+  */
+  const common = commonAnchors(from, to);
+  if (common.length >= 3) {
+    const fm = anchorTops(from);
+    const tm = anchorTops(to);
+    let i = 0;
+    for (let k = 0; k < common.length; k++)
+      if (anchorSpan(common, k, fm, from).top <= from.scrollTop + 1) i = k;
+    const f = anchorSpan(common, i, fm, from);
+    const frac =
+      f.height > 0
+        ? Math.min(1, Math.max(0, (from.scrollTop - f.top) / f.height))
+        : 0;
+    const t = anchorSpan(common, i, tm, to);
+    target = t.top + frac * t.height;
+    return Math.max(0, Math.min(target, to.scrollHeight - to.clientHeight));
+  }
   if (fe.length && te.length) {
     // Верхняя секция, начало которой уже ушло за верхний край окна.
     let i = 0;

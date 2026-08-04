@@ -1,9 +1,10 @@
 import { useLocation } from "react-router-dom";
-import type { Doc, SectionNode } from "@/editor-source/source/contentTree";
+import type { Doc } from "@/editor-source/source/contentTree";
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
 import { SiteInspector } from "./SiteInspector";
 import { pageChildren, pageToc } from "./pageStructure";
+import { pageParts } from "./pageOutline";
 
 /*
   СТРАНИЦА САЙТА ИЗ ИСТОЧНИКА — сразу разворачивается в инструмент сверки.
@@ -26,18 +27,14 @@ export function GeneratedPage() {
     return <div className="mx-auto max-w-prose px-6 py-16 text-muted-foreground">Страница не из карты: {pathname}</div>;
   if (!doc) return <div className="mx-auto max-w-prose px-6 py-16 text-muted-foreground">Загрузка…</div>;
 
-  const byAnchor = new Map(
-    doc.children
-      .filter((n): n is SectionNode => (n as SectionNode).component === "Section Container")
-      .map((n) => [n.anchor ?? "", n]),
-  );
-  const chosen = page.sections.map((a) => byAnchor.get(a)).filter(Boolean) as SectionNode[];
-  // Вступление (если у страницы оно заявлено) — отдельно от секций: в темах и
-  // в оглавлении его быть не должно.
-  const intro = page.intro ? byAnchor.get(page.intro) : undefined;
+  // Разделы страницы и её вступление. Если у страницы заявлена перекройка
+  // (outline), разделы нарезаются заново — по карте, а не по уровням источника.
+  // Вступление идёт отдельно от разделов: в темах и в оглавлении его быть не
+  // должно.
+  const { chosen, intro } = pageParts(doc, page);
 
   /* Оглавление «На этой странице» (правое меню) — секции H2 и подзаголовки H3. */
-  const tocItems = pageToc(chosen);
+  const tocItems = pageToc(chosen, page.slug);
 
   // Полная страница одним деревом: обвязка + секции. module оставляем в Doc для
   // сборки (правки/логотипы), но в JSON/выгрузку он не попадает.
