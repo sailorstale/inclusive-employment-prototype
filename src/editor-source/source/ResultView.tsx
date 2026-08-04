@@ -130,16 +130,23 @@ export function ResultView({ doc, pick }: { doc: Doc; pick?: Pick }) {
 function cellContent(cell: string): React.ReactNode {
   const lines = cell.split("\n");
   if (lines.length === 1) return renderInline(cell);
-  return lines.map((line, i) => (
-    <span
-      key={i}
-      className={
-        line.trimStart().startsWith("•") ? "block pl-4 -indent-4" : "block"
-      }
-    >
-      {renderInline(line)}
-    </span>
-  ));
+  return lines.map((line, i) => {
+    const isItem = line.trimStart().startsWith("•");
+    return (
+      <span
+        key={i}
+        className={
+          isItem
+            ? "block pl-4 -indent-4"
+            : // Строка без маркера посреди ячейки открывает новую группу
+              // («Санузел:»): отбиваем её от предыдущего перечисления.
+              `block${i > 0 ? " mt-[var(--space-s)]" : ""}`
+        }
+      >
+        {renderInline(line)}
+      </span>
+    );
+  });
 }
 
 function NodeView({ node, path }: { node: Node; path: string }) {
