@@ -1,4 +1,6 @@
+import * as React from "react";
 import { useLocation } from "react-router-dom";
+import { scrollToId } from "@/lib/scroll";
 import type { Doc } from "@/editor-source/source/contentTree";
 import { pageBySlug } from "./pageMap";
 import { useModuleDoc } from "./useModuleDoc";
@@ -19,9 +21,23 @@ import { hiddenFromToc, pageParts } from "./pageOutline";
 */
 
 export function GeneratedPage() {
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
   const page = pageBySlug(pathname);
   const doc = useModuleDoc(page?.module ?? "");
+
+  /*
+    Переход из карты блоков (/blocks): в состоянии перехода лежит якорь
+    заголовка, к которому нужно прокрутить. Ждём, пока страница соберётся
+    (doc), иначе прокручивать ещё не к чему. Адрес при этом не меняется —
+    у нас хеш-роутер, и второй решётки в адресе быть не должно.
+  */
+  const anchor = (location.state as { anchor?: string } | null)?.anchor;
+  React.useEffect(() => {
+    if (!anchor || !doc) return;
+    const t = setTimeout(() => scrollToId(anchor), 80);
+    return () => clearTimeout(t);
+  }, [anchor, doc]);
 
   if (!page)
     return <div className="mx-auto max-w-prose px-6 py-16 text-muted-foreground">Страница не из карты: {pathname}</div>;

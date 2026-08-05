@@ -4,6 +4,8 @@ import {
   placeDirectives,
   buildDoc,
   toExport,
+  type Node,
+  type SectionNode,
 } from "@/editor-source/source/contentTree";
 import { makeMdResolver } from "@/editor-source/source/blockResolve";
 import { loadEdits } from "@/editor-source/store";
@@ -60,8 +62,18 @@ export type PageExport = {
 };
 export type OsnovyExport = { section: string; pages: PageExport[] };
 
-/** Построить единый экспорт всех страниц сайта. */
-export async function buildOsnovyExport(): Promise<OsnovyExport> {
+/*
+  ДЕРЕВО СТРАНИЦЫ ДО ВЫГРУЗКИ — те же узлы, что рисует сайт, но ещё со всеми
+  служебными полями: якорями секций и адресами блоков источника. Выгрузка их
+  срезает (разработчику они не нужны), а карта блоков без якорей не смогла бы
+  дать ссылку на нужное место страницы.
+
+  Отсюда растут обе вещи сразу: и JSON разработчику, и карта блоков. Считать
+  страницы двумя разными способами нельзя — они бы разъехались.
+*/
+export type PageTree = { slug: string; title: string; nodes: (SectionNode | Node)[] };
+
+export async function buildSiteTrees(): Promise<PageTree[]> {
   const [edits, directives, logoIndex, avatarIndex] = await Promise.all([
     loadEdits("source"),
     loadDirectives(),
@@ -69,7 +81,7 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     loadAvatarIndex(),
   ]);
 
-  const pages: PageExport[] = [];
+  const out: PageTree[] = [];
   for (const page of OSNOVY_PAGES) {
     const mod = await moduleLoaders[page.module]();
     const sourceSections = toSections(normalizeSourceBlocks(mod.blocks));
@@ -93,16 +105,28 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     const { chosen, intro } = pageParts(doc, page);
 
     // Та же структура, что рисует сайт: обвязка + секции, одним деревом.
-    const children = toExport(pageChildren(chosen, page.slug, intro));
-    const seo = metaFor(page.slug, page.title);
-    pages.push({
+    out.push({
       slug: page.slug,
-      meta: seo.meta,
-      "meta-og": seo.og,
-      h1: page.title,
-      article: children,
+      title: page.title,
+      nodes: pageChildren(chosen, page.slug, intro),
     });
   }
 
+  return out;
+}
+
+/** Построить единый экспорт всех страниц сайта. */
+export async function buildOsnovyExport(): Promise<OsnovyExport> {
+  const trees = await buildSiteTrees();
+  const pages = trees.map((t): PageExport => {
+    const seo = metaFor(t.slug, t.title);
+    return {
+      slug: t.slug,
+      meta: seo.meta,
+      "meta-og": seo.og,
+      h1: t.title,
+      article: toExport(t.nodes),
+    };
+  });
   return { section: "Сайт", pages };
 }

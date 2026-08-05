@@ -5,6 +5,7 @@ import { ScrollToTop } from "./components/shell/ScrollToTop";
 import { NotFound } from "./pages/NotFound";
 import { ChangesPage } from "./editor/ChangesPage";
 import { InventoryPage } from "./editor/InventoryPage";
+import { BlocksPage } from "./editor-source/site/BlocksPage";
 import { CatalogPage } from "./editor/CatalogPage";
 import { KitchenSinkPage } from "./pages/figma/KitchenSinkPage";
 import { ComponentsPage } from "./pages/figma/ComponentsPage";
@@ -153,6 +154,8 @@ export default function App() {
           {/* Сквозные */}
           <Route path="/changes" element={<ChangesPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
+          {/* Карта блоков: карточки, квизы, цитаты, заготовки, видео, картинки */}
+          <Route path="/blocks" element={<BlocksPage />} />
           {/* Витрина компонентов внутри обвязки сайта (только средняя колонка) */}
           <Route path="/unify" element={<ComponentsPage />} />
           <Route path="/catalog" element={<CatalogPage />} />

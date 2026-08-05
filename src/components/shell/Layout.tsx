@@ -29,7 +29,7 @@ import {
 
 // Служебные страницы редакторского слоя — не сайт: у них своя шапка-полоса
 // без баннера и свой заголовок в теле страницы.
-const TOOL_ROUTES = ["/changes", "/inventory", "/catalog"];
+const TOOL_ROUTES = ["/changes", "/inventory", "/catalog", "/blocks"];
 
 export function Layout() {
   return (
