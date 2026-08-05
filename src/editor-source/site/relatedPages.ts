@@ -10,6 +10,7 @@ import { OSNOVY_PAGES } from "./pageMap";
 
 // Короткая подпись страницы для карточки «Читайте также».
 const BLURB: Record<string, string> = {
+  "/general/about": "Кто сделал сайт, кому он полезен и что где лежит.",
   "/general/start":
     "Медицинская и социальная модель, кто такие соискатели, мифы и факты.",
   "/general/how": "Участники найма, сценарии поиска и работа с НКО.",
@@ -62,6 +63,12 @@ const BLURB: Record<string, string> = {
 
 // Три релевантных соседа для каждой страницы.
 const RELATED: Record<string, string[]> = {
+  /*
+    Со страницы о самом сайте ведём в три точки входа: общая часть и первые
+    страницы обоих практических треков. Хабы («Для компаний», «Для НКО») сюда
+    не годятся — карточки собираются только из страниц карты.
+  */
+  "/general/about": ["/general/start", "/companies/hire/step-1", "/ngo/start"],
   "/general/start": ["/general/how", "/general/legal", "/general/team"],
   "/general/how": ["/general/legal", "/general/team", "/general/start"],
   "/general/legal": [

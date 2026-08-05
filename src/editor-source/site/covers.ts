@@ -15,6 +15,7 @@ export type Cover = { src: string };
 const EMPTY: Cover = { src: "" };
 
 const COVERS: Record<string, Cover> = {
+  "/general/about": { src: "" },
   "/general/start": { src: "" },
   "/general/how": { src: "" },
   "/general/legal": { src: "" },

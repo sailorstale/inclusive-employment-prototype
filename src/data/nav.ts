@@ -10,6 +10,7 @@ export const routeTitles: Record<string, string> = {
   // Раздел «Основы» — общая база М1–М4 (один комплект страниц, оба
   // ролевых трека ведут сюда).
   "/general": "Основы",
+  "/general/about": "О проекте",
   "/general/start": "Реалии и мифы",
   "/general/how": "Как устроен наём",
   "/general/legal": "Правовые основы",
@@ -102,6 +103,9 @@ export const sidebars: Record<Track, SidebarSpec> = {
     groups: [
       {
         items: [
+          // Первая страница раздела — рассказ о самом сайте: кто его сделал,
+          // кому он полезен и что где лежит.
+          { label: "О проекте", path: "/general/about" },
           { label: "Реалии и мифы", path: "/general/start" },
           { label: "Как устроен наём", path: "/general/how" },
           {

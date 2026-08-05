@@ -78,11 +78,12 @@ export default function App() {
           {/* Общая информация — общая база М1–М4 (один комплект страниц) */}
           <Route
             path="/general"
-            element={<Navigate to="/general/start" replace />}
+            element={<Navigate to="/general/about" replace />}
           />
           {/* «Основы» целиком врастают из источника (перенос М1–4): одна
               GeneratedPage разбирает адрес по карте страниц (pageMap). Главную
               (/) не трогаем — она отдельная. */}
+          <Route path="/general/about" element={<GeneratedPage />} />
           <Route path="/general/start" element={<GeneratedPage />} />
           <Route path="/general/how" element={<GeneratedPage />} />
           <Route path="/general/legal" element={<GeneratedPage />} />
