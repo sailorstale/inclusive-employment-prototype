@@ -2,6 +2,7 @@ import type { Node, SectionNode } from "@/editor-source/source/contentTree";
 import { stripDecourse } from "./decourse";
 import { relatedFor } from "./relatedPages";
 import { recapFor, type Recap } from "./recap";
+import { pageBySlug } from "./pageMap";
 
 /*
   СТРУКТУРА СТРАНИЦЫ САЙТА — общая для рендера и экспорта.
@@ -224,8 +225,13 @@ export function pageChildren(
     Разделов может не быть вовсе: «Полезные документы» — это вводная фраза и
     список законов, делить там нечего. Пустая карточка «вы узнаете» на такой
     странице только мешает, поэтому её не ставим.
+
+    Страница может отказаться от списка и сама (noSummary в карте): на «О
+    проекте» разделов два, и оба заголовка видны сразу под блоком.
   */
-  const summary = pageTopics(sections).length ? [pageSummaryNode(sections)] : [];
+  const wantsSummary =
+    !pageBySlug(slug)?.noSummary && pageTopics(sections).length > 0;
+  const summary = wantsSummary ? [pageSummaryNode(sections)] : [];
   return [
     ...introNodes(intro),
     ...summary,
