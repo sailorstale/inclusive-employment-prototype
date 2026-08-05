@@ -74,10 +74,15 @@ export function pageToc(
 }
 
 /*
-  ИТОГ СТРАНИЦЫ. Секцию «Подведём итоги» из источника со страницы снимаем и
-  ставим на её место свою — короткую и одинаковую по форме на всех страницах
-  (текст и объяснение почему — в recap.ts). Итог всегда последний раздел
-  страницы, перед формой мнения.
+  ИТОГ СТРАНИЦЫ. Курсовую секцию «Подведём итоги» со страницы снимаем, и своего
+  итога вместо неё БОЛЬШЕ НЕ СТАВИМ — решение дизайнера 5 августа 2026: сводки
+  были нашим текстом, а не клиентским, и на странице они лишние. Страница
+  заканчивается последним разделом материала, дальше форма мнения и «Читайте
+  также».
+
+  Тексты сводок остались в recap.ts: удалять написанное ради правки показа
+  незачем, а вернуть их — это одна строка здесь. Список страниц в том же файле
+  по-прежнему работает: он говорит, у каких страниц курсовой итог снимается.
 
   Хвост секции. В шести местах внутри итога живёт «Практическое задание», а в
   «Команде и коммуникации» — пять правил общения с видео. К итогу это отношения
@@ -85,25 +90,6 @@ export function pageToc(
   По умолчанию этот H3 становится заголовком раздела; если у раздела должно быть
   своё название (правила общения), оно задаётся полем tail в recap.ts.
 */
-const RECAP_ANCHOR = "podvedem-itogi";
-
-function recapSection(recap: Recap): SectionNode {
-  return {
-    component: "Section Container",
-    anchor: RECAP_ANCHOR,
-    children: [
-      { component: "Heading", level: "H2", text: "Подведём итоги", anchor: RECAP_ANCHOR },
-      { component: "Text", size: "L", text: recap.lead },
-      {
-        component: "Stack",
-        ordered: false,
-        children: recap.points.map(
-          (text): Node => ({ component: "List Item", size: "L", type: "Dot", text }),
-        ),
-      },
-    ],
-  };
-}
 
 /** Раздел из хвоста секции итогов (задание, правила) — или null, если хвоста нет. */
 function tailSection(sec: SectionNode, tail?: Recap["tail"]): SectionNode | null {
@@ -169,12 +155,11 @@ function liftHeadings(nodes: Node[]): Node[] {
 export function withRecap(chosen: SectionNode[], slug?: string): SectionNode[] {
   const recap = slug ? recapFor(slug) : undefined;
   if (!recap) return chosen;
-  const kept = chosen.flatMap((sec) => {
+  return chosen.flatMap((sec) => {
     if (!isRecapAnchor(sec.anchor)) return [sec];
     const tail = tailSection(sec, recap.tail);
     return tail ? [tail] : [];
   });
-  return [...kept, recapSection(recap)];
 }
 
 function pageSummaryNode(chosen: SectionNode[]): Node {
