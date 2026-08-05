@@ -779,6 +779,21 @@ const isBareQuizLabel = (t: string) =>
     t.trim(),
   );
 
+/*
+  ВЕДУЩИЙ НОМЕР В НАЗВАНИИ КВИЗА. После снятия слова «Ситуация» от заголовка
+  остаётся «1. Сотрудник без предупреждения не выходит на работу» — номер без
+  того слова, к которому он относился. Порядок читатель и так видит: квизы идут
+  один под другим отдельными карточками. Просьба дизайнера 5 августа 2026.
+
+  Требуем разделитель после числа («1. », «2) »), а не просто цифру с пробелом:
+  иначе правило съело бы начало осмысленных названий вроде «3 признака
+  выгорания». И оставляем номер, если кроме него ничего нет.
+*/
+const stripQuizNumber = (t: string) => {
+  const out = t.replace(/^\s*\d+\s*[.)\]:—–-]\s+/u, "");
+  return out.trim() ? out.trim() : t.trim();
+};
+
 export type QuizTop = { title?: string; description?: string; question: string };
 
 export function splitQuizTop(title: string, parts: string[]): QuizTop {
@@ -794,6 +809,7 @@ export function splitQuizTop(title: string, parts: string[]): QuizTop {
   // Голый ярлык снимаем ПОСЛЕ подстановки заголовка из первого абзаца: иначе
   // на освободившееся место уехал бы сценарий кейса и стал бы названием.
   if (isBareQuizLabel(head)) head = "";
+  else if (head) head = stripQuizNumber(head);
 
   return {
     ...(head ? { title: head } : {}),
