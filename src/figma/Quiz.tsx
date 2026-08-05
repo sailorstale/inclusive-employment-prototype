@@ -79,6 +79,8 @@ export function Quiz({
     разбор, множественный выбор) — по кнопке. Отличаем по наличию feedback.
   */
   const instant = items.some((i) => i.feedback);
+  // Есть ли что проверять: без верных вариантов это самопроверка (см. isJudged).
+  const judged = isJudged(items);
 
   const toggle = (index: number, value: boolean) => {
     // Мгновенный режим — один вариант: выбираем только его, остальные гасим.
@@ -138,7 +140,7 @@ export function Quiz({
             // Список статичен и не переупорядочивается — индекс как ключ безопасен
             // и не ломается, если два варианта совпали текстом.
             key={index}
-            state={revealed ? itemState(item, selected[index]) : "Default"}
+            state={revealed ? itemState(item, selected[index], judged) : "Default"}
             checked={selected[index]}
             // В мгновенном режиме варианты остаются кликабельными — можно
             // попробовать другой ответ. В обычном — после «Проверить» замирают.
@@ -172,7 +174,7 @@ export function Quiz({
           items={items}
           selected={selected}
           explanation={explanation}
-          showScore={!instant}
+          showScore={!instant && judged}
         />
       ) : null}
     </div>
@@ -184,10 +186,26 @@ export function Quiz({
   отмечен и верный → Correct, отмечен и неверный → Incorrect,
   верный, но пропущен → Partly (жёлтый: «тут тоже надо было»), остальное — Default.
 */
-function itemState(item: QuizOption, isSelected: boolean): QuizItemState {
+function itemState(
+  item: QuizOption,
+  isSelected: boolean,
+  judged: boolean,
+): QuizItemState {
+  // Самопроверка без верного ответа: красить нечего, ошибки тут не бывает.
+  if (!judged) return "Default";
   if (isSelected) return item.correct ? "Correct" : "Incorrect";
   return item.correct ? "Partly" : "Default";
 }
+
+/*
+  САМОПРОВЕРКА БЕЗ ВЕРНОГО ОТВЕТА. В квизе может не быть ни одного верного
+  варианта — например, «сколько потенциальных участников программы вы видите
+  сейчас?». Человек описывает свою ситуацию, а не угадывает, и вердикт ему не
+  положен: раньше такой квиз на любой ответ отвечал «Неверно» и красил строку
+  красным. Узнаём такие квизы по отсутствию верных вариантов и просто
+  показываем разбор.
+*/
+const isJudged = (items: QuizOption[]) => items.some((i) => i.correct);
 
 /*
   Feedback Container: белая карточка, поля 24, скругление 16, зазор 8.

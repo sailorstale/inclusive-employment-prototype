@@ -84,7 +84,12 @@ const show = (node, depth) => {
     `${pad}${node.component}${extra ? " ["+extra+"]" : ""}${text ? " · " + String(text).replace(/\s+/g, " ").slice(0, 100) : ""}`,
   );
   for (const c of node.children ?? []) show(c, depth + 1);
-  for (const c of node.items ?? []) show({ component: c.correct ? "Quiz Item ✔ ВЕРНЫЙ" : "Quiz Item", ...c }, depth + 1);
+  for (const c of node.items ?? []) {
+    show({ component: c.correct ? "Quiz Item ✔ ВЕРНЫЙ" : "Quiz Item", ...c }, depth + 1);
+    // Разбор ИМЕННО этого варианта — иначе его в прогоне не видно.
+    if (c.feedback)
+      console.log(pad + "    разбор варианта · " + c.feedback.replace(/\s+/g, " ").slice(0, 80));
+  }
   if (node.explanation) console.log(pad + "  разбор · " + node.explanation.replace(/\s+/g," ").slice(0, 90));
 };
 

@@ -716,6 +716,15 @@ const isExplainLabel = (t: string) =>
 const isOptionFeedbackLabel = (t: string) =>
   /^[*_\s]*обратн\p{L}*\s+связ\p{L}*\s+к\s+вариант\p{L}*\s*\d+[*_\s.:]*$/iu.test(t.trim());
 
+/*
+  «Если вы выбрали низкий диапазон» — подпись куска ОБЩЕГО разбора: она говорит,
+  кому этот кусок адресован. Разбор уезжает к своему варианту ответа, и подпись
+  вместе с ним не нужна: читатель уже выбрал, объяснять ему это незачем. Страж
+  потерь должен знать, иначе ругается на каждую такую строку.
+*/
+const isSharedVariantLabel = (t: string) =>
+  /^[*_\s]*если\s+вы\s+выбрали\s+[^.!?]{3,40}[*_\s:]*$/iu.test(t.trim());
+
 const isDroppedLabel = (raw: string, labels: string[]) => {
   const bare = raw.replace(/[*_]/g, "").replace(/:$/, "").trim().toLowerCase();
   return bare.length > 0 && labels.includes(bare);
@@ -1340,13 +1349,18 @@ export function buildDoc(
       "explanation",
     ])
       if (typeof o[k] === "string") parts.push(o[k] as string);
-    if (Array.isArray(o.items))
-      // У варианта квиза есть и свой разбор — он тоже текст источника.
-      parts.push(
-        (o.items as { text?: string; feedback?: string }[])
-          .map((i) => `${i?.text ?? ""} ${i?.feedback ?? ""}`)
-          .join(" "),
-      );
+    if (Array.isArray(o.items)) {
+      /*
+        Сначала ВСЕ варианты подряд, и только потом их разборы. Страж сверяет
+        блок источника непрерывным куском, а список вариантов в источнике идёт
+        сплошь: если вставить разбор между вариантами, список перестанет
+        узнаваться и страж объявит его потерянным (проверено на самопроверке
+        М6.1, где разбор появился у каждого варианта).
+      */
+      const opts = o.items as { text?: string; feedback?: string }[];
+      parts.push(opts.map((i) => i?.text ?? "").join(" "));
+      parts.push(opts.map((i) => i?.feedback ?? "").join(" "));
+    }
     if (Array.isArray(o.paragraphs)) parts.push((o.paragraphs as string[]).join(" "));
     if (Array.isArray(o.header)) parts.push((o.header as string[]).join(" "));
     if (Array.isArray(o.rows))
@@ -1459,7 +1473,12 @@ export function buildDoc(
       const raw0 = itemText(it);
       const raw = dropLead ? stripLeadWord(raw0, dropLead) : raw0;
       if (drop.length && isDroppedLabel(raw, drop)) return false;
-      if (isExplainLabel(raw) || isOptionFeedbackLabel(raw)) return false;
+      if (
+        isExplainLabel(raw) ||
+        isOptionFeedbackLabel(raw) ||
+        isSharedVariantLabel(raw)
+      )
+        return false;
       const sig = signature(raw);
       // Короткие служебные подписи («Миф», «Правда») проверять бессмысленно:
       // они и так растворяются в тексте соседей и дают ложные тревоги.
@@ -2758,15 +2777,80 @@ export function buildDoc(
 
         const isFeedbackHeading = (it: Item) =>
           it.b.kind === "heading" && isFeedbackLabel(md(it, fix));
+        /** «Общая обратная связь» — разбор не одного квиза, а нескольких сразу. */
+        const isSharedFeedbackLabel = (t: string) =>
+          /^[*_\s]*общ\p{L}*\s+обратная\s+связь[*_\s:.]*$/iu.test(t.trim());
+        const isSharedFeedbackHeading = (it: Item) =>
+          it.b.kind === "heading" && isSharedFeedbackLabel(md(it, fix));
+        /*
+          «Разбор по вариантам: 1 → низкий, 2 → средний, 3-4 → высокий».
+
+          Слева номера вариантов ответа, справа — слово, по которому узнаётся
+          нужный кусок общего разбора («Если вы выбрали НИЗКИЙ диапазон»).
+          Решение принимает дизайнер: в источнике нигде не сказано, какой ответ
+          считать низким, а какой высоким.
+        */
+        const sharedMap = (): { nums: number[]; name: string }[] => {
+          // Между «вариантам» и двоеточием дизайнер может уточнить, о каких
+          // квизах речь («…в квизах 2–5:»), поэтому до двоеточия пускаем текст.
+          const line = /разбор\s+по\s+вариантам[^:\n]*:\s*([^\n]+)/iu.exec(
+            dir.comment || "",
+          );
+          if (!line) return [];
+          return line[1]
+            .split(/\s*[,;]\s*/)
+            .map((pair) => {
+              const m = /^([\d\s,и-]+?)\s*(?:→|->|—|-|:)\s*(.+)$/u.exec(pair.trim());
+              if (!m) return null;
+              const nums = (m[1].match(/\d+/g) ?? []).map(Number);
+              // «3-4» — это диапазон вариантов, а не два номера через дефис.
+              const range = /^\s*(\d+)\s*[-–—]\s*(\d+)\s*$/.exec(m[1]);
+              const all = range
+                ? Array.from(
+                    { length: Number(range[2]) - Number(range[1]) + 1 },
+                    (_, k) => Number(range[1]) + k,
+                  )
+                : nums;
+              return all.length ? { nums: all, name: m[2].trim() } : null;
+            })
+            .filter((x): x is { nums: number[]; name: string } => Boolean(x));
+        };
         if (items.some(isFeedbackHeading)) {
           type Opt = NonNullable<Extract<Node, { component: "Quiz" }>["items"]>[number];
           type Q = { question: string; qParts: string[]; options: Opt[]; expl: string[] };
           const quizzes: Q[] = [];
           let cur: Q | null = null;
           let mode: "question" | "explanation" = "question";
+          /*
+            ОБЩИЙ РАЗБОР НА НЕСКОЛЬКО КВИЗОВ (М6.1, самопроверка про масштаб).
+
+            В источнике четыре вопроса — это ветки одного: отвечают только на
+            ту, что совпала с ответом в первом вопросе. Своего разбора у веток
+            нет, вместо этого в конце стоит «Общая обратная связь», а под ней
+            три варианта: «Если вы выбрали низкий диапазон», «средний»,
+            «высокий».
+
+            Собираем их отдельно от квизов, а потом раскладываем разбором НА
+            КАЖДЫЙ ВАРИАНТ ответа: читатель выбирает и сразу видит нужный ему
+            кусок, а не ищет свой абзац глазами. Какому варианту какой разбор —
+            говорит комментарий директивы (см. sharedMap ниже).
+          */
+          const shared: { name: string; parts: string[] }[] = [];
+          let sharedCur: { name: string; parts: string[] } | null = null;
+          let inShared = false;
 
           for (const it of items) {
             if (it.b.kind === "heading") {
+              if (isSharedFeedbackHeading(it)) {
+                inShared = true;
+                sharedCur = null;
+                continue;
+              }
+              if (inShared) {
+                sharedCur = { name: headingText(md(it, fix), fix), parts: [] };
+                shared.push(sharedCur);
+                continue;
+              }
               if (isFeedbackHeading(it)) {
                 mode = "explanation";
                 continue;
@@ -2788,11 +2872,29 @@ export function buildDoc(
               mode = "question";
               continue;
             }
+            if (inShared) {
+              if (sharedCur) sharedCur.parts.push(stripBold(md(it, fix).trim()));
+              continue;
+            }
             if (!cur) continue;
             if (it.b.kind === "list") {
+              /*
+                Список ПОСЛЕ «Обратной связи» — часть разбора, а не варианты
+                ответа. В М6.1 разбор первого вопроса перечисляет, из чего
+                складывается нагрузка на команду («сопровождению участников;
+                подбору вакансий; …»), и эти строки уезжали в ответы: читатель
+                видел восемь вариантов вместо четырёх. Списком и оставляем —
+                разбор рисуется той же разметкой, что и обычный текст.
+              */
+              const lines = it.b.items.map((li) =>
+                applyFix(liText(it, li), fix).trim(),
+              );
+              if (mode === "explanation") {
+                cur.expl.push(lines.map((l) => `- ${stripBold(l)}`).join("\n"));
+                continue;
+              }
               cur.options.push(
-                ...it.b.items.map((li) => {
-                  const raw = applyFix(liText(it, li), fix).trim();
+                ...lines.map((raw) => {
                   const correct = WHOLE_BOLD.test(raw);
                   return { text: stripBold(raw), ...(correct ? { correct: true } : {}) };
                 }),
@@ -2812,18 +2914,38 @@ export function buildDoc(
             «Верные: …» в комментарии, номером или именем варианта.
           */
           const names = correctNames();
+          /*
+            Общий разбор → разбор на каждый вариант. Раскладываем только тем
+            квизам, у которых своего разбора нет: у первого вопроса он свой, и
+            подменять его нечем.
+          */
+          const map = shared.length ? sharedMap() : [];
+          const sharedFor = (optionNo: number): string | undefined => {
+            const rule = map.find((r) => r.nums.includes(optionNo));
+            if (!rule) return undefined;
+            const part = shared.find((s) =>
+              normName(s.name).includes(normName(rule.name)),
+            );
+            return part?.parts.filter(Boolean).join("\n\n") || undefined;
+          };
           const out: Node[] = quizzes
             .filter((q) => q.options.length)
             .map((q, i) => {
               const want = names[i];
               const byNum = want && /^\d+$/.test(want) ? Number(want) : 0;
-              const options = q.options.some((o) => o.correct)
+              const marked = q.options.some((o) => o.correct)
                 ? q.options
                 : q.options.map((o, k) =>
                     (byNum ? k === byNum - 1 : want && isWanted(o.text, want))
                       ? { ...o, correct: true }
                       : o,
                   );
+              const options = q.expl.length
+                ? marked
+                : marked.map((o, k) => {
+                    const fb = o.feedback ?? sharedFor(k + 1);
+                    return fb ? { ...o, feedback: fb } : o;
+                  });
               return {
                 component: "Quiz" as const,
                 question: [q.question, ...q.qParts].filter(Boolean).join("\n\n"),
