@@ -717,6 +717,19 @@ const isOptionFeedbackLabel = (t: string) =>
   /^[*_\s]*обратн\p{L}*\s+связ\p{L}*\s+к\s+вариант\p{L}*\s*\d+[*_\s.:]*$/iu.test(t.trim());
 
 /*
+  «Вопрос 1» — такой же служебный ярлык квиза, как «Ситуация». Сам вопрос идёт
+  абзацем под ним, а ярлык вставал в карточке отдельной строкой сверху и ничего
+  не добавлял: читатель и так видит, что перед ним вопрос. Убираем — решение
+  дизайнера 5 августа 2026.
+
+  Ловим ТОЛЬКО голый ярлык («Вопрос 1», «Вопрос»). Заголовок со своим текстом
+  («Вопрос о справке») остаётся как есть. На уровне модуля, потому что нужен и
+  сборке квиза, и стражу потерь.
+*/
+const isQuestionLabel = (t: string) =>
+  /^[*_\s]*вопрос\s*\d*[*_\s:.]*$/iu.test(t.trim());
+
+/*
   «Если вы выбрали низкий диапазон» — подпись куска ОБЩЕГО разбора: она говорит,
   кому этот кусок адресован. Разбор уезжает к своему варианту ответа, и подпись
   вместе с ним не нужна: читатель уже выбрал, объяснять ему это незачем. Страж
@@ -1476,7 +1489,8 @@ export function buildDoc(
       if (
         isExplainLabel(raw) ||
         isOptionFeedbackLabel(raw) ||
-        isSharedVariantLabel(raw)
+        isSharedVariantLabel(raw) ||
+        isQuestionLabel(raw)
       )
         return false;
       const sig = signature(raw);
@@ -2513,6 +2527,8 @@ export function buildDoc(
         */
         const isSituationLabel = (t: string) =>
           /^[*_\s]*ситуац\p{L}*\s*\d*[*_\s:.]*$/iu.test(t.trim());
+        const isQuizLabel = (t: string) =>
+          isSituationLabel(t) || isQuestionLabel(t);
         /** Абзац, НАЧИНАЮЩИЙСЯ с жирного ярлыка: «**Вакансия:** Специалист…». */
         const WHOLE_BOLD_START = /^\s*\*\*[^*]+\*\*/;
         const isFeedbackLabel = (t: string) =>
@@ -2599,7 +2615,13 @@ export function buildDoc(
               continue;
             }
             if (it.b.kind === "heading") {
-              cur = { title: headingText(raw, fix), qParts: [], options: [] };
+              // Ярлык («Вопрос 1») названием квиза не становится — см. isQuizLabel.
+              const head = headingText(raw, fix);
+              cur = {
+                title: isQuizLabel(head) ? "" : head,
+                qParts: [],
+                options: [],
+              };
               quizzes.push(cur);
               optIdx = -1;
               continue;
@@ -2863,7 +2885,7 @@ export function buildDoc(
               */
               const head = headingText(md(it, fix), fix);
               cur = {
-                question: isSituationLabel(head) ? "" : head,
+                question: isQuizLabel(head) ? "" : head,
                 qParts: [],
                 options: [],
                 expl: [],
