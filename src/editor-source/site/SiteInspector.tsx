@@ -734,7 +734,6 @@ function SiteMode({
                   meta: metaFor(page.slug, page.title).meta,
                   "meta-og": metaFor(page.slug, page.title).og,
                   h1: page.title,
-                  cover: coverFor(page.slug),
                 }}
               />
             </div>

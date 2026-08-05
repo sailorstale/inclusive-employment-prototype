@@ -15,7 +15,6 @@ import { decourse } from "./decourse";
 import { canonize } from "./canon";
 import { pageChildren } from "./pageStructure";
 import { pageParts } from "./pageOutline";
-import { coverFor, type Cover } from "./covers";
 import { metaFor, type PageMeta, type PageMetaOg } from "./pageMeta";
 
 /*
@@ -46,20 +45,17 @@ function toSections(blocks: SourceBlock[]): Section[] {
   СТРАНИЦА В ВЫГРУЗКЕ — структура по предложению разработчика.
 
   meta и meta-og — то, что о странице узнают браузер, поисковик и мессенджер
-  (см. pageMeta.ts). h1 и cover лежат отдельно и рядом: это видимая часть
-  страницы, шапка с заголовком поверх обложки, а не мета. Содержимое —
+  (см. pageMeta.ts). Обложка лежит внутри meta полем image, простой строкой с
+  адресом картинки — по просьбе разработчика от 5 августа. h1 стоит рядом
+  отдельным полем: это видимая часть страницы, а не мета. Содержимое —
   article: раньше поле звалось children, но у узлов внутри тоже есть children,
   и на верхнем уровне это читалось как «дети чего?».
-
-  Обложку разработчик в своём примере не показал — она осталась там, где стояла,
-  рядом с h1. Если ей место внутри article, поле переедет одной строкой.
 */
 export type PageExport = {
   slug: string;
   meta: PageMeta;
   "meta-og": PageMetaOg;
   h1: string;
-  cover: Cover;
   article: unknown[];
 };
 export type OsnovyExport = { section: string; pages: PageExport[] };
@@ -104,7 +100,6 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
       meta: seo.meta,
       "meta-og": seo.og,
       h1: page.title,
-      cover: coverFor(page.slug),
       article: children,
     });
   }
