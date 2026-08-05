@@ -19,6 +19,8 @@ import {
   Lightbulb,
   Info,
   Link,
+  MonitorSmartphone,
+  Ban,
 } from "lucide-react";
 
 /*
@@ -58,6 +60,13 @@ const BY_NAME = new Map<string, LucideIcon>([
   [DEFAULT.name, DEFAULT.Icon],
   // Ссылка по тексту не угадывается — её выбирают явно («иконка ссылки»).
   ["Link", Link],
+  /*
+    Иконки, которые ставятся по названию карточки, а не угадываются по тексту
+    (см. cardArt.ts). В правилах подбора их нет — незачем, — но нарисовать их
+    надо уметь, иначе вместо иконки встаёт заглушка Info.
+  */
+  ["MonitorSmartphone", MonitorSmartphone],
+  ["Ban", Ban],
 ]);
 
 /** Иконка по тексту блока: {name, Icon}. */

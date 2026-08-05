@@ -27,6 +27,7 @@ import {
   Text,
   Video,
   type GeneralCardBg,
+  type SmallImageName,
 } from "@/figma";
 import { renderInline, previewHref } from "@/editor-source/richText";
 import { iconByName } from "./iconForText";
@@ -330,6 +331,7 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           title={node.title}
           bgColor={node.bgColor as GeneralCardBg}
           orient={node.orientation}
+          image={node.image as SmallImageName | undefined}
           iconNode={
             node.icon ? React.createElement(iconByName(node.icon)) : undefined
           }

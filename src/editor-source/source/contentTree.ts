@@ -23,6 +23,7 @@ import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
+import { cardArt } from "./cardArt";
 import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
 import { markRe } from "@/editor-source/richText";
 import {
@@ -78,6 +79,12 @@ type NodeKind =
       orientation: "Vertical" | "Horizontal";
       bgColor: string;
       icon?: string;
+      /*
+        Иллюстрация-стикер в углу — сюжет из набора Small Image (не адрес файла:
+        файлы разработчик забирает с прототипа сам). Ставится карточкам-ярлыкам
+        «Важно» и «Пример», см. cardArt.ts.
+      */
+      image?: string;
       title?: string;
       children: Node[];
     }
@@ -1019,8 +1026,16 @@ const textFix = (d?: Directive): TextFix => ({
   В источнике такие строки часто обёрнуты в «**…**» — если оставить, жирность
   ляжет поверх жирности. Поэтому в заголовках разметку веса снимаем.
 */
+/*
+  Заголовок не заканчивается точкой. В источнике заголовками часто размечают
+  готовое предложение («Рассмотрим основные ситуации, с которыми может
+  столкнуться работодатель.»), и точка приезжает вместе с ним. Вопросительный и
+  восклицательный знаки оставляем: они меняют смысл строки, а точка — нет.
+*/
+const dropTrailingDot = (t: string) => t.replace(/\.\s*$/u, "");
+
 const headingText = (t: string, fix: TextFix = NO_FIX) => {
-  const s = stripBold(t).trim();
+  const s = dropTrailingDot(stripBold(t).trim());
   return fix.unnumber ? stripNumber(s) : s;
 };
 const stripEmph = (t: string) => t.replace(/^[*_]+|[*_]+$/g, "").trim();
@@ -1997,6 +2012,7 @@ export function buildDoc(
               orientation: "Vertical",
               bgColor: bgFor(title),
               icon: mods.icon && icon ? icon : undefined,
+              ...cardArt(title),
               title,
               children: kids,
             },
@@ -2035,6 +2051,7 @@ export function buildDoc(
               orientation: "Vertical",
               bgColor: bgFor(title),
               icon: mods.icon && icon ? icon : undefined,
+              ...cardArt(title),
               title: titleFix(title ? headingText(title, fix) : undefined),
               children: bodyText(body)
                 ? [{ component: "Text", size: "M", text: bodyText(body) }]
@@ -2141,6 +2158,7 @@ export function buildDoc(
               orientation: "Vertical",
               bgColor: bgFor(title),
               icon: mods.icon && icon ? icon : undefined,
+              ...cardArt(title),
               title,
               children:
                 bodyText(rest) && !sameAsTitle(title, rest)
