@@ -730,6 +730,15 @@ const isQuestionLabel = (t: string) =>
   /^[*_\s]*вопрос\s*\d*[*_\s:.]*$/iu.test(t.trim());
 
 /*
+  «Важно» — заголовок карточки, а не начало фразы. По нему карточка красится
+  жёлтым (решение дизайнера 5 августа 2026). Ловим только сам ярлык, с любой
+  хвостовой пунктуацией: «Важно», «Важно:», «Важно!». Заголовок-предложение
+  («На этом этапе важно», «…важно заранее договориться») остаётся синим.
+*/
+const isImportantTitle = (t?: string) =>
+  Boolean(t && /^[*_\s]*важно[*_\s:.!]*$/iu.test(t.trim()));
+
+/*
   ВЕРХУШКА КВИЗА — заголовок, описание и сам вопрос.
 
   У компонента Quiz наверху три разных места, и до 5 августа 2026 раскладка
@@ -1855,7 +1864,21 @@ export function buildDoc(
           Иконка у каждой карточки своя — подобрана по тексту её блока.
         */
         const cards: Node[] = [];
-        const bg = typeof mods.bg === "string" ? mods.bg : "blue";
+        /*
+          ЦВЕТ КАРТОЧКИ. По умолчанию синий — обычная карточка. Карточка с
+          заголовком «Важно» жёлтая: в наборе компонентов жёлтый и означает
+          именно важное (см. GeneralCard.tsx).
+
+          Цвет «Важно» сильнее цвета из директивы, и это намеренно. Раньше цвет
+          ставили руками у каждой карточки, и получилось вразнобой: шесть из
+          восьми жёлтые, две синие. Дизайнер попросил правило, а не восемь
+          отдельных решений (5 августа 2026), поэтому здесь оно и стоит — иначе
+          любая новая карточка «Важно» опять зависела бы от того, вспомнили ли
+          про цвет при разметке.
+        */
+        const bgSet = typeof mods.bg === "string" ? mods.bg : undefined;
+        const bgFor = (title?: string) =>
+          isImportantTitle(title) ? "yellow" : (bgSet ?? "blue");
         // «X в заголовок» — ярлык из начала абзаца работает так же, как явный заголовок.
     const forcedTitle = explicitTitle(dir) ?? labelToTitle(dir);
         const noColon = wantsNoColon(dir);
@@ -1937,7 +1960,7 @@ export function buildDoc(
             {
               component: "General Card",
               orientation: "Vertical",
-              bgColor: bg,
+              bgColor: bgFor(title),
               icon: mods.icon && icon ? icon : undefined,
               title,
               children: kids,
@@ -1975,7 +1998,7 @@ export function buildDoc(
             return {
               component: "General Card",
               orientation: "Vertical",
-              bgColor: bg,
+              bgColor: bgFor(title),
               icon: mods.icon && icon ? icon : undefined,
               title: titleFix(title ? headingText(title, fix) : undefined),
               children: bodyText(body)
@@ -2081,7 +2104,7 @@ export function buildDoc(
             cards.push({
               component: "General Card",
               orientation: "Vertical",
-              bgColor: bg,
+              bgColor: bgFor(title),
               icon: mods.icon && icon ? icon : undefined,
               title,
               children:
