@@ -11,6 +11,9 @@ export const routeTitles: Record<string, string> = {
   // ролевых трека ведут сюда).
   "/general": "Основы",
   "/general/about": "О проекте",
+  // Страницы «Правовые основы» больше нет: адрес /general/legal ведёт на первую
+  // правовую страницу. Название оставлено для старых ссылок в тексте.
+  "/general/legal/documents": "Полезные документы",
   "/general/start": "Реалии и мифы",
   "/general/how": "Как устроен наём",
   "/general/legal": "Правовые основы",
@@ -108,26 +111,23 @@ export const sidebars: Record<Track, SidebarSpec> = {
           { label: "О проекте", path: "/general/about" },
           { label: "Реалии и мифы", path: "/general/start" },
           { label: "Как устроен наём", path: "/general/how" },
+          /*
+            Правовые страницы стоят в общем ряду, без промежуточного пункта
+            «Правовые основы» (решение дизайнера 5 августа 2026). Раньше он был
+            и подписью группы, и страницей: на самой странице лежали только итог
+            про формы занятости и список законов. Итог переехал на «Льготы и
+            формы занятости», законы стали страницей «Полезные документы», а
+            меню раздела стало одноуровневым.
+          */
+          { label: "Договор и оформление", path: "/general/legal/contract" },
           {
-            label: "Правовые основы",
-            path: "/general/legal",
-            children: [
-              {
-                label: "Договор и оформление",
-                path: "/general/legal/contract",
-              },
-              {
-                label: "Льготы и формы занятости",
-                path: "/general/legal/benefits",
-              },
-              {
-                label: "Квоты и господдержка",
-                path: "/general/legal/quotas",
-              },
-              { label: "Особые ситуации", path: "/general/legal/status" },
-              { label: "Вопросы и ответы", path: "/general/legal/faq" },
-            ],
+            label: "Льготы и формы занятости",
+            path: "/general/legal/benefits",
           },
+          { label: "Квоты и господдержка", path: "/general/legal/quotas" },
+          { label: "Особые ситуации", path: "/general/legal/status" },
+          { label: "Вопросы и ответы", path: "/general/legal/faq" },
+          { label: "Полезные документы", path: "/general/legal/documents" },
           { label: "Команда и коммуникация", path: "/general/team" },
         ],
       },

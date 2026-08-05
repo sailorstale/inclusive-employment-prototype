@@ -130,12 +130,14 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       inline: ["chto-govorit-biznes", "chto-govorit-biznes-i-nko"],
     },
   },
-  {
-    slug: "/general/legal",
-    title: "Правовые основы",
-    module: "m2",
-    sections: ["podvedem-itogi", "poleznye-dokumenty"],
-  },
+  /*
+    Страницы «Правовые основы» больше нет (решение дизайнера 5 августа 2026).
+    На ней лежали только два куска, и оба нашли себе место по смыслу: итог про
+    форматы занятости со сравнительной таблицей переехал на «Льготы и формы
+    занятости», а список нормативных актов стал страницей «Полезные документы».
+    Меню раздела стало одноуровневым, а адрес /general/legal ведёт на первую
+    правовую страницу — так живы восемь ссылок из текста.
+  */
   {
     slug: "/general/legal/contract",
     title: "Договор и оформление",
@@ -151,19 +153,35 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     slug: "/general/legal/benefits",
     title: "Льготы и формы занятости",
     module: "m2",
+    /*
+      Последняя секция — итог про форматы занятости со сравнительной таблицей.
+      Он приехал с бывшей страницы «Правовые основы»: там он был итогом всего
+      правового раздела, но по содержанию это разбор именно форматов, то есть
+      тема этой страницы.
+    */
     sections: [
       "kakie-lgoty-polozheny-sotrudnikam-s-invalidnosty",
       "sohranyatsya-li-posobiya-i-lgoty-pri-trudoustroy",
       "dopolnitelnye-formaty-zanyatosti",
       "dogovor-grazhdansko-pravovogo-haraktera-gph",
       "samozanyatost",
+      "podvedem-itogi",
     ],
     outline: {
+      /*
+        Заголовок «Подведём итоги» снят, а три его части стали разделами: на
+        этой странице это не итог, а сравнение форматов. Разделом «Как выбрать
+        подходящий формат» страница и заканчивается — в нём лежит таблица.
+      */
       sections: [
         "kakie-lgoty-polozheny-sotrudnikam-s-invalidnosty",
         "sohranyatsya-li-posobiya-i-lgoty-pri-trudoustroy",
         "dopolnitelnye-formaty-zanyatosti",
+        "trudovoy-dogovor-kogda-eto-horoshiy-variant",
+        "gph-i-samozanyatost-osnovnye-preimuschestva",
+        "kak-vybrat-podhodyaschiy-format",
       ],
+      drop: ["podvedem-itogi"],
     },
   },
   {
@@ -256,6 +274,23 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     списка играет блок «На этой странице вы узнаете», так что показывать было
     нечего — оставался заголовок с косыми чертами.
   */
+  {
+    /*
+      Справочник нормативных актов: раньше он был вторым разделом на странице
+      «Правовые основы», теперь стоит своей страницей в общем ряду правовых.
+
+      Разделов у страницы нет намеренно. Семь документов разметка собрала в один
+      список, заголовков у них не осталось, и делить страницу нечем. Поэтому всё
+      содержимое идёт вступлением: заголовок «Полезные документы» снимается (он
+      повторял бы название страницы), а под названием сразу лежат вводная фраза
+      и список.
+    */
+    slug: "/general/legal/documents",
+    title: "Полезные документы",
+    module: "m2",
+    sections: [],
+    intro: "poleznye-dokumenty",
+  },
   {
     slug: "/general/team",
     title: "Команда и коммуникация",

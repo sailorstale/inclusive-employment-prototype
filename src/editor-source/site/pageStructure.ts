@@ -220,9 +220,15 @@ export function pageChildren(
   intro?: SectionNode,
 ): (SectionNode | Node)[] {
   const sections = withRecap(chosen, slug);
+  /*
+    Разделов может не быть вовсе: «Полезные документы» — это вводная фраза и
+    список законов, делить там нечего. Пустая карточка «вы узнаете» на такой
+    странице только мешает, поэтому её не ставим.
+  */
+  const summary = pageTopics(sections).length ? [pageSummaryNode(sections)] : [];
   return [
     ...introNodes(intro),
-    pageSummaryNode(sections),
+    ...summary,
     ...sections,
     { component: "Feedback" },
     readMoreNode(slug),

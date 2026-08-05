@@ -80,12 +80,19 @@ export default function App() {
           <Route path="/general/about" element={<GeneratedPage />} />
           <Route path="/general/start" element={<GeneratedPage />} />
           <Route path="/general/how" element={<GeneratedPage />} />
-          <Route path="/general/legal" element={<GeneratedPage />} />
+          {/* Своей страницы у «Правовых основ» больше нет: её два раздела
+              разошлись по смыслу (см. pageMap). Адрес живёт перенаправлением —
+              на него ведут восемь ссылок из текста других страниц. */}
+          <Route
+            path="/general/legal"
+            element={<Navigate to="/general/legal/contract" replace />}
+          />
           <Route path="/general/legal/contract" element={<GeneratedPage />} />
           <Route path="/general/legal/benefits" element={<GeneratedPage />} />
           <Route path="/general/legal/quotas" element={<GeneratedPage />} />
           <Route path="/general/legal/status" element={<GeneratedPage />} />
           <Route path="/general/legal/faq" element={<GeneratedPage />} />
+          <Route path="/general/legal/documents" element={<GeneratedPage />} />
           <Route path="/general/team" element={<GeneratedPage />} />
 
           {/* Для компаний (М5 — Наём по шагам). Своей страницы у раздела нет:
