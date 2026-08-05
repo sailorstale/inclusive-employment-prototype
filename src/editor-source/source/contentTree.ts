@@ -764,6 +764,21 @@ const isImportantTitle = (t?: string) =>
 const looksLikeHeading = (t: string) =>
   t.length <= 80 && !/[.?!]$/.test(t.trim()) && !/^[-•*]/.test(t.trim());
 
+/*
+  ГОЛЫЙ ЯРЛЫК ВМЕСТО НАЗВАНИЯ. В источнике «Ситуация 1» отделяла кейс от
+  окружающей прозы. В собранном квизе эту работу делает сам компонент: он стоит
+  отдельной карточкой, а вопрос читается сразу под заголовком. Номер при этом не
+  сообщает ничего — просьба дизайнера 5 августа 2026.
+
+  Снимаем ТОЛЬКО голый ярлык. «Ситуация 3. Сотрудник не говорит о сложностях» —
+  это уже название кейса, и оно остаётся: восемь таких квизов в шаге про
+  онбординг живут именно им.
+*/
+const isBareQuizLabel = (t: string) =>
+  /^(ситуаци\p{L}*|кейс\p{L}*|пример\p{L}*|вопрос\p{L}*|задач\p{L}*)\s*\d*\s*[.)]?$/iu.test(
+    t.trim(),
+  );
+
 export type QuizTop = { title?: string; description?: string; question: string };
 
 export function splitQuizTop(title: string, parts: string[]): QuizTop {
@@ -775,6 +790,10 @@ export function splitQuizTop(title: string, parts: string[]): QuizTop {
   const hasQuestion = rest.length > 0 && /\?\s*$/.test(last);
   const question = hasQuestion ? last : rest.join("\n\n");
   const body = hasQuestion ? rest.slice(0, -1) : [];
+
+  // Голый ярлык снимаем ПОСЛЕ подстановки заголовка из первого абзаца: иначе
+  // на освободившееся место уехал бы сценарий кейса и стал бы названием.
+  if (isBareQuizLabel(head)) head = "";
 
   return {
     ...(head ? { title: head } : {}),
@@ -3358,10 +3377,17 @@ export function buildDoc(
           надо исключить и скобки, и угловые: без этого в href уезжала половина
           разметки вместе со вторым адресом.
         */
-        const url = items
+        const inBlocks = items
           .map((it) => md(it))
           .join(" ")
           .match(/(?:\]\()?(https?:\/\/[^)\s\][<>]+)/)?.[1];
+        /*
+          Адреса в блоках нет — берём из комментария директивы. Так бывает, когда
+          в источнике под ролик оставлена одна пометка «ВИДЕО», а сама ссылка
+          стоит в соседнем абзаце текстом: забрать абзац в директиву нельзя, он
+          пропал бы целиком, ведь эта ветка отдаёт только плеер.
+        */
+        const url = inBlocks ?? /(https?:\/\/[^\s)]+)/.exec(dir.comment || "")?.[1];
         return [{ component: "Video", ...(url ? { href: url } : {}) }];
       }
 
