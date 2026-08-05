@@ -443,6 +443,8 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           description={quizText(node.description)}
           question={quizText(node.question)}
           items={node.items}
+          // Один ответ или несколько — решает раскладка, по числу верных вариантов.
+          mode={node.mode}
           explanation={quizText(node.explanation)}
         />
       );

@@ -54,6 +54,18 @@ type Props = {
   /** Сам вопрос, Body L Bold. */
   question: React.ReactNode;
   items: QuizOption[];
+  /*
+    Сколько ответов можно выбрать. «single» — один: квадратов-чекбоксов нет,
+    выбор делается кликом по строке, и новый выбор снимает прежний. «multiple» —
+    несколько, с чекбоксами.
+
+    Раскладка считает это по числу верных вариантов и кладёт в узел квиза, но
+    до 5 августа 2026 сюда не передавала: любой квиз без разбора по вариантам
+    вёл себя как множественный выбор, и в вопросе с одним ответом можно было
+    отметить хоть все четыре строки. Не задано — оставляем прежнее поведение,
+    чтобы страницы-витрины, которые зовут Quiz напрямую, не поехали.
+  */
+  mode?: "single" | "multiple";
   /** Текст разбора, Body M — показывается после проверки. */
   explanation?: React.ReactNode;
   className?: string;
@@ -65,6 +77,7 @@ export function Quiz({
   question,
   items,
   explanation,
+  mode,
   className,
 }: Props) {
   const questionId = React.useId();
@@ -81,12 +94,18 @@ export function Quiz({
   const instant = items.some((i) => i.feedback);
   // Есть ли что проверять: без верных вариантов это самопроверка (см. isJudged).
   const judged = isJudged(items);
+  /*
+    Один ответ или несколько. Слово раскладки сильнее: она посчитала это по
+    числу верных вариантов. Не задано — как раньше, по наличию разбора на
+    каждый вариант.
+  */
+  const single = mode ? mode === "single" : instant;
 
   const toggle = (index: number, value: boolean) => {
-    // Мгновенный режим — один вариант: выбираем только его, остальные гасим.
-    // Обычный — множественный выбор, иммутабельно.
+    // Один ответ: выбираем только эту строку, прежний выбор снимаем.
+    // Несколько — обычное переключение, иммутабельно.
     setSelected((prev) =>
-      instant
+      single
         ? prev.map((_, i) => i === index)
         : prev.map((v, i) => (i === index ? value : v)),
     );
@@ -146,7 +165,7 @@ export function Quiz({
             // попробовать другой ответ. В обычном — после «Проверить» замирают.
             disabled={instant ? false : checked}
             // Один ответ → квадрат-чекбокс не нужен, выбор кликом по строке.
-            hideBox={instant}
+            hideBox={single}
             onCheckedChange={(value) => toggle(index, value)}
           >
             {item.text}
