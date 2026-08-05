@@ -13,14 +13,7 @@ import { SkipLink } from "./SkipLink";
 import { ComponentTagsToggle } from "./ComponentTagsToggle";
 import { BlocksRail } from "@/editor-source/site/BlocksRail";
 import { EditorInspector } from "@/editor/EditorInspector";
-import { CommentsLayer } from "@/editor/CommentsLayer";
-import { CommentsPanel } from "@/editor/CommentsPanel";
-import { EditorDock } from "@/editor/EditorDock";
-import {
-  EditorToast,
-  CommentsToast,
-  StoreModeBanner,
-} from "@/editor/EditorNotices";
+import { EditorToast, StoreModeBanner } from "@/editor/EditorNotices";
 
 // Общая оболочка (00 — Карта сайта и навигация): баннер с фото вверху (в нём
 // шапка сайта и заголовок H1 страницы), под ним контент, который наезжает на
@@ -42,11 +35,7 @@ export function Layout() {
           <LayoutBody />
           <AppFooter />
           <EditorInspector />
-          <CommentsLayer />
-          <CommentsPanel />
-          <EditorDock />
           <EditorToast />
-          <CommentsToast />
           <ComponentTagsToggle />
           {/* Карта блоков сбоку: живёт в обвязке, поэтому переживает переход
               со страницы на страницу и не закрывается при переходе. */}

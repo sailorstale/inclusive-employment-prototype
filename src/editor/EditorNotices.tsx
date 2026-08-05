@@ -1,7 +1,6 @@
 import * as React from "react";
 import { AlertTriangle, HardDrive, X } from "lucide-react";
 import { useEditor } from "./EditorProvider";
-import { useComments } from "./CommentsProvider";
 
 // Тост ошибки и баннер «локальный режим». Закрывают риски: тихий сбой
 // сохранения (C3) и размытость «где правда» (локально vs сервер). Тост
@@ -42,11 +41,6 @@ function Toast({
 
 export function EditorToast() {
   const { notice, dismissNotice } = useEditor();
-  return <Toast notice={notice} onDismiss={dismissNotice} />;
-}
-
-export function CommentsToast() {
-  const { notice, dismissNotice } = useComments();
   return <Toast notice={notice} onDismiss={dismissNotice} />;
 }
 

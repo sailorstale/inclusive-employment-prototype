@@ -3,7 +3,6 @@ import path from "node:path";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import * as store from "./store.js";
-import * as comments from "./comments.js";
 import * as unify from "./unify.js";
 import * as sourceStore from "./sourceStore.js";
 import * as sourceComments from "./sourceComments.js";
@@ -84,34 +83,6 @@ api.patch("/edits/:id/status", async (req, res) => {
   res.json(rec);
 });
 
-// Комментарии-пины.
-api.get("/comments", async (_req, res) => {
-  res.json(await comments.getAll());
-});
-api.post("/comments", async (req, res) => {
-  const body = req.body || {};
-  if (typeof body.text !== "string") {
-    return res.status(400).json({ error: "text обязателен" });
-  }
-  res.json(await comments.create(body));
-});
-api.patch("/comments/:id", async (req, res) => {
-  const rec = await comments.update(req.params.id, req.body || {});
-  if (!rec) return res.status(404).json({ error: "не найдено" });
-  res.json(rec);
-});
-/*
-  Апсерт по адресу блока. Клиент (editor-source/comments.ts) сохраняет
-  комментарий именно так — PUT на адрес блока, — а на сервере метода не было, и
-  сохранение отвечало 404: комментарий не уходил.
-*/
-api.put("/comments/:id", async (req, res) => {
-  res.json(await comments.upsert(req.params.id, req.body || {}));
-});
-api.delete("/comments/:id", async (req, res) => {
-  await comments.remove(req.params.id);
-  res.json({ ok: true });
-});
 
 /*
   КОММЕНТАРИИ К СТРАНИЦАМ САЙТА (скоуп review) — разговор клиента и
