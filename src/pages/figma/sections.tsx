@@ -32,6 +32,8 @@ import {
   Textarea,
   Tooltip,
   Video,
+  People,
+  PersonCard,
   type SmallImageName,
 } from "@/figma";
 import {
@@ -624,12 +626,12 @@ export function MediaSection() {
   return (
     <SectionContainer>
       <Heading level="H2" id="media">
-        Медиа: картинка и видео
+        Медиа: картинка, видео и люди
       </Heading>
       <Text size="L">
-        Два новых компонента для тела страницы. Раньше их не было: фото жило
-        только в Hero, а Small Image — стикер-декор. Оба кладут в Block
-        и оба резиновые — ширину задаёт колонка, соотношение сторон ~16:9.
+        Компоненты для тела страницы. Раньше их не было вовсе: фото жило только
+        в Hero, а Small Image — стикер-декор. Все кладут в Block и все резиновые
+        — ширину задаёт колонка.
       </Text>
 
       <Text size="L">
@@ -647,6 +649,29 @@ export function MediaSection() {
       </Text>
       <Block>
         <Video />
+      </Block>
+
+      <Text size="L">
+        People — ряд людей: круглый портрет, под ним имя и должность. Наше
+        дополнение к системе, в Figma компонента пока нет. Внутри — Person Card,
+        по одной на человека. Колонки одинаковой ширины: сколько поместилось,
+        столько и стоит в строке, остальные переходят ниже той же шириной.
+        Фотографии ещё нет — человек встаёт в ряд с кружком-заглушкой.
+      </Text>
+      <Block>
+        <People>
+          <PersonCard
+            photo="/figma/avatars/gulnara-gorishnyaya.jpg"
+            name="Гульнара Горишняя"
+            role="руководитель направления инклюзивного трудоустройства в Яндексе"
+          />
+          <PersonCard
+            photo="/figma/avatars/yuliya-ermilova.jpg"
+            name="Юлия Ермилова"
+            role="руководитель программ Благотворительного фонда Яндекса «Помощь рядом»"
+          />
+          <PersonCard name="Фотографии пока нет" role="так выглядит человек без снимка" />
+        </People>
       </Block>
     </SectionContainer>
   );

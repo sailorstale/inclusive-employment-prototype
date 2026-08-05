@@ -66,7 +66,7 @@ const TOC = [
   { href: "#prompt", label: "Врезка с заготовкой" },
   { href: "#quiz", label: "Квиз" },
   { href: "#small-image", label: "Иллюстрации" },
-  { href: "#media", label: "Медиа: картинка и видео" },
+  { href: "#media", label: "Медиа: картинка, видео и люди" },
 ];
 
 const SIDEBAR = [

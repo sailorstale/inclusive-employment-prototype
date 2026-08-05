@@ -43,7 +43,7 @@ const TOC = [
   { anchor: "prompt", label: "Врезка с заготовкой" },
   { anchor: "quiz", label: "Квиз" },
   { anchor: "small-image", label: "Иллюстрации" },
-  { anchor: "media", label: "Медиа: картинка и видео" },
+  { anchor: "media", label: "Медиа: картинка, видео и люди" },
 ];
 
 export function ComponentsPage() {

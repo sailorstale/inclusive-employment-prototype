@@ -125,6 +125,12 @@ type NodeKind =
   | { component: "Table cell"; children: Node[] }
   | { component: "Image"; src: string; alt?: string }
   | { component: "Video"; href?: string }
+  /*
+    Ряд людей с фотографиями: портрет, имя и должность. Наше дополнение к
+    системе — в Figma компонентов пока нет (см. КОМПОНЕНТЫ.md, «Люди»).
+  */
+  | { component: "People"; children: Node[] }
+  | { component: "Person Card"; photo?: string; name: string; role?: string }
   | { component: "Prompt"; title: string; subtitle: string; text: string }
   /*
     Компоненты, которых раскладка пока не собирает из источника, но которые есть
@@ -1118,6 +1124,7 @@ const NON_PROSE = new Set([
   "Compare",
   "Image",
   "Video",
+  "People",
 ]);
 
 const isPageSummary = (g: Group) => g.dir?.target === "PageSummary";
@@ -3432,6 +3439,43 @@ export function buildDoc(
           : [{ component: "Image" as const, src: "" }];
       }
 
+      case "People": {
+        /*
+          РЯД ЛЮДЕЙ задаётся строками комментария — по строке на человека:
+
+            /figma/avatars/gulnara-gorishnyaya.jpg — Гульнара Горишняя — руководитель направления
+
+          Части разделяет тире: путь к фотографии, имя, должность. Должность
+          можно не писать. Фотографии ещё нет — начинайте строку прямо с имени,
+          человек встанет в ряд с кружком-заглушкой: пустое место в ряду видно,
+          а молчаливый пропуск — нет.
+
+          Почему не из самого текста: снимки приезжают от клиента отдельно от
+          источника (ссылками на Яндекс Диск), а в тексте на их месте стоит одна
+          пометка вроде «Фото экспертов» — брать оттуда нечего.
+        */
+        const people = (dir.comment || "")
+          .split(/\r?\n/)
+          .map((line) => line.trim().split(/\s*[—–]\s*/u))
+          .map((parts) => {
+            const hasPhoto = /^\/\S+\.(?:jpe?g|png|svg|webp)$/iu.test(parts[0] ?? "");
+            const [name, role] = hasPhoto ? parts.slice(1) : parts;
+            return {
+              photo: hasPhoto ? parts[0] : undefined,
+              name: (name ?? "").trim(),
+              role: role?.trim() || undefined,
+            };
+          })
+          .filter((p) => p.name);
+        if (!people.length) return [{ component: "note", text: "People: в комментарии нет ни одного человека" }];
+        return [
+          {
+            component: "People",
+            children: people.map((p) => ({ component: "Person Card" as const, ...p })),
+          },
+        ];
+      }
+
       case "Video": {
         /*
           Видео задаётся ссылкой. Источник часто пишет её дважды — автоссылкой
@@ -3886,6 +3930,8 @@ const EXPORT_COMPONENTS: Record<
   "Table cell": true,
   Image: true,
   Video: true,
+  People: true,
+  "Person Card": true,
   Prompt: true,
   "Card Button": true,
   Compare: true,

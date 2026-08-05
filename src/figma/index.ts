@@ -69,6 +69,10 @@ export { ReadMore, ReadMoreItem } from "./ReadMore";
 export { Image } from "./Image";
 export { Video } from "./Video";
 
+// --- Люди (наше дополнение, в Figma компонентов пока нет) ---
+export { People } from "./People";
+export { PersonCard } from "./PersonCard";
+
 // --- Контролы форм ---
 export { Button } from "./Button";
 export type { ButtonType, ButtonSize, ButtonIcon } from "./Button";
