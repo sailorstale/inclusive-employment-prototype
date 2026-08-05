@@ -11,6 +11,7 @@ import { TocRail } from "./TocRail";
 import { BackToTop } from "./BackToTop";
 import { SkipLink } from "./SkipLink";
 import { ComponentTagsToggle } from "./ComponentTagsToggle";
+import { BlocksRail } from "@/editor-source/site/BlocksRail";
 import { EditorInspector } from "@/editor/EditorInspector";
 import { CommentsLayer } from "@/editor/CommentsLayer";
 import { CommentsPanel } from "@/editor/CommentsPanel";
@@ -47,6 +48,9 @@ export function Layout() {
           <EditorToast />
           <CommentsToast />
           <ComponentTagsToggle />
+          {/* Карта блоков сбоку: живёт в обвязке, поэтому переживает переход
+              со страницы на страницу и не закрывается при переходе. */}
+          <BlocksRail />
         </div>
       </TocProvider>
     </PageHeroProvider>
