@@ -23,18 +23,11 @@ import { YandexJobsPage } from "./pages/YandexJobsPage";
 import { FeedbackPage } from "./pages/FeedbackPage";
 import { A11yPage } from "./pages/A11yPage";
 
-// Общая база М1–М4 (раздел «Общая информация») + трек «Для компаний» (М5).
-// Страницы общей базы физически лежат в pages/companies/ (исторически), но
-// монтируются под /general/* и служат обоим ролевым трекам.
-import { CompaniesHubPage } from "./pages/companies/CompaniesHubPage";
+// Все страницы «Основ» и обоих треков врастают из источника: одна и та же
+// GeneratedPage разбирает адрес по карте страниц (pageMap). Написанных руками
+// страниц-хабов у треков больше нет — адрес раздела ведёт на его первую
+// страницу (решение дизайнера 5 августа 2026).
 import { GeneratedPage } from "./editor-source/site/GeneratedPage";
-// Хабы треков написаны руками — HubPage даёт им ту же обвязку инструмента
-// (источник слева, страница справа), что и врастающим из источника страницам.
-import { HubPage } from "./editor-source/site/HubPage";
-
-// Трек «Для НКО» — Программа НКО (М6). Общая база М1–М4 — в разделе
-// «Общая информация» (/general/*), НКО-дубли удалены.
-import { NgoHubPage } from "./pages/ngo/NgoHubPage";
 
 // Трек «Для соискателей» — заглушка (раздел не проработан, без подразделов).
 import { JobseekersStubPage } from "./pages/jobseekers/JobseekersStubPage";
@@ -95,23 +88,21 @@ export default function App() {
           <Route path="/general/legal/faq" element={<GeneratedPage />} />
           <Route path="/general/team" element={<GeneratedPage />} />
 
-          {/* Для компаний (М5 — Наём по шагам). Хаб трека и есть страница найма
-              по шагам: она сама разводит по шести шагам, отдельной развилки над
-              ней нет. Старый адрес /companies/hire ведёт сюда же.
-              Страницы шагов, как и «Основы», врастают из источника: та же
-              GeneratedPage по карте (pageMap). Хаб собран руками — это
-              навигация, а не материал. */}
+          {/* Для компаний (М5 — Наём по шагам). Своей страницы у раздела нет:
+              адрес ведёт сразу на первый шаг — так же, как «Основы» ведут на
+              «О проекте». Отдельная страница-хаб была лишним экраном между меню
+              и материалом: кроме вступления, на ней лежали только карточки-
+              ссылки на шаги, а их работу делает меню слева. Вступление трека
+              переехало лидом на первый шаг (см. intro в pageMap). Решение
+              дизайнера 5 августа 2026.
+              Страницы шагов врастают из источника: GeneratedPage по карте. */}
           <Route
             path="/companies"
-            element={
-              <HubPage>
-                <CompaniesHubPage />
-              </HubPage>
-            }
+            element={<Navigate to="/companies/hire/step-1" replace />}
           />
           <Route
             path="/companies/hire"
-            element={<Navigate to="/companies" replace />}
+            element={<Navigate to="/companies/hire/step-1" replace />}
           />
           <Route path="/companies/hire/step-1" element={<GeneratedPage />} />
           <Route path="/companies/hire/step-2" element={<GeneratedPage />} />
@@ -120,16 +111,13 @@ export default function App() {
           <Route path="/companies/hire/step-5" element={<GeneratedPage />} />
           <Route path="/companies/hire/step-6" element={<GeneratedPage />} />
 
-          {/* Для НКО (М6 — Программа НКО). Тоже из источника; хаб — руками.
-              Модули 6.1–6.3 разрезаны на страницы по своим главам: одним
+          {/* Для НКО (М6 — Программа НКО). Своей страницы у раздела тоже нет:
+              адрес ведёт на «Запустить программу», вступление трека стоит там
+              лидом. Модули 6.1–6.3 разрезаны на страницы по своим главам: одним
               полотном они не читались. */}
           <Route
             path="/ngo"
-            element={
-              <HubPage>
-                <NgoHubPage />
-              </HubPage>
-            }
+            element={<Navigate to="/ngo/start" replace />}
           />
           <Route path="/ngo/start" element={<GeneratedPage />} />
           <Route path="/ngo/audience" element={<GeneratedPage />} />
