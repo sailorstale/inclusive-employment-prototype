@@ -67,8 +67,18 @@ export function quizSection(doc: Doc, slug: string): SectionNode | null {
   if (!wanted) return null;
 
   const quizzes = allQuizzes(doc.children);
+  /*
+    Ищем по ВСЕЙ верхушке квиза, а не по одному полю. Раньше сверяли начало
+    вопроса, но 5 августа 2026 верхушку разделили на заголовок, описание и сам
+    вопрос (см. splitQuizTop): сценарий уехал в описание, и ключ «Крупной
+    IT-компании нужен тестировщик» перестал совпадать — квиз про формы занятости
+    пропал со страницы «Договор и оформление». Ключ может лежать в любой из трёх
+    частей, поэтому склеиваем их и ищем вхождение.
+  */
+  const topText = (q: QuizNode) =>
+    [q.title, q.description, q.question].filter(Boolean).join(" ");
   const picked: Node[] = wanted.map((start) => {
-    const found = quizzes.find((q) => q.question.startsWith(start));
+    const found = quizzes.find((q) => topText(q).includes(start));
     return (
       found ?? { component: "note", text: `квиз не найден: «${start}…»` }
     );

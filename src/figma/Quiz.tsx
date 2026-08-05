@@ -141,12 +141,16 @@ export function Quiz({
         whitespace-pre-line оставлен для простой строки, которую передают
         страницы-витрины.
       */}
-      <div
-        id={questionId}
-        className="ds-body-l-bold whitespace-pre-line text-[color:var(--text-primary)]"
-      >
-        {question}
-      </div>
+      {/* Вопроса может не быть: у квиза-темы («Зрение») он весь в заголовке.
+          Пустой блок оставлял бы лишний зазор над вариантами. */}
+      {question ? (
+        <div
+          id={questionId}
+          className="ds-body-l-bold whitespace-pre-line text-[color:var(--text-primary)]"
+        >
+          {question}
+        </div>
+      ) : null}
 
       {/* Options Container: стопка вариантов с зазором 4 — плотно, как единый список. */}
       <div

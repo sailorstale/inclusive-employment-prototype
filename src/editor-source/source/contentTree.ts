@@ -730,6 +730,51 @@ const isQuestionLabel = (t: string) =>
   /^[*_\s]*вопрос\s*\d*[*_\s:.]*$/iu.test(t.trim());
 
 /*
+  ВЕРХУШКА КВИЗА — заголовок, описание и сам вопрос.
+
+  У компонента Quiz наверху три разных места, и до 5 августа 2026 раскладка
+  сваливала туда всё одной кучей: сценарий на три абзаца и вопрос в конце
+  ехали в одно поле «вопрос», а заголовка не было вовсе. На экране это читалось
+  сплошным жирным текстом, и глазу не за что было зацепиться.
+
+  Разбираем так:
+
+  • ВОПРОС — последний абзац, если он кончается вопросительным знаком. Вопроса
+    может не быть вовсе: половина кейсов в источнике — это сценарий, к которому
+    вопрос подразумевается («Соискатель заикается, работодатель…»). Тогда
+    вопросом остаётся весь текст, как было.
+
+  • ОПИСАНИЕ — всё, что стоит между заголовком и вопросом: сам сценарий,
+    перечень функций вакансии, реплики.
+
+  • ЗАГОЛОВОК — приходит из источника (заголовок секции квиза). Если его нет,
+    берём первый абзац, когда он выглядит именно заголовком: короткая строка
+    без точки в конце, и после неё есть ещё текст. Так «Вакансия: Специалист по
+    видеомонтажу» и «Этап 1. Признать опасение» встают на своё место.
+*/
+const looksLikeHeading = (t: string) =>
+  t.length <= 80 && !/[.?!]$/.test(t.trim()) && !/^[-•*]/.test(t.trim());
+
+export type QuizTop = { title?: string; description?: string; question: string };
+
+export function splitQuizTop(title: string, parts: string[]): QuizTop {
+  const rest = parts.filter(Boolean);
+  let head = title.trim();
+  if (!head && rest.length > 1 && looksLikeHeading(rest[0])) head = rest.shift()!;
+
+  const last = rest[rest.length - 1] ?? "";
+  const hasQuestion = rest.length > 0 && /\?\s*$/.test(last);
+  const question = hasQuestion ? last : rest.join("\n\n");
+  const body = hasQuestion ? rest.slice(0, -1) : [];
+
+  return {
+    ...(head ? { title: head } : {}),
+    ...(body.length ? { description: body.join("\n\n") } : {}),
+    question,
+  };
+}
+
+/*
   «Если вы выбрали низкий диапазон» — подпись куска ОБЩЕГО разбора: она говорит,
   кому этот кусок адресован. Разбор уезжает к своему варианту ответа, и подпись
   вместе с ним не нужна: читатель уже выбрал, объяснять ему это незачем. Страж
@@ -2657,8 +2702,7 @@ export function buildDoc(
               });
               return {
                 component: "Quiz" as const,
-                ...(q.title ? { title: q.title } : {}),
-                question: q.qParts.filter(Boolean).join("\n\n"),
+                ...splitQuizTop(q.title, q.qParts),
                 mode: (options.filter((o) => o.correct).length > 1
                   ? "multiple"
                   : "single") as "single" | "multiple",
@@ -2772,8 +2816,7 @@ export function buildDoc(
               const title = drop && q.title ? stripLeadWord(q.title, drop) : q.title;
               return {
                 component: "Quiz" as const,
-                ...(title ? { title } : {}),
-                question: q.qParts.filter(Boolean).join("\n\n"),
+                ...splitQuizTop(title, q.qParts),
                 mode: (options.filter((o) => o.correct).length > 1
                   ? "multiple"
                   : "single") as "single" | "multiple",
@@ -2970,7 +3013,7 @@ export function buildDoc(
                   });
               return {
                 component: "Quiz" as const,
-                question: [q.question, ...q.qParts].filter(Boolean).join("\n\n"),
+                ...splitQuizTop(q.question, q.qParts),
                 mode: (options.filter((o) => o.correct).length > 1
                   ? "multiple"
                   : "single") as "single" | "multiple",
@@ -3042,8 +3085,7 @@ export function buildDoc(
             );
             return {
               component: "Quiz",
-              // Сценарий и вопрос — одним блоком: так просил дизайнер.
-              question: q.qParts.filter(Boolean).join("\n\n"),
+              ...splitQuizTop("", q.qParts),
               mode: options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
               items: options,
               ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
@@ -3131,7 +3173,7 @@ export function buildDoc(
               );
               return {
                 component: "Quiz",
-                question: q.qParts.filter(Boolean).join("\n\n"),
+                ...splitQuizTop("", q.qParts),
                 mode: options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
                 items: options,
                 ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
@@ -3194,7 +3236,7 @@ export function buildDoc(
           flush();
           const out: Node[] = quizzes.map((q) => ({
             component: "Quiz",
-            question: q.qParts.filter(Boolean).join("\n\n"),
+            ...splitQuizTop("", q.qParts),
             mode: q.options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
             items: q.options,
           }));
@@ -3252,13 +3294,8 @@ export function buildDoc(
           const explanation = flat(b.answer + 1, end).join("\n\n");
           out.push({
             component: "Quiz",
-            /*
-              Все блоки-заголовки квиза идут В ВОПРОС, даже если их несколько
-              (сценарий-кейс + сам вопрос). Отдельное поле description не
-              заводим: у остальных квизов его нет, единообразнее держать весь
-              текст вопросом. Перенос между блоками значащий — сохраняем «\n\n».
-            */
-            question: heads.join("\n\n"),
+            // Заголовок, описание и вопрос — по общему правилу (splitQuizTop).
+            ...splitQuizTop("", heads),
             // Режим выбора не задаётся руками — он и есть число верных вариантов.
             mode: options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
             items: options,
