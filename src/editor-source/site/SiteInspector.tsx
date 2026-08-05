@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MessageSquarePlus } from "lucide-react";
+import { MessageSquarePlus, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
@@ -60,6 +60,34 @@ let lastTab: RefView = "source";
 /* Открыта ли панель разметки — по той же причине снаружи компонента: иначе
    она закрывалась на каждом переходе между страницами сайта. */
 let lastMarkup = false;
+
+/*
+  РАЗВЁРНУТА ЛИ КОЛОНКА СВЕРКИ. На ноутбуке с небольшим экраном две колонки
+  рядом не помещаются: странице остаётся половина ширины, ряды и таблицы в ней
+  переносятся не так, как увидит читатель. Поэтому колонку можно свернуть в
+  узкую полосу, и страница занимает всё окно.
+
+  Выбор помним в браузере, а не только в памяти вкладки: клиент открывает сайт
+  заново каждый раз, и сворачивать колонку при каждом заходе было бы утомительно.
+*/
+const SOURCE_OPEN_KEY = "site-inspector-source-open";
+
+function readSourceOpen(): boolean {
+  try {
+    return window.localStorage.getItem(SOURCE_OPEN_KEY) !== "0";
+  } catch {
+    // Приватный режим браузера запрещает хранилище — тогда просто открыта.
+    return true;
+  }
+}
+
+function writeSourceOpen(open: boolean): void {
+  try {
+    window.localStorage.setItem(SOURCE_OPEN_KEY, open ? "1" : "0");
+  } catch {
+    // Не смогли запомнить — не беда, на этой вкладке выбор всё равно работает.
+  }
+}
 
 /* Псевдо-«модуль» для эталонной страницы: id заведомо не совпадает ни с одним
    реальным модулем, поэтому годится как значение того же переключателя. */
@@ -413,6 +441,7 @@ function SiteMode({
   body?: React.ReactNode;
 }) {
   const [tab, setTab] = React.useState<RefView>(lastTab);
+  const [srcOpen, setSrcOpen] = React.useState(readSourceOpen);
   const [selected, setSelected] = React.useState<string | null>(null);
   /*
     Набор компонентов для разметки. Отдельно от `selected`: тот показывает
@@ -439,6 +468,10 @@ function SiteMode({
   React.useEffect(() => {
     lastTab = tab;
   }, [tab]);
+  // А свёрнута ли колонка сверки — переживает и закрытие браузера.
+  React.useEffect(() => {
+    writeSourceOpen(srcOpen);
+  }, [srcOpen]);
   // Контейнеры прокрутки держим СОСТОЯНИЕМ (не ref): левая панель пересоздаётся
   // при смене таба, и синхрон должен переподключиться на новый узел сам.
   const [leftBox, setLeftBox] = React.useState<HTMLDivElement | null>(null);
@@ -676,18 +709,43 @@ function SiteMode({
   */
   useScrollSync(leftBox, rightBox, paused);
 
+  /*
+    ШИРИНЫ КОЛОНОК. Свёрнутая колонка сверки не исчезает совсем, а остаётся
+    узкой полосой: кнопка «развернуть» должна быть на виду, иначе вернуть
+    источник будет нечем. Ширины считаем строкой и отдаём стилем — Tailwind
+    собирает классы заранее и значение, вычисленное на ходу, не увидел бы.
+  */
+  const leftCol = srcOpen ? "minmax(0,40rem)" : "2.75rem";
+  const gridCols = markupOpen
+    ? `${leftCol} minmax(0,1fr) 21rem`
+    : `${leftCol} minmax(0,1fr)`;
+
   return (
     <div
-      className={cn(
-        "grid h-full min-h-0 divide-x",
-        /* Колонка сверки сохраняет свою ширину: панель разметки прибавляется
-           справа, а не отъедает у источника. */
-        markupOpen
-          ? "grid-cols-[minmax(0,40rem)_minmax(0,1fr)_21rem]"
-          : "grid-cols-[minmax(0,40rem)_minmax(0,1fr)]",
-      )}
+      className="grid h-full min-h-0 divide-x"
+      /* Колонка сверки сохраняет свою ширину: панель разметки прибавляется
+         справа, а не отъедает у источника. */
+      style={{ gridTemplateColumns: gridCols }}
     >
-      {/* ЛЕВО — колонка сверки с табами */}
+      {/* ЛЕВО — колонка сверки с табами. Свёрнута — узкая полоса с кнопкой. */}
+      {!srcOpen ? (
+        <section className="flex min-h-0 flex-col items-center gap-3 bg-muted/40 py-2">
+          <button
+            type="button"
+            onClick={() => setSrcOpen(true)}
+            title="Развернуть колонку сверки"
+            aria-label="Развернуть колонку сверки"
+            aria-expanded={false}
+            className="rounded p-1.5 text-foreground/70 transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <PanelLeftOpen className="size-4" aria-hidden />
+          </button>
+          {/* Подпись боком — чтобы полоса не была безымянной кнопкой в пустоте. */}
+          <span className="text-xs font-medium text-muted-foreground [writing-mode:vertical-rl]">
+            {TABS.find((t) => t.id === tab)?.label ?? "Источник"}
+          </span>
+        </section>
+      ) : (
       <section className="flex min-h-0 flex-col">
         <div className="flex items-center gap-1 border-b bg-muted/40 px-3 py-2">
           {TABS.map((t) => (
@@ -712,6 +770,16 @@ function SiteMode({
             className="ml-auto rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 transition-colors hover:text-foreground disabled:opacity-60"
           >
             {exporting ? "Собираю…" : "Полный JSON"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSrcOpen(false)}
+            title="Свернуть колонку сверки"
+            aria-label="Свернуть колонку сверки"
+            aria-expanded
+            className="rounded p-1.5 text-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <PanelLeftClose className="size-4" aria-hidden />
           </button>
         </div>
         <div ref={setLeftBox} className="min-h-0 flex-1 overflow-y-auto">
@@ -754,6 +822,7 @@ function SiteMode({
           )}
         </div>
       </section>
+      )}
 
       {/* ПРАВО — сам сайт, полная раскладка: баннер с фото (в нём шапка сайта и
           заголовок H1), под ним меню разделов слева + контент + оглавление «На
