@@ -89,7 +89,13 @@ function writeFlag(key: string, value: boolean): void {
   }
 }
 
-const readSourceOpen = () => readFlag(SOURCE_OPEN_KEY, true);
+/*
+  По умолчанию колонка сверки развёрнута только на широком экране. На ноутбуке
+  клиента она съедала бы почти всё окно, и человек при первом заходе увидел бы
+  щель вместо страницы. Свой выбор всё равно сильнее — он в хранилище.
+*/
+const readSourceOpen = () =>
+  readFlag(SOURCE_OPEN_KEY, window.innerWidth >= 1500);
 const writeSourceOpen = (open: boolean) => writeFlag(SOURCE_OPEN_KEY, open);
 
 /* Псевдо-«модуль» для эталонной страницы: id заведомо не совпадает ни с одним
@@ -678,11 +684,16 @@ function SiteMode({
     узкой полосой: кнопка «развернуть» должна быть на виду, иначе вернуть
     источник будет нечем. Ширины считаем строкой и отдаём стилем — Tailwind
     собирает классы заранее и значение, вычисленное на ходу, не увидел бы.
+
+    У САМОЙ СТРАНИЦЫ ЕСТЬ МИНИМУМ. Без него на узком экране колонка сверки
+    забирала свои 40rem целиком, панель комментариев — свои 17rem, а странице
+    оставалось ноль: в окне 800 пикселей она исчезала совсем. Теперь сначала
+    ужимается источник, а страница держит 22rem.
   */
   const leftCol = srcOpen ? "minmax(0,40rem)" : "2.75rem";
   const gridCols = commentsOpen
-    ? `${leftCol} minmax(0,1fr) 17rem`
-    : `${leftCol} minmax(0,1fr)`;
+    ? `${leftCol} minmax(22rem,1fr) 17rem`
+    : `${leftCol} minmax(22rem,1fr)`;
 
   return (
     <div
