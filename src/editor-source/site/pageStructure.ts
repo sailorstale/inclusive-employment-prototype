@@ -193,8 +193,13 @@ function readMoreNode(slug: string): Node {
 
   Заголовка у лида нет: собственный заголовок секции («Введение») снимаем —
   читатель уже прочёл название страницы в шапке, и слово «Введение» между ними
-  ничего не добавляет. Абзацы выкладываем прямо на страницу, без обёртки-секции:
-  раздела здесь нет, есть вступительный текст.
+  ничего не добавляет.
+
+  Но САМА СЕКЦИЯ остаётся — замечание разработчика 5 августа 2026. Раньше
+  абзацы вступления лежали прямо в корне страницы, вне всякой секции, и в
+  выгрузке это выглядело как блоки, потерявшие своего родителя. В конструкторе
+  такие блоки некуда положить: там содержимое живёт внутри разделов. Поэтому
+  вступление стало разделом без заголовка.
 
   Первый абзац крупный (Text XL — в наборе компонентов это и есть лид),
   остальные обычные. Иначе вступление из четырёх абзацев заняло бы крупным
@@ -212,6 +217,26 @@ function introNodes(intro?: SectionNode): Node[] {
   return rest.map((n, i) =>
     i === 0 && n.component === "Text" ? { ...n, size: "XL" } : n,
   );
+}
+
+/*
+  Вступление разделом без заголовка. Правило раскладки то же, что у обычных
+  разделов: прямо в слот секции кладутся только Heading и Text, всё остальное
+  заворачивается в Block (см. SectionContainer). Список законов на «Полезных
+  документах» приходит как раз «остальным».
+
+  Якоря у раздела нет намеренно: в оглавление вступление не идёт, прокручивать
+  к нему незачем — оно и так в начале страницы.
+*/
+function introSection(intro?: SectionNode): SectionNode[] {
+  const nodes = introNodes(intro);
+  if (!nodes.length) return [];
+  const children = nodes.map((n) =>
+    n.component === "Heading" || n.component === "Text" || n.component === "Block"
+      ? n
+      : ({ component: "Block", orientation: "Vertical", children: [n] } as Node),
+  );
+  return [{ component: "Section Container", children }];
 }
 
 /** Полный список узлов страницы: обвязка + секции, в порядке показа. */
@@ -233,7 +258,7 @@ export function pageChildren(
     !pageBySlug(slug)?.noSummary && pageTopics(sections).length > 0;
   const summary = wantsSummary ? [pageSummaryNode(sections)] : [];
   return [
-    ...introNodes(intro),
+    ...introSection(intro),
     ...summary,
     ...sections,
     { component: "Feedback" },
