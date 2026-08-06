@@ -111,6 +111,15 @@ export function CommentFrames({
     <div className="pointer-events-none absolute inset-0 z-20">
       {boxes.map((b) => {
         const color = b.applied ? "var(--comment-applied)" : "var(--comment-line)";
+        const tint = b.applied
+          ? "var(--comment-applied-tint)"
+          : "var(--comment-tint)";
+        /*
+          Выбранный комментарий видно издалека: рамка толще и внутри лёгкая
+          заливка. Когда на странице два десятка рамок, одной только линии мало,
+          чтобы понять, о котором идёт речь.
+        */
+        const active = b.id === activeId;
         return (
           <div
             key={b.id}
@@ -120,9 +129,9 @@ export function CommentFrames({
               left: b.left - 8,
               width: b.width + 16,
               height: b.height + 16,
-              border: `2px ${b.applied ? "solid" : "dashed"} ${color}`,
+              border: `${active ? 3 : 2}px ${b.applied ? "solid" : "dashed"} ${color}`,
               borderRadius: 10,
-              boxShadow: b.id === activeId ? `0 0 0 3px ${color}33` : undefined,
+              background: active ? tint : undefined,
             }}
           >
             {b.label ? (

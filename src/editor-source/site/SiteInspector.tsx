@@ -650,6 +650,13 @@ function SiteMode({
       const paths = pathsOf(id);
       if (!paths.length || !rightBox) return;
       setSelected(paths[0]);
+      /*
+        Блоки комментария ВЫДЕЛЯЕМ, а не просто подводим к ним страницу. Своя
+        рамка у комментария есть всегда, но когда на странице их два десятка,
+        по ней не понять, о котором сейчас речь. Жёлтая рамка выделения —
+        то же самое, что при клике по блоку, и читается однозначно.
+      */
+      setPicked(new Set(paths));
       paused.current = true;
       window.setTimeout(() => (paused.current = false), 600);
       const el = rightBox.querySelector(`[data-json-path="${CSS.escape(paths[0])}"]`);
