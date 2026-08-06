@@ -150,6 +150,15 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     правовую страницу — так живы восемь ссылок из текста.
   */
   {
+    /*
+      Сюда переехали «Особые ситуации» и «Вопросы и ответы» — правка клиента от
+      5 августа 2026. Обе страницы продолжали одну тему: как оформить сотрудника
+      и что делать в нестандартных случаях. Отдельными пунктами меню они дробили
+      правовой раздел, а вместе читаются одной страницей.
+
+      Деление четырнадцати вопросов на пять тем приехало вместе с ними (questions
+      ниже): без него в оглавлении был бы список из четырнадцати строк подряд.
+    */
     slug: "/general/legal/contract",
     title: "Договор и оформление",
     module: "m2",
@@ -158,35 +167,73 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       "spravka-ob-invalidnosti",
       "individualnaya-programma-reabilitacii-i-abilitac",
       "kak-propisat-usloviya-truda-v-trudovom-dogovore",
+      "mozhet-li-rabotat-chelovek-so-statusom-nedeespos",
+      "mozhno-li-uvolit-sotrudnika-s-invalidnostyu",
+      "voprosy-i-otvety",
+    ],
+    questions: [
+      {
+        title: "Документы об инвалидности",
+        anchor: "voprosy-dokumenty",
+        from: "Может ли сотрудник не сообщать",
+      },
+      {
+        title: "Рабочее время и льготы",
+        anchor: "voprosy-rezhim-i-lgoty",
+        from: "Сотрудник с инвалидностью I группы дал письменное согласие",
+      },
+      {
+        title: "Квоты и выплаты",
+        anchor: "voprosy-kvoty-i-vyplaty",
+        from: "Как работодатель может выполнить квоту",
+      },
+      {
+        title: "Увольнение и особые ситуации",
+        anchor: "voprosy-uvolnenie",
+        from: "Можно ли уволить сотрудника с инвалидностью",
+      },
+      {
+        title: "Договор ГПХ и самозанятость",
+        anchor: "voprosy-gph-i-samozanyatost",
+        from: "Чем договор ГПХ отличается",
+      },
     ],
   },
   {
     slug: "/general/legal/benefits",
-    title: "Льготы и формы занятости",
+    title: "Льготы сотрудников",
     module: "m2",
     /*
-      Последняя секция — итог про форматы занятости со сравнительной таблицей.
-      Он приехал с бывшей страницы «Правовые основы»: там он был итогом всего
-      правового раздела, но по содержанию это разбор именно форматов, то есть
-      тема этой страницы.
+      Форматы занятости уехали отдельной страницей — правка клиента 5 августа
+      2026. Здесь осталось то, что положено сотруднику по трудовому договору:
+      сами льготы и судьба пособий при трудоустройстве.
     */
     sections: [
       "kakie-lgoty-polozheny-sotrudnikam-s-invalidnosty",
       "sohranyatsya-li-posobiya-i-lgoty-pri-trudoustroy",
+    ],
+  },
+  {
+    /*
+      «Форматы занятости» — отдельный пункт меню по просьбе клиента. Раньше это
+      была вторая половина страницы про льготы, и одна страница отвечала сразу
+      на два разных вопроса: что человеку положено и как его оформить.
+
+      Заголовок «Подведём итоги» снят перекройкой, а три его части стали
+      разделами: на этой странице это не итог, а сравнение форматов. Разделом
+      «Как выбрать подходящий формат» страница и заканчивается — в нём таблица.
+    */
+    slug: "/general/legal/formats",
+    title: "Форматы занятости",
+    module: "m2",
+    sections: [
       "dopolnitelnye-formaty-zanyatosti",
       "dogovor-grazhdansko-pravovogo-haraktera-gph",
       "samozanyatost",
       "podvedem-itogi",
     ],
     outline: {
-      /*
-        Заголовок «Подведём итоги» снят, а три его части стали разделами: на
-        этой странице это не итог, а сравнение форматов. Разделом «Как выбрать
-        подходящий формат» страница и заканчивается — в нём лежит таблица.
-      */
       sections: [
-        "kakie-lgoty-polozheny-sotrudnikam-s-invalidnosty",
-        "sohranyatsya-li-posobiya-i-lgoty-pri-trudoustroy",
         "dopolnitelnye-formaty-zanyatosti",
         "trudovoy-dogovor-kogda-eto-horoshiy-variant",
         "gph-i-samozanyatost-osnovnye-preimuschestva",
@@ -226,58 +273,6 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       drop: ["podvedem-itog"],
     },
   },
-  {
-    slug: "/general/legal/status",
-    title: "Особые ситуации",
-    module: "m2",
-    sections: [
-      "mozhet-li-rabotat-chelovek-so-statusom-nedeespos",
-      "mozhno-li-uvolit-sotrudnika-s-invalidnostyu",
-    ],
-  },
-  {
-    /*
-      Секции «Проверьте себя» здесь нет намеренно: все восемь квизов разъехались
-      по страницам своих тем (см. quizzes.ts). От неё оставалась бы одна вводная
-      фраза про тест.
-
-      Четырнадцать вопросов подряд неудобно листать, а делить их в источнике
-      нечем: там сплошной список. Поэтому страница делит их сама — пятью своими
-      заголовками, по темам. Вопросы под ними остаются подзаголовками и в
-      оглавлении показываются внутри своей группы.
-    */
-    slug: "/general/legal/faq",
-    title: "Вопросы и ответы",
-    module: "m2",
-    sections: ["voprosy-i-otvety"],
-    questions: [
-      {
-        title: "Документы об инвалидности",
-        anchor: "voprosy-dokumenty",
-        from: "Может ли сотрудник не сообщать",
-      },
-      {
-        title: "Рабочее время и льготы",
-        anchor: "voprosy-rezhim-i-lgoty",
-        from: "Сотрудник с инвалидностью I группы дал письменное согласие",
-      },
-      {
-        title: "Квоты и выплаты",
-        anchor: "voprosy-kvoty-i-vyplaty",
-        from: "Как работодатель может выполнить квоту",
-      },
-      {
-        title: "Увольнение и особые ситуации",
-        anchor: "voprosy-uvolnenie",
-        from: "Можно ли уволить сотрудника с инвалидностью",
-      },
-      {
-        title: "Договор ГПХ и самозанятость",
-        anchor: "voprosy-gph-i-samozanyatost",
-        from: "Чем договор ГПХ отличается",
-      },
-    ],
-  },
   /*
     Секции «Что говорят компании и НКО» здесь нет намеренно: в источнике под её
     заголовком лежат только ряд косых черт (авторская пометка) и список «в этом
@@ -304,7 +299,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
   },
   {
     slug: "/general/team",
-    title: "Команда и коммуникация",
+    title: "Этика и коммуникация",
     module: "m3",
     sections: [
       "kak-govorit-o-lyudyah-s-invalidnostyu",

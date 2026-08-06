@@ -18,11 +18,10 @@ export const routeTitles: Record<string, string> = {
   "/general/how": "Как устроен наём",
   "/general/legal": "Правовые основы",
   "/general/legal/contract": "Договор и оформление",
-  "/general/legal/benefits": "Льготы и формы занятости",
+  "/general/legal/benefits": "Льготы сотрудников",
+  "/general/legal/formats": "Форматы занятости",
   "/general/legal/quotas": "Квоты и господдержка",
-  "/general/legal/status": "Особые ситуации",
-  "/general/legal/faq": "Вопросы и ответы",
-  "/general/team": "Команда и коммуникация",
+  "/general/team": "Этика и коммуникация",
 
   // Трек «Для компаний» (М5 — Наём по шагам). Хаб трека = страница найма по
   // шагам; отдельной страницы «Наём по шагам» больше нет (старый адрес
@@ -120,15 +119,11 @@ export const sidebars: Record<Track, SidebarSpec> = {
             меню раздела стало одноуровневым.
           */
           { label: "Договор и оформление", path: "/general/legal/contract" },
-          {
-            label: "Льготы и формы занятости",
-            path: "/general/legal/benefits",
-          },
+          { label: "Льготы сотрудников", path: "/general/legal/benefits" },
+          { label: "Форматы занятости", path: "/general/legal/formats" },
           { label: "Квоты и господдержка", path: "/general/legal/quotas" },
-          { label: "Особые ситуации", path: "/general/legal/status" },
-          { label: "Вопросы и ответы", path: "/general/legal/faq" },
           { label: "Полезные документы", path: "/general/legal/documents" },
-          { label: "Команда и коммуникация", path: "/general/team" },
+          { label: "Этика и коммуникация", path: "/general/team" },
         ],
       },
     ],

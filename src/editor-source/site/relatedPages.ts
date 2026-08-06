@@ -18,12 +18,11 @@ const BLURB: Record<string, string> = {
   "/general/legal/contract":
     "Трудовой договор, справка об инвалидности, ИПРА, условия труда.",
   "/general/legal/benefits":
-    "Льготы сотрудникам, ГПХ и самозанятость, сохранение пособий.",
+    "Льготы по трудовому договору и что будет с пенсией и пособиями.",
+  "/general/legal/formats":
+    "Договор ГПХ и самозанятость: чем отличаются и что выбрать.",
   "/general/legal/quotas":
     "Что такое квоты, как их выполнить и меры господдержки.",
-  "/general/legal/status":
-    "Недееспособность и увольнение сотрудника с инвалидностью.",
-  "/general/legal/faq": "Частые вопросы, ответы и короткая самопроверка.",
   "/general/team":
     "Как корректно говорить и общаться, инклюзивные мероприятия.",
 
@@ -78,28 +77,23 @@ const RELATED: Record<string, string[]> = {
   ],
   "/general/legal/contract": [
     "/general/legal/benefits",
+    "/general/legal/formats",
     "/general/legal/quotas",
-    "/general/legal/status",
   ],
   "/general/legal/benefits": [
+    "/general/legal/formats",
     "/general/legal/contract",
     "/general/legal/quotas",
-    "/general/legal/faq",
+  ],
+  "/general/legal/formats": [
+    "/general/legal/benefits",
+    "/general/legal/contract",
+    "/general/legal/quotas",
   ],
   "/general/legal/quotas": [
     "/general/legal/benefits",
+    "/general/legal/formats",
     "/general/legal/contract",
-    "/general/legal/faq",
-  ],
-  "/general/legal/status": [
-    "/general/legal/contract",
-    "/general/legal/faq",
-    "/general/legal/benefits",
-  ],
-  "/general/legal/faq": [
-    "/general/legal/contract",
-    "/general/legal/benefits",
-    "/general/legal/quotas",
   ],
   "/general/team": ["/general/how", "/general/start", "/general/legal"],
 

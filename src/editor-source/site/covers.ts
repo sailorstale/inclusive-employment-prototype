@@ -22,9 +22,8 @@ const COVERS: Record<string, Cover> = {
   "/general/legal": { src: "" },
   "/general/legal/contract": { src: "" },
   "/general/legal/benefits": { src: "" },
+  "/general/legal/formats": { src: "" },
   "/general/legal/quotas": { src: "" },
-  "/general/legal/status": { src: "" },
-  "/general/legal/faq": { src: "" },
   "/general/team": { src: "" },
 
   "/companies/hire/step-1": { src: "" },

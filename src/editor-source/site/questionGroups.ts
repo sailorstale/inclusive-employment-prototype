@@ -74,18 +74,38 @@ export function recutQuestions(
 ): { intro: Node[]; sections: SectionNode[] } {
   const intro: Node[] = [];
   const sections: SectionNode[] = [];
-  let cur: SectionNode | null = null;
 
-  for (const node of flattenBlocks(picked.flatMap((s) => s.children))) {
-    const group = isAccordion(node)
-      ? groups.find((g) => node.question.startsWith(g.from))
-      : undefined;
-    if (group) {
-      cur = groupSection(group);
-      sections.push(cur);
+  for (const sec of picked) {
+    const nodes = flattenBlocks(sec.children);
+    const hasQuestions = nodes.some(
+      (n) => isAccordion(n) && groups.some((g) => n.question.startsWith(g.from)),
+    );
+    /*
+      Раздел без вопросов остаётся собой. Раньше перекройка забирала всю
+      страницу целиком — это годилось, пока страница состояла из одного
+      аккордеона. После слияния «Вопросов и ответов» с «Договором и
+      оформлением» (правка клиента 5 августа 2026) на странице есть и обычные
+      разделы, и они не должны раствориться во вступлении.
+    */
+    if (!hasQuestions) {
+      sections.push(sec);
+      continue;
     }
-    if (cur) bodyOf(cur).children.push(node);
-    else if (node.component !== "Heading") intro.push(node);
+
+    let cur: SectionNode | null = null;
+    for (const node of nodes) {
+      const group = isAccordion(node)
+        ? groups.find((g) => node.question.startsWith(g.from))
+        : undefined;
+      if (group) {
+        cur = groupSection(group);
+        sections.push(cur);
+      }
+      if (cur) bodyOf(cur).children.push(node);
+      // До первого вопроса: заголовок раздела снимаем (его заменяют заголовки
+      // групп), остальное уходит вступлением страницы.
+      else if (node.component !== "Heading") intro.push(node);
+    }
   }
   return { intro, sections };
 }

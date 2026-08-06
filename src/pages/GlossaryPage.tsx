@@ -61,14 +61,14 @@ export function GlossaryPage() {
             description: "Как правильно оформить сотрудника с инвалидностью.",
           },
           {
-            title: "Команда и коммуникация",
+            title: "Этика и коммуникация",
             to: "/general/team",
             description: "Как подготовить коллектив и наладить общение.",
           },
           {
-            title: "Вопросы и ответы",
-            to: "/general/legal/faq",
-            description: "Короткие ответы на частые юридические вопросы.",
+            title: "Договор и оформление",
+            to: "/general/legal/contract",
+            description: "Оформление сотрудника и ответы на частые вопросы.",
           },
         ]}
       />

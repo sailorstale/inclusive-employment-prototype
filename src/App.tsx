@@ -89,11 +89,21 @@ export default function App() {
           />
           <Route path="/general/legal/contract" element={<GeneratedPage />} />
           <Route path="/general/legal/benefits" element={<GeneratedPage />} />
+          <Route path="/general/legal/formats" element={<GeneratedPage />} />
           <Route path="/general/legal/quotas" element={<GeneratedPage />} />
-          <Route path="/general/legal/status" element={<GeneratedPage />} />
-          <Route path="/general/legal/faq" element={<GeneratedPage />} />
           <Route path="/general/legal/documents" element={<GeneratedPage />} />
           <Route path="/general/team" element={<GeneratedPage />} />
+          {/* «Особые ситуации» и «Вопросы и ответы» влились в «Договор и
+              оформление» (правка клиента 5 августа 2026). Старые адреса ведут
+              туда же: на них есть ссылки из текста и из чужих закладок. */}
+          <Route
+            path="/general/legal/status"
+            element={<Navigate to="/general/legal/contract" replace />}
+          />
+          <Route
+            path="/general/legal/faq"
+            element={<Navigate to="/general/legal/contract" replace />}
+          />
 
           {/* Для компаний (М5 — Наём по шагам). Своей страницы у раздела нет:
               адрес ведёт сразу на первый шаг — так же, как «Основы» ведут на
