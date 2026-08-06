@@ -85,6 +85,35 @@ export function findSlug(orgName: string, index: LogoEntry[]): string | undefine
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+/*
+  ОРГАНИЗАЦИЯ, НАЗВАННАЯ ПРОСТО СЛОВАМИ В ДОЛЖНОСТИ.
+
+  Обычно её видно по ссылке или по кавычкам, и этого хватает. Но в двух цитатах
+  компания названа обычными словами: «директор по персоналу АШАН Ритейл Россия»,
+  «директор департамента людей Бургер Кинг Россия». Ни ссылки, ни кавычек нет —
+  организация не находилась вовсе, и место под логотип даже не появлялось.
+
+  Ищем ТОЛЬКО в строке должности и ТОЛЬКО названия из двух и более слов. Это и
+  есть весь допуск: среди названий фондов много обычных слов («Вера», «Жизнь»,
+  «Свет»), и по одному слову подбор притянул бы чужой логотип с первого же
+  совпадения. Составное название такой беды не даёт.
+*/
+export function findOrgInRole(
+  role: string,
+  index: LogoEntry[],
+): { slug: string; name: string } | undefined {
+  const hay = normalize(role);
+  if (!hay) return undefined;
+  let best: { slug: string; name: string; len: number } | undefined;
+  for (const e of index) {
+    const n = normalize(e.name);
+    if (!n.includes(" ")) continue;
+    if (!new RegExp(`(^| )${escapeRe(n)}( |$)`).test(hay)) continue;
+    if (!best || n.length > best.len) best = { slug: e.slug, name: e.name, len: n.length };
+  }
+  return best && { slug: best.slug, name: best.name };
+}
+
 /** Упомянут ли Яндекс — у него логотип круглый и файлом не задаётся. */
 export const mentionsYandex = (texts: string[]) =>
   texts.some((t) => /яндекс/i.test(t));

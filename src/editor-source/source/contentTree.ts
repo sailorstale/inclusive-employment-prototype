@@ -28,6 +28,7 @@ import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
 import { markRe } from "@/editor-source/richText";
 import {
   findSlug,
+  findOrgInRole,
   findPhotoSlug,
   mentionsYandex,
   type LogoEntry,
@@ -2462,8 +2463,21 @@ export function buildDoc(
           */
           const yandex =
             Boolean(mods.yandex) || mentionsYandex([author ?? "", role ?? ""]);
-          const org = yandex ? "Яндекс" : (orgName ?? "");
-          const logo = yandex ? "yandex" : orgName ? findSlug(orgName, logoIndex) : undefined;
+          /*
+            Ни ссылки, ни кавычек — ищем составное название прямо в должности
+            (см. findOrgInRole). Так находятся компании, названные обычными
+            словами: «директор по персоналу АШАН Ритейл Россия».
+          */
+          const inRole =
+            !yandex && !orgName && role
+              ? findOrgInRole(role, logoIndex)
+              : undefined;
+          const org = yandex ? "Яндекс" : (orgName ?? inRole?.name ?? "");
+          const logo = yandex
+            ? "yandex"
+            : orgName
+              ? findSlug(orgName, logoIndex)
+              : inRole?.slug;
           const photo = author ? findPhotoSlug(author, avatarIndex) : undefined;
 
           /*
