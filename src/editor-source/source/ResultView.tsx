@@ -95,8 +95,13 @@ export function useContentDoc(
 type Pick = {
   selected: string | null;
   onSelect: (path: string) => void;
-  /** Пути компонентов с комментарием — для маркера (режим «Сайт»). */
-  commented?: Set<string>;
+  /*
+    Набор выбранных компонентов. Комментарий часто относится не к одному блоку,
+    а к нескольким подряд («вот эти три карточки надо объединить»), поэтому
+    выделение множественное. selected при этом остаётся — это ПОСЛЕДНИЙ
+    выбранный, по нему колонка с источником прокручивается к нужному месту.
+  */
+  picked?: Set<string>;
 };
 const PickContext = React.createContext<Pick | null>(null);
 
@@ -225,8 +230,15 @@ function NodeView({ node, path }: { node: Node; path: string }) {
   if (!pick) return inner;
   return (
     <div
-      className={`ds-pick contents${pick.selected === path ? " is-picked" : ""}${
-        pick.commented?.has(path) ? " has-comment" : ""
+      /*
+        Рамка выбора — по НАБОРУ, если он есть: там, где выделение множественное,
+        selected остаётся последним кликнутым, и без этого снятый блок оставался
+        бы подсвеченным. Где набора нет (редактор модулей) — по selected.
+      */
+      className={`ds-pick contents${
+        (pick.picked ? pick.picked.has(path) : pick.selected === path)
+          ? " is-picked"
+          : ""
       }`}
       data-json-path={path}
       onClick={(e) => {

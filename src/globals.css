@@ -142,17 +142,14 @@
   --pick-bg: #fef3c7;
   --pick-line: #f59e0b;
   --comment-line: #6366f1;
+  /* Применённый комментарий — зелёная рамка: замечание уже учтено в прототипе. */
+  --comment-applied: #16a34a;
 }
 .ds-pick > * {
   cursor: pointer;
 }
-/* Прокомментированный компонент — синяя пунктирная рамка. Правило ВЫШЕ выбора,
-   чтобы выбранный (жёлтая сплошная) перекрывал её. */
-.ds-pick.has-comment > * {
-  outline: 2px dashed var(--comment-line);
-  outline-offset: 3px;
-  border-radius: 6px;
-}
+/* Рамку прокомментированного блока рисует не CSS, а слой CommentFrames: один
+   комментарий часто держит несколько блоков, и рамка у них общая. */
 .ds-pick.is-picked > * {
   outline: 2px solid var(--pick-line);
   outline-offset: 3px;
@@ -163,11 +160,6 @@
    узла нет — компонент помечает себя сам, и рамка ложится прямо на него. */
 .ds-pick-flat {
   cursor: pointer;
-}
-.ds-pick-flat.has-comment {
-  outline: 2px dashed var(--comment-line);
-  outline-offset: 3px;
-  border-radius: 6px;
 }
 .ds-pick-flat.is-picked {
   outline: 2px solid var(--pick-line);

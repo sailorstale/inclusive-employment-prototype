@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MessageSquarePlus, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
 import { ResultView } from "@/editor-source/source/ResultView";
@@ -8,7 +8,6 @@ import { useScrollSync } from "@/editor-source/source/scrollSync";
 import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree";
 import { EditorProvider } from "@/editor-source/EditorProvider";
 import { CommentsProvider, useComments } from "@/editor-source/CommentsProvider";
-import type { Comment } from "@/editor-source/comments";
 import { EditorToast } from "@/editor-source/EditorNotices";
 import { EditorDock } from "@/editor-source/EditorDock";
 import { SourcePage } from "@/editor-source/source/SourcePage";
@@ -20,10 +19,10 @@ import { cn } from "@/lib/utils";
 import type { TocEntry } from "./pageStructure";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
-import { useSiteMarkup } from "./useSiteMarkup";
-import { MarkupPanel } from "@/editor-source/source/PlaygroundColumn";
-import { blockRefId } from "@/editor-source/source/blockId";
 import { PageSourceView } from "./PageSourceView";
+import { CommentFrames, type CommentFrame } from "./CommentFrames";
+import { PageComments, type CommentGroup } from "./PageComments";
+import { commentId, pathsOf } from "./commentIds";
 import { buildOsnovyExport } from "./siteExport";
 import { coverFor } from "./covers";
 import { metaFor } from "./pageMeta";
@@ -57,37 +56,41 @@ const TABS: { id: RefView; label: string }[] = [
 */
 let lastMode: Mode = "site";
 let lastTab: RefView = "source";
-/* Открыта ли панель разметки — по той же причине снаружи компонента: иначе
-   она закрывалась на каждом переходе между страницами сайта. */
-let lastMarkup = false;
-
 /*
-  РАЗВЁРНУТА ЛИ КОЛОНКА СВЕРКИ. На ноутбуке с небольшим экраном две колонки
-  рядом не помещаются: странице остаётся половина ширины, ряды и таблицы в ней
-  переносятся не так, как увидит читатель. Поэтому колонку можно свернуть в
-  узкую полосу, и страница занимает всё окно.
+  ЧТО ОТКРЫТО — колонка сверки слева и панель комментариев справа.
+
+  На ноутбуке с небольшим экраном три колонки рядом не помещаются: странице
+  остаётся треть ширины, и ряды с таблицами переносятся не так, как увидит
+  читатель. Поэтому обе боковые колонки убираются, и каждый оставляет себе ту,
+  с которой работает: мы — источник, клиент — комментарии.
 
   Выбор помним в браузере, а не только в памяти вкладки: клиент открывает сайт
-  заново каждый раз, и сворачивать колонку при каждом заходе было бы утомительно.
+  заново каждый раз, и настраивать колонки при каждом заходе было бы утомительно.
 */
 const SOURCE_OPEN_KEY = "site-inspector-source-open";
+const COMMENTS_OPEN_KEY = "site-inspector-comments-open";
 
-function readSourceOpen(): boolean {
+/** Флаг из хранилища. Записи нет — берём значение по умолчанию. */
+function readFlag(key: string, fallback: boolean): boolean {
   try {
-    return window.localStorage.getItem(SOURCE_OPEN_KEY) !== "0";
+    const raw = window.localStorage.getItem(key);
+    return raw === null ? fallback : raw === "1";
   } catch {
-    // Приватный режим браузера запрещает хранилище — тогда просто открыта.
-    return true;
+    // Приватный режим браузера запрещает хранилище — живём со значением по умолчанию.
+    return fallback;
   }
 }
 
-function writeSourceOpen(open: boolean): void {
+function writeFlag(key: string, value: boolean): void {
   try {
-    window.localStorage.setItem(SOURCE_OPEN_KEY, open ? "1" : "0");
+    window.localStorage.setItem(key, value ? "1" : "0");
   } catch {
     // Не смогли запомнить — не беда, на этой вкладке выбор всё равно работает.
   }
 }
+
+const readSourceOpen = () => readFlag(SOURCE_OPEN_KEY, true);
+const writeSourceOpen = (open: boolean) => writeFlag(SOURCE_OPEN_KEY, open);
 
 /* Псевдо-«модуль» для эталонной страницы: id заведомо не совпадает ни с одним
    реальным модулем, поэтому годится как значение того же переключателя. */
@@ -175,7 +178,9 @@ export function SiteInspector({
     в общем верхнем баре. В полоске над колонкой сверки её не находили — она
     там рядом с выгрузкой и читается как её продолжение.
   */
-  const [markupOpen, setMarkupOpen] = React.useState(lastMarkup);
+  const [commentsOpen, setCommentsOpen] = React.useState(() =>
+    readFlag(COMMENTS_OPEN_KEY, true),
+  );
 
   // Запоминаем выбранный режим, чтобы он пережил переход между страницами.
   React.useEffect(() => {
@@ -183,8 +188,8 @@ export function SiteInspector({
   }, [mode]);
 
   React.useEffect(() => {
-    lastMarkup = markupOpen;
-  }, [markupOpen]);
+    writeFlag(COMMENTS_OPEN_KEY, commentsOpen);
+  }, [commentsOpen]);
 
   // Инструмент накрывает всю страницу — гасим прокрутку «фона» под ним.
   React.useEffect(() => {
@@ -212,15 +217,15 @@ export function SiteInspector({
         {mode === "site" && (
           <button
             type="button"
-            onClick={() => setMarkupOpen((v) => !v)}
+            onClick={() => setCommentsOpen((v) => !v)}
             className={cn(
               "ml-auto rounded-md border px-3 py-1 text-sm font-medium transition-colors",
-              markupOpen
+              commentsOpen
                 ? "border-transparent bg-primary text-primary-foreground"
                 : "bg-background text-foreground/80 hover:text-foreground",
             )}
           >
-            Разметка
+            Комментарии
           </button>
         )}
       </div>
@@ -230,7 +235,7 @@ export function SiteInspector({
             page={page}
             pageDoc={pageDoc}
             tocItems={tocItems}
-            markupOpen={markupOpen}
+            commentsOpen={commentsOpen}
             body={body}
           />
         ) : (
@@ -431,13 +436,13 @@ function SiteMode({
   page,
   pageDoc,
   tocItems,
-  markupOpen,
+  commentsOpen,
   body,
 }: {
   page: OsnovyPage;
   pageDoc: Doc;
   tocItems: TocEntry[];
-  markupOpen: boolean;
+  commentsOpen: boolean;
   body?: React.ReactNode;
 }) {
   const [tab, setTab] = React.useState<RefView>(lastTab);
@@ -450,7 +455,6 @@ function SiteMode({
   */
   const [picked, setPicked] = React.useState<Set<string>>(new Set());
   const [exporting, setExporting] = React.useState(false);
-  const markup = useSiteMarkup(page.module);
   const blocks = usePageBlocks(page.module, page.sections);
 
   // Единый JSON всего сайта — одно ТЗ разработчику на все страницы сразу.
@@ -482,18 +486,41 @@ function SiteMode({
   const docId = sourceModulesMeta.find((m) => m.id === page.module)?.docId;
   const cover = coverFor(page.slug);
 
-  // Комментарии клиента/разработчика (отдельный поток «review»). Множество путей
-  // компонентов с открытым комментарием — для маркера на самих компонентах.
-  const { comments } = useComments();
-  // id = slug::path::uid — путь компонента это средний сегмент.
-  const commented = React.useMemo(
+  /*
+    Комментарии клиента и разработчика (отдельный поток «review»). id устроен как
+    «slug::адреса::uid», где адреса — один или несколько путей через плюс: одно
+    замечание нередко относится к нескольким блокам подряд.
+  */
+  const { comments, setComment, toggleResolved } = useComments();
+  const [activeComment, setActiveComment] = React.useState<string | null>(null);
+  // Контейнер контента — в нём слой рисует рамки комментариев.
+  const [contentBox, setContentBox] = React.useState<HTMLDivElement | null>(null);
+  const [author, setAuthor] = React.useState<string>(() => {
+    try {
+      return localStorage.getItem(REVIEW_AUTHOR_KEY) || "";
+    } catch {
+      return "";
+    }
+  });
+
+  const pageComments = React.useMemo<CommentGroup[]>(
     () =>
-      new Set(
-        comments
-          .filter((c) => c.page === page.slug && c.text)
-          .map((c) => c.id.split("::")[1]),
-      ),
+      comments
+        .filter((c) => c.page === page.slug && c.text)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+        .map((rec) => ({ id: rec.id, paths: pathsOf(rec.id), rec })),
     [comments, page.slug],
+  );
+
+  const commentFrames = React.useMemo<CommentFrame[]>(
+    () =>
+      pageComments.map((g) => ({
+        id: g.id,
+        paths: g.paths,
+        applied: Boolean(g.rec.resolved),
+        label: g.rec.author || "комментарий",
+      })),
+    [pageComments],
   );
 
   /*
@@ -537,142 +564,79 @@ function SiteMode({
   );
 
   /*
-    Клик по компоненту: подсвечиваем его и добавляем в набор для разметки.
-    Повторный клик снимает — тот же жест, что и в плейграунде «Модулей».
+    Клик по компоненту добавляет его в выделение, повторный клик снимает. Так же
+    и на ручных хабах: раньше там выделение не копилось, потому что набор нужен
+    был разметке, а разметке хабы не по зубам. Комментарию всё равно, из чего
+    собран блок, — он держится за сам компонент.
 
-    На ручных хабах в набор для разметки не добавляем: их компоненты не собраны
-    из блоков источника, и директиве не за что зацепиться. Комментарии и пины
-    при этом работают — они держатся за сам компонент, а не за блок.
+    selected — последний выбранный. По нему колонка с источником прокручивается
+    к нужному месту, и он же нужен пинам.
   */
-  const onPick = React.useCallback(
-    (path: string) => {
-      setSelected(path);
-      if (body) return;
-      setPicked((prev) => {
-        const next = new Set(prev);
-        if (next.has(path)) next.delete(path);
-        else next.add(path);
-        return next;
-      });
-    },
-    [body],
-  );
-
-  /*
-    Компонент → адреса блоков источника («секция:блок»). Адрес несёт сам узел
-    (поле at), но у вложенных узлов его нет — тогда поднимаемся по пути к
-    ближайшему предку, у которого он есть.
-  */
-  const addressOf = React.useCallback(
-    (path: string): string[] => {
-      const parts = path.split(".");
-      for (let i = parts.length; i > 0; i--) {
-        const n = nodeAtPath(pageDoc, parts.slice(0, i).join("."));
-        if (n?.at?.length) return n.at;
-      }
-      return [];
-    },
-    [pageDoc],
-  );
-
-  /** Набор блоков для панели разметки — в том же виде, что в «Модулях». */
-  const markupSelected = React.useMemo(
-    () => new Set([...picked].flatMap(addressOf)),
-    [picked, addressOf],
-  );
-
-  /*
-    Директивы ЭТОЙ страницы: страница — часть модуля, и чужие разделы в панели
-    только мешали бы. Сверяем по ссылкам на блоки: у директивы они те же, что
-    посчитает blockRefId для блоков выбранных секций.
-  */
-  const pageDirectives = React.useMemo(() => {
-    const wanted = new Set(page.sections);
-    const ids = new Set<string>();
-    markup.sections.forEach((sec) => {
-      if (!sec.anchor || !wanted.has(sec.anchor)) return;
-      sec.blocks.forEach((b) =>
-        ids.add(blockRefId(b, `/source/${page.module}`, sec.anchor)),
-      );
+  const onPick = React.useCallback((path: string) => {
+    setSelected(path);
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
     });
-    return markup.directives.filter(
-      (d) => d.module === page.module && d.blocks.some((b) => ids.has(b.id)),
-    );
-  }, [markup.sections, markup.directives, page.sections, page.module]);
+  }, []);
 
-  /*
-    ПЕРЕХОД К КОМПОНЕНТУ ПО ДИРЕКТИВЕ. Директива хранит ссылки на блоки
-    источника, а на странице нам нужен собранный из них компонент. Обратный
-    путь: ссылка блока → его адрес «секция:блок» → узел, который этот адрес
-    носит → его место в дереве.
-  */
-  const addressById = React.useMemo(() => {
-    const map = new Map<string, string>();
-    markup.sections.forEach((sec, si) =>
-      sec.blocks.forEach((b, bi) =>
-        map.set(blockRefId(b, `/source/${page.module}`, sec.anchor), `${si}:${bi}`),
-      ),
-    );
-    return map;
-  }, [markup.sections, page.module]);
-
-  const pathOfAddress = React.useCallback(
-    (addr: string): string | null => {
-      const walk = (nodes: unknown[], prefix: string): string | null => {
-        for (let i = 0; i < nodes.length; i++) {
-          const n = nodes[i] as Node & { children?: unknown[] };
-          const path = prefix ? `${prefix}.${i}` : String(i);
-          if (n?.at?.includes(addr)) return path;
-          if (Array.isArray(n?.children)) {
-            const deep = walk(n.children, path);
-            if (deep) return deep;
-          }
+  /** Один комментарий на всё выделение: адреса блоков едут в id через плюс. */
+  const addComment = React.useCallback(
+    (name: string, text: string) => {
+      const paths = [...picked];
+      if (!paths.length) return;
+      if (!author) {
+        try {
+          localStorage.setItem(REVIEW_AUTHOR_KEY, name);
+        } catch {
+          /* нет хранилища — имя останется на эту сессию */
         }
-        return null;
-      };
-      return walk(pageDoc.children, "");
+        setAuthor(name);
+      }
+      setComment(
+        {
+          id: commentId(page.slug, paths, uid()),
+          page: page.slug,
+          author: name,
+          blockType: typeAt(paths[0]),
+          original: snippet(paths.map((p) => textAt(p)).join(" ⁄ ")),
+        },
+        text,
+      );
+      setPicked(new Set());
     },
-    [pageDoc],
+    [picked, author, page.slug, setComment, typeAt, textAt],
   );
 
-  const goToDirective = React.useCallback(
+  /*
+    ПЕРЕХОД К БЛОКАМ КОММЕНТАРИЯ из списка справа.
+
+    Колонку двигаем сами, а не через scrollIntoView: он ищет ближайшего
+    прокручиваемого предка и в этой раскладке промахивается. Целимся в ПЕРВОГО
+    РЕБЁНКА обёртки: сама обёртка размечена как display: contents, собственной
+    коробки у неё нет. Синхрон колонок на это время паузим — иначе он тут же
+    вернёт страницу к позиции источника, и переход выглядел бы как «не сработало».
+  */
+  const goToComment = React.useCallback(
     (id: string) => {
-      const d = markup.directives.find((x) => x.id === id);
-      const addr = d?.blocks.map((b) => addressById.get(b.id)).find(Boolean);
-      const path = addr ? pathOfAddress(addr) : null;
-      if (!path) return;
-      setSelected(path);
-      /*
-        Синхрон колонок на время перехода молчит: иначе он тут же возвращает
-        правую колонку к позиции левой, и прокрутка выглядит как «не сработало».
-      */
+      setActiveComment(id);
+      const paths = pathsOf(id);
+      if (!paths.length || !rightBox) return;
+      setSelected(paths[0]);
       paused.current = true;
       window.setTimeout(() => (paused.current = false), 600);
-      /*
-        Отпускаем ход, чтобы подсветка выбранного успела перерисоваться: без
-        этого считалось старое положение узла. Обычная задержка, а не кадр
-        отрисовки: кадры не выдаются, пока вкладка не на виду.
-
-        Прокручиваем к ПЕРВОМУ РЕБЁНКУ: сама обёртка компонента размечена как
-        display: contents — собственной рамки у неё нет, и scrollIntoView по
-        ней молча ничего не делает. Тот же обход, что в эталонной странице.
-      */
-      window.setTimeout(() => {
-        const el = rightBox?.querySelector(`[data-json-path="${path}"]`);
-        const target = el?.firstElementChild ?? el;
-        if (!rightBox || !target) return;
-        /*
-          Двигаем колонку сами, а не через scrollIntoView: он ищет ближайший
-          прокручиваемый предок и в этой раскладке промахивался. Та же
-          арифметика, что при наводке на блок слева.
-        */
-        const er = target.getBoundingClientRect();
-        const pr = rightBox.getBoundingClientRect();
-        rightBox.scrollTop += er.top - pr.top - pr.height / 2 + er.height / 2;
-      }, 0);
+      const el = rightBox.querySelector(`[data-json-path="${CSS.escape(paths[0])}"]`);
+      const target = el?.firstElementChild ?? el;
+      if (!target) return;
+      const er = target.getBoundingClientRect();
+      const pr = rightBox.getBoundingClientRect();
+      rightBox.scrollTop += er.top - pr.top - pr.height / 2 + er.height / 2;
     },
-    [markup.directives, addressById, pathOfAddress, rightBox],
+    [rightBox],
   );
+
 
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
@@ -716,8 +680,8 @@ function SiteMode({
     собирает классы заранее и значение, вычисленное на ходу, не увидел бы.
   */
   const leftCol = srcOpen ? "minmax(0,40rem)" : "2.75rem";
-  const gridCols = markupOpen
-    ? `${leftCol} minmax(0,1fr) 21rem`
+  const gridCols = commentsOpen
+    ? `${leftCol} minmax(0,1fr) 17rem`
     : `${leftCol} minmax(0,1fr)`;
 
   return (
@@ -844,22 +808,22 @@ function SiteMode({
                 </div>
               </aside>
 
-              {/* Контент страницы */}
-              <div className="min-w-0">
+              {/* Контент страницы. relative — чтобы рамки комментариев легли
+                  ровно поверх него и ехали вместе с прокруткой. */}
+              <div className="relative min-w-0" ref={setContentBox}>
                 {body ? (
-                  <HandmadeBody
-                    selected={selected}
-                    commented={commented}
-                    onSelect={onPick}
-                  >
+                  <HandmadeBody picked={picked} onSelect={onPick}>
                     {body}
                   </HandmadeBody>
                 ) : (
-                  <ResultView
-                    doc={pageDoc}
-                    pick={{ selected, onSelect: onPick, commented }}
-                  />
+                  <ResultView doc={pageDoc} pick={{ selected, onSelect: onPick, picked }} />
                 )}
+                <CommentFrames
+                  host={contentBox}
+                  frames={commentFrames}
+                  activeId={activeComment}
+                  onPick={setActiveComment}
+                />
               </div>
 
               {/* Правое меню — оглавление страницы */}
@@ -873,86 +837,35 @@ function SiteMode({
         </div>
       </section>
 
-      {/* ТРЕТЬЯ КОЛОНКА — разметка страницы. Та же панель, что в «Модулях»:
-          она принимает набор блоков источника, а его нам даёт клик по
-          компоненту (каждый узел помнит, из каких блоков собран). */}
-      {markupOpen && (
+      {/* ТРЕТЬЯ КОЛОНКА — комментарии страницы. Раньше здесь жила разметка, но
+          разметку ведём мы, а колонку каждый день видит клиент: ему нужно
+          написать замечание, а не собрать компонент. Разметка осталась в режиме
+          «Модули», где она и делается. */}
+      {commentsOpen && (
         <section className="flex min-h-0 flex-col">
           <div className="flex shrink-0 items-center gap-2 border-b bg-muted/40 px-3 py-2">
             <span className="text-xs font-medium text-muted-foreground">
-              Разметка страницы{picked.size ? ` · выбрано ${picked.size}` : ""}
+              Комментарии{pageComments.length ? ` · ${pageComments.length}` : ""}
             </span>
-            {picked.size > 0 && (
-              <button
-                type="button"
-                onClick={() => setPicked(new Set())}
-                className="ml-auto rounded-md border bg-background px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Снять выделение
-              </button>
-            )}
           </div>
-          {markup.err && (
-            <div className="shrink-0 border-b bg-[hsl(var(--bad)/0.1)] px-3 py-1.5 text-xs text-[hsl(var(--bad))]">
-              {markup.err}
-            </div>
-          )}
           <div className="min-h-0 flex-1">
-            {picked.size === 0 && pageDirectives.length === 0 ? (
-              <p className="p-4 text-sm text-muted-foreground">
-                Кликните по компоненту страницы — он попадёт в выделение.
-                Повторный клик снимает.
-              </p>
-            ) : (
-              /*
-                Панель просит резолвер правок (useMdResolver) — он живёт в
-                EditorProvider, а в режиме «Сайт» его нет. Поднимаем провайдер
-                вокруг самой панели, в том же скоупе «source», что и «Модули»:
-                правки у них общие.
-              */
-              <EditorProvider scope="source">
-              <MarkupPanel
-                sections={markup.sections}
-                selected={markupSelected}
-                directives={pageDirectives}
-                onSaveDraft={(draft) => {
-                  void markup.saveDraft(draft, markupSelected);
-                  setPicked(new Set());
-                }}
-                actions={{
-                  onGoTo: goToDirective,
-                  onDelete: (id) => void markup.remove(id),
-                  onSetStatus: (id, status) => void markup.setStatus(id, status),
-                  onUpdate: (id, draft) => void markup.update(id, draft),
-                  /* Заменить блоки выделением — из пространства сайта пока не
-                     даём: набор компонентов и набор блоков директивы это разные
-                     вещи, и подменять одно другим вслепую опасно. */
-                  onReplaceBlocks: () => {},
-                  onReview: (id, review) =>
-                    void markup.patch(id, { review }, "сохранить решение"),
-                  onToggleOff: (id, off) =>
-                    void markup.patch(
-                      id,
-                      { off },
-                      off ? "выключить директиву" : "включить директиву",
-                    ),
-                }}
-              />
-              </EditorProvider>
-            )}
+            <PageComments
+              groups={pageComments}
+              picked={picked.size}
+              pickedAbout={snippet([...picked].map((p) => textAt(p)).join(" ⁄ "))}
+              author={author}
+              activeId={activeComment}
+              onAdd={addComment}
+              onDelete={(id) => setComment({ id }, "")}
+              onApplied={(id, applied) => toggleResolved(id, applied)}
+              onGoTo={goToComment}
+              onClearPick={() => setPicked(new Set())}
+            />
           </div>
         </section>
       )}
 
-      {/* Комментарии клиента/разработчика: ховер по компоненту → кнопка → тред. */}
-      <SiteComments
-        slug={page.slug}
-        pane={rightBox}
-        selected={selected}
-        textAt={textAt}
-        typeAt={typeAt}
-      />
-      {/* Пины — закладки «сюда вернуться». Иконка левее комментария, чтобы не наезжали. */}
+      {/* Пины — закладки «сюда вернуться». */}
       <PinLayer
         page={page.slug}
         pane={rightBox}
@@ -982,13 +895,11 @@ function SiteMode({
 */
 function HandmadeBody({
   children,
-  selected,
-  commented,
+  picked,
   onSelect,
 }: {
   children: React.ReactNode;
-  selected: string | null;
-  commented: Set<string>;
+  picked: Set<string>;
   onSelect: (path: string) => void;
 }) {
   const rootRef = React.useRef<HTMLDivElement | null>(null);
@@ -1002,8 +913,7 @@ function HandmadeBody({
       const path = `c${i}`;
       el.dataset.jsonPath = path;
       el.classList.add("ds-pick-flat");
-      el.classList.toggle("is-picked", path === selected);
-      el.classList.toggle("has-comment", commented.has(path));
+      el.classList.toggle("is-picked", picked.has(path));
     });
   });
 
@@ -1029,221 +939,3 @@ const uid = () =>
 const snippet = (s?: string | null) =>
   s ? s.replace(/\s+/g, " ").trim().slice(0, 60) : "";
 
-/* Комментарии клиента/разработчика в режиме «Сайт» (поток «review»). При
-   ВЫДЕЛЕНИИ компонента (клик) в его правом верхнем углу появляется иконка —
-   клик по ней открывает окно-тред. В треде несколько комментов от разных
-   людей; при первом автор представляется. */
-function SiteComments({
-  slug,
-  pane,
-  selected,
-  textAt,
-  typeAt,
-}: {
-  slug: string;
-  pane: HTMLDivElement | null;
-  selected: string | null;
-  /* Текст и тип компонента по его адресу — считает вызывающий: у страниц из
-     источника это дерево узлов, у ручных хабов — сама разметка страницы. */
-  textAt: (path: string | null) => string;
-  typeAt: (path: string) => string | null;
-}) {
-  const { comments, setComment } = useComments();
-  const [openPath, setOpenPath] = React.useState<string | null>(null);
-  const [pos, setPos] = React.useState<{ top: number; right: number } | null>(null);
-  const [author, setAuthor] = React.useState<string>(() => {
-    try {
-      return localStorage.getItem(REVIEW_AUTHOR_KEY) || "";
-    } catch {
-      return "";
-    }
-  });
-
-  // Позиция иконки — правый верхний угол ВЫДЕЛЕННОГО компонента. Следим за
-  // прокруткой/ресайзом, чтобы иконка держалась на углу.
-  React.useEffect(() => {
-    if (!pane || !selected) {
-      setPos(null);
-      return;
-    }
-    const update = () => {
-      const el = pane.querySelector(`[data-json-path="${CSS.escape(selected)}"]`);
-      if (!el) return setPos(null);
-      const box = (el.firstElementChild as HTMLElement) || (el as HTMLElement);
-      const r = box.getBoundingClientRect();
-      setPos({ top: r.top, right: r.right });
-    };
-    update();
-    pane.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      pane.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-  }, [pane, selected]);
-
-  const threadOf = (path: string) =>
-    comments
-      .filter((c) => c.id.startsWith(`${slug}::${path}::`) && c.text)
-      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-
-  const add = (path: string, name: string, text: string) =>
-    setComment(
-      {
-        id: `${slug}::${path}::${uid()}`,
-        page: slug,
-        author: name,
-        blockType: typeAt(path),
-        original: snippet(textAt(path)),
-      },
-      text,
-    );
-
-  return (
-    <>
-      {selected && pos && openPath !== selected && (
-        <button
-          type="button"
-          style={{
-            position: "fixed",
-            top: pos.top + 6,
-            left: pos.right - 40,
-            zIndex: 60,
-          }}
-          onClick={() => setOpenPath(selected)}
-          aria-label="Комментировать"
-          title="Комментировать"
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-lg border bg-card transition-colors hover:bg-accent",
-            threadOf(selected).length > 0
-              ? "border-[color:var(--comment-line)] text-[color:var(--comment-line)]"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <MessageSquarePlus className="h-5 w-5" />
-        </button>
-      )}
-
-      {openPath && (
-        <ThreadWindow
-          about={snippet(textAt(openPath))}
-          thread={threadOf(openPath)}
-          author={author}
-          onSubmit={(name, text) => {
-            if (!author) {
-              try {
-                localStorage.setItem(REVIEW_AUTHOR_KEY, name);
-              } catch {
-                /* нет localStorage — имя останется на сессию */
-              }
-              setAuthor(name);
-            }
-            add(openPath, name, text);
-          }}
-          onDelete={(id) => setComment({ id }, "")}
-          onClose={() => setOpenPath(null)}
-        />
-      )}
-    </>
-  );
-}
-
-/* Окно-тред одного компонента: список комментов (автор + текст) и форма ввода.
-   Пока имя автора не задано — сначала поле «представьтесь». */
-function ThreadWindow({
-  about,
-  thread,
-  author,
-  onSubmit,
-  onDelete,
-  onClose,
-}: {
-  about: string;
-  thread: Comment[];
-  author: string;
-  onSubmit: (name: string, text: string) => void;
-  onDelete: (id: string) => void;
-  onClose: () => void;
-}) {
-  const [name, setName] = React.useState(author);
-  const [text, setText] = React.useState("");
-  const who = (author || name).trim();
-  const submit = () => {
-    if (!who || !text.trim()) return;
-    onSubmit(who, text.trim());
-    setText("");
-  };
-  return (
-    <div className="fixed bottom-4 right-4 z-[60] flex max-h-[80vh] w-80 flex-col rounded-lg border bg-card shadow-xl">
-      <div className="flex items-center justify-between border-b px-3 py-2">
-        <span className="text-sm font-semibold">Комментарии</span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded px-1.5 text-muted-foreground hover:text-foreground"
-          aria-label="Закрыть"
-        >
-          ✕
-        </button>
-      </div>
-      <div className="border-b bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground">
-        {about || "компонент"}
-      </div>
-
-      <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3 text-sm">
-        {thread.length === 0 ? (
-          <li className="py-2 text-center text-muted-foreground">
-            Пока пусто — напишите первым.
-          </li>
-        ) : (
-          thread.map((c) => (
-            <li key={c.id} className="rounded border bg-background p-2">
-              <div className="mb-0.5 flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground">
-                  {c.author || "Без имени"}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onDelete(c.id)}
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                  aria-label="Удалить комментарий"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="whitespace-pre-wrap text-foreground">{c.text}</div>
-            </li>
-          ))
-        )}
-      </ul>
-
-      <div className="flex flex-col gap-2 border-t p-3">
-        {!author && (
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Представьтесь: ваше имя"
-            className="w-full rounded border bg-background px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        )}
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") submit();
-          }}
-          placeholder="Комментарий к компоненту"
-          className="h-20 w-full resize-none rounded border bg-background px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <button
-          type="button"
-          onClick={submit}
-          disabled={!text.trim() || !who}
-          className="self-start rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
-        >
-          Отправить
-        </button>
-      </div>
-    </div>
-  );
-}
