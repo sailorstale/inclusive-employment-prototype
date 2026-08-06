@@ -63,6 +63,15 @@ export function PageComments({
     if (author) setName(author);
   }, [author]);
 
+  /*
+    Выделили на странице блок с комментарием — подводим к его карточке список.
+    «nearest» вместо «center»: если карточка и так на виду, список не дёргается.
+  */
+  const activeRef = React.useRef<HTMLLIElement | null>(null);
+  React.useEffect(() => {
+    if (activeId) activeRef.current?.scrollIntoView({ block: "nearest" });
+  }, [activeId]);
+
   const canSend = picked > 0 && text.trim().length > 0 && name.trim().length > 0;
   const send = () => {
     if (!canSend) return;
@@ -77,7 +86,7 @@ export function PageComments({
         {picked === 0 ? (
           <p className="text-xs leading-relaxed text-muted-foreground">
             Кликните по блоку страницы — форма откроется здесь. Нужно сказать про
-            несколько блоков сразу — кликните по каждому, они выделятся вместе.
+            несколько блоков сразу — кликайте по ним с зажатым Shift.
           </p>
         ) : (
           <div className="space-y-2">
@@ -98,6 +107,13 @@ export function PageComments({
                 {pickedAbout}
               </p>
             ) : null}
+            {/* Подсказку про Shift держим на виду, пока блок выделен один:
+                иначе про множественное выделение просто не узнают. */}
+            {picked === 1 && (
+              <p className="text-[11px] leading-snug text-muted-foreground">
+                Shift + клик — добавить ещё блок к этому же комментарию.
+              </p>
+            )}
             {!author && (
               <input
                 value={name}
@@ -146,9 +162,12 @@ export function PageComments({
               return (
                 <li
                   key={g.id}
+                  ref={g.id === activeId ? activeRef : undefined}
                   className={cn(
-                    "space-y-1.5 p-3 text-xs",
-                    g.id === activeId && "bg-accent/50",
+                    "space-y-1.5 border-l-2 p-3 text-xs transition-colors",
+                    g.id === activeId
+                      ? "border-l-[color:var(--comment-line)] bg-accent/60"
+                      : "border-l-transparent",
                   )}
                 >
                   <button

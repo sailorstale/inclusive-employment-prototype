@@ -94,7 +94,12 @@ export function useContentDoc(
 */
 type Pick = {
   selected: string | null;
-  onSelect: (path: string) => void;
+  /*
+    additive — клик с зажатым Shift (или Cmd/Ctrl): компонент ДОБАВЛЯЕТСЯ к
+    выделению. Обычный клик выделяет только то, по чему кликнули, — иначе
+    прежняя рамка остаётся висеть и кажется, что выделение сломалось.
+  */
+  onSelect: (path: string, additive: boolean) => void;
   /*
     Набор выбранных компонентов. Комментарий часто относится не к одному блоку,
     а к нескольким подряд («вот эти три карточки надо объединить»), поэтому
@@ -243,7 +248,7 @@ function NodeView({ node, path }: { node: Node; path: string }) {
       data-json-path={path}
       onClick={(e) => {
         e.stopPropagation();
-        pick.onSelect(path);
+        pick.onSelect(path, e.shiftKey || e.metaKey || e.ctrlKey);
       }}
     >
       {inner}

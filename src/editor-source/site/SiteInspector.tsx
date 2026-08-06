@@ -579,15 +579,33 @@ function SiteMode({
     selected — последний выбранный. По нему колонка с источником прокручивается
     к нужному месту, и он же нужен пинам.
   */
-  const onPick = React.useCallback((path: string) => {
+  const onPick = React.useCallback((path: string, additive: boolean) => {
     setSelected(path);
     setPicked((prev) => {
-      const next = new Set(prev);
-      if (next.has(path)) next.delete(path);
+      /*
+        Обычный клик выделяет ТОЛЬКО то, по чему кликнули: прежние рамки
+        снимаются. Клик по единственному выделенному снимает выделение совсем.
+        С зажатым Shift (или Cmd/Ctrl) компонент добавляется к набору или
+        убирается из него — так набирают группу для одного комментария.
+      */
+      const next = new Set(additive ? prev : []);
+      if (prev.has(path) && (additive || prev.size === 1)) next.delete(path);
       else next.add(path);
       return next;
     });
   }, []);
+
+  /*
+    ВЫДЕЛИЛИ БЛОК С КОММЕНТАРИЕМ — подсвечиваем его карточку в панели справа.
+    Иначе замечание приходится искать в списке глазами, а на длинной странице
+    их два десятка. Ищем по последнему кликнутому: у группы из нескольких
+    блоков совпадёт любой из них.
+  */
+  React.useEffect(() => {
+    if (!selected) return;
+    const hit = pageComments.find((g) => g.paths.includes(selected));
+    setActiveComment(hit ? hit.id : null);
+  }, [selected, pageComments]);
 
   /** Один комментарий на всё выделение: адреса блоков едут в id через плюс. */
   const addComment = React.useCallback(
@@ -925,7 +943,7 @@ function HandmadeBody({
 }: {
   children: React.ReactNode;
   picked: Set<string>;
-  onSelect: (path: string) => void;
+  onSelect: (path: string, additive: boolean) => void;
 }) {
   const rootRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -950,7 +968,7 @@ function HandmadeBody({
         // Ближайший компонент от места клика — то есть самый вложенный.
         const el = (e.target as HTMLElement).closest<HTMLElement>("[data-component]");
         const path = el?.dataset.jsonPath;
-        if (path) onSelect(path);
+        if (path) onSelect(path, e.shiftKey || e.metaKey || e.ctrlKey);
       }}
     >
       {children}
