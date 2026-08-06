@@ -859,6 +859,19 @@ function SiteMode({
             <span className="text-xs font-medium text-muted-foreground">
               Комментарии{pageComments.length ? ` · ${pageComments.length}` : ""}
             </span>
+            {/*
+              На локальной машине комментарии приезжают с БОЕВОГО сервера (см.
+              vite.config.ts): список у клиента и у нас один. Подпись нужна,
+              чтобы никто не решил, будто удаляет свою локальную копию.
+            */}
+            {import.meta.env.DEV && (
+              <span
+                title="Комментарии читаются и пишутся на боевом сервере — там же, где их видит клиент"
+                className="ml-auto rounded bg-[hsl(var(--bad)/0.12)] px-1.5 py-0.5 text-[10px] leading-none text-[hsl(var(--bad))]"
+              >
+                боевые данные
+              </span>
+            )}
           </div>
           <div className="min-h-0 flex-1">
             <PageComments

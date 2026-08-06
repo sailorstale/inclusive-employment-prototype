@@ -52,9 +52,26 @@ export const markRe = () =>
   нынешний вариант и выбрасываем прежний: метки — служебные символы из
   приватной зоны Юникода, у шрифта для них нет начертания, и вместо них
   рисуется квадратик-заглушка.
+
+  ОБРУБКИ. В уже сохранённых снимках метка бывает разрублена пополам: снимок
+  режется до шестидесяти знаков, и закрывающий символ в него не влез. Такой
+  обрубок целым правилом не ловится, поэтому разбираем его отдельно — иначе
+  квадратик остаётся на экране навсегда.
 */
-export const stripMarks = (text: string): string =>
-  text.includes(MARK_A) ? text.replace(markRe(), "$1") : text;
+export function stripMarks(text: string): string {
+  if (!text.includes(MARK_A) && !text.includes(MARK_B) && !text.includes(MARK_C))
+    return text;
+  // Целые метки: оставляем нынешний вариант, прежний выбрасываем.
+  let out = text.replace(markRe(), "$1");
+  /*
+    Уцелевший средний символ означает «дальше идёт ПРЕЖНИЙ вариант, и он
+    оборван». Показывать его незачем — обрезаем строку по этому месту.
+  */
+  const mid = out.indexOf(MARK_B);
+  if (mid >= 0) out = out.slice(0, mid);
+  // Всё, что осталось от меток, — просто убираем.
+  return out.split(MARK_A).join("").split(MARK_C).join("").trimEnd();
+}
 
 export function renderInline(text: string): React.ReactNode {
   if (!text.includes(MARK_A)) return renderPlain(text);
