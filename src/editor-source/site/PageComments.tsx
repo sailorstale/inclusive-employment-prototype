@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Check, Trash2 } from "lucide-react";
 import type { Comment } from "@/editor-source/comments";
+import { stripMarks } from "@/editor-source/richText";
 import { cn } from "@/lib/utils";
 
 /*
@@ -174,8 +175,13 @@ export function PageComments({
                       {g.rec.text}
                     </span>
                     {g.rec.original ? (
+                      /*
+                        Метки снимаем и здесь, а не только при записи: девять
+                        комментариев клиента сохранились до этой починки, и в их
+                        снимках служебные символы уже лежат.
+                      */
                       <span className="mt-1 line-clamp-2 block italic text-muted-foreground">
-                        {g.rec.original}
+                        {stripMarks(g.rec.original)}
                       </span>
                     ) : null}
                   </button>

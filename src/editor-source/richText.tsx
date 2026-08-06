@@ -46,6 +46,16 @@ export const MARK_C = String.fromCodePoint(0xe002);
 export const markRe = () =>
   new RegExp(`${MARK_A}([^${MARK_B}]*)${MARK_B}([^${MARK_C}]*)${MARK_C}`, "g");
 
+/*
+  Текст БЕЗ меток — для мест, где строку показывают как есть, без разметки:
+  подпись комментария, снимок блока в списке, заголовок в панели. Оставляем
+  нынешний вариант и выбрасываем прежний: метки — служебные символы из
+  приватной зоны Юникода, у шрифта для них нет начертания, и вместо них
+  рисуется квадратик-заглушка.
+*/
+export const stripMarks = (text: string): string =>
+  text.includes(MARK_A) ? text.replace(markRe(), "$1") : text;
+
 export function renderInline(text: string): React.ReactNode {
   if (!text.includes(MARK_A)) return renderPlain(text);
   const out: React.ReactNode[] = [];

@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import type { TocEntry } from "./pageStructure";
 import type { OsnovyPage } from "./pageMap";
 import { usePageBlocks } from "./useModuleDoc";
+import { stripMarks } from "@/editor-source/richText";
 import { PageSourceView } from "./PageSourceView";
 import { CommentFrames, type CommentFrame } from "./CommentFrames";
 import { PageComments, type CommentGroup } from "./PageComments";
@@ -947,6 +948,11 @@ function HandmadeBody({
 const REVIEW_AUTHOR_KEY = "inclusion-review-author";
 const uid = () =>
   `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+/*
+  Снимок текста блока для комментария. Метки раскурсовки снимаем ДО обрезки:
+  во-первых, показывать служебные символы человеку незачем, во-вторых, обрезка
+  могла разрубить метку пополам, и хвост уезжал в запись навсегда.
+*/
 const snippet = (s?: string | null) =>
-  s ? s.replace(/\s+/g, " ").trim().slice(0, 60) : "";
+  s ? stripMarks(s).replace(/\s+/g, " ").trim().slice(0, 60) : "";
 
