@@ -4,6 +4,11 @@
   "name": "Алёна Меркурьева"
  },
  {
+  "slug": "alina-yuhnevich",
+  "name": "Алина Юхневич",
+  "stub": true
+ },
+ {
   "slug": "alla-sotnikova",
   "name": "Алла Сотникова"
  },
@@ -16,12 +21,27 @@
   "name": "Анатолий Попко"
  },
  {
+  "slug": "darya-demina",
+  "name": "Дарья Дёмина",
+  "stub": true
+ },
+ {
   "slug": "denis-roza",
   "name": "Денис Роза"
  },
  {
   "slug": "ekaterina-siksimova",
   "name": "Екатерина Сиксимова"
+ },
+ {
+  "slug": "elena-chernyh",
+  "name": "Елена Черных",
+  "stub": true
+ },
+ {
+  "slug": "gulfiya-konovalova",
+  "name": "Гульфия Коновалова",
+  "stub": true
  },
  {
   "slug": "gulnara-gorishnyaya",
@@ -36,6 +56,11 @@
   "name": "Ксения Ломакина"
  },
  {
+  "slug": "lyudmila-pisarenko",
+  "name": "Людмила Писаренко",
+  "stub": true
+ },
+ {
   "slug": "mariya-burchakova-1",
   "name": "Мария Бурчакова 1"
  },
@@ -46,6 +71,11 @@
  {
   "slug": "mariya-gordanova",
   "name": "Мария Горданова"
+ },
+ {
+  "slug": "mariya-losyukova",
+  "name": "Мария Лосюкова",
+  "stub": true
  },
  {
   "slug": "olga-povorova",
@@ -66,6 +96,11 @@
  {
   "slug": "tatyana-samburova-2",
   "name": "Татьяна Самбурова 2"
+ },
+ {
+  "slug": "tatyana-tiunova",
+  "name": "Татьяна Тиунова",
+  "stub": true
  },
  {
   "slug": "yuliya-ermilova",
