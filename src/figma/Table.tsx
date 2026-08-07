@@ -157,11 +157,34 @@ function isHeaderRow(node: React.ReactNode): boolean {
   );
 }
 
+/** Сколько ячеек в строке таблицы (0, если это не строка). */
+function columnsOf(row: React.ReactNode): number {
+  if (!React.isValidElement(row)) return 0;
+  return React.Children.count((row.props as TableRowProps).children);
+}
+
 export function Table({ headers, caption, children, className }: TableProps) {
   const rows = React.Children.toArray(children);
   const headerRows = rows.filter(isHeaderRow);
   const bodyRows = rows.filter((r) => !isHeaderRow(r));
   const hasHead = Boolean(headers?.length) || headerRows.length > 0;
+
+  /*
+    ДВЕ КОЛОНКИ — пополам. Замечание клиента 7 августа 2026 к таблицам
+    «Возможности | Вызовы»: браузер раздавал им ширину по длине текста, и в
+    шести таблицах подряд граница стояла каждый раз в новом месте (226 против
+    384 в одной, 332 против 278 в другой). Читатель сравнивает две колонки
+    между собой, и прыгающая граница этому мешает.
+
+    Только для двух колонок: там они по смыслу равноправны. Таблицы с тремя и
+    более столбцами по-прежнему подстраиваются под содержимое — среди них
+    попадаются узкие столбцы-ярлыки, которым половина ширины не нужна.
+
+    Долю задаём через colgroup, а НЕ через table-layout: fixed. С фиксированной
+    раскладкой браузер отводил место под три колонки вместо двух, и слева
+    оставалась пустая треть таблицы.
+  */
+  const columns = headers?.length || columnsOf(rows[0]);
 
   return (
     <table
@@ -185,6 +208,12 @@ export function Table({ headers, caption, children, className }: TableProps) {
       )}
     >
       {caption && <caption className="sr-only">{caption}</caption>}
+      {columns === 2 && (
+        <colgroup>
+          <col style={{ width: "50%" }} />
+          <col style={{ width: "50%" }} />
+        </colgroup>
+      )}
       {hasHead && (
         <thead>
           {headers?.length ? (
