@@ -176,6 +176,12 @@ export function pageSummaryNode(chosen: SectionNode[]): Node {
   };
 }
 
+/*
+  «Читайте также» — ТОЛЬКО НАЗВАНИЯ, без подписей. Замечание клиента 7 августа
+  2026: подпись пересказывала название страницы своими словами и ничего к нему
+  не добавляла. Поле description у карточки осталось необязательным — вернуть
+  подписи можно, не трогая компонент.
+*/
 function readMoreNode(slug: string): Node {
   return {
     component: "Read More",
@@ -184,7 +190,6 @@ function readMoreNode(slug: string): Node {
       (r): Node => ({
         component: "Read More Item",
         title: r.title,
-        description: r.description,
         href: r.href,
       }),
     ),
@@ -243,6 +248,15 @@ function introSection(intro?: SectionNode): SectionNode[] {
   return [{ component: "Section Container", children }];
 }
 
+/*
+  ФОРМА МНЕНИЯ стоит не везде. На странице «О проекте» её нет — замечание клиента
+  7 августа 2026: страница рассказывает о самой работе и ведёт читателя дальше,
+  спрашивать на ней «что осталось непонятным» рано. На страницах с материалом
+  форма остаётся.
+*/
+const NO_FEEDBACK = new Set(["/general/about"]);
+const hasFeedback = (slug: string) => !NO_FEEDBACK.has(slug);
+
 /** Полный список узлов страницы: обвязка + секции, в порядке показа. */
 export function pageChildren(
   chosen: SectionNode[],
@@ -262,7 +276,7 @@ export function pageChildren(
   return [
     ...introSection(intro),
     ...sections,
-    { component: "Feedback" },
+    ...(hasFeedback(slug) ? [{ component: "Feedback" } as Node] : []),
     readMoreNode(slug),
   ];
 }

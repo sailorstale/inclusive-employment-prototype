@@ -160,7 +160,7 @@ type NodeKind =
     }
   | { component: "Feedback"; roles?: string[] }
   | { component: "Read More"; title?: string; children: Node[] }
-  | { component: "Read More Item"; title: string; description: string; href: string }
+  | { component: "Read More Item"; title: string; description?: string; href: string }
   /** Пометка инструмента для редактора. В выгрузку не попадает. */
   | { component: "note"; text: string };
 

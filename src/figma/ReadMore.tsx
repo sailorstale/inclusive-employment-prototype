@@ -66,8 +66,14 @@ export function ReadMore({
 
 type ReadMoreItemProps = {
   title: string;
-  /** 1–2 строки, о чём материал. В примерах Figma 47–86 знаков. */
-  description: string;
+  /*
+    1–2 строки, о чём материал. В примерах Figma 47–86 знаков.
+
+    НЕОБЯЗАТЕЛЬНО — решение клиента 7 августа 2026: на сайте карточка показывает
+    одно название. Слот в компоненте сохранён: подписи вернутся, если понадобятся,
+    и макет Figma при этом не меняется.
+  */
+  description?: string;
   href: string;
   className?: string;
 };
@@ -95,9 +101,11 @@ export function ReadMoreItem({
       {/* Card Content */}
       <div className="flex flex-col gap-[var(--space-m)] overflow-hidden">
         <span className="ds-h3 text-[color:var(--text-primary)]">{title}</span>
-        <span className="ds-body-l text-[color:var(--text-primary)]">
-          {description}
-        </span>
+        {description ? (
+          <span className="ds-body-l text-[color:var(--text-primary)]">
+            {description}
+          </span>
+        ) : null}
       </div>
 
       {/* Action Container: стрелка 32, прижата вправо */}
