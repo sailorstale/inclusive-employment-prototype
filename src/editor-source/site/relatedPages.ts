@@ -14,7 +14,6 @@ const BLURB: Record<string, string> = {
   "/general/start":
     "Медицинская и социальная модель, кто такие соискатели, мифы и факты.",
   "/general/how": "Участники найма, сценарии поиска и работа с НКО.",
-  "/general/legal": "Оформление, льготы, квоты и особые ситуации — обзор раздела.",
   "/general/legal/contract":
     "Трудовой договор, справка об инвалидности, ИПРА, условия труда.",
   "/general/legal/benefits":
@@ -68,13 +67,8 @@ const RELATED: Record<string, string[]> = {
     не годятся — карточки собираются только из страниц карты.
   */
   "/general/about": ["/general/start", "/companies/hire/step-1", "/ngo/start"],
-  "/general/start": ["/general/how", "/general/legal", "/general/team"],
-  "/general/how": ["/general/legal", "/general/team", "/general/start"],
-  "/general/legal": [
-    "/general/legal/contract",
-    "/general/legal/benefits",
-    "/general/legal/quotas",
-  ],
+  "/general/start": ["/general/how", "/general/legal/contract", "/general/team"],
+  "/general/how": ["/general/legal/contract", "/general/team", "/general/start"],
   "/general/legal/contract": [
     "/general/legal/benefits",
     "/general/legal/formats",
@@ -95,7 +89,7 @@ const RELATED: Record<string, string[]> = {
     "/general/legal/formats",
     "/general/legal/contract",
   ],
-  "/general/team": ["/general/how", "/general/start", "/general/legal"],
+  "/general/team": ["/general/how", "/general/start", "/general/legal/contract"],
 
   // Внутри трека ведём читателя по шагам: следующий, через один и предыдущий.
   "/companies/hire/step-1": [

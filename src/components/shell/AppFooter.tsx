@@ -9,9 +9,9 @@ const columns: { title: string; links: { label: string; to: string }[] }[] = [
     title: "Для компаний",
     links: [
       { label: "Инклюзивное трудоустройство", to: "/general/start" },
-      { label: "Правила оформления", to: "/general/legal" },
+      { label: "Договор и оформление", to: "/general/legal/contract" },
       { label: "Наём по шагам", to: "/companies" },
-      { label: "Команда", to: "/general/team" },
+      { label: "Этика и коммуникация", to: "/general/team" },
     ],
   },
   {
