@@ -474,7 +474,7 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
       );
 
     case "Feedback":
-      return <Feedback roles={node.roles} />;
+      return <Feedback roles={node.roles} defaultRole={node.defaultRole} />;
 
     case "Read More":
       return (

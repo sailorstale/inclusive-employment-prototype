@@ -47,16 +47,23 @@ type Props = {
    * Третьей аудитории («Соискатель») в макете нет — см. расхождение 1.
    */
   roles?: readonly string[];
+  /*
+    Роль, выбранная заранее. Читатель уже назвал себя тем, какой раздел открыл:
+    страницы «Для НКО» читают сотрудники НКО, «Для компаний» — сотрудники
+    компаний. Кто ставит значение — решает страница (см. pageStructure).
+  */
+  defaultRole?: string;
   className?: string;
 };
 
 export function Feedback({
   state,
   roles = DEFAULT_ROLES,
+  defaultRole,
   className,
 }: Props) {
   const [sent, setSent] = React.useState(false);
-  const [role, setRole] = React.useState<string | null>(null);
+  const [role, setRole] = React.useState<string | null>(defaultRole ?? null);
   const [message, setMessage] = React.useState("");
 
   const current: FeedbackState = state ?? (sent ? "Send" : "Default");
@@ -120,12 +127,19 @@ function DefaultState({
           у компонентов Heading и Text свои верхние отступы, они бы разъехались
           с шагом карточки (gap 16). */}
       <div className="flex w-full flex-col gap-[var(--space-xs)]">
+        {/*
+          ТЕКСТ ФОРМЫ — вариант клиента, возвращённый 7 августа 2026. В курсе
+          этими же словами заканчивался каждый модуль, и на сайте мы их убрали
+          как остаток курса (см. dropScaffold). Клиент попросил вернуть: в
+          абзаце посреди страницы они и правда были лишними, а подписью к самой
+          форме работают.
+        */}
         <h3 className="ds-h3 text-[color:var(--text-primary)]">
-          Нам правда важно ваше мнение
+          Остались вопросы или пожелания?
         </h3>
         <p className="ds-body-l text-[color:var(--text-primary)]">
-          Расскажите, что осталось непонятным или чего вам не хватило на этой
-          странице.
+          Оставьте их здесь. Мы учтём ваши комментарии при подготовке следующей
+          редакции проекта.
         </p>
       </div>
 
@@ -158,7 +172,7 @@ function DefaultState({
             Email (Необязательно)
           </span>
           <span className="ds-body-s text-[color:var(--text-secondary)]">
-            Чтобы мы могли вам ответить
+            Чтобы мы могли вам написать
           </span>
         </div>
       </div>
@@ -168,7 +182,7 @@ function DefaultState({
         data-component="Textarea"
         value={message}
         onChange={(event) => onMessageChange(event.target.value)}
-        placeholder="Расскажите о вашем опыте"
+        placeholder="Ваш вопрос или пожелание…"
         aria-label="Ваше сообщение"
         className={cn(
           "ds-body-l w-full resize-none",

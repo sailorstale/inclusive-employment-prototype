@@ -257,6 +257,21 @@ function introSection(intro?: SectionNode): SectionNode[] {
 const NO_FEEDBACK = new Set(["/general/about"]);
 const hasFeedback = (slug: string) => !NO_FEEDBACK.has(slug);
 
+/*
+  РОЛЬ ВЫБРАНА ЗАРАНЕЕ — решение дизайнера 7 августа 2026 по замечанию клиента.
+  Читатель уже назвал себя тем, какой раздел открыл: страницы трека «Для НКО»
+  читают сотрудники НКО, страницы «Для компаний» — сотрудники компаний. Просить
+  их нажать чип ещё раз незачем.
+
+  На страницах «Основ» роль не выбираем: их читают и те, и другие, и подсказка
+  «выберите вашу роль» тоже не подходит — места под неё в компоненте нет.
+*/
+function defaultRoleFor(slug: string): string | undefined {
+  if (slug.startsWith("/ngo")) return "Сотрудник НКО";
+  if (slug.startsWith("/companies")) return "Сотрудник компании";
+  return undefined;
+}
+
 /** Полный список узлов страницы: обвязка + секции, в порядке показа. */
 export function pageChildren(
   chosen: SectionNode[],
@@ -276,7 +291,9 @@ export function pageChildren(
   return [
     ...introSection(intro),
     ...sections,
-    ...(hasFeedback(slug) ? [{ component: "Feedback" } as Node] : []),
+    ...(hasFeedback(slug)
+      ? [{ component: "Feedback", defaultRole: defaultRoleFor(slug) } as Node]
+      : []),
     readMoreNode(slug),
   ];
 }
