@@ -1666,6 +1666,14 @@
     "ogrn": "1037700076754"
   },
   {
+    "slug": "perspektiva-rooi",
+    "name": "Перспектива"
+  },
+  {
+    "slug": "perspektiva-rooi",
+    "name": "РООИ Перспектива"
+  },
+  {
     "slug": "perspektiva2",
     "name": "Перспектива2",
     "ogrn": "1035204611133"
@@ -2253,6 +2261,14 @@
     "slug": "sozvezdie-dobra",
     "name": "Созвездие добра",
     "ogrn": "1177700005284"
+  },
+  {
+    "slug": "sozvezdie-oordi",
+    "name": "ООРДИ Созвездие"
+  },
+  {
+    "slug": "sozvezdie-oordi",
+    "name": "Созвездие"
   },
   {
     "slug": "spetsoperatsiya-babushka",

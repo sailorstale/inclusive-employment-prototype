@@ -2419,8 +2419,21 @@ export function buildDoc(
           */
           let orgName: string | undefined;
           let orgIdx = -1;
-          const inline = hasAuthor ? parsed[ai].text.match(LINK_RE) : null;
-          if (inline) orgName = inline[1].trim();
+          /*
+            Ссылок в строке авторства может быть НЕСКОЛЬКО, и ведут они на один
+            адрес: сначала описание фонда, потом его имя. Так записан Денис Роза:
+            «[благотворительного фонда поддержки лиц с нарушением развития и
+            интеллекта](bestbuddies.ru) «[Лучшие друзья»](bestbuddies.ru)».
+            Первая ссылка — описание, по нему логотип не найти; имя во второй.
+            Поэтому при одинаковом адресе берём последнюю.
+          */
+          const links = hasAuthor
+            ? [...parsed[ai].text.matchAll(new RegExp(LINK_RE.source, "g"))]
+            : [];
+          const sameHref = links.length > 1 && links.every((m) => m[2] === links[0][2]);
+          const inline = links.length ? links[sameHref ? links.length - 1 : 0] : null;
+          // Кавычка могла попасть внутрь ссылки («Лучшие друзья» ) — снимаем по краям.
+          if (inline) orgName = inline[1].replace(/^[«„"'\s]+|[»“”"'\s]+$/gu, "").trim();
           else
             for (let j = ai; j < end; j++)
               if (orgIdx < 0 && parsed[j].isLinkOnly && (!hasAuthor || j !== ai)) {
@@ -2450,8 +2463,14 @@ export function buildDoc(
             основатель… в РООИ «Перспектива»»). Тогда название организации — то,
             что в кавычках, а не вся строка: иначе логотип ищется по фразе
             с именем и должностью и, конечно, не находится.
+
+            Кавычки внутри названия сильнее любого описания вокруг них — запятая
+            для этого не нужна. Раньше правило ждало её, и «благотворительный
+            фонд поддержки лиц с нарушением развития и интеллекта «Лучшие
+            друзья»» уходило в поиск целиком: логотип «Лучших друзей» лежал в
+            наборе, но не находился.
           */
-          if (orgName && orgName.includes(",")) {
+          if (orgName) {
             const inQuotes = /[«„"]([^»“"]{2,60})[»“"]/u.exec(orgName)?.[1];
             if (inQuotes) orgName = inQuotes.trim();
           }
