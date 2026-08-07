@@ -17,7 +17,12 @@ import { decourse } from "./decourse";
 import { canonize } from "./canon";
 import { pageChildren } from "./pageStructure";
 import { pageParts } from "./pageOutline";
-import { metaFor, type PageMeta, type PageMetaOg } from "./pageMeta";
+import {
+  metaFor,
+  slugsWithoutDescription,
+  type PageMeta,
+  type PageMetaOg,
+} from "./pageMeta";
 
 /*
   ЕДИНЫЙ JSON ВСЕГО САЙТА — одно ТЗ разработчику на все страницы сразу:
@@ -47,9 +52,9 @@ function toSections(blocks: SourceBlock[]): Section[] {
   СТРАНИЦА В ВЫГРУЗКЕ — структура по предложению разработчика.
 
   meta и meta-og — то, что о странице узнают браузер, поисковик и мессенджер
-  (см. pageMeta.ts). Обложка лежит внутри meta полем image, простой строкой с
-  адресом картинки — по просьбе разработчика от 5 августа. h1 стоит рядом
-  отдельным полем: это видимая часть страницы, а не мета. Содержимое —
+  (см. pageMeta.ts). Обложки страницы среди них нет: это видимая картинка в
+  шапке, а не мета. h1 стоит рядом отдельным полем по той же причине.
+  Содержимое —
   article: раньше поле звалось children, но у узлов внутри тоже есть children,
   и на верхнем уровне это читалось как «дети чего?».
 */
@@ -118,6 +123,15 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
 /** Построить единый экспорт всех страниц сайта. */
 export async function buildOsnovyExport(): Promise<OsnovyExport> {
   const trees = await buildSiteTrees();
+  /*
+    Страница без описания уезжает к разработчику с пустой подписью в поиске, и
+    заметить это по глазам невозможно: в выгрузке просто стоит "". Так уже
+    случилось с «Полезными документами» — страницу добавили, описание забыли.
+    Поэтому пропуск говорит о себе сам.
+  */
+  const noDescription = slugsWithoutDescription(trees.map((t) => t.slug));
+  if (noDescription.length)
+    console.error("[мета] страницы без описания:", noDescription.join(", "));
   const pages = trees.map((t): PageExport => {
     const seo = metaFor(t.slug, t.title);
     return {
