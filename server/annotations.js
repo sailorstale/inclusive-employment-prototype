@@ -26,6 +26,13 @@ export function annotationRecord(id, patch, prev) {
     deleted: typeof patch.deleted === "boolean" ? patch.deleted : prev?.deleted ?? false,
     resolved:
       typeof patch.resolved === "boolean" ? patch.resolved : prev?.resolved ?? false,
+    /*
+      «Не применять» — замечание, которое дизайнер разбирает сам, а мы к нему не
+      прикасаемся: обычно его ещё надо обсудить с клиентом. Отдельно от resolved
+      («применено») намеренно: это разные исходы, и путать их нельзя.
+    */
+    skipped:
+      typeof patch.skipped === "boolean" ? patch.skipped : prev?.skipped ?? false,
     createdAt: prev?.createdAt ?? now,
     updatedAt: now,
   };

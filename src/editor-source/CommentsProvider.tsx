@@ -35,6 +35,8 @@ type CommentsContextValue = {
   setDeleted: (target: CommentTarget, deleted: boolean) => void;
   /** Отметить комментарий решённым / открыть заново. */
   toggleResolved: (id: string, resolved: boolean) => void;
+  /** Пометить «не применять» — этим замечанием занимается дизайнер сам. */
+  toggleSkipped: (id: string, skipped: boolean) => void;
 
   /** Открытых комментариев (с текстом, не решённых). */
   openCount: number;
@@ -178,6 +180,15 @@ export function CommentsProvider({
     [comments, save]
   );
 
+  const toggleSkipped = React.useCallback(
+    (id: string, skipped: boolean) => {
+      const prev = comments[id];
+      if (!prev) return;
+      save({ id, skipped });
+    },
+    [comments, save]
+  );
+
   const dismissNotice = React.useCallback(() => setNotice(null), []);
 
   const list = React.useMemo(() => Object.values(comments), [comments]);
@@ -199,6 +210,7 @@ export function CommentsProvider({
       setComment,
       setDeleted,
       toggleResolved,
+      toggleSkipped,
       openCount,
       deletedCount,
       notice,
@@ -212,6 +224,7 @@ export function CommentsProvider({
       setComment,
       setDeleted,
       toggleResolved,
+      toggleSkipped,
       openCount,
       deletedCount,
       notice,

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, Trash2 } from "lucide-react";
+import { Ban, Trash2 } from "lucide-react";
 import type { Comment } from "@/editor-source/comments";
 import { stripMarks } from "@/editor-source/richText";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ export function PageComments({
   activeId,
   onAdd,
   onDelete,
-  onApplied,
+  onSkipped,
   onGoTo,
   onClearPick,
 }: {
@@ -51,7 +51,7 @@ export function PageComments({
   activeId: string | null;
   onAdd: (name: string, text: string) => void;
   onDelete: (id: string) => void;
-  onApplied: (id: string, applied: boolean) => void;
+  onSkipped: (id: string, skipped: boolean) => void;
   onGoTo: (id: string) => void;
   onClearPick: () => void;
 }) {
@@ -159,6 +159,7 @@ export function PageComments({
           <ul className="divide-y">
             {groups.map((g) => {
               const applied = Boolean(g.rec.resolved);
+              const skipped = Boolean(g.rec.skipped);
               return (
                 <li
                   key={g.id}
@@ -184,9 +185,19 @@ export function PageComments({
                           · блоков: {g.paths.length}
                         </span>
                       )}
+                      {/*
+                        Метку «применён» ставим не кнопкой, а по ходу работы:
+                        когда правка внесена в прототип. Здесь она только
+                        показывается, нажать на неё нельзя.
+                      */}
                       {applied && (
                         <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-applied)] px-1 py-0.5 text-[10px] leading-none text-white">
                           применён
+                        </span>
+                      )}
+                      {skipped && !applied && (
+                        <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-skipped)] px-1 py-0.5 text-[10px] leading-none text-white">
+                          не применяем
                         </span>
                       )}
                     </span>
@@ -205,18 +216,28 @@ export function PageComments({
                     ) : null}
                   </button>
                   <div className="flex items-center gap-1">
+                    {/*
+                      «Не применять» — единственная кнопка статуса. Ею дизайнер
+                      говорит: этим замечанием займусь сам, его ещё надо обсудить
+                      с клиентом. Мы такие комментарии не трогаем.
+                    */}
                     <button
                       type="button"
-                      onClick={() => onApplied(g.id, !applied)}
+                      onClick={() => onSkipped(g.id, !skipped)}
+                      title={
+                        skipped
+                          ? "Вернуть замечание в работу"
+                          : "Мы это замечание не трогаем — вы разбираете его сами"
+                      }
                       className={cn(
                         "flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] transition-colors",
-                        applied
-                          ? "border-[color:var(--comment-applied)] text-[color:var(--comment-applied)]"
+                        skipped
+                          ? "border-[color:var(--comment-skipped)] text-[color:var(--comment-skipped)]"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
-                      <Check className="size-3" aria-hidden />
-                      {applied ? "Применён" : "Отметить применённым"}
+                      <Ban className="size-3" aria-hidden />
+                      {skipped ? "Вернуть в работу" : "Не применять"}
                     </button>
                     <button
                       type="button"

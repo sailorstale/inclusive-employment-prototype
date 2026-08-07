@@ -18,6 +18,12 @@ export type Comment = {
   /** Мягкое удаление: блок остаётся, но помечен убранным (можно вернуть). */
   deleted: boolean;
   resolved: boolean;
+  /*
+    «Не применять» — замечание разбирает дизайнер сам, мы к нему не прикасаемся:
+    обычно его ещё надо обсудить с клиентом. Отдельно от resolved
+    («применено») намеренно: это разные исходы, и путать их нельзя.
+  */
+  skipped?: boolean;
   createdAt: string;
   updatedAt: string;
   /** Автор комментария (поток «review»: клиент/разработчик представляется). */
@@ -36,6 +42,7 @@ export type CommentInput = {
   text?: string;
   deleted?: boolean;
   resolved?: boolean;
+  skipped?: boolean;
   author?: string | null;
 };
 

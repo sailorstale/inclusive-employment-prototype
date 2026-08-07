@@ -498,7 +498,7 @@ function SiteMode({
     «slug::адреса::uid», где адреса — один или несколько путей через плюс: одно
     замечание нередко относится к нескольким блокам подряд.
   */
-  const { comments, setComment, toggleResolved } = useComments();
+  const { comments, setComment, toggleSkipped } = useComments();
   const [activeComment, setActiveComment] = React.useState<string | null>(null);
   // Контейнер контента — в нём слой рисует рамки комментариев.
   const [contentBox, setContentBox] = React.useState<HTMLDivElement | null>(null);
@@ -524,7 +524,11 @@ function SiteMode({
       pageComments.map((g) => ({
         id: g.id,
         paths: g.paths,
-        applied: Boolean(g.rec.resolved),
+        /*
+          «Применён» сильнее «не применять»: если правка уже внесена, спор о
+          том, браться ли за неё, потерял смысл.
+        */
+        state: g.rec.resolved ? "applied" : g.rec.skipped ? "skipped" : "open",
         label: g.rec.author || "комментарий",
       })),
     [pageComments],
@@ -907,7 +911,7 @@ function SiteMode({
               activeId={activeComment}
               onAdd={addComment}
               onDelete={(id) => setComment({ id }, "")}
-              onApplied={(id, applied) => toggleResolved(id, applied)}
+              onSkipped={(id, skipped) => toggleSkipped(id, skipped)}
               onGoTo={goToComment}
               onClearPick={() => setPicked(new Set())}
             />

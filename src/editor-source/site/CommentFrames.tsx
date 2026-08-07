@@ -17,15 +17,48 @@ import * as React from "react";
   раскрылся аккордеон, изменилась ширина окна. За этим следит ResizeObserver.
 */
 
+/*
+  СОСТОЯНИЕ ЗАМЕЧАНИЯ — три исхода, и у каждого свой цвет рамки:
+
+  open     — синяя пунктирная: замечание ждёт работы;
+  applied  — зелёная сплошная: учтено в прототипе (ставим мы, когда правим);
+  skipped  — серая сплошная: «не применять», дизайнер разбирает сам.
+*/
+export type CommentState = "open" | "applied" | "skipped";
+
 export type CommentFrame = {
   /** Ключ комментария: его id. */
   id: string;
   /** Адреса блоков, к которым относится комментарий. */
   paths: string[];
-  /** Применён — рамка зелёная и сплошная вместо синей пунктирной. */
-  applied: boolean;
+  state: CommentState;
   /** Подпись у верхнего края: автор комментария. */
   label?: string;
+};
+
+/** Цвет, заливка и подпись-хвост для каждого исхода. */
+export const FRAME_LOOK: Record<
+  CommentState,
+  { color: string; tint: string; dashed: boolean; tail: string }
+> = {
+  open: {
+    color: "var(--comment-line)",
+    tint: "var(--comment-tint)",
+    dashed: true,
+    tail: "",
+  },
+  applied: {
+    color: "var(--comment-applied)",
+    tint: "var(--comment-applied-tint)",
+    dashed: false,
+    tail: " · применён",
+  },
+  skipped: {
+    color: "var(--comment-skipped)",
+    tint: "var(--comment-skipped-tint)",
+    dashed: false,
+    tail: " · не применяем",
+  },
 };
 
 type Box = { top: number; left: number; width: number; height: number };
@@ -61,7 +94,7 @@ export function CommentFrames({
     каждый показ, и по ссылке эффект крутился бы вечно.
   */
   const key = frames
-    .map((f) => `${f.id}:${f.applied ? 1 : 0}:${f.paths.join("+")}`)
+    .map((f) => `${f.id}:${f.state}:${f.paths.join("+")}`)
     .join("|");
 
   React.useEffect(() => {
@@ -110,10 +143,7 @@ export function CommentFrames({
   return (
     <div className="pointer-events-none absolute inset-0 z-20">
       {boxes.map((b) => {
-        const color = b.applied ? "var(--comment-applied)" : "var(--comment-line)";
-        const tint = b.applied
-          ? "var(--comment-applied-tint)"
-          : "var(--comment-tint)";
+        const look = FRAME_LOOK[b.state];
         /*
           Выбранный комментарий видно издалека: рамка толще и внутри лёгкая
           заливка. Когда на странице два десятка рамок, одной только линии мало,
@@ -129,19 +159,20 @@ export function CommentFrames({
               left: b.left - 8,
               width: b.width + 16,
               height: b.height + 16,
-              border: `${active ? 3 : 2}px ${b.applied ? "solid" : "dashed"} ${color}`,
+              border: `${active ? 3 : 2}px ${look.dashed ? "dashed" : "solid"} ${look.color}`,
               borderRadius: 10,
-              background: active ? tint : undefined,
+              background: active ? look.tint : undefined,
             }}
           >
             {b.label ? (
               <button
                 type="button"
                 onClick={() => onPick?.(b.id)}
-                style={{ background: color }}
+                style={{ background: look.color }}
                 className="pointer-events-auto absolute -top-2.5 left-3 rounded px-1.5 py-0.5 text-[10px] font-medium leading-none text-white"
               >
-                {b.applied ? `${b.label} · применён` : b.label}
+                {b.label}
+                {look.tail}
               </button>
             ) : null}
           </div>
