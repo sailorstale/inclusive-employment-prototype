@@ -1,6 +1,7 @@
 import * as React from "react";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AssetLink } from "@/lib/assetLink";
 
 /*
   «Person Item» — человек с фотографией: круглый портрет, под ним имя и
@@ -42,20 +43,26 @@ export function PersonItem({ photo, name, role, className }: Props) {
       )}
     >
       {photo ? (
-        <img
-          src={photo}
-          alt=""
-          aria-hidden
-          className="aspect-square w-full max-w-[180px] rounded-[var(--radius-100)] object-cover"
-          loading="lazy"
-        />
+        /*
+          Портрет кликабелен: разработчик забирает файл себе одним нажатием
+          (см. assetLink.tsx). Размер на экране 82 × 82, файл вдвое больше.
+        */
+        <AssetLink src={photo} title={name}>
+          <img
+            src={photo}
+            alt=""
+            aria-hidden
+            className="size-[82px] rounded-[var(--radius-100)] object-cover"
+            loading="lazy"
+          />
+        </AssetLink>
       ) : (
         // Фото ещё не прислали — кружок с силуэтом, той же формы и размера.
         <span
           aria-hidden
-          className="flex aspect-square w-full max-w-[180px] items-center justify-center rounded-[var(--radius-100)] bg-[color:var(--card-bg-gray)]"
+          className="flex size-[82px] items-center justify-center rounded-[var(--radius-100)] bg-[color:var(--card-bg-gray)]"
         >
-          <User className="size-10 text-[color:var(--text-secondary)]" aria-hidden />
+          <User className="size-8 text-[color:var(--text-secondary)]" aria-hidden />
         </span>
       )}
 

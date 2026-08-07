@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AssetLink } from "@/lib/assetLink";
 
 /*
   Figma: component set «Quote» (6369:11192), свойства Platform × Size (L | S).
@@ -66,20 +67,26 @@ function LogoMark({
   // берём как есть, чтобы можно было положить и .svg.
   const file = slug.includes(".") ? slug : `${slug}.png`;
 
+  const src = `${import.meta.env.BASE_URL}figma/logos/${file}`;
   return (
-    <img
-      src={`${import.meta.env.BASE_URL}figma/logos/${file}`}
-      alt=""
-      aria-hidden
-      title={title}
-      onError={() => setFailed(true)}
-      className={cn(
-        "shrink-0 object-contain",
-        // Организация — плашка-«таблетка» (логотипы выгружены на белом фоне),
-        // Яндекс — круг.
-        round ? "size-8 rounded-full" : "h-8 w-16 rounded-[var(--radius-xs)]",
-      )}
-    />
+    /*
+      Логотип кликабелен: разработчик забирает файл себе одним нажатием
+      (см. assetLink.tsx). Размер на экране — 80 × 40, файл вдвое больше.
+    */
+    <AssetLink src={src} title={title} className="shrink-0">
+      <img
+        src={src}
+        alt=""
+        aria-hidden
+        onError={() => setFailed(true)}
+        className={cn(
+          "shrink-0 object-contain",
+          // Организация — плашка-«таблетка» (логотипы выгружены на белом фоне),
+          // Яндекс — круг.
+          round ? "size-10 rounded-full" : "h-10 w-20 rounded-[var(--radius-xs)]",
+        )}
+      />
+    </AssetLink>
   );
 }
 
@@ -232,7 +239,7 @@ export function Quote({
                   title="Яндекс"
                   // Знак Яндекса рисуем сами: белая «Я» в фирменном красном круге
                   // (--logo-yandex). Файла логотипа в наборе нет и не нужен.
-                  className="ds-body-m-bold flex size-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--logo-yandex)] text-[color:var(--text-inverse-primary)]"
+                  className="ds-body-m-bold flex size-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--logo-yandex)] text-[color:var(--text-inverse-primary)]"
                 >
                   Я
                 </span>
@@ -254,17 +261,19 @@ export function Quote({
 
           {photoSrc ? (
             // Настоящее фото автора: квадрат, обрезанный в круг.
-            <img
-              src={photoSrc}
-              alt={author ? `Фото: ${author}` : ""}
-              className="size-8 shrink-0 rounded-[var(--radius-100)] object-cover"
-              loading="lazy"
-            />
+            <AssetLink src={photoSrc} title={author || "фото автора"} className="shrink-0">
+              <img
+                src={photoSrc}
+                alt={author ? `Фото: ${author}` : ""}
+                className="size-10 shrink-0 rounded-[var(--radius-100)] object-cover"
+                loading="lazy"
+              />
+            </AssetLink>
           ) : photo ? (
             <span
               aria-hidden
               // Плейсхолдер, пока фото автора нет.
-              className="size-8 shrink-0 rounded-[var(--radius-100)] bg-[color:var(--card-bg-gray)]"
+              className="size-10 shrink-0 rounded-[var(--radius-100)] bg-[color:var(--card-bg-gray)]"
             />
           ) : null}
 
