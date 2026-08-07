@@ -101,35 +101,6 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       ],
     },
   },
-  {
-    slug: "/general/how",
-    title: "Как устроен наём",
-    module: "m4",
-    sections: [
-      "uchastniki-inklyuzivnogo-trudoustroystva-i-ih-ro",
-      "scenarii-poiska-raboty",
-      "gde-iskat-kandidatov-s-invalidnostyu",
-      "pryamoy-poisk-i-netvorking",
-      "chto-govorit-biznes",
-      "vzaimodeystvie-rabotodateley-i-nko-kto-za-chto-o",
-      "kak-vystroit-partnerskie-otnosheniya-mezhdu-rabo",
-      "chto-govorit-biznes-i-nko",
-      "chto-delat-esli-sotrudnichestvo-nko-i-rabotodate",
-      "podvedem-itogi",
-    ],
-    outline: {
-      sections: [
-        "uchastniki-inklyuzivnogo-trudoustroystva-i-ih-ro",
-        "scenarii-poiska-raboty",
-        "gde-iskat-kandidatov-s-invalidnostyu",
-        "vzaimodeystvie-rabotodateley-i-nko-kto-za-chto-o",
-        "kak-vystroit-partnerskie-otnosheniya-mezhdu-rabo",
-        "chto-delat-esli-sotrudnichestvo-nko-i-rabotodate",
-        "podvedem-itogi",
-      ],
-      inline: ["chto-govorit-biznes", "chto-govorit-biznes-i-nko"],
-    },
-  },
   /*
     Страницы «Правовые основы» больше нет (решение дизайнера 5 августа 2026).
     На ней лежали только два куска, и оба нашли себе место по смыслу: итог про
@@ -262,30 +233,6 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       drop: ["podvedem-itog"],
     },
   },
-  /*
-    Секции «Что говорят компании и НКО» здесь нет намеренно: в источнике под её
-    заголовком лежат только ряд косых черт (авторская пометка) и список «в этом
-    модуле вы узнаете», который дизайнер удалил директивой. На сайте роль этого
-    списка играет блок «На этой странице вы узнаете», так что показывать было
-    нечего — оставался заголовок с косыми чертами.
-  */
-  {
-    /*
-      Справочник нормативных актов: раньше он был вторым разделом на странице
-      «Правовые основы», теперь стоит своей страницей в общем ряду правовых.
-
-      Разделов у страницы нет намеренно. Семь документов разметка собрала в один
-      список, заголовков у них не осталось, и делить страницу нечем. Поэтому всё
-      содержимое идёт вступлением: заголовок «Полезные документы» снимается (он
-      повторял бы название страницы), а под названием сразу лежат вводная фраза
-      и список.
-    */
-    slug: "/general/legal/documents",
-    title: "Полезные документы",
-    module: "m2",
-    sections: [],
-    intro: "poleznye-dokumenty",
-  },
   {
     slug: "/general/team",
     title: "Этика и коммуникация",
@@ -309,6 +256,59 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       ],
       inline: ["chto-govoryat-sotrudniki-s-invalidnostyu"],
     },
+  },
+  {
+    slug: "/general/how",
+    title: "Как устроен наём",
+    module: "m4",
+    sections: [
+      "uchastniki-inklyuzivnogo-trudoustroystva-i-ih-ro",
+      "scenarii-poiska-raboty",
+      "gde-iskat-kandidatov-s-invalidnostyu",
+      "pryamoy-poisk-i-netvorking",
+      "chto-govorit-biznes",
+      "vzaimodeystvie-rabotodateley-i-nko-kto-za-chto-o",
+      "kak-vystroit-partnerskie-otnosheniya-mezhdu-rabo",
+      "chto-govorit-biznes-i-nko",
+      "chto-delat-esli-sotrudnichestvo-nko-i-rabotodate",
+      "podvedem-itogi",
+    ],
+    outline: {
+      sections: [
+        "uchastniki-inklyuzivnogo-trudoustroystva-i-ih-ro",
+        "scenarii-poiska-raboty",
+        "gde-iskat-kandidatov-s-invalidnostyu",
+        "vzaimodeystvie-rabotodateley-i-nko-kto-za-chto-o",
+        "kak-vystroit-partnerskie-otnosheniya-mezhdu-rabo",
+        "chto-delat-esli-sotrudnichestvo-nko-i-rabotodate",
+        "podvedem-itogi",
+      ],
+      inline: ["chto-govorit-biznes", "chto-govorit-biznes-i-nko"],
+    },
+  },
+  /*
+    Секции «Что говорят компании и НКО» здесь нет намеренно: в источнике под её
+    заголовком лежат только ряд косых черт (авторская пометка) и список «в этом
+    модуле вы узнаете», который дизайнер удалил директивой. На сайте роль этого
+    списка играет блок «На этой странице вы узнаете», так что показывать было
+    нечего — оставался заголовок с косыми чертами.
+  */
+  {
+    /*
+      Справочник нормативных актов: раньше он был вторым разделом на странице
+      «Правовые основы», теперь стоит своей страницей в общем ряду правовых.
+
+      Разделов у страницы нет намеренно. Семь документов разметка собрала в один
+      список, заголовков у них не осталось, и делить страницу нечем. Поэтому всё
+      содержимое идёт вступлением: заголовок «Полезные документы» снимается (он
+      повторял бы название страницы), а под названием сразу лежат вводная фраза
+      и список.
+    */
+    slug: "/general/legal/documents",
+    title: "Полезные документы",
+    module: "m2",
+    sections: [],
+    intro: "poleznye-dokumenty",
   },
 
   // ── Для компаний: наём по шагам (М5) ────────────────────────────────────

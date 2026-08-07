@@ -109,7 +109,6 @@ export const sidebars: Record<Track, SidebarSpec> = {
           // кому он полезен и что где лежит.
           { label: "О проекте", path: "/general/about" },
           { label: "Инклюзивное трудоустройство", path: "/general/start" },
-          { label: "Как устроен наём", path: "/general/how" },
           /*
             Правовые страницы стоят в общем ряду, без промежуточного пункта
             «Правовые основы» (решение дизайнера 5 августа 2026). Раньше он был
@@ -121,9 +120,15 @@ export const sidebars: Record<Track, SidebarSpec> = {
           { label: "Договор и оформление", path: "/general/legal/contract" },
           { label: "Льготы сотрудников", path: "/general/legal/benefits" },
           { label: "Форматы занятости", path: "/general/legal/formats" },
+          /*
+            Порядок хвоста задан дизайнером 7 августа 2026: квоты, этика, наём,
+            документы. «Как устроен наём» переехал с третьего места сюда — обзор
+            процесса читают после правовой части, а не до неё.
+          */
           { label: "Квоты и господдержка", path: "/general/legal/quotas" },
-          { label: "Полезные документы", path: "/general/legal/documents" },
           { label: "Этика и коммуникация", path: "/general/team" },
+          { label: "Как устроен наём", path: "/general/how" },
+          { label: "Полезные документы", path: "/general/legal/documents" },
         ],
       },
     ],
