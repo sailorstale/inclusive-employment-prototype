@@ -76,7 +76,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
   },
   {
     slug: "/general/start",
-    title: "Реалии и мифы",
+    title: "Инклюзивное трудоустройство",
     module: "m1",
     intro: "vvedenie",
     sections: [

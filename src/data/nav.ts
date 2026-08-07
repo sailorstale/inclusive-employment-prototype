@@ -14,7 +14,7 @@ export const routeTitles: Record<string, string> = {
   // Страницы «Правовые основы» больше нет: адрес /general/legal ведёт на первую
   // правовую страницу. Название оставлено для старых ссылок в тексте.
   "/general/legal/documents": "Полезные документы",
-  "/general/start": "Реалии и мифы",
+  "/general/start": "Инклюзивное трудоустройство",
   "/general/how": "Как устроен наём",
   "/general/legal": "Правовые основы",
   "/general/legal/contract": "Договор и оформление",
@@ -108,7 +108,7 @@ export const sidebars: Record<Track, SidebarSpec> = {
           // Первая страница раздела — рассказ о самом сайте: кто его сделал,
           // кому он полезен и что где лежит.
           { label: "О проекте", path: "/general/about" },
-          { label: "Реалии и мифы", path: "/general/start" },
+          { label: "Инклюзивное трудоустройство", path: "/general/start" },
           { label: "Как устроен наём", path: "/general/how" },
           /*
             Правовые страницы стоят в общем ряду, без промежуточного пункта

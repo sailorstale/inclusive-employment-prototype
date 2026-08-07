@@ -41,7 +41,7 @@ export function FeedbackPage() {
             description: "Простые определения терминов и аббревиатур.",
           },
           {
-            title: "Реалии и мифы",
+            title: "Инклюзивное трудоустройство",
             to: "/general/start",
             description: "Зачем компании инклюзивный наём и с чего начать.",
           },

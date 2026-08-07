@@ -8,7 +8,7 @@ const columns: { title: string; links: { label: string; to: string }[] }[] = [
   {
     title: "Для компаний",
     links: [
-      { label: "Реалии и мифы", to: "/general/start" },
+      { label: "Инклюзивное трудоустройство", to: "/general/start" },
       { label: "Правила оформления", to: "/general/legal" },
       { label: "Наём по шагам", to: "/companies" },
       { label: "Команда", to: "/general/team" },
