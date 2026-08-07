@@ -697,7 +697,14 @@ function SiteMode({
       */
       if (!rightBox.querySelector(`[data-json-path="${CSS.escape(paths[0])}"]`))
         rightBox
-          .querySelectorAll<HTMLElement>('button[aria-expanded="false"]')
+          /*
+            Только аккордеоны. Просто «всё, что раскрывается» брать нельзя:
+            кнопка поиска в шапке сайта помечена так же, и переход к замечанию
+            открывал окно поиска вместо нужного блока.
+          */
+          .querySelectorAll<HTMLElement>(
+            '[data-component^="Accordion"] button[aria-expanded="false"]',
+          )
           .forEach((b) => b.click());
       /*
         Блоки комментария ВЫДЕЛЯЕМ, а не просто подводим к ним страницу. Своя
