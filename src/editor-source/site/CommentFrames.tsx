@@ -64,7 +64,14 @@ export const FRAME_LOOK: Record<
   },
 };
 
-type Box = { top: number; left: number; width: number; height: number };
+type Box = { top: number; left: number; width: number; height: number; key: string };
+
+/*
+  Насколько далеко блоки считаются соседними. Промежуток между абзацами внутри
+  раздела — десятки пикселей; полсотни хватает, чтобы склеить их и не склеить
+  блоки из разных концов страницы.
+*/
+const GAP = 56;
 
 /*
   Настоящий прямоугольник компонента. Обёртка выбора у страниц из источника —
@@ -117,32 +124,52 @@ export function CommentFrames({
       const hostRect = host.getBoundingClientRect();
       const out: (CommentFrame & Box)[] = [];
       for (const f of frames) {
-        let top = Infinity;
-        let left = Infinity;
-        let right = -Infinity;
-        let bottom = -Infinity;
         // Адрес мог съехать после перестройки — чиним по снимку текста.
+        const rects: DOMRect[] = [];
         for (const p of resolveAnchor(host, f.paths, f.snapshot)) {
           const el = host.querySelector(`[data-json-path="${CSS.escape(p)}"]`);
           const r = el && boxOf(el);
-          if (!r) continue;
-          top = Math.min(top, r.top);
-          left = Math.min(left, r.left);
-          right = Math.max(right, r.right);
-          bottom = Math.max(bottom, r.bottom);
+          if (r) rects.push(r);
         }
         // Ни один блок не нашёлся — комментарий с другой страницы или блок исчез.
-        if (!Number.isFinite(top)) continue;
-        out.push({
-          ...f,
-          top: top - hostRect.top,
-          left: left - hostRect.left,
-          width: right - left,
-          height: bottom - top,
+        if (!rects.length) continue;
+
+        /*
+          ОДНА РАМКА НА СОСЕДНИЕ БЛОКИ, НО НЕ НА ДАЛЁКИЕ. Если замечание держит
+          два блока подряд, общий прямоугольник читается как «вот про это».
+          А если блоки в разных концах раздела, тот же прямоугольник накрывает
+          всё, что между ними, — и замечание выглядит относящимся к целой
+          странице. Поэтому склеиваем только те, что стоят вплотную, а
+          разнесённые обводим по отдельности.
+        */
+        rects.sort((a, b) => a.top - b.top);
+        const runs: DOMRect[][] = [[rects[0]]];
+        for (const r of rects.slice(1)) {
+          const prev = runs[runs.length - 1];
+          const gap = r.top - prev[prev.length - 1].bottom;
+          if (gap <= GAP) prev.push(r);
+          else runs.push([r]);
+        }
+
+        runs.forEach((run, i) => {
+          const top = Math.min(...run.map((r) => r.top));
+          const left = Math.min(...run.map((r) => r.left));
+          const right = Math.max(...run.map((r) => r.right));
+          const bottom = Math.max(...run.map((r) => r.bottom));
+          out.push({
+            ...f,
+            // Подпись только у первой рамки: у остальных она бы дублировалась.
+            label: i === 0 ? f.label : undefined,
+            key: `${f.id}#${i}`,
+            top: top - hostRect.top,
+            left: left - hostRect.left,
+            width: right - left,
+            height: bottom - top,
+          });
         });
       }
       setBoxes(out);
-      onPlacedRef.current?.(out.map((b) => b.id));
+      onPlacedRef.current?.([...new Set(out.map((b) => b.id))]);
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -175,9 +202,17 @@ export function CommentFrames({
           чтобы понять, о котором идёт речь.
         */
         const active = b.id === activeId;
+        /*
+          Когда одно замечание выбрано, остальные приглушаем. Блоки бывают
+          огромными — целая история героя на два экрана, — и рамки соседних
+          замечаний накрывают выбранное так, что непонятно, к чему оно
+          относится. Приглушённые рамки остаются видны, но спорить за внимание
+          перестают.
+        */
+        const dim = Boolean(activeId) && !active;
         return (
           <div
-            key={b.id}
+            key={b.key}
             style={{
               position: "absolute",
               top: b.top - 8,
@@ -187,6 +222,8 @@ export function CommentFrames({
               border: `${active ? 3 : 2}px ${look.dashed ? "dashed" : "solid"} ${look.color}`,
               borderRadius: 10,
               background: active ? look.tint : undefined,
+              opacity: dim ? 0.18 : 1,
+              transition: "opacity .15s",
             }}
           >
             {b.label ? (
