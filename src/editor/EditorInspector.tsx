@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getVariantsFor } from "./registry";
+import { useVariantsTick } from "./useVariants";
 import { RATIONALE_LABELS, type RationaleKind, type Variant } from "./types";
 import { useEditor } from "./EditorProvider";
 import { countSentences, lengthDeltaPct, readSeconds, wordDiff } from "./diff";
@@ -47,6 +48,7 @@ export function EditorInspector() {
     closeInspector,
   } = useEditor();
 
+  useVariantsTick();
   const variants = active ? getVariantsFor(active.original) : undefined;
   const record = active ? edits[active.id] : undefined;
 

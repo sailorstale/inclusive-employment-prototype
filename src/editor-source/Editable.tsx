@@ -4,6 +4,7 @@ import { Pencil, Sparkles, Check, AlertTriangle, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { PROSE_CLASSES, type ProseKind } from "@/components/proseClasses";
 import { getVariantsFor } from "@/editor/registry";
+import { useVariantsTick } from "@/editor/useVariants";
 import { getSourceVariantsFor } from "./sourceRegistry";
 import { MessageSquare, Trash2 } from "lucide-react";
 import { autoId, normalizeText, routeId } from "./ids";
@@ -78,6 +79,8 @@ export function Editable({
   className?: string;
 }) {
   const { editorMode, edits, active, openBlock, markSeen } = useEditor();
+  // Разборы приезжают отдельным куском — перерисуемся, когда приедут.
+  useVariantsTick();
   const { commentOf } = useComments();
   const { pathname } = useLocation();
   const anchor = useAnchor();

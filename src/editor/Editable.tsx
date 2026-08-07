@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { PROSE_CLASSES, type ProseKind } from "@/components/proseClasses";
 import { getVariantsFor } from "./registry";
+import { useVariantsTick } from "./useVariants";
 import { autoId, normalizeText, routeId } from "./ids";
 import { renderInline } from "./richText";
 import { useAnchor } from "./AnchorContext";
@@ -88,6 +89,8 @@ export function Editable({
   className?: string;
 }) {
   const { editorMode, edits, active, openBlock, markSeen } = useEditor();
+  // Разборы приезжают отдельным куском — перерисуемся, когда приедут.
+  useVariantsTick();
   const { pathname } = useLocation();
   const anchor = useAnchor();
 

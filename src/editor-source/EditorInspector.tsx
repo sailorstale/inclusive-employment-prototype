@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getVariantsFor } from "@/editor/registry";
+import { useVariantsTick } from "@/editor/useVariants";
 import { getSourceVariantsFor } from "./sourceRegistry";
 import { RATIONALE_LABELS, type RationaleKind, type Variant } from "@/editor/types";
 import { useEditor } from "./EditorProvider";
@@ -52,6 +53,7 @@ export function EditorInspector({ docked = false }: { docked?: boolean } = {}) {
     closeInspector,
   } = useEditor();
 
+  useVariantsTick();
   // Источник (/source) и сайт держат РАЗНЫЕ реестры — выбираем по пути блока,
   // как в Editable (иначе на /source варианты не покажутся).
   const variants = active
