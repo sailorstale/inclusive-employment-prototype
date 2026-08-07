@@ -70,8 +70,7 @@ export { Image } from "./Image";
 export { Video } from "./Video";
 
 // --- Люди (наше дополнение, в Figma компонентов пока нет) ---
-export { People } from "./People";
-export { PersonCard } from "./PersonCard";
+export { PersonItem } from "./PersonItem";
 
 // --- Контролы форм ---
 export { Button } from "./Button";

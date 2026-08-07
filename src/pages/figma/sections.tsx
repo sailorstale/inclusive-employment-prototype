@@ -32,8 +32,7 @@ import {
   Textarea,
   Tooltip,
   Video,
-  People,
-  PersonCard,
+  PersonItem,
   type SmallImageName,
 } from "@/figma";
 import {
@@ -652,26 +651,24 @@ export function MediaSection() {
       </Block>
 
       <Text size="L">
-        People — ряд людей: круглый портрет, под ним имя и должность. Наше
-        дополнение к системе, в Figma компонента пока нет. Внутри — Person Card,
-        по одной на человека. Колонки одинаковой ширины: сколько поместилось,
-        столько и стоит в строке, остальные переходят ниже той же шириной.
-        Фотографии ещё нет — человек встаёт в ряд с кружком-заглушкой.
+        Person Item — человек: круглый портрет, под ним имя и должность. Наше
+        дополнение к системе, в Figma компонента пока нет. Своей обёртки у ряда
+        нет: люди лежат прямо в горизонтальном Block, как карточки, и занимают
+        по половине колонки. Фотографии ещё нет — человек встаёт в ряд с
+        кружком-заглушкой.
       </Text>
-      <Block>
-        <People>
-          <PersonCard
-            photo="/figma/avatars/gulnara-gorishnyaya.jpg"
-            name="Гульнара Горишняя"
-            role="руководитель направления инклюзивного трудоустройства в Яндексе"
-          />
-          <PersonCard
-            photo="/figma/avatars/yuliya-ermilova.jpg"
-            name="Юлия Ермилова"
-            role="руководитель программ Благотворительного фонда Яндекса «Помощь рядом»"
-          />
-          <PersonCard name="Фотографии пока нет" role="так выглядит человек без снимка" />
-        </People>
+      <Block orientation="Horizontal">
+        <PersonItem
+          photo="/figma/avatars/gulnara-gorishnyaya.jpg"
+          name="Гульнара Горишняя"
+          role="руководитель направления инклюзивного трудоустройства в Яндексе"
+        />
+        <PersonItem
+          photo="/figma/avatars/yuliya-ermilova.jpg"
+          name="Юлия Ермилова"
+          role="руководитель программ Благотворительного фонда Яндекса «Помощь рядом»"
+        />
+        <PersonItem name="Фотографии пока нет" role="так выглядит человек без снимка" />
       </Block>
     </SectionContainer>
   );

@@ -179,7 +179,7 @@ export const TARGET_GROUPS: TargetGroup[] = [
     items: [
       { value: "Image", label: "Image" },
       { value: "Video", label: "Video" },
-      { value: "People", label: "People — люди с фото, именем и должностью" },
+      { value: "People", label: "Люди — ряд портретов с именем и должностью" },
     ],
   },
   {

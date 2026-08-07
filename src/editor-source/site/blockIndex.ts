@@ -24,7 +24,7 @@ export const BLOCK_KINDS = [
   "Prompt",
   "Video",
   "Image",
-  "People",
+  "Person Item",
 ] as const;
 
 export type BlockKind = (typeof BLOCK_KINDS)[number];
@@ -37,7 +37,7 @@ export const KIND_LABEL: Record<BlockKind, string> = {
   Prompt: "Заготовки «Скопировать»",
   Video: "Видео",
   Image: "Изображения",
-  People: "Люди",
+  "Person Item": "Люди",
 };
 
 export type BlockRef = {
@@ -87,12 +87,9 @@ function labelOf(n: Node): string {
       return n.href || "без адреса";
     case "Image":
       return n.alt || n.src || "без адреса";
-    // Ряд людей — перечисляем имена: по ним человека в списке и ищут.
-    case "People":
-      return n.children
-        .map((c) => (c.component === "Person Card" ? c.name : ""))
-        .filter(Boolean)
-        .join(", ");
+    // Человек — ищут по имени, должность подсказывает, кто это.
+    case "Person Item":
+      return [n.name, n.role].filter(Boolean).join(", ");
     default:
       return "";
   }

@@ -130,8 +130,7 @@ type NodeKind =
     Ряд людей с фотографиями: портрет, имя и должность. Наше дополнение к
     системе — в Figma компонентов пока нет (см. КОМПОНЕНТЫ.md, «Люди»).
   */
-  | { component: "People"; children: Node[] }
-  | { component: "Person Card"; photo?: string; name: string; role?: string }
+  | { component: "Person Item"; photo?: string; name: string; role?: string }
   | { component: "Prompt"; title: string; subtitle: string; text: string }
   /*
     Компоненты, которых раскладка пока не собирает из источника, но которые есть
@@ -1152,7 +1151,10 @@ const wantsSameContainer = (d?: Directive) =>
   );
 
 const cardOrientation = (g: Group): "Vertical" | "Horizontal" =>
-  g.dir?.target === "GeneralCard" && g.dir.modifiers?.orient === "Horizontal"
+  // Люди всегда стоят в ряд: портрет с именем узкий, столбиком они заняли бы
+  // пол-страницы (решение дизайнера 7 августа 2026).
+  g.dir?.target === "People" ||
+  (g.dir?.target === "GeneralCard" && g.dir.modifiers?.orient === "Horizontal")
     ? "Horizontal"
     : "Vertical";
 
@@ -3501,12 +3503,14 @@ export function buildDoc(
           })
           .filter((p) => p.name);
         if (!people.length) return [{ component: "note", text: "People: в комментарии нет ни одного человека" }];
-        return [
-          {
-            component: "People",
-            children: people.map((p) => ({ component: "Person Card" as const, ...p })),
-          },
-        ];
+        /*
+          Отдаём людей БЕЗ своей обёртки: конверт наденет общая машинерия
+          (needsBlock + cardOrientation), и он же поставит их в ряд. Раньше
+          между конвертом и людьми стоял наш собственный компонент People —
+          сетка из равных колонок. Дизайнер убрал его 7 августа 2026: лишний
+          уровень в выгрузке, которого нет в наборе компонентов.
+        */
+        return people.map((p) => ({ component: "Person Item" as const, ...p }));
       }
 
       case "Video": {
@@ -3963,8 +3967,7 @@ const EXPORT_COMPONENTS: Record<
   "Table cell": true,
   Image: true,
   Video: true,
-  People: true,
-  "Person Card": true,
+  "Person Item": true,
   Prompt: true,
   "Card Button": true,
   Compare: true,

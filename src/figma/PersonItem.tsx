@@ -3,7 +3,7 @@ import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /*
-  «Person Card» — человек с фотографией: круглый портрет, под ним имя и
+  «Person Item» — человек с фотографией: круглый портрет, под ним имя и
   должность. НАШЕ ДОПОЛНЕНИЕ к системе: в Figma такого компонента пока нет
   (см. КОМПОНЕНТЫ.md, раздел «Люди»), его нужно нарисовать — иначе имя в
   прототипе не найдёт пары в макете.
@@ -32,10 +32,10 @@ type Props = {
   className?: string;
 };
 
-export function PersonCard({ photo, name, role, className }: Props) {
+export function PersonItem({ photo, name, role, className }: Props) {
   return (
     <div
-      data-component="Person Card"
+      data-component="Person Item"
       className={cn(
         "flex w-full flex-col items-center gap-[var(--space-sm)] text-center",
         className,

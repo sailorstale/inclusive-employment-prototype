@@ -26,8 +26,7 @@ import {
   TableRow,
   Text,
   Video,
-  People,
-  PersonCard,
+  PersonItem,
   type GeneralCardBg,
   type SmallImageName,
 } from "@/figma";
@@ -424,17 +423,8 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
     case "Video":
       return <Video href={node.href} />;
 
-    case "People":
-      return (
-        <People>
-          {node.children.map((c, i) => (
-            <NodeView key={i} node={c} path={`${path}.${i}`} />
-          ))}
-        </People>
-      );
-
-    case "Person Card":
-      return <PersonCard photo={node.photo} name={node.name} role={node.role} />;
+    case "Person Item":
+      return <PersonItem photo={node.photo} name={node.name} role={node.role} />;
 
     case "Prompt":
       return (
