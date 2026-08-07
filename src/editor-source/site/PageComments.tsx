@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Ban, Trash2 } from "lucide-react";
+import { Ban, Pencil, Trash2 } from "lucide-react";
 import type { Comment } from "@/editor-source/comments";
 import { stripMarks } from "@/editor-source/richText";
 import { appliedFor } from "./appliedComments";
@@ -44,6 +44,7 @@ export function PageComments({
   onAdd,
   onDelete,
   onSkipped,
+  onNote,
   onGoTo,
   onClearPick,
 }: {
@@ -69,6 +70,8 @@ export function PageComments({
   onAdd: (name: string, text: string) => void;
   onDelete: (id: string) => void;
   onSkipped: (id: string, skipped: boolean) => void;
+  /** Сохранить решение дизайнера поверх замечания. Пусто — стереть его. */
+  onNote: (id: string, note: string) => void;
   onGoTo: (id: string) => void;
   onClearPick: () => void;
 }) {
@@ -178,6 +181,7 @@ export function PageComments({
               const done = appliedFor(g.id);
               const applied = Boolean(done) || Boolean(g.rec.resolved);
               const skipped = Boolean(g.rec.skipped);
+              const note = (g.rec.note || "").trim();
               return (
                 <li
                   key={g.id}
@@ -216,6 +220,16 @@ export function PageComments({
                       {skipped && !applied && (
                         <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-skipped)] px-1 py-0.5 text-[10px] leading-none text-white">
                           не применяем
+                        </span>
+                      )}
+                      {/*
+                        Решение дизайнера уже написано, а правка ещё не внесена.
+                        Это и есть очередь работы: по таким замечаниям понятно,
+                        что делать, и можно браться не переспрашивая.
+                      */}
+                      {note && !applied && !skipped && (
+                        <span className="ml-auto shrink-0 rounded bg-[hsl(var(--warn))] px-1 py-0.5 text-[10px] leading-none text-white">
+                          к правке
                         </span>
                       )}
                     </span>
@@ -280,6 +294,15 @@ export function PageComments({
                       </span>
                     ) : null}
                   </button>
+                  {/*
+                    РЕШЕНИЕ ДИЗАЙНЕРА — вне кнопки перехода к блоку: внутрь
+                    кнопки поле ввода класть нельзя, клик по нему уводил бы
+                    страницу вместо того, чтобы поставить курсор.
+                  */}
+                  <NoteEditor
+                    note={note}
+                    onSave={(t) => onNote(g.id, t)}
+                  />
                   <div className="flex items-center gap-1">
                     {/*
                       «Не применять» — единственная кнопка статуса. Ею дизайнер
@@ -324,6 +347,114 @@ export function PageComments({
             })}
           </ul>
         )}
+      </div>
+    </div>
+  );
+}
+
+/*
+  РЕШЕНИЕ ДИЗАЙНЕРА поверх замечания клиента.
+
+  Клиент пишет, что его смущает, и не обязан знать, как это чинить: «убираем
+  заголовок «пример», можем пометить примеры каким-то рисунком?» Дизайнер тут же
+  приписывает, что делать: «сделать карточкой «Пример» с картинкой, как
+  остальные». Правку вносим по приписке, а не по догадке о том, чего клиент
+  хотел, — и переспрашивать в чате не нужно.
+
+  Слова клиента приписка не трогает: она лежит отдельным полем и отдельным
+  блоком, и в панели всегда видно, где чьи слова.
+*/
+function NoteEditor({
+  note,
+  onSave,
+}: {
+  note: string;
+  onSave: (note: string) => void;
+}) {
+  const [editing, setEditing] = React.useState(false);
+  const [draft, setDraft] = React.useState(note);
+
+  // Приписку могли изменить не здесь (перезагрузка, соседняя вкладка).
+  React.useEffect(() => {
+    if (!editing) setDraft(note);
+  }, [note, editing]);
+
+  if (!editing) {
+    if (!note)
+      return (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        >
+          + решение дизайнера
+        </button>
+      );
+    return (
+      <div className="rounded border border-[hsl(var(--warn)/0.4)] bg-[hsl(var(--warn)/0.08)] p-2">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-[11px] font-medium text-[hsl(var(--warn))]">
+            Решение дизайнера
+          </span>
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            aria-label="Изменить решение"
+            title="Изменить решение"
+            className="ml-auto rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Pencil className="size-3" aria-hidden />
+          </button>
+        </div>
+        <p className="mt-1 whitespace-pre-wrap text-foreground">{note}</p>
+      </div>
+    );
+  }
+
+  const save = () => {
+    onSave(draft);
+    setEditing(false);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          // Enter сохраняет, Shift+Enter переносит строку — как в форме выше.
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            save();
+          }
+          if (e.key === "Escape") {
+            setDraft(note);
+            setEditing(false);
+          }
+        }}
+        autoFocus
+        rows={3}
+        placeholder="Что делаем по этому замечанию?"
+        className="w-full resize-y rounded-md border bg-background px-2 py-1.5 text-xs outline-none focus:border-ring"
+      />
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={save}
+          className="rounded-md bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground"
+        >
+          Сохранить
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(note);
+            setEditing(false);
+          }}
+          className="text-[11px] text-muted-foreground underline-offset-2 hover:underline"
+        >
+          отмена
+        </button>
       </div>
     </div>
   );

@@ -534,7 +534,7 @@ function SiteMode({
     «slug::адреса::uid», где адреса — один или несколько путей через плюс: одно
     замечание нередко относится к нескольким блокам подряд.
   */
-  const { comments, setComment, toggleSkipped } = useComments();
+  const { comments, setComment, toggleSkipped, setNote } = useComments();
   const [activeComment, setActiveComment] = React.useState<string | null>(null);
   /* id замечаний, которые слой рамок сумел поставить на страницу. Остальные
      показываем в списке с пометкой «блок не найден». */
@@ -602,6 +602,19 @@ function SiteMode({
   /** Сколько замечаний этой страницы уже разобрано — для счётчика в шапке. */
   const commentsDone = React.useMemo(
     () => pageComments.filter((g) => appliedFor(g.id) || g.rec.resolved).length,
+    [pageComments],
+  );
+
+  /** Замечания с решением дизайнера, но ещё без правки — очередь работы. */
+  const commentsToDo = React.useMemo(
+    () =>
+      pageComments.filter(
+        (g) =>
+          (g.rec.note || "").trim() &&
+          !appliedFor(g.id) &&
+          !g.rec.resolved &&
+          !g.rec.skipped,
+      ).length,
     [pageComments],
   );
 
@@ -1025,6 +1038,16 @@ function SiteMode({
               </span>
             )}
             {/*
+              Замечания с решением дизайнера, но ещё без правки. Это очередь
+              работы: по ним понятно, что делать, и браться можно не
+              переспрашивая.
+            */}
+            {commentsToDo > 0 && (
+              <span className="rounded bg-[hsl(var(--warn))] px-1.5 py-0.5 text-[10px] leading-none text-white">
+                к правке {commentsToDo}
+              </span>
+            )}
+            {/*
               На локальной машине комментарии приезжают с БОЕВОГО сервера (см.
               vite.config.ts): список у клиента и у нас один. Подпись нужна,
               чтобы никто не решил, будто удаляет свою локальную копию.
@@ -1050,6 +1073,7 @@ function SiteMode({
               onAdd={addComment}
               onDelete={(id) => setComment({ id }, "")}
               onSkipped={(id, skipped) => toggleSkipped(id, skipped)}
+              onNote={(id, note) => setNote(id, note)}
               onGoTo={goToComment}
               onClearPick={() => setPicked(new Set())}
             />

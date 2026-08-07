@@ -15,6 +15,16 @@ export type Comment = {
   original?: string | null;
   /** Текст комментария («» если блок только помечен на удаление). */
   text: string;
+  /*
+    РЕШЕНИЕ ДИЗАЙНЕРА — приписка поверх замечания клиента. Клиент говорит, что
+    его смущает, а дизайнер тут же пишет, что с этим делать: «сделать карточкой
+    «Пример» с картинкой, как остальные». Правку вносим по этой приписке, а не
+    по догадке о том, чего клиент хотел.
+
+    Отдельно от text намеренно: замечание клиента остаётся ровно таким, каким он
+    его написал, и в панели видно, где чьи слова.
+  */
+  note?: string | null;
   /** Мягкое удаление: блок остаётся, но помечен убранным (можно вернуть). */
   deleted: boolean;
   resolved: boolean;
@@ -40,6 +50,7 @@ export type CommentInput = {
   blockType?: string | null;
   original?: string | null;
   text?: string;
+  note?: string;
   deleted?: boolean;
   resolved?: boolean;
   skipped?: boolean;
@@ -114,6 +125,7 @@ export async function saveComment(
     original: input.original ?? prev?.original ?? null,
     author: input.author ?? prev?.author ?? null,
     text: typeof input.text === "string" ? input.text : prev?.text ?? "",
+    note: typeof input.note === "string" ? input.note : prev?.note ?? "",
     deleted: typeof input.deleted === "boolean" ? input.deleted : prev?.deleted ?? false,
     resolved: typeof input.resolved === "boolean" ? input.resolved : prev?.resolved ?? false,
     createdAt: prev?.createdAt ?? now,

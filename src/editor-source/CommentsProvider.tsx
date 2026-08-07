@@ -37,6 +37,12 @@ type CommentsContextValue = {
   toggleResolved: (id: string, resolved: boolean) => void;
   /** Пометить «не применять» — этим замечанием занимается дизайнер сам. */
   toggleSkipped: (id: string, skipped: boolean) => void;
+  /*
+    Решение дизайнера поверх замечания клиента: что именно с ним делать. Пустая
+    строка стирает приписку, саму запись при этом не трогаем — замечание
+    клиента остаётся.
+  */
+  setNote: (id: string, note: string) => void;
 
   /** Открытых комментариев (с текстом, не решённых). */
   openCount: number;
@@ -189,6 +195,25 @@ export function CommentsProvider({
     [comments, save]
   );
 
+  /*
+    Приписка дизайнера. Записи без замечания клиента не бывает: приписка всегда
+    поверх чужих слов, поэтому если записи нет — писать некуда.
+
+    НАПИСАЛИ РЕШЕНИЕ — СНИМАЕМ «НЕ ПРИМЕНЯТЬ». Эта пометка значит «мы к замечанию
+    не прикасаемся, дизайнер разберёт сам». Написанное решение и есть разбор:
+    замечание возвращается в работу, теперь уже с понятным заданием. Иначе
+    задание висело бы в списке помеченным как «не трогаем», и до него никто бы
+    не дошёл.
+  */
+  const setNote = React.useCallback(
+    (id: string, note: string) => {
+      if (!comments[id]) return;
+      const trimmed = note.trim();
+      save({ id, note: trimmed, ...(trimmed ? { skipped: false } : null) });
+    },
+    [comments, save],
+  );
+
   const dismissNotice = React.useCallback(() => setNotice(null), []);
 
   const list = React.useMemo(() => Object.values(comments), [comments]);
@@ -211,6 +236,7 @@ export function CommentsProvider({
       setDeleted,
       toggleResolved,
       toggleSkipped,
+      setNote,
       openCount,
       deletedCount,
       notice,
@@ -225,6 +251,7 @@ export function CommentsProvider({
       setDeleted,
       toggleResolved,
       toggleSkipped,
+      setNote,
       openCount,
       deletedCount,
       notice,

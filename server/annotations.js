@@ -23,6 +23,13 @@ export function annotationRecord(id, patch, prev) {
     author: patch.author ?? prev?.author ?? null,
     anchorText: patch.anchorText ?? prev?.anchorText ?? null,
     text: typeof patch.text === "string" ? patch.text : prev?.text ?? "",
+    /*
+      «Решение дизайнера» — приписка поверх замечания клиента. Клиент говорит,
+      что его смущает; дизайнер тут же пишет, что с этим делать, и по этой
+      приписке правка и вносится. Отдельное поле, а не дописка в text:
+      замечание клиента должно остаться ровно таким, каким он его написал.
+    */
+    note: typeof patch.note === "string" ? patch.note : prev?.note ?? "",
     deleted: typeof patch.deleted === "boolean" ? patch.deleted : prev?.deleted ?? false,
     resolved:
       typeof patch.resolved === "boolean" ? patch.resolved : prev?.resolved ?? false,
