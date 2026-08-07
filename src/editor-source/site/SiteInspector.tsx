@@ -24,6 +24,7 @@ import { PageSourceView } from "./PageSourceView";
 import { CommentFrames, type CommentFrame } from "./CommentFrames";
 import { PageComments, type CommentGroup } from "./PageComments";
 import { commentId, pathsOf } from "./commentIds";
+import { resolveAnchor } from "./commentAnchor";
 import { buildOsnovyExport } from "./siteExport";
 import { coverFor } from "./covers";
 import { metaFor } from "./pageMeta";
@@ -99,10 +100,6 @@ const readSourceOpen = () =>
   readFlag(SOURCE_OPEN_KEY, window.innerWidth >= 1500);
 const writeSourceOpen = (open: boolean) => writeFlag(SOURCE_OPEN_KEY, open);
 
-/* Псевдо-«модуль» для эталонной страницы: id заведомо не совпадает ни с одним
-   реальным модулем, поэтому годится как значение того же переключателя. */
-const SAMPLE = "sample";
-
 /* Узел дерева по пути «0.2.1» (как в ResultView/JsonView). */
 function nodeAtPath(doc: Doc, path: string): Node | SectionNode | null {
   const parts = path.split(".").map(Number);
@@ -125,6 +122,10 @@ function nodeText(n: unknown): string {
   if (Array.isArray(o.children)) parts.push((o.children as unknown[]).map(nodeText).join(" "));
   return parts.join(" ");
 }
+
+/* Псевдо-«модуль» для эталонной страницы: id заведомо не совпадает ни с одним
+   реальным модулем, поэтому годится как значение того же переключателя. */
+const SAMPLE = "sample";
 
 const norm = (s: string) =>
   s
@@ -500,6 +501,9 @@ function SiteMode({
   */
   const { comments, setComment, toggleSkipped } = useComments();
   const [activeComment, setActiveComment] = React.useState<string | null>(null);
+  /* id замечаний, которые слой рамок сумел поставить на страницу. Остальные
+     показываем в списке с пометкой «блок не найден». */
+  const [placed, setPlaced] = React.useState<Set<string>>(new Set());
   // Контейнер контента — в нём слой рисует рамки комментариев.
   const [contentBox, setContentBox] = React.useState<HTMLDivElement | null>(null);
   const [author, setAuthor] = React.useState<string>(() => {
@@ -529,6 +533,7 @@ function SiteMode({
           том, браться ли за неё, потерял смысл.
         */
         state: g.rec.resolved ? "applied" : g.rec.skipped ? "skipped" : "open",
+        snapshot: g.rec.original,
         label: g.rec.author || "комментарий",
       })),
     [pageComments],
@@ -653,17 +658,19 @@ function SiteMode({
       setActiveComment(id);
       const paths = pathsOf(id);
       if (!paths.length || !rightBox) return;
-      setSelected(paths[0]);
       /*
         Блоки комментария ВЫДЕЛЯЕМ, а не просто подводим к ним страницу. Своя
         рамка у комментария есть всегда, но когда на странице их два десятка,
         по ней не понять, о котором сейчас речь. Жёлтая рамка выделения —
         то же самое, что при клике по блоку, и читается однозначно.
       */
-      setPicked(new Set(paths));
       paused.current = true;
       window.setTimeout(() => (paused.current = false), 600);
-      const el = rightBox.querySelector(`[data-json-path="${CSS.escape(paths[0])}"]`);
+      const [live] = resolveAnchor(rightBox, paths, comments.find((c) => c.id === id)?.original);
+      if (!live) return;
+      setSelected(live);
+      setPicked(new Set([live]));
+      const el = rightBox.querySelector(`[data-json-path="${CSS.escape(live)}"]`);
       const target = el?.firstElementChild ?? el;
       if (!target) return;
       const er = target.getBoundingClientRect();
@@ -864,6 +871,7 @@ function SiteMode({
                   frames={commentFrames}
                   activeId={activeComment}
                   onPick={setActiveComment}
+                  onPlaced={(ids) => setPlaced(new Set(ids))}
                 />
               </div>
 
@@ -905,6 +913,7 @@ function SiteMode({
           <div className="min-h-0 flex-1">
             <PageComments
               groups={pageComments}
+              placed={placed}
               picked={picked.size}
               pickedAbout={snippet([...picked].map((p) => textAt(p)).join(" ⁄ "))}
               author={author}

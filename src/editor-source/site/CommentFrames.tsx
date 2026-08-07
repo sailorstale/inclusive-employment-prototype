@@ -1,4 +1,5 @@
 import * as React from "react";
+import { resolveAnchor } from "./commentAnchor";
 
 /*
   РАМКИ КОММЕНТАРИЕВ ПОВЕРХ СТРАНИЦЫ.
@@ -32,6 +33,8 @@ export type CommentFrame = {
   /** Адреса блоков, к которым относится комментарий. */
   paths: string[];
   state: CommentState;
+  /** Снимок текста блока — по нему чиним привязку, если адрес съехал. */
+  snapshot?: string | null;
   /** Подпись у верхнего края: автор комментария. */
   label?: string;
 };
@@ -80,6 +83,7 @@ export function CommentFrames({
   frames,
   activeId,
   onPick,
+  onPlaced,
 }: {
   /** Контейнер с позиционированием, внутри которого лежат блоки страницы. */
   host: HTMLElement | null;
@@ -87,8 +91,18 @@ export function CommentFrames({
   /** Выбранный в панели комментарий — его рамка толще остальных. */
   activeId?: string | null;
   onPick?: (id: string) => void;
+  /*
+    Какие замечания удалось поставить на страницу. Панель по этому списку
+    помечает те, чей блок не нашёлся: молчать нельзя, иначе комментарий висит
+    без рамки и непонятно, к чему он относился.
+  */
+  onPlaced?: (ids: string[]) => void;
 }) {
   const [boxes, setBoxes] = React.useState<(CommentFrame & Box)[]>([]);
+  /* Колбэк держим в ref: он меняется на каждый показ, а пересчёт от этого
+     запускаться не должен. */
+  const onPlacedRef = React.useRef(onPlaced);
+  onPlacedRef.current = onPlaced;
   /*
     Ключ пересчёта строкой, а не самим массивом: frames собирается заново на
     каждый показ, и по ссылке эффект крутился бы вечно.
@@ -107,7 +121,8 @@ export function CommentFrames({
         let left = Infinity;
         let right = -Infinity;
         let bottom = -Infinity;
-        for (const p of f.paths) {
+        // Адрес мог съехать после перестройки — чиним по снимку текста.
+        for (const p of resolveAnchor(host, f.paths, f.snapshot)) {
           const el = host.querySelector(`[data-json-path="${CSS.escape(p)}"]`);
           const r = el && boxOf(el);
           if (!r) continue;
@@ -127,6 +142,7 @@ export function CommentFrames({
         });
       }
       setBoxes(out);
+      onPlacedRef.current?.(out.map((b) => b.id));
     };
     measure();
     const ro = new ResizeObserver(measure);

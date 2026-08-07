@@ -24,13 +24,14 @@ import { cn } from "@/lib/utils";
 export type CommentGroup = {
   /** id записи в хранилище. */
   id: string;
-  /** Адреса блоков, к которым относится комментарий. */
+  /** Адреса блоков на СЕГОДНЯШНЕЙ странице (могли быть починены по тексту). */
   paths: string[];
   rec: Comment;
 };
 
 export function PageComments({
   groups,
+  placed,
   picked,
   pickedAbout,
   author,
@@ -42,6 +43,11 @@ export function PageComments({
   onClearPick,
 }: {
   groups: CommentGroup[];
+  /*
+    id замечаний, которые удалось поставить на страницу. Чего здесь нет — у того
+    блок не нашёлся: его переписали или убрали.
+  */
+  placed: Set<string>;
   /** Сколько блоков выделено сейчас. */
   picked: number;
   /** Снимок текста выделенного — чтобы было видно, о чём пишешь. */
@@ -204,6 +210,16 @@ export function PageComments({
                     <span className="mt-1 block whitespace-pre-wrap text-foreground">
                       {g.rec.text}
                     </span>
+                    {!placed.has(g.id) && (
+                      /*
+                        Блок не нашёлся: ни адрес не находится, ни текст.
+                        Молчать нельзя — иначе замечание висит в списке без
+                        рамки, и непонятно, к чему оно относилось.
+                      */
+                      <span className="mt-1 block text-[11px] text-[hsl(var(--bad))]">
+                        Блок не найден — текст переписали или убрали
+                      </span>
+                    )}
                     {g.rec.original ? (
                       /*
                         Метки снимаем и здесь, а не только при записи: девять
