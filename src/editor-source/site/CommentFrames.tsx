@@ -147,10 +147,19 @@ export function CommentFrames({
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(host);
+    /*
+      Следим и за появлением узлов, а не только за высотой. Аккордеон, пока он
+      свёрнут, не рисует своё содержимое вовсе: блок физически отсутствует, и
+      рамке не за что зацепиться. Раскрылся — узлы появились, а высота могла
+      измениться так, что наблюдатель размера промолчал.
+    */
+    const mo = new MutationObserver(() => measure());
+    mo.observe(host, { childList: true, subtree: true });
     host.querySelectorAll("img").forEach((img) => img.addEventListener("load", measure));
     window.addEventListener("resize", measure);
     return () => {
       ro.disconnect();
+      mo.disconnect();
       window.removeEventListener("resize", measure);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
