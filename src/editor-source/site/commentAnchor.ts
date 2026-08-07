@@ -76,11 +76,18 @@ export function resolveAnchor(
   const nodes = collect(host);
 
   /*
-    Снимка нет вовсе (несколько самых первых замечаний) — только тогда остаётся
-    верить сохранённому адресу: другой опоры у нас просто нет.
+    КОРОТКИЙ СНИМОК берём, только если он совпал РОВНО С ОДНИМ блоком. Длина
+    сама по себе ничего не гарантирует: «Пример» встречается на странице
+    десяток раз, а «1 степень» — один. Уникальность и есть доказательство.
   */
-  if (snap.length < MIN_SNIPPET)
+  if (snap.length < MIN_SNIPPET) {
+    if (snap.length >= 4) {
+      const only = nodes.filter((n) => n.text.startsWith(snap));
+      if (only.length === 1) return [only[0].path];
+    }
+    // Опоры нет совсем — остаётся сохранённый адрес, если он ещё существует.
     return paths.filter((p) => nodes.some((n) => n.path === p));
+  }
 
   // 1. Точное начало: снимок обрезан по шестидесяти знакам.
   let hits = nodes.filter(

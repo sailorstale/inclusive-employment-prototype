@@ -25,6 +25,7 @@ import { CommentFrames, type CommentFrame } from "./CommentFrames";
 import { PageComments, type CommentGroup } from "./PageComments";
 import { commentId, pathsOf } from "./commentIds";
 import { resolveAnchor } from "./commentAnchor";
+import { findHomes, type PageRef } from "./commentHome";
 import { buildOsnovyExport } from "./siteExport";
 import { coverFor } from "./covers";
 import { metaFor } from "./pageMeta";
@@ -504,6 +505,13 @@ function SiteMode({
   /* id замечаний, которые слой рамок сумел поставить на страницу. Остальные
      показываем в списке с пометкой «блок не найден». */
   const [placed, setPlaced] = React.useState<Set<string>>(new Set());
+  /*
+    Куда переехал блок ненайденного замечания. Страницы перекраивали, и часть
+    абзацев уехала на соседние: замечание про формы занятости оставлено на
+    «Льготах», а текст теперь на «Форматах». Ищем по всему сайту и показываем
+    ссылку — данные при этом не трогаем.
+  */
+  const [homes, setHomes] = React.useState<Record<string, PageRef>>({});
   // Контейнер контента — в нём слой рисует рамки комментариев.
   const [contentBox, setContentBox] = React.useState<HTMLDivElement | null>(null);
   const [author, setAuthor] = React.useState<string>(() => {
@@ -517,11 +525,34 @@ function SiteMode({
   const pageComments = React.useMemo<CommentGroup[]>(
     () =>
       comments
-        .filter((c) => c.page === page.slug && c.text)
+        /*
+          Замечание показываем там, где его текст лежит СЕГОДНЯ. Дом ещё не
+          посчитан — держимся записанной страницы, чтобы список не мигал.
+        */
+        .filter((c) => c.text && (homes[c.id]?.slug ?? c.page) === page.slug)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
         .map((rec) => ({ id: rec.id, paths: pathsOf(rec.id), rec })),
-    [comments, page.slug],
+    [comments, page.slug, homes],
   );
+
+  /*
+    Где сейчас живёт блок каждого замечания. Считаем для ВСЕХ сразу и один раз
+    за загрузку: индекс всех страниц собирается долго, а нужен он и чтобы
+    показать чужие замечания здесь, и чтобы не потерять замечания со страниц,
+    которых больше нет.
+  */
+  React.useEffect(() => {
+    let alive = true;
+    if (!comments.length) return;
+    void findHomes(
+      comments.map((c) => ({ id: c.id, snapshot: c.original, page: c.page })),
+    ).then((map) => {
+      if (alive) setHomes(map);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [comments]);
 
   const commentFrames = React.useMemo<CommentFrame[]>(
     () =>
@@ -677,7 +708,7 @@ function SiteMode({
       const pr = rightBox.getBoundingClientRect();
       rightBox.scrollTop += er.top - pr.top - pr.height / 2 + er.height / 2;
     },
-    [rightBox],
+    [rightBox, comments],
   );
 
 
@@ -914,6 +945,7 @@ function SiteMode({
             <PageComments
               groups={pageComments}
               placed={placed}
+              homes={homes}
               picked={picked.size}
               pickedAbout={snippet([...picked].map((p) => textAt(p)).join(" ⁄ "))}
               author={author}

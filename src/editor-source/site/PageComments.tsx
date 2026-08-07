@@ -32,6 +32,7 @@ export type CommentGroup = {
 export function PageComments({
   groups,
   placed,
+  homes,
   picked,
   pickedAbout,
   author,
@@ -48,6 +49,12 @@ export function PageComments({
     блок не нашёлся: его переписали или убрали.
   */
   placed: Set<string>;
+  /*
+    Куда переехал блок ненайденного замечания. Страницы перекраивали, и часть
+    абзацев уехала на соседние — тогда замечание не потеряно, просто живёт
+    теперь на другой странице.
+  */
+  homes: Record<string, { slug: string; title: string }>;
   /** Сколько блоков выделено сейчас. */
   picked: number;
   /** Снимок текста выделенного — чтобы было видно, о чём пишешь. */
@@ -210,11 +217,20 @@ export function PageComments({
                     <span className="mt-1 block whitespace-pre-wrap text-foreground">
                       {g.rec.text}
                     </span>
+                    {/*
+                      Замечание оставили на другой странице, а блок с тех пор
+                      переехал сюда. Пометка нужна, иначе непонятно, откуда оно
+                      здесь взялось.
+                    */}
+                    {g.rec.page && homes[g.id] && g.rec.page !== homes[g.id].slug && (
+                      <span className="mt-1 block text-[11px] text-[color:var(--comment-line)]">
+                        Оставлено на другой странице — блок переехал сюда
+                      </span>
+                    )}
                     {!placed.has(g.id) && (
                       /*
-                        Блок не нашёлся: ни адрес не находится, ни текст.
-                        Молчать нельзя — иначе замечание висит в списке без
-                        рамки, и непонятно, к чему оно относилось.
+                        Блок не нашёлся. Молчать нельзя — иначе замечание висит в
+                        списке без рамки, и непонятно, к чему оно относилось.
                       */
                       <span className="mt-1 block text-[11px] text-[hsl(var(--bad))]">
                         Блок не найден — текст переписали или убрали
