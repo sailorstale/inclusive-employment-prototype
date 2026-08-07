@@ -2,7 +2,6 @@ import type { Node, SectionNode } from "@/editor-source/source/contentTree";
 import { stripDecourse } from "./decourse";
 import { relatedFor } from "./relatedPages";
 import { recapFor, type Recap } from "./recap";
-import { pageBySlug } from "./pageMap";
 
 /*
   СТРУКТУРА СТРАНИЦЫ САЙТА — общая для рендера и экспорта.
@@ -163,7 +162,12 @@ export function withRecap(chosen: SectionNode[], slug?: string): SectionNode[] {
   });
 }
 
-function pageSummaryNode(chosen: SectionNode[]): Node {
+/*
+  Блок «На этой странице вы узнаете» — список тем страницы. На страницах его
+  больше нет (см. pageChildren), но сборка сохранена: понадобится вернуть —
+  добавить вызов обратно в pageChildren.
+*/
+export function pageSummaryNode(chosen: SectionNode[]): Node {
   return {
     component: "Page Summary",
     children: pageTopics(chosen).map(
@@ -247,19 +251,16 @@ export function pageChildren(
 ): (SectionNode | Node)[] {
   const sections = withRecap(chosen, slug);
   /*
-    Разделов может не быть вовсе: «Полезные документы» — это вводная фраза и
-    список законов, делить там нечего. Пустая карточка «вы узнаете» на такой
-    странице только мешает, поэтому её не ставим.
+    Списка «На этой странице вы узнаете» на страницах БОЛЬШЕ НЕТ — решение
+    дизайнера 6 августа 2026. Он повторял заголовки разделов, которые и так
+    стоят ниже и продублированы в оглавлении справа. Читатель получал одно и то
+    же трижды.
 
-    Страница может отказаться от списка и сама (noSummary в карте): на «О
-    проекте» разделов два, и оба заголовка видны сразу под блоком.
+    Сборка блока (pageSummaryNode) осталась в файле: вернуть его — это одна
+    строка здесь, а восстанавливать удалённое пришлось бы заново.
   */
-  const wantsSummary =
-    !pageBySlug(slug)?.noSummary && pageTopics(sections).length > 0;
-  const summary = wantsSummary ? [pageSummaryNode(sections)] : [];
   return [
     ...introSection(intro),
-    ...summary,
     ...sections,
     { component: "Feedback" },
     readMoreNode(slug),

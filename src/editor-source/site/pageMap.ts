@@ -41,12 +41,6 @@ export type OsnovyPage = {
     структуру документа. Для страниц с перекройкой ту же роль играет inline.
   */
   noToc?: string[];
-  /*
-    noSummary — не показывать блок «На этой странице вы узнаете». Нужен там, где
-    список тем не помогает: если разделов два и оба заголовка видны сразу под
-    блоком, он только повторяет их.
-  */
-  noSummary?: boolean;
 };
 
 export const OSNOVY_PAGES: OsnovyPage[] = [
@@ -68,11 +62,6 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     outline: {
       sections: ["komu-budet-polezno", "kak-ustroen-gid"],
     },
-    /*
-      Списка тем здесь нет (решение дизайнера): разделов всего два, и оба
-      заголовка стоят сразу под блоком. Он бы просто повторял то, что видно.
-    */
-    noSummary: true,
   },
   {
     slug: "/general/start",
