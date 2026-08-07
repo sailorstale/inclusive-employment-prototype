@@ -24,6 +24,7 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
 import { cardArt } from "./cardArt";
+import { linkOrgSites } from "./orgSites";
 import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
 import { markRe } from "@/editor-source/richText";
 import {
@@ -2549,7 +2550,8 @@ export function buildDoc(
             component: "Quote",
             size: mods.size === "S" ? "S" : "L",
             author,
-            role: roleText,
+            // Название фонда в должности — ссылкой на его сайт (см. orgSites).
+            role: linkOrgSites(roleText),
             org,
             logo,
             photo,

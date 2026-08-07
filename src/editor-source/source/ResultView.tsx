@@ -382,7 +382,8 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           org={node.org}
           logo={node.logo === "yandex" ? undefined : node.logo}
           author={node.author}
-          role={node.role}
+          // Должность приходит с markdown-ссылкой на сайт фонда (см. orgSites).
+          role={node.role ? renderInline(node.role) : undefined}
           photoSrc={
             node.photo
               ? `${import.meta.env.BASE_URL}figma/avatars/${node.photo}.jpg`
