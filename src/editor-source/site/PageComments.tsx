@@ -2,6 +2,7 @@ import * as React from "react";
 import { Ban, Trash2 } from "lucide-react";
 import type { Comment } from "@/editor-source/comments";
 import { stripMarks } from "@/editor-source/richText";
+import { appliedFor } from "./appliedComments";
 import { cn } from "@/lib/utils";
 
 /*
@@ -16,9 +17,12 @@ import { cn } from "@/lib/utils";
   запись уходят все выбранные адреса. Рамку такой группе рисует слой
   CommentFrames — одну общую, а не по рамке на блок.
 
-  ПРИМЕНЁН — это «замечание уже учтено в прототипе». Храним признак в поле
-  resolved: отдельного поля заводить не стали, у сервера набор полей
-  фиксированный, а смысл тот же — разговор по этому блоку закончен.
+  СДЕЛАНО — это «замечание уже учтено в прототипе». Признак берётся из журнала
+  разбора (appliedComments.ts), который лежит в коде рядом с самой правкой, а не
+  из данных клиента. Так метка зажигается ровно тогда, когда правка выходит на
+  боевой стенд, и вместе с ней панель показывает, ЧТО сделали, как было и как
+  стало. Старое серверное поле resolved тоже уважаем: им помечены замечания,
+  разобранные до появления журнала.
 */
 
 export type CommentGroup = {
@@ -171,7 +175,8 @@ export function PageComments({
         ) : (
           <ul className="divide-y">
             {groups.map((g) => {
-              const applied = Boolean(g.rec.resolved);
+              const done = appliedFor(g.id);
+              const applied = Boolean(done) || Boolean(g.rec.resolved);
               const skipped = Boolean(g.rec.skipped);
               return (
                 <li
@@ -199,13 +204,13 @@ export function PageComments({
                         </span>
                       )}
                       {/*
-                        Метку «применён» ставим не кнопкой, а по ходу работы:
-                        когда правка внесена в прототип. Здесь она только
-                        показывается, нажать на неё нельзя.
+                        Метку «сделано» ставим не кнопкой, а записью в журнале
+                        разбора — она уезжает тем же коммитом, что и сама
+                        правка. Здесь метка только показывается.
                       */}
                       {applied && (
                         <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-applied)] px-1 py-0.5 text-[10px] leading-none text-white">
-                          применён
+                          сделано
                         </span>
                       )}
                       {skipped && !applied && (
@@ -221,22 +226,50 @@ export function PageComments({
                       Замечание оставили на другой странице, а блок с тех пор
                       переехал сюда. Пометка нужна, иначе непонятно, откуда оно
                       здесь взялось.
+
+                      У разобранного замечания её не показываем: блока обычно
+                      уже нет, поиск по тексту ловит первое похожее место, и
+                      пометка сообщала бы о переезде, которого не было.
                     */}
-                    {g.rec.page && homes[g.id] && g.rec.page !== homes[g.id].slug && (
+                    {!done && g.rec.page && homes[g.id] && g.rec.page !== homes[g.id].slug && (
                       <span className="mt-1 block text-[11px] text-[color:var(--comment-line)]">
                         Оставлено на другой странице — блок переехал сюда
                       </span>
                     )}
-                    {!placed.has(g.id) && (
+                    {!placed.has(g.id) && !done && (
                       /*
-                        Блок не нашёлся. Молчать нельзя — иначе замечание висит в
-                        списке без рамки, и непонятно, к чему оно относилось.
+                        Блок не нашёлся, и объяснения этому у нас нет. Молчать
+                        нельзя — иначе замечание висит в списке без рамки, и
+                        непонятно, к чему оно относилось.
+
+                        Когда запись в журнале есть, эта строка не нужна: блок
+                        пропал не сам по себе, а потому что мы его убрали, и
+                        ниже про это сказано спокойными словами.
                       */
                       <span className="mt-1 block text-[11px] text-[hsl(var(--bad))]">
                         Блок не найден — текст переписали или убрали
                       </span>
                     )}
-                    {g.rec.original ? (
+                    {done ? (
+                      /*
+                        ОТВЕТ НА ЗАМЕЧАНИЕ: что сделали и как страница выглядела
+                        до и после. Пустое «стало» значит, что блок убран, — так
+                        и пишем, вместо пустой строки.
+                      */
+                      <span className="mt-2 block rounded border border-[color:var(--comment-applied)]/40 bg-[color:var(--comment-applied-tint)] p-2">
+                        <span className="block text-foreground">{done.what}</span>
+                        <span className="mt-1.5 block text-[11px] text-muted-foreground">
+                          Было
+                        </span>
+                        <span className="block text-foreground/80">{done.before}</span>
+                        <span className="mt-1.5 block text-[11px] text-muted-foreground">
+                          Стало
+                        </span>
+                        <span className="block text-foreground/80">
+                          {done.after || "Блока на этой странице больше нет."}
+                        </span>
+                      </span>
+                    ) : g.rec.original ? (
                       /*
                         Метки снимаем и здесь, а не только при записи: девять
                         комментариев клиента сохранились до этой починки, и в их
@@ -252,7 +285,11 @@ export function PageComments({
                       «Не применять» — единственная кнопка статуса. Ею дизайнер
                       говорит: этим замечанием займусь сам, его ещё надо обсудить
                       с клиентом. Мы такие комментарии не трогаем.
+
+                      У сделанного замечания кнопки нет: спорить о том, браться
+                      ли за правку, поздно — она уже внесена.
                     */}
+                    {!done && (
                     <button
                       type="button"
                       onClick={() => onSkipped(g.id, !skipped)}
@@ -271,6 +308,7 @@ export function PageComments({
                       <Ban className="size-3" aria-hidden />
                       {skipped ? "Вернуть в работу" : "Не применять"}
                     </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => onDelete(g.id)}

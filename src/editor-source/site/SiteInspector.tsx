@@ -26,6 +26,7 @@ import { PageComments, type CommentGroup } from "./PageComments";
 import { commentId, pathsOf } from "./commentIds";
 import { resolveAnchor } from "./commentAnchor";
 import { findHomes, type PageRef } from "./commentHome";
+import { appliedFor } from "./appliedComments";
 import { buildOsnovyExport } from "./siteExport";
 import { coverFor } from "./covers";
 import { metaFor } from "./pageMeta";
@@ -341,6 +342,37 @@ function ModuleMode({ module }: { module: string }) {
   );
 }
 
+/*
+  Высота панели с текстом — в неё вписывается липкое оглавление справа. Мерить
+  окно нельзя: страница лежит внутри прокручиваемого контейнера инструмента, и
+  окно заметно выше того, что видно. Меняется от раскрытия панелей и от размера
+  окна, поэтому следим наблюдателем, а не считаем один раз.
+
+  Отнимаем отступ сверху (2rem, липкая позиция) и столько же снизу на воздух.
+*/
+function usePaneHeight(pane: HTMLElement | null): string | undefined {
+  const [height, setHeight] = React.useState<number>(0);
+  React.useEffect(() => {
+    if (!pane) return;
+    const measure = () => setHeight(pane.clientHeight);
+    measure();
+    /*
+      Наблюдатель ловит раскрытие соседних панелей, а слушатель окна — смену
+      размера самого окна. Одного наблюдателя не хватило: панель тянется на всю
+      высоту родителя, и при изменении окна её собственная запись о размере
+      приходила не всегда — высота оставалась от прошлого размера экрана.
+    */
+    const ro = new ResizeObserver(measure);
+    ro.observe(pane);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [pane]);
+  return height ? `${Math.max(160, height - 96)}px` : undefined;
+}
+
 /* Правое меню сайта — оглавление «На этой странице». Клик прокручивает правую
    панель к секции (обычный in-page скролл в контейнере, без внешнего роутинга). */
 function SiteRail({
@@ -489,6 +521,8 @@ function SiteMode({
   // при смене таба, и синхрон должен переподключиться на новый узел сам.
   const [leftBox, setLeftBox] = React.useState<HTMLDivElement | null>(null);
   const [rightBox, setRightBox] = React.useState<HTMLDivElement | null>(null);
+  // Сколько места есть у липкого оглавления справа (см. ниже, где оно рисуется).
+  const railMaxHeight = usePaneHeight(rightBox);
   // Пауза синхрона на время точной наводки на выбранный блок.
   const paused = React.useRef(false);
 
@@ -528,8 +562,19 @@ function SiteMode({
         /*
           Замечание показываем там, где его текст лежит СЕГОДНЯ. Дом ещё не
           посчитан — держимся записанной страницы, чтобы список не мигал.
+
+          РАЗОБРАННОЕ ЗАМЕЧАНИЕ НИКУДА НЕ ПЕРЕЕЗЖАЕТ. Мы на него уже ответили, и
+          блока, о котором шла речь, на странице обычно больше нет — искать его
+          по тексту не по чему, а поиск всё равно куда-нибудь да приведёт.
+          Замечание про «Читайте также» так и пропало со своей страницы: снимок
+          начинается со слова «Читайте также», а такой блок стоит внизу каждой
+          из двадцати шести страниц. Запись в журнале старше любой догадки.
         */
-        .filter((c) => c.text && (homes[c.id]?.slug ?? c.page) === page.slug)
+        .filter(
+          (c) =>
+            c.text &&
+            (appliedFor(c.id) ? c.page : homes[c.id]?.slug ?? c.page) === page.slug,
+        )
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
         .map((rec) => ({ id: rec.id, paths: pathsOf(rec.id), rec })),
     [comments, page.slug, homes],
@@ -554,16 +599,29 @@ function SiteMode({
     };
   }, [comments]);
 
+  /** Сколько замечаний этой страницы уже разобрано — для счётчика в шапке. */
+  const commentsDone = React.useMemo(
+    () => pageComments.filter((g) => appliedFor(g.id) || g.rec.resolved).length,
+    [pageComments],
+  );
+
   const commentFrames = React.useMemo<CommentFrame[]>(
     () =>
       pageComments.map((g) => ({
         id: g.id,
         paths: g.paths,
         /*
-          «Применён» сильнее «не применять»: если правка уже внесена, спор о
-          том, браться ли за неё, потерял смысл.
+          «Сделано» сильнее «не применять»: если правка уже внесена, спор о том,
+          браться ли за неё, потерял смысл. Признак берём из журнала разбора
+          (appliedComments.ts), а серверное resolved уважаем как раньше — им
+          помечены замечания, разобранные до появления журнала.
         */
-        state: g.rec.resolved ? "applied" : g.rec.skipped ? "skipped" : "open",
+        state:
+          appliedFor(g.id) || g.rec.resolved
+            ? "applied"
+            : g.rec.skipped
+              ? "skipped"
+              : "open",
         snapshot: g.rec.original,
         label: g.rec.author || "комментарий",
       })),
@@ -923,9 +981,21 @@ function SiteMode({
                 />
               </div>
 
-              {/* Правое меню — оглавление страницы */}
+              {/*
+                Правое меню — оглавление страницы. Своя прокрутка обязательна:
+                у текущей секции раскрываются подзаголовки, список вырастает и
+                нижние пункты уходили за край панели — замечание клиента
+                7 августа 2026 («не видно, что ниже, и нельзя пролистнуть»).
+
+                Высоту берём у самой панели, а не у окна: страница живёт внутри
+                прокручиваемого контейнера инструмента, и «сто процентов экрана»
+                здесь заметно больше, чем видно на самом деле.
+              */}
               <aside className="min-w-0">
-                <div className="sticky top-8">
+                <div
+                  className="sticky top-8 overflow-y-auto pb-4"
+                  style={{ maxHeight: railMaxHeight }}
+                >
                   <SiteRail items={rail} pane={rightBox} />
                 </div>
               </aside>
@@ -944,6 +1014,16 @@ function SiteMode({
             <span className="text-xs font-medium text-muted-foreground">
               Комментарии{pageComments.length ? ` · ${pageComments.length}` : ""}
             </span>
+            {/*
+              Сколько замечаний страницы уже разобрано. Без этой цифры состояние
+              видно только по меткам, а их надо пролистать: на «Инклюзивном
+              трудоустройстве» замечаний тридцать три.
+            */}
+            {commentsDone > 0 && (
+              <span className="rounded bg-[color:var(--comment-applied)] px-1.5 py-0.5 text-[10px] leading-none text-white">
+                сделано {commentsDone} из {pageComments.length}
+              </span>
+            )}
             {/*
               На локальной машине комментарии приезжают с БОЕВОГО сервера (см.
               vite.config.ts): список у клиента и у нас один. Подпись нужна,

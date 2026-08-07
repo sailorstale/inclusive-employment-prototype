@@ -22,7 +22,7 @@ import { resolveAnchor } from "./commentAnchor";
   СОСТОЯНИЕ ЗАМЕЧАНИЯ — три исхода, и у каждого свой цвет рамки:
 
   open     — синяя пунктирная: замечание ждёт работы;
-  applied  — зелёная сплошная: учтено в прототипе (ставим мы, когда правим);
+  applied  — зелёная сплошная: сделано (запись в журнале разбора, appliedComments);
   skipped  — серая сплошная: «не применять», дизайнер разбирает сам.
 */
 export type CommentState = "open" | "applied" | "skipped";
@@ -54,7 +54,7 @@ export const FRAME_LOOK: Record<
     color: "var(--comment-applied)",
     tint: "var(--comment-applied-tint)",
     dashed: false,
-    tail: " · применён",
+    tail: " · сделано",
   },
   skipped: {
     color: "var(--comment-skipped)",
