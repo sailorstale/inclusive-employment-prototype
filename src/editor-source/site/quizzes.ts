@@ -47,6 +47,31 @@ const QUIZ_PAGES: Record<string, string[]> = {
 const QUIZ_ANCHOR = "proverte-sebya";
 const QUIZ_TITLE = "Проверьте себя";
 
+/*
+  КВИЗ ВНУТРИ РАЗДЕЛА, А НЕ ОТДЕЛЬНЫМ РАЗДЕЛОМ В КОНЦЕ.
+
+  Обычно «Проверьте себя» встаёт последним разделом страницы. На «Льготах
+  сотрудников» клиент попросил иначе — замечание Юли от 7 августа 2026: вопросы
+  из «Проверьте себя» переносим в раздел про сами льготы. Тогда человек
+  проверяет себя сразу под материалом, который только что прочитал, а не через
+  два раздела после него.
+
+  Ключ — адрес страницы, значение — якорь раздела, в конец которого встаёт квиз.
+  Страницы без записи ведут себя как раньше.
+
+  Заголовок «Проверьте себя» при этом остаётся, но становится подзаголовком
+  внутри раздела: без него квиз выглядел бы формой, взявшейся ниоткуда. В
+  оглавление справа он не идёт — страница объявляет его в noToc (см. pageMap).
+*/
+const QUIZ_INSIDE: Record<string, string> = {
+  "/general/legal/benefits": "kakie-lgoty-polozheny-sotrudnikam-s-invalidnosty",
+};
+
+/** Якорь раздела, внутрь которого идёт квиз, — или ничего, если он отдельный. */
+export function quizHost(slug: string): string | undefined {
+  return QUIZ_INSIDE[slug];
+}
+
 type QuizNode = Extract<Node, { component: "Quiz" }>;
 
 const isQuiz = (n: Node): n is QuizNode => n.component === "Quiz";
@@ -108,4 +133,22 @@ export function quizSection(doc: Doc, slug: string): SectionNode | null {
       { component: "Block", orientation: "Vertical", children: picked },
     ],
   };
+}
+
+/*
+  Раздел с квизом внутри: содержимое «Проверьте себя» дописывается в конец
+  названного раздела, а его заголовок опускается с H2 до H3 — теперь это часть
+  раздела, а не раздел рядом.
+
+  Возвращаем копии: исходные узлы принадлежат общему дереву документа, и правка
+  на месте задела бы и выгрузку, и соседние страницы.
+*/
+export function withQuizInside(
+  section: SectionNode,
+  quiz: SectionNode,
+): SectionNode {
+  const inner: Node[] = quiz.children.map((n) =>
+    n.component === "Heading" ? { ...n, level: "H3" } : n,
+  );
+  return { ...section, children: [...section.children, ...inner] };
 }

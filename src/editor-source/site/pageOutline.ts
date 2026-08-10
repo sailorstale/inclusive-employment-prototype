@@ -5,7 +5,7 @@ import type {
   SectionNode,
 } from "@/editor-source/source/contentTree";
 import type { OsnovyPage } from "./pageMap";
-import { quizSection } from "./quizzes";
+import { quizSection, quizHost, withQuizInside } from "./quizzes";
 import { questionSections } from "./questionGroups";
 import { liftHeadingLinks } from "./headingLinks";
 
@@ -198,11 +198,24 @@ export function pageParts(
     ссылки из заголовков уезжают вниз (headingLinks), следом встают вопросы, а
     последним — квиз.
   */
-  const finish = (list: SectionNode[]) => [
-    ...liftHeadingLinks(list),
-    ...questions,
-    ...(quizzes ? [quizzes] : []),
-  ];
+  /*
+    Страница может попросить положить квиз ВНУТРЬ раздела, а не ставить его
+    отдельным разделом в конце (см. QUIZ_INSIDE в quizzes.ts). Тогда последним
+    на странице остаются вопросы и ответы, а «Проверьте себя» читается частью
+    своего раздела.
+  */
+  const host = quizzes ? quizHost(page.slug) : undefined;
+  const finish = (list: SectionNode[]) => {
+    const done = liftHeadingLinks(list);
+    if (quizzes && host)
+      return [
+        ...done.map((s) =>
+          s.anchor === host ? withQuizInside(s, quizzes) : s,
+        ),
+        ...questions,
+      ];
+    return [...done, ...questions, ...(quizzes ? [quizzes] : [])];
+  };
 
   const cut = page.outline ? recutSections(picked, page.outline) : null;
 
