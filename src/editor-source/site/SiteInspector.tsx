@@ -24,7 +24,7 @@ import { stripMarks } from "@/editor-source/richText";
 import { PageSourceView } from "./PageSourceView";
 import { CommentFrames, type CommentFrame } from "./CommentFrames";
 import { PageComments, type CommentGroup } from "./PageComments";
-import { commentState, type CommentState } from "./commentState";
+import { commentState, isClosed, type CommentState } from "./commentState";
 import { commentId, pathsOf } from "./commentIds";
 import { resolveAnchor } from "./commentAnchor";
 import { findHomes, type PageRef } from "./commentHome";
@@ -653,7 +653,11 @@ function SiteMode({
           Состояние считаем там же, где его показывает список (commentState), чтобы
           рамка на странице и карточка в панели не разошлись.
         */
-        state: FRAME_STATE[commentState(g.rec)],
+        /*
+          Убранное с глаз показываем бирюзовой рамкой: на странице оно всё ещё
+          есть, но в очереди работы его больше нет.
+        */
+        state: isClosed(g.rec) ? "closed" : FRAME_STATE[commentState(g.rec)],
         snapshot: g.rec.original,
         label: g.rec.author || "комментарий",
       })),
@@ -1232,7 +1236,6 @@ const FRAME_STATE: Record<CommentState, CommentFrame["state"]> = {
   open: "open",
   round: "round",
   skipped: "skipped",
-  closed: "closed",
   done: "applied",
 };
 

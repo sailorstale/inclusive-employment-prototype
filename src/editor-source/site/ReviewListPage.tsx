@@ -8,7 +8,7 @@ import { routeTitles } from "@/data/nav";
 import { Stat, FilterBtn } from "@/editor/adminUi";
 import { cn } from "@/lib/utils";
 import { appliedAllFor } from "./appliedComments";
-import { commentState, type CommentState } from "./commentState";
+import { commentState, isClosed, type CommentState } from "./commentState";
 
 /*
   ВСЕ ЗАМЕЧАНИЯ КЛИЕНТА В ОДНОМ СПИСКЕ.
@@ -31,8 +31,8 @@ import { commentState, type CommentState } from "./commentState";
   единственное место, где они показываются, это здесь.
 */
 
-/** Строка списка: замечание вместе с посчитанным исходом. */
-type Row = { rec: Comment; state: CommentState };
+/** Строка списка: замечание, его исход и признак «убрано с глаз». */
+type Row = { rec: Comment; state: CommentState; closed: boolean };
 
 /** Страница со своими замечаниями. */
 type PageGroup = {
@@ -41,10 +41,17 @@ type PageGroup = {
   /** Страницы с таким адресом на сайте нет — её убрали после замечаний. */
   gone: boolean;
   rows: Row[];
-  counts: Record<CommentState, number>;
+  counts: Counts;
 };
 
-type Filter = "all" | CommentState;
+/*
+  Счётчики. «Решено» стоит наособицу: это не исход, а пометка «убрано с глаз».
+  Убранное не попадает ни в один другой счётчик, иначе очередь работы выглядела
+  бы больше, чем она есть.
+*/
+type Counts = Record<CommentState, number> & { closed: number };
+
+type Filter = "all" | CommentState | "closed";
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "Все" },
@@ -68,22 +75,18 @@ const BADGE: Record<CommentState, { label: string; cls: string }> = {
     label: "не применяем",
     cls: "bg-[color:var(--comment-skipped)] text-white",
   },
-  closed: {
-    label: "решено",
-    cls: "bg-[color:var(--comment-closed)] text-white",
-  },
   done: {
     label: "сделано",
     cls: "bg-[color:var(--comment-applied)] text-white",
   },
 };
 
-const emptyCounts = (): Record<CommentState, number> => ({
+const emptyCounts = (): Counts => ({
   open: 0,
   round: 0,
   skipped: 0,
-  closed: 0,
   done: 0,
+  closed: 0,
 });
 
 const fmt = (iso?: string | null) =>
@@ -166,15 +169,25 @@ function ReviewList() {
     () =>
       comments
         .filter((c) => (c.text || "").trim())
-        .map((rec) => ({ rec, state: commentState(rec) })),
+        .map((rec) => ({ rec, state: commentState(rec), closed: isClosed(rec) })),
     [comments],
   );
 
+  /*
+    Убранное с глаз считаем отдельно и в исходы не подмешиваем: «в работе 33»
+    должно значить тридцать три дела, а не тридцать три минус спрятанные.
+  */
   const totals = React.useMemo(() => {
     const c = emptyCounts();
-    for (const r of rows) c[r.state] += 1;
+    for (const r of rows) {
+      if (r.closed) c.closed += 1;
+      else c[r.state] += 1;
+    }
     return c;
   }, [rows]);
+
+  /** Сколько замечаний видно в группе «Все» — то есть всё, кроме убранного. */
+  const activeCount = rows.length - totals.closed;
 
   /*
     Поиск по словам замечания — самый дешёвый способ собрать однотипное вместе.
@@ -189,7 +202,8 @@ function ReviewList() {
     const q = query.trim().toLowerCase();
     const byPage = new Map<string, Row[]>();
     for (const r of rows) {
-      if (filter !== "all" && r.state !== filter) continue;
+      if (filter === "closed" ? !r.closed : r.closed) continue;
+      if (filter !== "all" && filter !== "closed" && r.state !== filter) continue;
       if (
         q &&
         !`${r.rec.text} ${r.rec.author ?? ""} ${r.rec.note ?? ""} ${r.rec.page ?? ""}`
@@ -205,7 +219,10 @@ function ReviewList() {
     return [...byPage.entries()]
       .map(([slug, list]) => {
         const counts = emptyCounts();
-        for (const r of list) counts[r.state] += 1;
+        for (const r of list) {
+          if (r.closed) counts.closed += 1;
+          else counts[r.state] += 1;
+        }
         return {
           slug,
           title: routeTitles[slug] ?? slug ?? "без страницы",
@@ -253,7 +270,7 @@ function ReviewList() {
               >
                 {f.label}
                 <span className="ml-1.5 text-muted-foreground">
-                  {f.key === "all" ? rows.length : totals[f.key]}
+                  {f.key === "all" ? activeCount : totals[f.key]}
                 </span>
               </FilterBtn>
             ))}
@@ -365,11 +382,12 @@ function PageBlock({
       </div>
 
       <ul className="divide-y">
-        {group.rows.map(({ rec, state }) => (
+        {group.rows.map(({ rec, state, closed }) => (
           <li key={rec.id} className="py-3">
             <CommentRow
               rec={rec}
               state={state}
+              closed={closed}
               gone={group.gone}
               onClosed={onClosed}
             />
@@ -383,11 +401,14 @@ function PageBlock({
 function CommentRow({
   rec,
   state,
+  closed,
   gone,
   onClosed,
 }: {
   rec: Comment;
   state: CommentState;
+  /** Убрано с глаз — карточка живёт в группе «Решено». */
+  closed: boolean;
   /** Страницы нет — переходить некуда, показываем без ссылки. */
   gone: boolean;
   onClosed: (id: string, closed: boolean) => void;
@@ -474,32 +495,30 @@ function CommentRow({
       )}
 
       {/*
-        «РЕШЕНО» прямо из общего списка — здесь и разбирают очередь, поэтому
-        ходить ради одной кнопки на страницу незачем.
+        «РЕШЕНО» — убрать замечание с глаз. Есть у КАЖДОГО, включая разобранные:
+        список чистят и от них тоже, когда разговор по ним закончен.
 
-        У сделанного замечания кнопки нет: правка внесена и опубликована, спор
-        закончен. У решённого кнопка возвращает его обратно в очередь.
+        Исход замечания кнопка не меняет — зелёная метка «сделано» остаётся, и
+        клиент по-прежнему видит, что страница изменилась.
       */}
-      {state !== "done" && (
-        <button
-          type="button"
-          onClick={() => onClosed(rec.id, state !== "closed")}
-          title={
-            state === "closed"
-              ? "Вернуть замечание в очередь"
-              : "Вопрос закрыт — убрать замечание из очереди"
-          }
-          className={cn(
-            "flex items-center gap-1 rounded border px-2 py-0.5 text-xs transition-colors",
-            state === "closed"
-              ? "border-[color:var(--comment-closed)] text-[color:var(--comment-closed)]"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Check className="size-3.5" aria-hidden />
-          {state === "closed" ? "Вернуть в очередь" : "Решено"}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => onClosed(rec.id, !closed)}
+        title={
+          closed
+            ? "Вернуть замечание в список"
+            : "Убрать замечание из списка — оно уйдёт в «Решено»"
+        }
+        className={cn(
+          "flex items-center gap-1 rounded border px-2 py-0.5 text-xs transition-colors",
+          closed
+            ? "border-[color:var(--comment-closed)] text-[color:var(--comment-closed)]"
+            : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <Check className="size-3.5" aria-hidden />
+        {closed ? "Вернуть в список" : "Решено"}
+      </button>
     </div>
   );
 }

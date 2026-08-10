@@ -3,7 +3,7 @@ import { Ban, Check, CornerDownRight, Pencil, Trash2 } from "lucide-react";
 import type { Comment, CommentReply } from "@/editor-source/comments";
 import { stripMarks } from "@/editor-source/richText";
 import { appliedAllFor } from "./appliedComments";
-import { commentState, type CommentState } from "./commentState";
+import { commentState, isClosed, type CommentState } from "./commentState";
 import { cn } from "@/lib/utils";
 
 /*
@@ -46,7 +46,11 @@ export type CommentGroup = {
   списке одну группу — например только «не применяем», чтобы разобрать их
   подряд, или наоборот убрать их с глаз и видеть очередь работы.
 */
-type CommentFilter = "all" | CommentState;
+/*
+  «Решено» стоит в том же ряду, но означает другое: не исход, а «убрано с глаз».
+  Все остальные группы показывают только актуальное — убранное в них не мешает.
+*/
+type CommentFilter = "all" | CommentState | "closed";
 
 const FILTERS: { key: CommentFilter; label: string }[] = [
   { key: "all", label: "Все" },
@@ -110,13 +114,24 @@ export function PageComments({
   const [filter, setFilter] = React.useState<CommentFilter>("all");
 
   const counts = React.useMemo(() => {
-    const c = { all: groups.length, open: 0, round: 0, skipped: 0, closed: 0, done: 0 };
-    for (const g of groups) c[commentState(g.rec)] += 1;
+    const c = { all: 0, open: 0, round: 0, skipped: 0, closed: 0, done: 0 };
+    for (const g of groups) {
+      if (isClosed(g.rec)) c.closed += 1;
+      else {
+        c.all += 1;
+        c[commentState(g.rec)] += 1;
+      }
+    }
     return c;
   }, [groups]);
 
   const shown = React.useMemo(
-    () => (filter === "all" ? groups : groups.filter((g) => commentState(g.rec) === filter)),
+    () =>
+      groups.filter((g) =>
+        filter === "closed"
+          ? isClosed(g.rec)
+          : !isClosed(g.rec) && (filter === "all" || commentState(g.rec) === filter),
+      ),
     [groups, filter],
   );
 
@@ -227,7 +242,7 @@ export function PageComments({
         ФИЛЬТР. Показываем, только когда группировать есть что: на странице с
         тремя одинаковыми замечаниями кнопки были бы лишним шумом.
       */}
-      {groups.length > 0 && counts.all > counts.open && (
+      {groups.length > 0 && groups.length > counts.open && (
         <div className="flex shrink-0 flex-wrap gap-1 border-b px-3 py-2">
           {FILTERS.map((f) => {
             const n = counts[f.key];
@@ -318,16 +333,6 @@ export function PageComments({
                       {state === "round" && (
                         <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-round)] px-1 py-0.5 text-[10px] leading-none text-white">
                           новый раунд
-                        </span>
-                      )}
-                      {/*
-                        «Решено» — наша пометка «вопрос закрыт». Клиенту она не
-                        обещает изменившейся страницы: для этого есть «сделано»,
-                        и его даёт только запись в журнале разбора.
-                      */}
-                      {state === "closed" && (
-                        <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-closed)] px-1 py-0.5 text-[10px] leading-none text-white">
-                          решено
                         </span>
                       )}
                       {state === "skipped" && (
@@ -445,17 +450,15 @@ export function PageComments({
                   />
                   <div className="flex items-center gap-1">
                     {/*
-                      «РЕШЕНО» — вопрос по замечанию закрыт, из очереди оно
-                      уходит. Ставится на то, что кода не потребовало: ответили
-                      клиенту в ветке, договорились на словах, замечание
-                      оказалось дублем.
+                      «РЕШЕНО» — убрать замечание с глаз. Есть у КАЖДОГО, включая
+                      разобранные: список чистят и от них тоже, когда разговор по
+                      ним закончен.
 
-                      Это НЕ «сделано». «Сделано» обещает клиенту изменившуюся
-                      страницу, и его даёт только запись в журнале разбора,
-                      которая уезжает вместе с правкой.
+                      Исход замечания кнопка не меняет. Зелёная метка «сделано»
+                      остаётся на месте — её даёт запись в журнале разбора, и
+                      клиент по-прежнему видит, что страница изменилась.
                     */}
-                    {!done && (
-                      <button
+                    <button
                         type="button"
                         onClick={() => onClosed(g.id, !closed)}
                         title={
@@ -473,7 +476,6 @@ export function PageComments({
                         <Check className="size-3" aria-hidden />
                         {closed ? "Вернуть в очередь" : "Решено"}
                       </button>
-                    )}
                     {/*
                       «Не применять» — другой исход: замечание разбирает дизайнер
                       сам, его ещё надо обсудить с клиентом. Мы такие комментарии
