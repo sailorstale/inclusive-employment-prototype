@@ -549,7 +549,8 @@ function SiteMode({
     «slug::адреса::uid», где адреса — один или несколько путей через плюс: одно
     замечание нередко относится к нескольким блокам подряд.
   */
-  const { comments, setComment, toggleSkipped, setNote, addReply } = useComments();
+  const { comments, setComment, toggleSkipped, toggleClosed, setNote, addReply } =
+    useComments();
   const [activeComment, setActiveComment] = React.useState<string | null>(null);
   /* id замечаний, которые слой рамок сумел поставить на страницу. Остальные
      показываем в списке с пометкой «блок не найден». */
@@ -1145,6 +1146,7 @@ function SiteMode({
               onAdd={addComment}
               onDelete={(id) => setComment({ id }, "")}
               onSkipped={(id, skipped) => toggleSkipped(id, skipped)}
+              onClosed={(id, closed) => toggleClosed(id, closed)}
               onNote={(id, note) => setNote(id, note)}
               onReply={(id, who, text) => addReply(id, who, text)}
               onGoTo={goToComment}
@@ -1230,6 +1232,7 @@ const FRAME_STATE: Record<CommentState, CommentFrame["state"]> = {
   open: "open",
   round: "round",
   skipped: "skipped",
+  closed: "closed",
   done: "applied",
 };
 

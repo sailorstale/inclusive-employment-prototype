@@ -65,6 +65,18 @@ export function annotationRecord(id, patch, prev) {
     */
     skipped:
       typeof patch.skipped === "boolean" ? patch.skipped : prev?.skipped ?? false,
+    /*
+      «Решено» — НАША рабочая пометка: замечание разобрано, из очереди убрано.
+
+      Отдельно от resolved намеренно. Поле resolved зажигает у клиента метку
+      «сделано», а она должна загораться только тогда, когда правка вышла на
+      боевой стенд, — иначе клиент увидит «сделано» на неизменившейся странице.
+      Метку «сделано» по-прежнему даёт только запись в журнале разбора.
+
+      Отдельно от skipped тоже: «не применяем» значит «делать не будем», а
+      «решено» — «вопрос закрыт». Это разные исходы, и путать их нельзя.
+    */
+    closed: typeof patch.closed === "boolean" ? patch.closed : prev?.closed ?? false,
     replies: withReply(prev, patch),
     createdAt: prev?.createdAt ?? now,
     updatedAt: now,

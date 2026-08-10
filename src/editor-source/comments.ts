@@ -48,6 +48,15 @@ export type Comment = {
   */
   skipped?: boolean;
   /*
+    «Решено» — наша рабочая пометка: замечание разобрано и убрано из очереди.
+
+    Отдельно от resolved намеренно. Поле resolved зажигает у клиента метку
+    «сделано», а она должна загораться только после публикации правки. Отдельно
+    от skipped тоже: «не применяем» значит «делать не будем», «решено» — «вопрос
+    закрыт».
+  */
+  closed?: boolean;
+  /*
     Ветка ответов под замечанием. Дописывается с конца: клиент шлёт одну реплику,
     сервер кладёт её в хвост. Старые записи поля не имеют — читать через `?? []`.
   */
@@ -72,6 +81,7 @@ export type CommentInput = {
   deleted?: boolean;
   resolved?: boolean;
   skipped?: boolean;
+  closed?: boolean;
   author?: string | null;
   /*
     Одна новая реплика в ветку. Именно одна, а не весь список: сервер дописывает
@@ -167,6 +177,7 @@ export async function saveComment(
       без сети пометки и ветка ответов пропадали бы при каждом сохранении.
     */
     skipped: typeof input.skipped === "boolean" ? input.skipped : prev?.skipped ?? false,
+    closed: typeof input.closed === "boolean" ? input.closed : prev?.closed ?? false,
     anchorText: prev?.anchorText ?? null,
     replies: appendReply(prev?.replies, input.reply, now),
     createdAt: prev?.createdAt ?? now,

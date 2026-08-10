@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Ban, CornerDownRight, Pencil, Trash2 } from "lucide-react";
+import { Ban, Check, CornerDownRight, Pencil, Trash2 } from "lucide-react";
 import type { Comment, CommentReply } from "@/editor-source/comments";
 import { stripMarks } from "@/editor-source/richText";
 import { appliedAllFor } from "./appliedComments";
@@ -53,6 +53,7 @@ const FILTERS: { key: CommentFilter; label: string }[] = [
   { key: "open", label: "В работе" },
   { key: "round", label: "Новый раунд" },
   { key: "skipped", label: "Не применяем" },
+  { key: "closed", label: "Решено" },
   { key: "done", label: "Сделано" },
 ];
 
@@ -67,6 +68,7 @@ export function PageComments({
   onAdd,
   onDelete,
   onSkipped,
+  onClosed,
   onNote,
   onReply,
   onGoTo,
@@ -94,6 +96,8 @@ export function PageComments({
   onAdd: (name: string, text: string) => void;
   onDelete: (id: string) => void;
   onSkipped: (id: string, skipped: boolean) => void;
+  /** Пометить «решено» — вопрос закрыт, из очереди замечание уходит. */
+  onClosed: (id: string, closed: boolean) => void;
   /** Сохранить решение дизайнера поверх замечания. Пусто — стереть его. */
   onNote: (id: string, note: string) => void;
   /** Дописать ответ в ветку под замечанием — начать следующий раунд. */
@@ -106,7 +110,7 @@ export function PageComments({
   const [filter, setFilter] = React.useState<CommentFilter>("all");
 
   const counts = React.useMemo(() => {
-    const c = { all: groups.length, open: 0, round: 0, skipped: 0, done: 0 };
+    const c = { all: groups.length, open: 0, round: 0, skipped: 0, closed: 0, done: 0 };
     for (const g of groups) c[commentState(g.rec)] += 1;
     return c;
   }, [groups]);
@@ -266,9 +270,9 @@ export function PageComments({
               /* Раунды разбора по порядку: первый сверху, следующие под ним. */
               const rounds = appliedAllFor(g.id);
               const done = rounds.length > 0;
-              const applied = done || Boolean(g.rec.resolved);
               const state = commentState(g.rec);
               const skipped = Boolean(g.rec.skipped);
+              const closed = Boolean(g.rec.closed);
               const replies = g.rec.replies ?? [];
               const note = (g.rec.note || "").trim();
               return (
@@ -316,7 +320,17 @@ export function PageComments({
                           новый раунд
                         </span>
                       )}
-                      {skipped && !applied && (
+                      {/*
+                        «Решено» — наша пометка «вопрос закрыт». Клиенту она не
+                        обещает изменившейся страницы: для этого есть «сделано»,
+                        и его даёт только запись в журнале разбора.
+                      */}
+                      {state === "closed" && (
+                        <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-closed)] px-1 py-0.5 text-[10px] leading-none text-white">
+                          решено
+                        </span>
+                      )}
+                      {state === "skipped" && (
                         <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-skipped)] px-1 py-0.5 text-[10px] leading-none text-white">
                           не применяем
                         </span>
@@ -326,7 +340,7 @@ export function PageComments({
                         Это и есть очередь работы: по таким замечаниям понятно,
                         что делать, и можно браться не переспрашивая.
                       */}
-                      {note && !applied && !skipped && (
+                      {note && state === "open" && (
                         <span className="ml-auto shrink-0 rounded bg-[hsl(var(--warn))] px-1 py-0.5 text-[10px] leading-none text-white">
                           к правке
                         </span>
@@ -431,14 +445,44 @@ export function PageComments({
                   />
                   <div className="flex items-center gap-1">
                     {/*
-                      «Не применять» — единственная кнопка статуса. Ею дизайнер
-                      говорит: этим замечанием займусь сам, его ещё надо обсудить
-                      с клиентом. Мы такие комментарии не трогаем.
+                      «РЕШЕНО» — вопрос по замечанию закрыт, из очереди оно
+                      уходит. Ставится на то, что кода не потребовало: ответили
+                      клиенту в ветке, договорились на словах, замечание
+                      оказалось дублем.
 
-                      У сделанного замечания кнопки нет: спорить о том, браться
-                      ли за правку, поздно — она уже внесена.
+                      Это НЕ «сделано». «Сделано» обещает клиенту изменившуюся
+                      страницу, и его даёт только запись в журнале разбора,
+                      которая уезжает вместе с правкой.
                     */}
                     {!done && (
+                      <button
+                        type="button"
+                        onClick={() => onClosed(g.id, !closed)}
+                        title={
+                          closed
+                            ? "Вернуть замечание в очередь"
+                            : "Вопрос закрыт — убрать замечание из очереди"
+                        }
+                        className={cn(
+                          "flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] transition-colors",
+                          closed
+                            ? "border-[color:var(--comment-closed)] text-[color:var(--comment-closed)]"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        <Check className="size-3" aria-hidden />
+                        {closed ? "Вернуть в очередь" : "Решено"}
+                      </button>
+                    )}
+                    {/*
+                      «Не применять» — другой исход: замечание разбирает дизайнер
+                      сам, его ещё надо обсудить с клиентом. Мы такие комментарии
+                      не трогаем.
+
+                      У сделанного и у решённого кнопки нет: спорить о том,
+                      браться ли за правку, поздно.
+                    */}
+                    {!done && !closed && (
                     <button
                       type="button"
                       onClick={() => onSkipped(g.id, !skipped)}

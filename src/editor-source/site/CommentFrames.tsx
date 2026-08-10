@@ -19,15 +19,16 @@ import { resolveAnchor } from "./commentAnchor";
 */
 
 /*
-  СОСТОЯНИЕ ЗАМЕЧАНИЯ — четыре исхода, и у каждого свой цвет рамки:
+  СОСТОЯНИЕ ЗАМЕЧАНИЯ — пять исходов, и у каждого свой цвет рамки:
 
   open     — синяя пунктирная: замечание ждёт работы;
   applied  — зелёная сплошная: сделано (запись в журнале разбора, appliedComments);
   skipped  — серая сплошная: «не применять», дизайнер разбирает сам;
   round    — оранжевая пунктирная: клиент ответил на наш разбор, и по замечанию
-             идёт второй раунд правок.
+             идёт второй раунд правок;
+  closed   — бирюзовая сплошная: «решено», вопрос закрыт без правки в коде.
 */
-export type CommentState = "open" | "applied" | "skipped" | "round";
+export type CommentState = "open" | "applied" | "skipped" | "round" | "closed";
 
 export type CommentFrame = {
   /** Ключ комментария: его id. */
@@ -74,6 +75,17 @@ export const FRAME_LOOK: Record<
     tint: "var(--comment-round-tint)",
     dashed: true,
     tail: " · новый раунд",
+  },
+  /*
+    «Решено» — наша пометка «вопрос закрыт». Сплошная, как у сделанного: работа
+    по замечанию окончена. Цвет тише зелёного «сделано» — страница от этого
+    решения не менялась.
+  */
+  closed: {
+    color: "var(--comment-closed)",
+    tint: "var(--comment-closed-tint)",
+    dashed: false,
+    tail: " · решено",
   },
 };
 

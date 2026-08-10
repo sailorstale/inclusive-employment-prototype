@@ -37,6 +37,8 @@ type CommentsContextValue = {
   toggleResolved: (id: string, resolved: boolean) => void;
   /** Пометить «не применять» — этим замечанием занимается дизайнер сам. */
   toggleSkipped: (id: string, skipped: boolean) => void;
+  /** Пометить «решено» / вернуть в очередь. Наша рабочая пометка, не «сделано». */
+  toggleClosed: (id: string, closed: boolean) => void;
   /*
     Решение дизайнера поверх замечания клиента: что именно с ним делать. Пустая
     строка стирает приписку, саму запись при этом не трогаем — замечание
@@ -202,6 +204,24 @@ export function CommentsProvider({
   );
 
   /*
+    «РЕШЕНО» — вопрос по замечанию закрыт, из очереди оно уходит.
+
+    Ставя «решено», снимаем «не применяем»: это была пометка «дизайнер разберёт
+    сам», а разбор теперь закончен, и держать оба признака разом бессмысленно.
+
+    Поле resolved не трогаем НИКОГДА. Оно зажигает у клиента метку «сделано», а
+    она должна загораться только после публикации правки — иначе клиент увидит
+    «сделано» на странице, которая не изменилась.
+  */
+  const toggleClosed = React.useCallback(
+    (id: string, closed: boolean) => {
+      if (!comments[id]) return;
+      save({ id, closed, ...(closed ? { skipped: false } : null) });
+    },
+    [comments, save]
+  );
+
+  /*
     Приписка дизайнера. Записи без замечания клиента не бывает: приписка всегда
     поверх чужих слов, поэтому если записи нет — писать некуда.
 
@@ -260,6 +280,7 @@ export function CommentsProvider({
       setDeleted,
       toggleResolved,
       toggleSkipped,
+      toggleClosed,
       setNote,
       addReply,
       openCount,
@@ -276,6 +297,7 @@ export function CommentsProvider({
       setDeleted,
       toggleResolved,
       toggleSkipped,
+      toggleClosed,
       setNote,
       addReply,
       openCount,

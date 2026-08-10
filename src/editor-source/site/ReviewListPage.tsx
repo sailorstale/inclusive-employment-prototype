@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { MessageSquare, Search } from "lucide-react";
+import { Check, MessageSquare, Search } from "lucide-react";
 import { CommentsProvider, useComments } from "@/editor-source/CommentsProvider";
 import type { Comment } from "@/editor-source/comments";
 import { stripMarks } from "@/editor-source/richText";
@@ -51,6 +51,7 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "open", label: "В работе" },
   { key: "round", label: "Новый раунд" },
   { key: "skipped", label: "Не применяем" },
+  { key: "closed", label: "Решено" },
   { key: "done", label: "Сделано" },
 ];
 
@@ -67,6 +68,10 @@ const BADGE: Record<CommentState, { label: string; cls: string }> = {
     label: "не применяем",
     cls: "bg-[color:var(--comment-skipped)] text-white",
   },
+  closed: {
+    label: "решено",
+    cls: "bg-[color:var(--comment-closed)] text-white",
+  },
   done: {
     label: "сделано",
     cls: "bg-[color:var(--comment-applied)] text-white",
@@ -77,6 +82,7 @@ const emptyCounts = (): Record<CommentState, number> => ({
   open: 0,
   round: 0,
   skipped: 0,
+  closed: 0,
   done: 0,
 });
 
@@ -84,14 +90,57 @@ const fmt = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleDateString("ru-RU") : "";
 
 /*
-  Порядок страниц — по объёму НЕСДЕЛАННОЙ работы, а не по алфавиту и не по
-  порядку в меню. Наверху то, за что браться, внизу разобранное: список нужен,
-  чтобы планировать работу, а не чтобы листать сайт.
+  СОРТИРОВКА. Порядок нужен разный, потому что и вопросы разные.
+
+  «Сначала непроработанные» — рабочий порядок по умолчанию: сверху то, за что
+  браться. Отвечает на вопрос «что делать дальше».
+
+  «По порядку на сайте» — тот же порядок, в каком страницы стоят в меню.
+  Отвечает на вопрос «как выглядит сайт целиком» и удобен, когда идёшь по нему
+  подряд вместе с клиентом.
+
+  «Больше всего замечаний» — сверху самые обсуждаемые страницы, независимо от
+  того, разобраны они или нет. Отвечает на вопрос «где больше всего спорили».
 */
-function byRemainingWork(a: PageGroup, b: PageGroup): number {
-  const left = (g: PageGroup) => g.counts.round * 100 + g.counts.open;
-  return left(b) - left(a) || b.rows.length - a.rows.length;
-}
+type PageOrder = "work" | "site" | "size";
+
+const PAGE_ORDERS: { key: PageOrder; label: string }[] = [
+  { key: "work", label: "Сначала непроработанные" },
+  { key: "site", label: "По порядку на сайте" },
+  { key: "size", label: "Больше всего замечаний" },
+];
+
+/*
+  Порядок замечаний внутри страницы. По умолчанию старые сверху — так читается
+  история разговора. Обратный порядок нужен, когда клиент только что дописал
+  новых и надо увидеть их первыми.
+*/
+type RowOrder = "old" | "new";
+
+const ROW_ORDERS: { key: RowOrder; label: string }[] = [
+  { key: "old", label: "Сначала старые" },
+  { key: "new", label: "Сначала новые" },
+];
+
+/*
+  Порядок страниц в меню сайта. Берём из того же списка названий, по которому
+  список подписывает страницы: порядок ключей в нём и есть порядок сайта.
+*/
+const SITE_ORDER = Object.keys(routeTitles);
+const siteIndex = (slug: string) => {
+  const i = SITE_ORDER.indexOf(slug);
+  // Страницы, которой в меню нет (её убрали), место в конце.
+  return i < 0 ? SITE_ORDER.length : i;
+};
+
+const PAGE_SORT: Record<PageOrder, (a: PageGroup, b: PageGroup) => number> = {
+  work: (a, b) => {
+    const left = (g: PageGroup) => g.counts.round * 100 + g.counts.open;
+    return left(b) - left(a) || b.rows.length - a.rows.length;
+  },
+  site: (a, b) => siteIndex(a.slug) - siteIndex(b.slug),
+  size: (a, b) => b.rows.length - a.rows.length,
+};
 
 export function ReviewListPage() {
   /*
@@ -106,9 +155,11 @@ export function ReviewListPage() {
 }
 
 function ReviewList() {
-  const { comments, loaded } = useComments();
+  const { comments, loaded, toggleClosed } = useComments();
   const [filter, setFilter] = React.useState<Filter>("all");
   const [query, setQuery] = React.useState("");
+  const [pageOrder, setPageOrder] = React.useState<PageOrder>("work");
+  const [rowOrder, setRowOrder] = React.useState<RowOrder>("old");
 
   /* Замечание без текста — это пометка удаления блока, а не разговор. */
   const rows = React.useMemo<Row[]>(
@@ -159,14 +210,15 @@ function ReviewList() {
           slug,
           title: routeTitles[slug] ?? slug ?? "без страницы",
           gone: !routeTitles[slug],
-          rows: [...list].sort((a, b) =>
-            (a.rec.createdAt || "").localeCompare(b.rec.createdAt || ""),
-          ),
+          rows: [...list].sort((a, b) => {
+            const d = (a.rec.createdAt || "").localeCompare(b.rec.createdAt || "");
+            return rowOrder === "old" ? d : -d;
+          }),
           counts,
         };
       })
-      .sort(byRemainingWork);
-  }, [rows, filter, query]);
+      .sort(PAGE_SORT[pageOrder]);
+  }, [rows, filter, query, pageOrder, rowOrder]);
 
   const shown = groups.reduce((n, g) => n + g.rows.length, 0);
 
@@ -188,6 +240,7 @@ function ReviewList() {
             <Stat label="в работе" value={totals.open} warn />
             <Stat label="новый раунд" value={totals.round} bad />
             <Stat label="не применяем" value={totals.skipped} />
+            <Stat label="решено" value={totals.closed} />
             <Stat label="сделано" value={totals.done} />
           </div>
 
@@ -218,6 +271,45 @@ function ReviewList() {
             </label>
           </div>
 
+          {/*
+            СОРТИРОВКА — отдельной строкой под фильтрами. Порядок страниц и
+            порядок замечаний внутри страницы выбираются независимо: это разные
+            вопросы, и связывать их одним переключателем было бы неудобно.
+          */}
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+            <label className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Страницы:</span>
+              <select
+                value={pageOrder}
+                onChange={(e) => setPageOrder(e.target.value as PageOrder)}
+                className="rounded-md border bg-background px-2 py-1 text-sm outline-none focus:border-ring"
+              >
+                {PAGE_ORDERS.map((o) => (
+                  <option key={o.key} value={o.key}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Замечания:</span>
+              <select
+                value={rowOrder}
+                onChange={(e) => setRowOrder(e.target.value as RowOrder)}
+                className="rounded-md border bg-background px-2 py-1 text-sm outline-none focus:border-ring"
+              >
+                {ROW_ORDERS.map((o) => (
+                  <option key={o.key} value={o.key}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span className="text-muted-foreground">
+              показано замечаний: {shown}
+            </span>
+          </div>
+
           {shown === 0 ? (
             <p className="mt-10 text-sm text-muted-foreground">
               Под эти условия не подходит ни одно замечание.
@@ -225,7 +317,11 @@ function ReviewList() {
           ) : (
             <div className="mt-8 space-y-8">
               {groups.map((g) => (
-                <PageBlock key={g.slug || "no-page"} group={g} />
+                <PageBlock
+                  key={g.slug || "no-page"}
+                  group={g}
+                  onClosed={toggleClosed}
+                />
               ))}
             </div>
           )}
@@ -235,7 +331,13 @@ function ReviewList() {
   );
 }
 
-function PageBlock({ group }: { group: PageGroup }) {
+function PageBlock({
+  group,
+  onClosed,
+}: {
+  group: PageGroup;
+  onClosed: (id: string, closed: boolean) => void;
+}) {
   return (
     <section>
       <div className="flex flex-wrap items-baseline gap-2 border-b pb-2">
@@ -265,7 +367,12 @@ function PageBlock({ group }: { group: PageGroup }) {
       <ul className="divide-y">
         {group.rows.map(({ rec, state }) => (
           <li key={rec.id} className="py-3">
-            <CommentRow rec={rec} state={state} gone={group.gone} />
+            <CommentRow
+              rec={rec}
+              state={state}
+              gone={group.gone}
+              onClosed={onClosed}
+            />
           </li>
         ))}
       </ul>
@@ -277,11 +384,13 @@ function CommentRow({
   rec,
   state,
   gone,
+  onClosed,
 }: {
   rec: Comment;
   state: CommentState;
   /** Страницы нет — переходить некуда, показываем без ссылки. */
   gone: boolean;
+  onClosed: (id: string, closed: boolean) => void;
 }) {
   const badge = BADGE[state];
   const rounds = appliedAllFor(rec.id);
@@ -362,6 +471,34 @@ function CommentRow({
           {replies[replies.length - 1].author || "без имени"} ответил:{" "}
           {replies[replies.length - 1].text}
         </p>
+      )}
+
+      {/*
+        «РЕШЕНО» прямо из общего списка — здесь и разбирают очередь, поэтому
+        ходить ради одной кнопки на страницу незачем.
+
+        У сделанного замечания кнопки нет: правка внесена и опубликована, спор
+        закончен. У решённого кнопка возвращает его обратно в очередь.
+      */}
+      {state !== "done" && (
+        <button
+          type="button"
+          onClick={() => onClosed(rec.id, state !== "closed")}
+          title={
+            state === "closed"
+              ? "Вернуть замечание в очередь"
+              : "Вопрос закрыт — убрать замечание из очереди"
+          }
+          className={cn(
+            "flex items-center gap-1 rounded border px-2 py-0.5 text-xs transition-colors",
+            state === "closed"
+              ? "border-[color:var(--comment-closed)] text-[color:var(--comment-closed)]"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Check className="size-3.5" aria-hidden />
+          {state === "closed" ? "Вернуть в очередь" : "Решено"}
+        </button>
       )}
     </div>
   );
