@@ -39,7 +39,7 @@ const slugify = (s: string) =>
 type Hit = { i: number; hashes: number; text: string; ordered: boolean; section: number };
 
 /** Заголовки-ставшие-списком чиним обратно в заголовки. */
-export function normalizeSourceBlocks(blocks: SourceBlock[]): SourceBlock[] {
+function headingsFromLists(blocks: SourceBlock[]): SourceBlock[] {
   const hits: Hit[] = [];
   let section = 0;
   blocks.forEach((b, i) => {
@@ -89,4 +89,59 @@ export function normalizeSourceBlocks(blocks: SourceBlock[]): SourceBlock[] {
     const text = n ? `${n}. ${h.text}` : h.text;
     return { kind: "heading", level: LEVEL[h.hashes] ?? 3, md: text, text, anchor: slugify(h.text) };
   });
+}
+
+/*
+  ПОТЕРЯННАЯ ОБЪЕДИНЁННАЯ ЯЧЕЙКА ТАБЛИЦЫ.
+
+  В документе клиента первый столбец бывает объединён на несколько строк подряд:
+  «Сотрудники с инвалидностью по слуху» — одна ячейка на три строки. Выгрузка
+  документа в наш снимок такую ячейку выдала только в первой строке группы, а
+  продолжения приехали короче на одну ячейку и были добиты пустыми справа. На
+  странице это съехавший влево ряд: решение стоит в колонке «Группа
+  сотрудников», а последняя колонка пустая.
+
+  Чиним узко, чтобы не тронуть законные пустоты:
+  · строка не первая — первой не у кого занять значение;
+  · справа есть пустые ячейки, а заполненные идут подряд слева;
+  · заполненных ячеек не меньше двух: строка с одной заполненной ячейкой — это
+    ряд-подзаголовок во всю ширину («Социальные гарантии» в сравнении форм
+    занятости), и трогать её нельзя.
+
+  Сколько ячеек пустует справа, столько дописываем слева из предыдущей — уже
+  починенной — строки: значение объединённой ячейки повторяется по всей группе.
+  Объединения строк у компонента таблицы нет, поэтому повтор и есть верный вид.
+*/
+function fixMergedTableCells(blocks: SourceBlock[]): SourceBlock[] {
+  return blocks.map((b) => {
+    if (b.kind !== "table") return b;
+    const width = b.header.length;
+    let prev: string[] | null = null;
+    const rows = b.rows.map((row) => {
+      const filled = row.map((c) => c.trim() !== "");
+      let tail = 0;
+      while (tail < width && !filled[width - 1 - tail]) tail += 1;
+      const packedLeft = filled.slice(0, width - tail).every(Boolean);
+      const carry =
+        prev !== null &&
+        row.length === width &&
+        tail >= 1 &&
+        packedLeft &&
+        filled.filter(Boolean).length >= 2;
+      const fixed = carry ? [...prev!.slice(0, tail), ...row.slice(0, width - tail)] : row;
+      prev = fixed;
+      return fixed;
+    });
+    return { ...b, rows };
+  });
+}
+
+/*
+  Лечение снимка источника целиком: сначала заголовки, потом таблицы.
+
+  Отдельной обёрткой, а не одной функцией: разбор заголовков делает ранний
+  выход, когда чинить нечего, и таблицы до него просто не дошли бы.
+*/
+export function normalizeSourceBlocks(blocks: SourceBlock[]): SourceBlock[] {
+  return fixMergedTableCells(headingsFromLists(blocks));
 }
