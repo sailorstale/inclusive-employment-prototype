@@ -7,6 +7,7 @@ import { decourse } from "./decourse";
 import { canonize } from "./canon";
 import { dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
+import { applyClientEdits } from "./clientEdits";
 import { cutFromCards } from "./cutFromCard";
 import { loadEdits } from "@/editor-source/store";
 import { useLogoIndex, useAvatarIndex } from "@/editor-source/source/orgLogo";
@@ -117,14 +118,15 @@ export function useModuleDoc(moduleId: string): Doc | null {
   const sourceSections = React.useMemo(() => (blocks ? toSections(blocks) : []), [blocks]);
   // Директивы кладём на ПОЛНЫЙ источник, и только потом убираем леса курса:
   // порядок важен, иначе директивы теряют свои блоки (см. dropScaffold).
-  const { sections, directiveAt } = React.useMemo(
-    () =>
-      dropScaffold(
-        sourceSections,
-        placeDirectives(sourceSections, pathname, moduleId, directives),
-      ),
-    [sourceSections, pathname, moduleId, directives],
-  );
+  // Правки по замечаниям клиента идут последними — они опираются на текст
+  // соседнего блока, а он к этому моменту уже окончательный (см. clientEdits).
+  const { sections, directiveAt } = React.useMemo(() => {
+    const cleaned = dropScaffold(
+      sourceSections,
+      placeDirectives(sourceSections, pathname, moduleId, directives),
+    );
+    return applyClientEdits(cleaned.sections, cleaned.directiveAt);
+  }, [sourceSections, pathname, moduleId, directives]);
   const logoIndex = useLogoIndex();
   const avatarIndex = useAvatarIndex();
 

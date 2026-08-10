@@ -13,6 +13,7 @@ import { loadLogoIndex, loadAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives } from "@/editor-source/directives";
 import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
+import { applyClientEdits } from "./clientEdits";
 import { decourse } from "./decourse";
 import { canonize } from "./canon";
 import { pageChildren } from "./pageStructure";
@@ -98,10 +99,14 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
       return type.startsWith("h") ? canonize(out) : out;
     };
     // Тот же порядок, что на сайте: сначала разложить директивы по полному
-    // источнику, потом убрать леса курса.
-    const { sections, directiveAt } = dropScaffold(
+    // источнику, потом убрать леса курса, потом внести правки по замечаниям.
+    const cleaned = dropScaffold(
       sourceSections,
       placeDirectives(sourceSections, pathname, page.module, directives),
+    );
+    const { sections, directiveAt } = applyClientEdits(
+      cleaned.sections,
+      cleaned.directiveAt,
     );
     const doc = buildDoc(page.module, sections, resolve, logoIndex, directiveAt, avatarIndex);
 
