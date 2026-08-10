@@ -3535,7 +3535,14 @@ export function buildDoc(
             const hasPhoto = /^\/\S+\.(?:jpe?g|png|svg|webp)$/iu.test(parts[0] ?? "");
             const [name, role] = hasPhoto ? parts.slice(1) : parts;
             return {
-              photo: hasPhoto ? parts[0] : undefined,
+              /*
+                В дерево кладём ИМЯ ФАЙЛА, как у цитаты: разработчик забирает
+                картинку с прототипа сам (figma/avatars/<photo>.jpg), адресов в
+                выгрузке нет намеренно. Адрес для показа собирает ResultView.
+                В самой директиве путь остаётся полным — по нему строка с
+                фотографией отличается от строки, начинающейся с имени.
+              */
+              photo: hasPhoto ? parts[0].replace(/^.*\//, "").replace(/\.\w+$/, "") : undefined,
               name: (name ?? "").trim(),
               role: role?.trim() || undefined,
             };

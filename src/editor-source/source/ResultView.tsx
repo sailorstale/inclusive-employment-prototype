@@ -454,7 +454,18 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
       return <Video href={node.href} />;
 
     case "Person Item":
-      return <PersonItem photo={node.photo} name={node.name} role={node.role} />;
+      return (
+        <PersonItem
+          // Как у цитаты: в данных имя файла, адрес собираем здесь.
+          photo={
+            node.photo
+              ? `${import.meta.env.BASE_URL}figma/avatars/${node.photo}.jpg`
+              : undefined
+          }
+          name={node.name}
+          role={node.role}
+        />
+      );
 
     case "Prompt":
       return (
