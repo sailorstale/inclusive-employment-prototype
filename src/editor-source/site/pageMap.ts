@@ -516,8 +516,15 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       "prakticheskoe-zadanie-dlya-rabotodateley",
     ],
     outline: {
+      /*
+        В источнике два раздела с одинаковым заголовком «Как составить описание
+        вакансии». Первый — из заголовка и одного абзаца-подводки, второй — весь
+        материал. Читатель видел в оглавлении две одинаковые строки, а первая
+        вела на пустое место. Заголовок-дубль снимаем, абзац остаётся и уходит
+        во вступление страницы.
+      */
+      drop: ["kak-sostavit-opisanie-vakansii"],
       sections: [
-        "kak-sostavit-opisanie-vakansii",
         "prakticheskoe-zadanie",
         "kak-sostavit-opisanie-vakansii-2",
         /*

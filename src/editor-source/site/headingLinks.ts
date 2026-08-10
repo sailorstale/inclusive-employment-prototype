@@ -1,4 +1,5 @@
 import type { Node, SectionNode } from "@/editor-source/source/contentTree";
+import { stripDecourse } from "./decourse";
 
 /*
   ССЫЛКА ВНУТРИ ЗАГОЛОВКА — уезжает вниз, в конец своего раздела.
@@ -43,7 +44,14 @@ function liftInSection(sec: SectionNode): SectionNode {
   const moved: string[] = [];
   const children = sec.children.map((node) => {
     if (!isHeading(node)) return node;
-    const urls = liftableLinks(node.text);
+    /*
+      Ссылки ищем только в НЫНЕШНЕМ варианте заголовка. Раскурсовка держит
+      рядом прежний текст — он показывается в подсказке «было», — и вместе с
+      ним в строке лежит второй такой же адрес. Из-за него строка «Открыть
+      задание» на «Запустить программу» уезжала вниз дважды, а заголовок при
+      этом был один.
+    */
+    const urls = liftableLinks(stripDecourse(node.text));
     if (!urls.length) return node;
     moved.push(...urls);
     return { ...node, text: node.text.replace(LINK, "$1") };
