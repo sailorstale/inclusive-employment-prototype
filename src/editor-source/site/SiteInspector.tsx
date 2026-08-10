@@ -968,9 +968,16 @@ function SiteMode({
 
           <div className="relative z-10 -mt-20 rounded-t-[2rem] bg-background">
             <div className="mx-auto grid max-w-7xl grid-cols-[15rem_minmax(0,1fr)_13rem] gap-x-8 px-6 py-10">
-              {/* Левое меню — навигация по разделам сайта */}
+              {/* Левое меню — навигация по разделам сайта. Своя прокрутка
+                  обязательна по той же причине, что и у оглавления справа: на
+                  невысоком экране раскрытый раздел не помещается, и нижние
+                  пункты уходили за край без возможности их пролистнуть.
+                  Высоту так же берём у панели, а не у окна. */}
               <aside className="min-w-0">
-                <div className="sticky top-8">
+                <div
+                  className="sticky top-8 overflow-y-auto pb-4"
+                  style={{ maxHeight: railMaxHeight }}
+                >
                   <SidebarNav />
                 </div>
               </aside>
