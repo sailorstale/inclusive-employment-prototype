@@ -390,11 +390,12 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
               : undefined
           }
         >
-          {node.paragraphs.map((p, i) => (
-            <p key={i} className={i ? "mt-[var(--space-s)]" : undefined}>
-              {renderInline(p)}
-            </p>
-          ))}
+          {/*
+            Абзацы цитаты разбираем тем же механизмом, что и выгрузка: строки,
+            начатые маркером, — настоящий список, а не абзац с символом внутри
+            (см. paragraphsToTags). Иначе прототип и JSON разъедутся.
+          */}
+          {quizText(node.paragraphs.join("\n"))}
         </Quote>
       );
 

@@ -3834,7 +3834,44 @@ function normalizeNode(n: Node): Node {
   return n;
 }
 
-const normalizeNodes = (nodes: Node[]): Node[] => nodes.map(normalizeNode);
+/*
+  ЧЕК-ЛИСТ ИЗ ИСТОЧНИКА — это список, а не столбик абзацев. В документе клиента
+  самопроверка набрана печатными квадратиками («☐ Все задачи понятны»), каждая
+  строка приезжает отдельным абзацем, и разработчик получил бы шесть текстовых
+  блоков подряд с символом внутри строки.
+
+  Собираем подряд идущие такие строки в обычный список. Сам квадратик срезаем:
+  настоящего чекбокса в системе нет, а иконки «квадрат» нет в закрытом списке,
+  обещанном разработчику.
+*/
+const CHECKBOX_LINE = /^\s*[☐☑✓]\s+/;
+
+function checkboxRuns(nodes: Node[]): Node[] {
+  const out: Node[] = [];
+  let run: Node[] = [];
+  const flush = () => {
+    if (run.length) out.push({ component: "Stack", ordered: false, children: run });
+    run = [];
+  };
+  for (const n of nodes) {
+    if (n.component === "Text" && CHECKBOX_LINE.test(n.text)) {
+      run.push({
+        component: "List Item",
+        size: "L",
+        type: "Dot",
+        text: n.text.replace(CHECKBOX_LINE, ""),
+        at: n.at,
+      });
+      continue;
+    }
+    flush();
+    out.push(n);
+  }
+  flush();
+  return out;
+}
+
+const normalizeNodes = (nodes: Node[]): Node[] => checkboxRuns(nodes).map(normalizeNode);
 
 /*
   ЯКОРЯ ЗАГОЛОВКОВ И ПОДПИСИ ТАБЛИЦ — одним проходом по документу.
@@ -4060,6 +4097,10 @@ const escapeAttr = (t: string) => escapeText(t).replace(/"/g, "&quot;");
 
   Разбор один и для показа, и для выгрузки — иначе сайт и JSON разъедутся.
 */
+/** Пустая пара звёздочек исчезает; пробел нужен, только если рядом его нет. */
+const emptyGap = (before: string, after: string) =>
+  !after || /\s$/.test(before) || /^\s/.test(after) ? "" : " ";
+
 export type TextBlock = { kind: "p" | "ul"; lines: string[] };
 
 export function textBlocks(text: string): TextBlock[] {
@@ -4085,6 +4126,28 @@ export function textBlocks(text: string): TextBlock[] {
   строкой с тегами. Всё, что сложнее, — тегами блоков: <p> и <ul><li>. Поле и
   так несёт разметку (<b>, <a>), поэтому список тегами ей не чужой.
 */
+/*
+  ПУНКТ СПИСКА ИЗ НЕСКОЛЬКИХ СТРОК. Перенос внутри пункта значащий — по просьбе
+  дизайнера там «ссылка, а следом описание», — но пункт ОДИН, и рвать его на
+  абзацы нельзя. Значит это перенос строки, а не новый абзац.
+*/
+export function mdLinesToTags(text: string): string {
+  return text
+    .split("\n")
+    .map((l) => mdToTags(l.trim()))
+    .filter(Boolean)
+    .join("<br>");
+}
+
+/** Абзацы цитаты: строки-пункты «• …» собираются в один список. */
+export function paragraphsToTags(items: string[]): string[] {
+  return textBlocks(items.join("\n")).map((b) =>
+    b.kind === "ul"
+      ? `<ul>${b.lines.map((l) => `<li>${mdToTags(l)}</li>`).join("")}</ul>`
+      : mdToTags(b.lines[0]),
+  );
+}
+
 export function mdBlocksToTags(text: string): string {
   const blocks = textBlocks(text);
   if (blocks.length <= 1 && blocks[0]?.kind !== "ul") return mdToTags(text);
@@ -4123,7 +4186,19 @@ export function mdToTags(text: string): string {
         ? `<a href="${escapeText(href)}"${rel}>${mdToTags(m[1])}</a>`
         : mdToTags(m[1]);
     } else if (m[3] !== undefined) {
-      out += `<b>${mdToTags(m[3])}</b>`;
+      /*
+        «**Нужно выяснить:**** **» из документа клиента: закрывающая и
+        открывающая пары слиплись, и между ними остался один пробел. Тег без
+        содержимого разработчику не нужен — пустую пару выбрасываем, но слова
+        при этом не склеиваем.
+
+        Чинить заменой ДО разбора нельзя: в источнике есть и честные пары
+        «**А** **Б**», их такая замена порвала бы. Поэтому правило живёт здесь,
+        где пары уже сопоставлены.
+      */
+      out += m[3].trim()
+        ? `<b>${mdToTags(m[3])}</b>`
+        : emptyGap(out, text.slice(re.lastIndex));
     } else if (m[6] !== undefined) {
       const title = m[8] !== undefined ? m[7] : undefined;
       const description = m[8] ?? m[7];
@@ -4131,7 +4206,8 @@ export function mdToTags(text: string): string {
         `<tooltip${title ? ` title="${escapeAttr(title)}"` : ""}` +
         ` description="${escapeAttr(description)}">${escapeText(m[6])}</tooltip>`;
     } else {
-      out += `<i>${mdToTags(m[4] ?? m[5])}</i>`;
+      const em = m[4] ?? m[5];
+      out += em.trim() ? `<i>${mdToTags(em)}</i>` : emptyGap(out, text.slice(re.lastIndex));
     }
     last = re.lastIndex;
   }
@@ -4156,8 +4232,12 @@ const TEXT_KEYS = new Set([
 ]);
 /** Поля-массивы строк и таблица (массив массивов). */
 const TEXT_ARRAY_KEYS = new Set(["paragraphs", "header"]);
-/** Поля квиза, где текст идёт абзацами и перечислениями, а не одной фразой. */
-const BLOCK_TEXT_KEYS = new Set(["question", "explanation", "description"]);
+/*
+  Списка «полей-абзацев» больше нет: абзацами разбирается ЛЮБОЕ текстовое поле.
+  Разбор по имени компонента был узким местом — переносы строк точно так же
+  копились во врезке, в заготовке письма и в разборе варианта ответа, а вёрстка
+  их съедает: абзацы схлопываются в один.
+*/
 
 /*
   КОНТРАКТ ВЫГРУЗКИ (замечания разработчика к JSON).
@@ -4329,9 +4409,16 @@ const cleanForExport = (
           которых бывают перечисления. Их размечаем блоками (<p>, <ul>), иначе
           пункты уехали бы разработчику символами «•» посреди текста.
         */
-        out[k] = component === "Quiz" && BLOCK_TEXT_KEYS.has(k)
-          ? mdBlocksToTags(v)
-          : mdToTags(v);
+        out[k] = component === "List Item" ? mdLinesToTags(v) : mdBlocksToTags(v);
+        continue;
+      }
+      /*
+        Абзацы цитаты: подряд идущие пункты «• …» — один список, а не абзацы с
+        символом внутри. Тот же разбор, что у ячейки таблицы и у квиза.
+        Проверять ДО TEXT_ARRAY_KEYS: иначе под разбор попадёт и шапка таблицы.
+      */
+      if (k === "paragraphs" && Array.isArray(v)) {
+        out[k] = paragraphsToTags(v as string[]);
         continue;
       }
       if (TEXT_ARRAY_KEYS.has(k) && Array.isArray(v)) {
@@ -4354,10 +4441,14 @@ const cleanForExport = (
       // Варианты квиза — объекты {text, correct}: текст переводим в теги,
       // флаг верности оставляем как есть.
       if (k === "items" && Array.isArray(v)) {
-        out[k] = (v as { text: string; correct?: boolean }[]).map((o) => ({
-          ...o,
-          text: mdToTags(o.text),
-        }));
+        out[k] = (v as { text: string; correct?: boolean; feedback?: string }[]).map(
+          (o) => ({
+            ...o,
+            text: mdToTags(o.text),
+            // Разбор варианта — такой же текст для читателя: абзацы и теги, а не сырьё.
+            ...(o.feedback ? { feedback: mdBlocksToTags(o.feedback) } : {}),
+          }),
+        );
         continue;
       }
       out[k] = v;
