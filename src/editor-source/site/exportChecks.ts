@@ -1,4 +1,5 @@
 import { routeTitles } from "@/data/nav";
+import { KNOWN_ICONS } from "@/editor-source/source/iconForText";
 import type { OsnovyExport } from "./siteExport";
 
 /*
@@ -33,22 +34,16 @@ export type Problem = {
 };
 
 /*
-  ЗАКРЫТЫЙ СПИСОК ИКОНОК. Обещан разработчику письмом от 28 июля: имена Lucide
-  строчными через дефис, «если раскладке понадобится что-то сверх — придём к
-  тебе, а не добавим молча». Проверка и есть та самая дверь: новая иконка
-  зажигает предупреждение, а не уезжает тихо.
+  ИКОНКИ. Список ОТКРЫТЫЙ — решение дизайнера: новую иконку Lucide берём, когда
+  она нужна, и разработчику про неё говорим. Поэтому проверяем не «входит ли имя
+  в утверждённый перечень», а «умеет ли прототип эту иконку нарисовать».
+
+  Разница важная. Имя, которого нет в реестре (iconForText.tsx), прототип молча
+  подменяет заглушкой «Info», а разработчик получает имя, которое никто не
+  подключал, — и заметить это можно только случайно. Опечатка в имени выглядит
+  ровно так же. Вот их проверка и ловит.
 */
-export const ALLOWED_ICONS = new Set([
-  // Девятнадцать из письма.
-  "users", "file-text", "scale", "clock", "wallet", "graduation-cap",
-  "alert-triangle", "list-checks", "search", "message-square", "shield-check",
-  "accessibility", "building-2", "heart", "handshake", "target", "lightbulb",
-  "info", "link",
-  // Маркеры пункта списка: галочка по умолчанию, минус для «чего не делать».
-  "check", "minus",
-  // Иконки кнопок из второй части письма.
-  "download", "copy", "arrow-right", "external-link", "mail",
-]);
+const ALLOWED_ICONS = KNOWN_ICONS;
 
 /** Имена компонентов, о которых договорились. Всё остальное — разъезд. */
 export const ALLOWED_COMPONENTS = new Set([
@@ -180,7 +175,11 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
 
   const icon = str(n.icon);
   if (icon && !ALLOWED_ICONS.has(icon))
-    add("иконка-не-из-списка", "medium", `Иконки «${icon}» нет в закрытом списке, обещанном разработчику`);
+    add(
+      "иконка-не-заведена",
+      "medium",
+      `Иконку «${icon}» прототип нарисовать не умеет — заведите её в iconForText.ts или проверьте написание`,
+    );
 
   for (const f of TEXT_FIELDS) if (typeof n[f] === "string") checkText(f, n[f] as string, add);
   if (Array.isArray(n.paragraphs))

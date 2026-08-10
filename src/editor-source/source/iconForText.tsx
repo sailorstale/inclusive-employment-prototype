@@ -80,3 +80,18 @@ export function iconForText(text: string): { name: string; Icon: LucideIcon } {
 export function iconByName(name?: string | null): LucideIcon {
   return (name && BY_NAME.get(name)) || DEFAULT.Icon;
 }
+
+/*
+  ИМЕНА ИКОНОК ДЛЯ ПРОВЕРКИ ВЫГРУЗКИ — те же, что здесь, но в том виде, в каком
+  они едут разработчику: строчными через дефис (MonitorSmartphone →
+  monitor-smartphone).
+
+  Список ОТКРЫТЫЙ — решение дизайнера: новые иконки Lucide берём свободно, когда
+  они нужны. Но взять иконку — значит завести её здесь: имя, которого в этом
+  файле нет, прототип нарисовать не может и молча ставит заглушку «Info», а
+  разработчик получает имя, которое никто не подключал. Проверка ловит ровно
+  это — опечатку и незаведённую иконку, а не сам факт новизны.
+*/
+export const KNOWN_ICONS = new Set(
+  [...BY_NAME.keys()].map((n) => n.replace(/([a-z])([A-Z0-9])/g, "$1-$2").toLowerCase()),
+);
