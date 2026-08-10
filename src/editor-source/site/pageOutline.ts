@@ -6,7 +6,7 @@ import type {
 } from "@/editor-source/source/contentTree";
 import type { OsnovyPage } from "./pageMap";
 import { quizSection } from "./quizzes";
-import { recutQuestions } from "./questionGroups";
+import { questionSections } from "./questionGroups";
 import { liftHeadingLinks } from "./headingLinks";
 
 /*
@@ -183,20 +183,28 @@ export function pageParts(
   */
   const quizzes = quizSection(doc, page.slug);
   /*
-    Общая доводка разделов страницы, одна для обеих веток (с перекройкой и без):
-    ссылки из заголовков уезжают вниз (headingLinks), после чего добавляется квиз.
-  */
-  const finish = (list: SectionNode[]) => {
-    const done = liftHeadingLinks(list);
-    return quizzes ? [...done, quizzes] : done;
-  };
+    Вопросы и ответы приходят так же, как квизы, — не из карты секций. В
+    источнике все четырнадцать лежат одной секцией в конце модуля, а на сайте
+    разданы по страницам: кому какой вопрос — в questionGroups.ts.
 
-  // Страница вопросов делится не заголовками, а самими вопросами (аккордеон).
-  const cut = page.questions
-    ? recutQuestions(picked, page.questions)
-    : page.outline
-      ? recutSections(picked, page.outline)
-      : null;
+    Раздача ДОБАВЛЯЕТ разделы, а не перекраивает страницу. Раньше вопросы
+    отменяли перекройку по карте (одна страница — одна ветка), и странице с
+    перекройкой нельзя было дать ни одного вопроса. Теперь можно и то, и другое:
+    «Форматы занятости» перекроены картой и при этом забирают пять вопросов.
+  */
+  const questions = questionSections(doc, page.questions);
+  /*
+    Общая доводка разделов страницы, одна для обеих веток (с перекройкой и без):
+    ссылки из заголовков уезжают вниз (headingLinks), следом встают вопросы, а
+    последним — квиз.
+  */
+  const finish = (list: SectionNode[]) => [
+    ...liftHeadingLinks(list),
+    ...questions,
+    ...(quizzes ? [quizzes] : []),
+  ];
+
+  const cut = page.outline ? recutSections(picked, page.outline) : null;
 
   if (!cut)
     return {
