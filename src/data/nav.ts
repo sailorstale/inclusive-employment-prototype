@@ -28,10 +28,10 @@ export const routeTitles: Record<string, string> = {
   // /companies/hire ведёт на /companies).
   "/companies": "Для компаний",
   "/companies/hire/step-1": "Шаг 1. Выбор вакансии",
-  "/companies/hire/step-2": "Шаг 2. Аудит готовности",
-  "/companies/hire/step-3": "Шаг 3. Создание среды",
-  "/companies/hire/step-4": "Шаг 4. Поиск и оформление",
-  "/companies/hire/step-5": "Шаг 5. Онбординг",
+  "/companies/hire/step-2": "Шаг 2. Аудит рабочей среды",
+  "/companies/hire/step-3": "Шаг 3. Создание инклюзивной среды",
+  "/companies/hire/step-4": "Шаг 4. Поиск и оформление сотрудника",
+  "/companies/hire/step-5": "Шаг 5. Онбординг и сопровождение",
   "/companies/hire/step-6": "Шаг 6. Затраты",
 
   /*
@@ -210,14 +210,29 @@ export const sidebars: Record<Track, SidebarSpec> = {
     groups: [
       {
         items: [
+          /*
+            Подписи здесь ПОВТОРЯЮТ названия страниц слово в слово — в отличие
+            от меню НКО, где они короче. Там пункт стоит под заголовком группы,
+            и группа договаривает за него («Поиск» под «Работодателями»). Здесь
+            групп нет, пункт стоит сам по себе, и договаривать за него некому.
+          */
           { label: "Шаг 1. Выбор вакансии", path: "/companies/hire/step-1" },
-          { label: "Шаг 2. Аудит готовности", path: "/companies/hire/step-2" },
-          { label: "Шаг 3. Создание среды", path: "/companies/hire/step-3" },
           {
-            label: "Шаг 4. Поиск и оформление",
+            label: "Шаг 2. Аудит рабочей среды",
+            path: "/companies/hire/step-2",
+          },
+          {
+            label: "Шаг 3. Создание инклюзивной среды",
+            path: "/companies/hire/step-3",
+          },
+          {
+            label: "Шаг 4. Поиск и оформление сотрудника",
             path: "/companies/hire/step-4",
           },
-          { label: "Шаг 5. Онбординг", path: "/companies/hire/step-5" },
+          {
+            label: "Шаг 5. Онбординг и сопровождение",
+            path: "/companies/hire/step-5",
+          },
           { label: "Шаг 6. Затраты", path: "/companies/hire/step-6" },
         ],
       },

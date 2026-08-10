@@ -499,7 +499,16 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
   },
   {
     slug: "/companies/hire/step-2",
-    title: "Шаг 2. Аудит готовности",
+    /*
+      НАЗВАНИЯ ЧЕТЫРЁХ ШАГОВ ПОДРОБНЕЕ — список от клиента, принят дизайнером
+      10 августа 2026. Строение трека не менялось: те же шесть страниц в том же
+      порядке и с тем же содержанием, поменялись только заголовки.
+
+      Прежние имена были нашими сокращениями («Аудит готовности» вместо аудита
+      рабочей среды), и по ним не всегда понятно, чего именно шаг касается.
+      Новые ближе к тому, как эти главы названы в гугл-доке.
+    */
+    title: "Шаг 2. Аудит рабочей среды",
     module: "m5-1",
     sections: [
       "shag-2-vnutrenniy-audit-rabochey-sredy-processov",
@@ -524,7 +533,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
   */
   {
     slug: "/companies/hire/step-3",
-    title: "Шаг 3. Создание среды",
+    title: "Шаг 3. Создание инклюзивной среды",
     module: "m5-2",
     sections: [
       "shag-3-sozdanie-inklyuzivnoy-sredy",
@@ -556,7 +565,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
   },
   {
     slug: "/companies/hire/step-4",
-    title: "Шаг 4. Поиск и оформление",
+    title: "Шаг 4. Поиск и оформление сотрудника",
     module: "m5-2",
     sections: [
       "shag-4-poisk-kandidatov-provedenie-sobesedovaniy",
@@ -602,7 +611,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
   },
   {
     slug: "/companies/hire/step-5",
-    title: "Шаг 5. Онбординг",
+    title: "Шаг 5. Онбординг и сопровождение",
     module: "m5-3",
     sections: [
       "shag-5-onbording-i-soprovozhdenie-sotrudnika-s-i",
