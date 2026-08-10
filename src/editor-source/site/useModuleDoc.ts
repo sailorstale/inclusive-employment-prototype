@@ -7,6 +7,7 @@ import { decourse } from "./decourse";
 import { canonize } from "./canon";
 import { dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
+import { cutFromCards } from "./cutFromCard";
 import { loadEdits } from "@/editor-source/store";
 import { useLogoIndex, useAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives, type Directive } from "@/editor-source/directives";
@@ -92,8 +93,10 @@ export function useModuleDoc(moduleId: string): Doc | null {
 
   React.useEffect(() => {
     let alive = true;
+    // Директивы укорачиваем сразу на входе: дальше по конвейеру их адреса уже
+    // считаются, и подрезать было бы поздно (см. cutFromCard).
     loadDirectives().then((d) => {
-      if (alive) setDirectives(d);
+      if (alive) setDirectives(cutFromCards(d));
     });
     return () => {
       alive = false;
