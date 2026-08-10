@@ -1,4 +1,8 @@
-import type { Node, SectionNode } from "@/editor-source/source/contentTree";
+import {
+  dropEmptyWrappers,
+  type Node,
+  type SectionNode,
+} from "@/editor-source/source/contentTree";
 import { stripDecourse } from "./decourse";
 import { relatedFor } from "./relatedPages";
 import { recapFor, type Recap } from "./recap";
@@ -288,12 +292,18 @@ export function pageChildren(
     Сборка блока (pageSummaryNode) осталась в файле: вернуть его — это одна
     строка здесь, а восстанавливать удалённое пришлось бы заново.
   */
-  return [
+  /*
+    Пустые конверты снимаем В САМОМ КОНЦЕ сборки, а не при выходе из раскладки:
+    разделы вопросов и квизы достраиваются уже здесь, и их блок-тело до этого
+    момента законно пустое (в него ещё складывают вопросы). См.
+    dropEmptyWrappers в contentTree.
+  */
+  return dropEmptyWrappers([
     ...introSection(intro),
     ...sections,
     ...(hasFeedback(slug)
       ? [{ component: "Feedback", defaultRole: defaultRoleFor(slug) } as Node]
       : []),
     readMoreNode(slug),
-  ];
+  ]);
 }

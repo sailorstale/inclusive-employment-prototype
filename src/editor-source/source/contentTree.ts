@@ -3635,6 +3635,12 @@ export function buildDoc(
     const kids: Node[] = [];
     for (const g of bySection.get(i) ?? []) {
       const nodes = guarded(g);
+      /*
+        Группа, из которой ничего не осталось (директива велела убрать блок,
+        фильтр лесов снял текст), конверта не получает: пустой Block рисуется
+        пустой рамкой с отступом сверху и таким же едет в выгрузку.
+      */
+      if (!nodes.length) continue;
       if (needsCard(g))
         kids.push({
           component: "Block",
@@ -3850,14 +3856,63 @@ function annotate(doc: Doc): Doc {
   };
 }
 
+/*
+  ПУСТОЙ КОНВЕРТ — мусор и на странице, и в выгрузке.
+
+  Block, Stack и другие обёртки своего содержимого не несут: они только держат
+  детей. Когда детей не осталось (директива убрала блок, фильтр лесов снял
+  текст, группа вопросов оказалась пустой), обёртка всё равно рисуется —
+  пустой рамкой с отступом сверху 32 — и таким же узлом едет разработчику.
+
+  Отсев рекурсивный: снаружи пустым становится и тот конверт, чей единственный
+  ребёнок опустел сам. Поэтому идём снизу вверх.
+
+  Узлы со СВОИМ текстом (Accordion с вопросом, General Card с заголовком,
+  Compare Card) не трогаем: пустое тело у них — не мусор, а вопрос без ответа,
+  и это видно глазами. Ячейку таблицы тоже не трогаем: она живёт в rows, а не
+  в children, и её пропажа сдвинула бы столбцы.
+*/
+const EMPTY_WRAPPERS = new Set([
+  "Block",
+  "Stack",
+  "Page Summary",
+  "Compare",
+  "Read More",
+  "Section Container",
+]);
+
+/*
+  Пометка инструмента (note) за содержимое не считается: на странице она давно
+  ничего не рисует (см. ResultView), в выгрузку не едет — и конверт, в котором
+  кроме пометок ничего нет, для читателя такой же пустой. Ровно из-за них
+  пустые рамки и держались: детей у конверта формально один, а видно ноль.
+*/
+const isVisible = (n: Node): boolean => n.component !== "note";
+
+export function dropEmptyWrappers<T extends Node | SectionNode>(nodes: T[]): T[] {
+  const out: T[] = [];
+  for (const n of nodes) {
+    if (!("children" in n) || !Array.isArray(n.children)) {
+      out.push(n);
+      continue;
+    }
+    const children = dropEmptyWrappers(n.children as Node[]);
+    if (!children.some(isVisible) && EMPTY_WRAPPERS.has(n.component)) continue;
+    out.push({ ...n, children } as T);
+  }
+  return out;
+}
+
 /** Применить правила системы ко всему документу. */
 export function normalizeDoc(doc: Doc): Doc {
   return annotate({
     ...doc,
-    children: doc.children.map((n) =>
-      (n as SectionNode).component === "Section Container"
-        ? { ...(n as SectionNode), children: normalizeNodes((n as SectionNode).children) }
-        : normalizeNode(n as Node),
+    children: dropEmptyWrappers(
+      doc.children.map((n) =>
+        (n as SectionNode).component === "Section Container"
+          ? { ...(n as SectionNode), children: normalizeNodes((n as SectionNode).children) }
+          : normalizeNode(n as Node),
+      ),
     ),
   });
 }
