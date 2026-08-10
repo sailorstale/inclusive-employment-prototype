@@ -352,7 +352,23 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       break;
   }
 
-  kids(n).forEach((c, i) => checkNode(c, page, `${where}.children.${i}`, ctx, out));
+  /*
+    Два соседних узла, совпадающих байт в байт, — это задвоение при сборке, а не
+    приём. Одна и та же строка «Открыть задание» подряд дважды выглядит как
+    ошибка вёрстки и у нас, и у разработчика.
+  */
+  const children = kids(n);
+  for (let i = 1; i < children.length; i += 1)
+    if (JSON.stringify(children[i]) === JSON.stringify(children[i - 1]))
+      out.push({
+        rule: "узел-задвоен",
+        severity: "medium",
+        page,
+        where: `${where}.children.${i}`,
+        message: `Узел «${str(children[i].component)}» повторяет предыдущий слово в слово`,
+      });
+
+  children.forEach((c, i) => checkNode(c, page, `${where}.children.${i}`, ctx, out));
   if (Array.isArray(n.rows))
     (n.rows as unknown[][]).forEach((row, ri) =>
       (Array.isArray(row) ? row : []).forEach((cell, ci) => {
@@ -424,6 +440,44 @@ export function checkExport(site: OsnovyExport): Problem[] {
     article.forEach((n, i) => {
       if (isRec(n)) checkNode(n, slug, `article.${i}`, ctx, out);
     });
+
+    /*
+      Два раздела с одинаковым заголовком H2 — почти всегда след перекройки:
+      страницу собрали из разных мест источника, и один и тот же раздел приехал
+      дважды. В оглавлении читатель увидит две одинаковые строки.
+    */
+    const h2 = new Set<string>();
+    const collect = (n: unknown) => {
+      if (Array.isArray(n)) return n.forEach(collect);
+      if (!isRec(n)) return;
+      if (n.component === "Heading" && n.level === "H2") {
+        const t = str(n.text);
+        if (h2.has(t))
+          out.push({
+            rule: "заголовок-задвоен",
+            severity: "medium",
+            page: slug,
+            where: "article",
+            message: `На странице два раздела с заголовком «${t}» — в оглавлении будут две одинаковые строки`,
+          });
+        h2.add(t);
+      }
+      Object.values(n).forEach((v) => v && typeof v === "object" && collect(v));
+    };
+    collect(article);
+
+    /*
+      «Читайте также» стоит внизу каждой страницы (pageStructure.ts). Страница
+      без него — это тупик: читателю некуда идти дальше.
+    */
+    if (!JSON.stringify(article).includes('"Read More"'))
+      out.push({
+        rule: "страница-тупик",
+        severity: "medium",
+        page: slug,
+        where: "article",
+        message: "Внизу страницы нет блока «Читайте также» — читателю некуда идти дальше",
+      });
   }
 
   return out;
