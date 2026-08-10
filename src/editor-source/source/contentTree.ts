@@ -32,6 +32,8 @@ import {
   findOrgInRole,
   findPhotoSlug,
   mentionsYandex,
+  trimToCatalogName,
+  CANON_ORG,
   type LogoEntry,
   type AvatarEntry,
 } from "./orgLogo";
@@ -1064,6 +1066,30 @@ const headingText = (t: string, fix: TextFix = NO_FIX) => {
   return fix.unnumber ? stripNumber(s) : s;
 };
 const stripEmph = (t: string) => t.replace(/^[*_]+|[*_]+$/g, "").trim();
+
+const QUOTED_NAME = /[«„"]([^»“"]{2,60})[»“"]/u;
+
+/*
+  НАЗВАНИЕ ОРГАНИЗАЦИИ ИЗ ТЕКСТА ССЫЛКИ. Важен ПОРЯДОК действий.
+
+  Раньше сначала слепо снимались кавычки по краям, а правило «имя организации —
+  то, что в кавычках» работало после. И не срабатывало ровно там, где нужнее
+  всего: в источнике кавычка разъехалась со ссылкой — открывающая внутри текста
+  ссылки, закрывающая сразу за ней. Закрывающая снималась как краевая, пара не
+  складывалась, и в подпись логотипа уезжала вся фраза целиком вместе с именем
+  и должностью.
+
+  Теперь по порядку: сначала имя в парных кавычках, потом хвост после непарной
+  открывающей, и только в конце — просто снять кавычки по краям.
+*/
+const orgFromLinkText = (raw: string): string => {
+  const t = raw.trim();
+  const paired = QUOTED_NAME.exec(t)?.[1];
+  if (paired) return paired.trim();
+  const opened = /[«„]([^«„]{2,60})$/u.exec(t)?.[1];
+  if (opened) return opened.trim();
+  return t.replace(/^[«„"'\s]+|[»“”"'\s]+$/gu, "").trim();
+};
 
 /*
   Звёздочки ВНУТРИ строки. Разметка в источнике часто рваная: «**Ольга
@@ -2505,7 +2531,8 @@ export function buildDoc(
           const sameHref = links.length > 1 && links.every((m) => m[2] === links[0][2]);
           const inline = links.length ? links[sameHref ? links.length - 1 : 0] : null;
           // Кавычка могла попасть внутрь ссылки («Лучшие друзья» ) — снимаем по краям.
-          if (inline) orgName = inline[1].replace(/^[«„"'\s]+|[»“”"'\s]+$/gu, "").trim();
+          // Кавычка организации могла разъехаться со ссылкой — см. orgFromLinkText.
+          if (inline) orgName = orgFromLinkText(inline[1]);
           else
             for (let j = ai; j < end; j++)
               if (orgIdx < 0 && parsed[j].isLinkOnly && (!hasAuthor || j !== ai)) {
@@ -2548,6 +2575,21 @@ export function buildDoc(
           }
 
           /*
+            ПАДЕЖ И ОПИСАНИЕ ВОКРУГ НАЗВАНИЯ. «центра адаптации людей с
+            инвалидностью Мастер ОК», «фонде борьбы с инсультом ОРБИ»,
+            «Мастер ОК, Центр адаптации людей с инвалидностью» — кавычек нет,
+            опереться не на что. Границы даёт каталог логотипов, написание
+            остаётся исходным.
+
+            Трогаем ТОЛЬКО явно повреждённое: строчная первая буква (падеж или
+            оторванная разметкой буква) либо запятая внутри названия. Это те же
+            признаки, по которым ругается сторож выгрузки. Здоровые названия
+            вроде «Фонд борьбы с лейкемией» под правило не попадают.
+          */
+          if (orgName && (/^\p{Ll}/u.test(orgName) || orgName.includes(",")))
+            orgName = trimToCatalogName(orgName, logoIndex);
+
+          /*
             Аффилиация одним полем logo: «yandex» — круглый знак Яндекса,
             иначе имя файла логотипа организации. Отдельного флага yandex нет
             (замечание разработчика: одно понятие — одно поле).
@@ -2563,12 +2605,14 @@ export function buildDoc(
             !yandex && !orgName && role
               ? findOrgInRole(role, logoIndex)
               : undefined;
-          const org = yandex ? "Яндекс" : (orgName ?? inRole?.name ?? "");
           const logo = yandex
             ? "yandex"
             : orgName
               ? findSlug(orgName, logoIndex)
               : inRole?.slug;
+          // Именительный падеж там, где каталог хранит и падежную форму.
+          const canon = logo ? CANON_ORG[logo] : undefined;
+          const org = yandex ? "Яндекс" : (canon ?? orgName ?? inRole?.name ?? "");
           const photo = author ? findPhotoSlug(author, avatarIndex) : undefined;
 
           /*
@@ -2580,12 +2624,18 @@ export function buildDoc(
             У цитаты без автора подписью работает само название организации
             (см. Quote), второй раз его писать не нужно.
           */
+          /*
+            Сверяем и с исходным написанием: после канона org стоит в
+            именительном падеже («Лаборатория Касперского»), а в должности
+            организация названа в родительном («…развития «Лаборатории
+            Касперского»»). По одному только org проверка не совпала бы, и
+            название приписалось бы к должности второй раз.
+          */
+          const named =
+            flatten(role ?? "").includes(flatten(org)) ||
+            (!!orgName && flatten(role ?? "").includes(flatten(orgName)));
           const roleText =
-            author && org && !flatten(role ?? "").includes(flatten(org))
-              ? role
-                ? `${role}, ${org}`
-                : org
-              : role;
+            author && org && !named ? (role ? `${role}, ${org}` : org) : role;
 
           // Речь: абзацы сегмента, кроме строки авторства и блока-ссылки.
           // Список внутри речи раскрываем в пункты-строки «• …».

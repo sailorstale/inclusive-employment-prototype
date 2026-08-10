@@ -70,20 +70,68 @@ export function loadLogoIndex(): Promise<LogoEntry[]> {
  * («…с инсультом ОРБИ» → «ОРБИ»). Из нескольких берём самое длинное совпадение
  * — оно конкретнее. Короткие названия (< 3 знаков) не ищем: слишком шумно.
  */
-export function findSlug(orgName: string, index: LogoEntry[]): string | undefined {
+export function findEntry(orgName: string, index: LogoEntry[]): LogoEntry | undefined {
   const hay = normalize(orgName);
   if (!hay) return undefined;
-  let best: { slug: string; len: number } | undefined;
+  let best: { e: LogoEntry; len: number } | undefined;
   for (const e of index) {
     const n = normalize(e.name);
     if (n.length < 3) continue;
     const hit = hay === n || new RegExp(`(^| )${escapeRe(n)}( |$)`).test(hay);
-    if (hit && (!best || n.length > best.len)) best = { slug: e.slug, len: n.length };
+    if (hit && (!best || n.length > best.len)) best = { e, len: n.length };
   }
-  return best?.slug;
+  return best?.e;
+}
+
+export function findSlug(orgName: string, index: LogoEntry[]): string | undefined {
+  return findEntry(orgName, index)?.slug;
 }
 
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Слова строки без снятия правовой формы — нужны, чтобы найти ГРАНИЦЫ названия. */
+const plainWords = (raw: string) =>
+  raw
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[«»""''„“”‘’]/g, " ")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+
+/*
+  ОПИСАНИЕ ВОКРУГ НАЗВАНИЯ. В источнике организация нередко названа целой фразой
+  и в падеже: «центра адаптации людей с инвалидностью Мастер ОК», «фонде борьбы
+  с инсультом ОРБИ». Поле org — подпись к логотипу, её читает вслух скринридер,
+  и там нужно само название, а не кусок предложения.
+
+  Каталог логотипов даёт только ГРАНИЦЫ: где в этой фразе название начинается и
+  кончается. Написание берём из исходного текста, а не из каталога, — иначе
+  «ОРБИ» стало бы «Орби», «Лучшие друзья» — «ЛУЧШИЕ ДРУЗЬЯ», а «Действуй!»
+  потерял бы восклицательный знак: в каталоге лежит и такое.
+*/
+export function trimToCatalogName(orgName: string, index: LogoEntry[]): string {
+  const e = findEntry(orgName, index);
+  if (!e) return orgName;
+  const want = plainWords(e.name);
+  const count = want.split(" ").length;
+  const words = orgName.split(/\s+/).filter(Boolean);
+  for (let i = 0; i + count <= words.length; i++) {
+    const window = words.slice(i, i + count).join(" ");
+    if (plainWords(window) === want)
+      return window.replace(/^[«„"'(,\s]+|[»“”"'),.;:\s]+$/gu, "");
+  }
+  return orgName;
+}
+
+/*
+  Каноническое название там, где каталог хранит и падежную форму: у
+  «laboratoriya-kasperskogo» записаны обе — «Лаборатории Касперского» и
+  «Лаборатория Касперского», — и по тексту находится падежная. Для подписи к
+  логотипу нужен именительный.
+*/
+export const CANON_ORG: Record<string, string> = {
+  "laboratoriya-kasperskogo": "Лаборатория Касперского",
+};
 
 /*
   ОРГАНИЗАЦИЯ, НАЗВАННАЯ ПРОСТО СЛОВАМИ В ДОЛЖНОСТИ.
