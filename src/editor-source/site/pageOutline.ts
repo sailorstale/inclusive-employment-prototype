@@ -61,6 +61,17 @@ export type PageOutline = {
     один, общий и в конце (см. recap.ts), и второй сбивает с толку.
   */
   drop?: string[];
+  /*
+    Якоря заголовков, которые в источнике стоят ВРОВЕНЬ со своими же частями.
+    Всё, что идёт следом на том же уровне или глубже, опускается на ступень — и
+    так до первого заголовка выше: там кончается то, что заголовок открывает.
+
+    Нужно там, где структура в источнике описана неверно: заголовок задаёт
+    вопрос, а ответ на него разложен по соседним заголовкам того же уровня. Это
+    не про показ — уровень описывает структуру документа, и здесь мы её
+    исправляем, а не подгоняем под внешний вид.
+  */
+  nest?: string[];
 };
 
 const LEVEL: Record<HeadingLevel, number> = { H2: 2, H3: 3, H4: 4, H5: 5 };
@@ -98,6 +109,27 @@ function makeDemoter(base: number) {
   };
 }
 
+/*
+  Выравнивание вложенности ДО перекройки (см. nest в PageOutline).
+
+  Группу закрывает только заголовок ВЫШЕ открывшего. Заголовок того же уровня
+  закрыть её не может: он и есть та часть, ради которой всё затевалось.
+*/
+function nestUnder(nodes: Node[], anchors: Set<string>): Node[] {
+  if (!anchors.size) return nodes;
+  let open: number | null = null;
+  return nodes.map((n) => {
+    if (!isHeading(n)) return n;
+    const level = LEVEL[n.level];
+    if (open !== null && level < open) open = null;
+    if (n.anchor && anchors.has(n.anchor)) {
+      open = level;
+      return n;
+    }
+    return open === null ? n : { ...n, level: levelByNumber(level + 1) };
+  });
+}
+
 /** Секции источника → разделы страницы по её перекройке. */
 export function recutSections(
   picked: SectionNode[],
@@ -111,7 +143,12 @@ export function recutSections(
   let cur: SectionNode | null = null;
   let demote = makeDemoter(2);
 
-  for (const node of picked.flatMap((s) => s.children)) {
+  const nested = nestUnder(
+    picked.flatMap((s) => s.children),
+    new Set(outline.nest ?? []),
+  );
+
+  for (const node of nested) {
     if (isHeading(node) && node.anchor && wanted.has(node.anchor)) {
       demote = makeDemoter(LEVEL[node.level]);
       cur = {

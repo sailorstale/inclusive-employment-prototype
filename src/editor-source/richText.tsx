@@ -13,6 +13,7 @@ export { safeHref };
 import { Tooltip } from "@/figma/Tooltip";
 import { ExternalLink } from "@/figma/ExternalLink";
 import { isExternalHref } from "./safeUrl";
+import { scrollToBlock } from "@/lib/scroll";
 
 /*
   АДРЕС ВНУТРЕННЕЙ ССЫЛКИ В ПРОТОТИПЕ. В данных внутренние ссылки лежат обычным
@@ -127,6 +128,26 @@ function renderPlain(text: string): React.ReactNode {
           <ExternalLink key={key} href={href} className="text-brand">
             {m[1]}
           </ExternalLink>
+        ) : href.startsWith("#") ? (
+          /*
+            ЯКОРЬ НА ЭТОЙ ЖЕ СТРАНИЦЕ. В данных он остаётся обычным «#anchor» —
+            именно такой адрес нужен разработчику. Но прототип живёт на
+            HashRouter, и обычный клик браузер принимает за смену маршрута:
+            адрес становится «#anchor», а на экране — «Страница не найдена».
+            Поэтому переход делаем сами, прокруткой — тем же приёмом, что в
+            оглавлении.
+          */
+          <a
+            key={key}
+            href={href}
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToBlock(href);
+            }}
+            className="text-brand underline underline-offset-2"
+          >
+            {m[1]}
+          </a>
         ) : (
           <a
             key={key}

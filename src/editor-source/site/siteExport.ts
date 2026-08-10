@@ -13,6 +13,7 @@ import { loadLogoIndex, loadAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives } from "@/editor-source/directives";
 import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
+import { cutFromCards } from "./cutFromCard";
 import { applyClientEdits } from "./clientEdits";
 import { decourse } from "./decourse";
 import { canonize } from "./canon";
@@ -98,12 +99,20 @@ export type OsnovyExport = {
 export type PageTree = { slug: string; title: string; nodes: (SectionNode | Node)[] };
 
 export async function buildSiteTrees(): Promise<PageTree[]> {
-  const [edits, directives, logoIndex, avatarIndex] = await Promise.all([
+  const [edits, markup, logoIndex, avatarIndex] = await Promise.all([
     loadEdits("source"),
     loadDirectives(),
     loadLogoIndex(),
     loadAvatarIndex(),
   ]);
+  /*
+    Разметку укорачиваем сразу на входе — тем же вызовом, что и сайт (см.
+    useModuleDoc и cutFromCard). Считать страницу двумя разными способами нельзя:
+    без подрезки выгрузка и карта блоков собирают её по неподрезанной разметке, и
+    блок, вынесенный из карточки по замечанию клиента, уезжает разработчику
+    по-прежнему внутри неё.
+  */
+  const directives = cutFromCards(markup);
 
   const out: PageTree[] = [];
   for (const page of OSNOVY_PAGES) {
