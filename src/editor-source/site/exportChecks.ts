@@ -191,6 +191,12 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
     else if (/^https?:\/\//.test(href)) {
       if (!external) add("ссылка-без-пометки", "medium", `Внешняя ссылка без rel="external": ${href}`);
       if (/localhost|example\.com|TODO/i.test(href)) add("ссылка-заглушка", "high", `Адрес-заглушка: ${href}`);
+      /*
+        Адрес по http:// браузер помечает небезопасным, а часть сайтов по нему
+        уже не отвечает. Соседние ссылки на те же сайты идут по https.
+      */
+      if (href.startsWith("http://"))
+        add("ссылка-без-шифрования", "low", `Ссылка по http:// вместо https://: ${href}`);
     } else if (href.startsWith("/")) {
       /*
         Сверяем с адресами САЙТА, а не с выгрузкой. Хабы треков («Для компаний»,
@@ -216,14 +222,14 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
           });
       break;
 
+    /*
+      Заголовок, целиком завёрнутый в ссылку, ПРОВЕРКОЙ НЕ СЧИТАЕТСЯ: так
+      задумано. Правило в headingLinks.ts: ссылку из заголовка вынимают только
+      тогда, когда вокруг неё есть свой текст, а «заголовок, который целиком
+      является ссылкой, не трогаем — там ссылка и есть имя того, на что она
+      ведёт».
+    */
     case "Heading": {
-      /*
-        Заголовок целиком завёрнут в ссылку. В конструкторе заголовок — это
-        компонент с текстом, а не контейнер: тег внутри него либо уедет на
-        страницу видимой разметкой, либо потеряется вместе с адресом.
-      */
-      if (/^\s*<a\s/.test(str(n.text)))
-        add("заголовок-ссылкой", "high", "Весь заголовок — одна ссылка; тег внутри заголовка разработчику собрать нечем");
       const anchor = str(n.anchor);
       if (!anchor) add("якорь-пустой", "medium", "У заголовка нет якоря — к нему нельзя дать ссылку");
       else if (!/^[a-z0-9-]+$/.test(anchor))
@@ -236,6 +242,13 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
     case "General Card": {
       const bg = str(n.bgColor);
       if (bg && !CARD_COLORS.has(bg)) add("цвет-карточки", "medium", `Цвет фона «${bg}» не из семи токенов card/bg-*`);
+      /*
+        Заголовок у карточки необязателен по типу, но карточка без него — почти
+        всегда та, у которой заголовок остался первым абзацем внутри: на
+        странице он выглядит заголовком, а разработчик соберёт обычный текст.
+      */
+      if (!str(n.title))
+        add("карточка-без-заголовка", "medium", "У карточки нет title — проверьте, не остался ли заголовок первым абзацем внутри");
       break;
     }
 
@@ -271,7 +284,19 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
     case "Table": {
       const header = Array.isArray(n.header) ? (n.header as unknown[]) : [];
       const rows = Array.isArray(n.rows) ? (n.rows as unknown[][]) : [];
-      if (!str(n.caption)) add("таблица-без-подписи", "medium", "У таблицы нет caption для скринридера");
+      const caption = str(n.caption);
+      if (!caption) add("таблица-без-подписи", "medium", "У таблицы нет caption для скринридера");
+      /*
+        Подпись собирается из ближайшего заголовка сверху и списка столбцов.
+        Если сверху оказался ярлык-врезка («Важно», «Например»), подпись
+        начинается с него и таблицу не называет: незрячий читатель услышит
+        «Важно. Столбцы: …» и не поймёт, о чём таблица.
+      */
+      else {
+        const head = caption.split("Столбцы:")[0].trim().replace(/\.$/, "");
+        if (/^(Важно|Например|Пример|Обратите внимание|Итого|МИФ)\b/i.test(head) || head.length < 12)
+          add("подпись-не-называет", "medium", `Подпись таблицы начинается со служебной строки: «${caption.slice(0, 70)}»`);
+      }
       if (!header.length) add("таблица-без-шапки", "high", "У таблицы нет шапки");
       if (!rows.length) add("таблица-без-строк", "high", "У таблицы есть шапка, но нет ни одной строки");
       /*
@@ -296,7 +321,14 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
 
     case "Quiz": {
       const items = Array.isArray(n.items) ? (n.items as Rec[]) : [];
-      if (!str(n.question)) add("квиз-без-вопроса", "high", "У квиза нет самого вопроса — читателю нечего отвечать");
+      /*
+        Квиз без вопроса бывает законно: у квиза-темы («Зрение», «Слух») вопрос
+        весь в заголовке, и компонент намеренно не рисует пустое место
+        (Quiz.tsx). Тревога только если нет ни вопроса, ни заголовка — тогда
+        читателю нечего отвечать.
+      */
+      if (!str(n.question) && !str(n.title))
+        add("квиз-без-вопроса", "high", "У квиза нет ни вопроса, ни заголовка — читателю нечего отвечать");
       const correct = items.filter((it) => it.correct === true);
       if (!items.length) add("квиз-без-вариантов", "high", "У квиза нет вариантов ответа");
       if (items.length && !correct.length) add("квиз-без-верного", "high", "Ни один вариант не отмечен верным");
@@ -316,18 +348,32 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       break;
     }
 
-    case "Person Item":
+    case "Person Item": {
       if (!str(n.name)) add("человек-без-имени", "high", "У карточки человека нет имени");
-      if (!str(n.photo)) add("человек-без-фото", "low", "У карточки человека нет фотографии");
+      const photo = str(n.photo);
+      if (!photo) add("человек-без-фото", "low", "У карточки человека нет фотографии");
+      /*
+        Картинка едет ИМЕНЕМ ФАЙЛА, а не адресом — так договорились с
+        разработчиком про логотипы и фото цитат («файлы разработчик забирает с
+        прототипа сам»). Полный путь с расширением в одном месте и голое имя в
+        другом заставят его писать две разные сборки адреса.
+      */
+      else if (photo.includes("/") || /\.\w{3,4}$/.test(photo))
+        add("фото-адресом", "medium", `Фото задано путём «${photo}», а у цитат — именем файла: два правила на одно и то же`);
       break;
+    }
+
 
     case "Image":
       if (!str(n.src)) add("медиа-без-адреса", "high", "У картинки нет файла");
       /*
         Без alt картинка для незрячего читателя не существует: скринридер
-        прочитает имя файла или промолчит.
+        прочитает имя файла или промолчит. Формат не ломается — поле
+        необязательное, и в исходных документах подписи просто нет. Поэтому
+        мелочью, но помечаем: это дырка в контенте, и закрыть её можно только
+        руками.
       */
-      if (!str(n.alt)) add("картинка-без-подписи", "medium", "У картинки нет alt для скринридера");
+      if (!str(n.alt)) add("картинка-без-подписи", "low", "У картинки нет alt — для незрячего читателя её не существует");
       break;
 
     /*
@@ -337,13 +383,21 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       это не аккуратность, а склеенные в один два разных списка.
     */
     case "Stack": {
-      const withIcon = kids(n).filter((c) => str(c.icon)).length;
+      const items = kids(n);
+      const withIcon = items.filter((c) => str(c.icon)).length;
       if (withIcon && str(n.marker) !== "icon")
         add(
           "список-смешанный",
           "high",
-          `Маркер списка «${str(n.marker)}», но у ${withIcon} пунктов из ${kids(n).length} своя иконка — похоже, склеены два разных списка`,
+          `Маркер списка «${str(n.marker)}», но у ${withIcon} пунктов из ${items.length} своя иконка — похоже, склеены два разных списка`,
         );
+      /*
+        Нумерованный список из одного пункта. Нумерация в нём смысла не несёт, а
+        следующий такой же список начнёт счёт заново — читатель увидит два
+        первых пункта подряд.
+      */
+      if (str(n.marker) === "number" && items.length === 1)
+        add("список-из-одного", "low", "Нумерованный список из одного пункта — счёт начнётся заново у следующего");
       break;
     }
 
@@ -372,7 +426,17 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
   if (Array.isArray(n.rows))
     (n.rows as unknown[][]).forEach((row, ri) =>
       (Array.isArray(row) ? row : []).forEach((cell, ci) => {
-        if (isRec(cell)) checkNode(cell, page, `${where}.rows.${ri}.${ci}`, ctx, out);
+        const at = `${where}.rows.${ri}.${ci}`;
+        if (isRec(cell)) checkNode(cell, page, at, ctx, out);
+        /*
+          Ячейка-строка тоже несёт текст: перечисление дефисами внутри неё
+          слипнется в сплошную строку, а маркер «•» так и уедет символом.
+          Проверяем теми же правилами, что и обычные поля.
+        */
+        else if (typeof cell === "string" && cell.trim())
+          checkText("ячейка таблицы", cell, (rule, severity, message) =>
+            out.push({ rule, severity, page, where: at, message }),
+          );
       }),
     );
 }
@@ -392,6 +456,14 @@ function checkPage(page: Rec, ctx: Ctx, out: Problem[]) {
     out.push({ rule, severity, page: slug, where: "meta", message });
 
   if (!str(page.h1)) add("страница-без-h1", "high", "У страницы нет заголовка h1");
+
+  /*
+    Страница есть в выгрузке, но её нет в навигации сайта. Значит попасть на
+    неё можно только по прямому адресу: ни в меню, ни в крошках её нет, и
+    заметить пропажу глазами нельзя — страница-то работает.
+  */
+  if (slug && !(slug in routeTitles))
+    add("страница-вне-навигации", "medium", "Страница есть в выгрузке, но в навигации сайта её нет — читатель на неё не попадёт");
 
   const meta = isRec(page.meta) ? page.meta : {};
   const og = isRec(page["meta-og"]) ? (page["meta-og"] as Rec) : {};
