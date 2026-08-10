@@ -6,6 +6,7 @@ import { NotFound } from "./pages/NotFound";
 import { ChangesPage } from "./editor/ChangesPage";
 import { InventoryPage } from "./editor/InventoryPage";
 import { BlocksPage } from "./editor-source/site/BlocksPage";
+import { ChecksPage } from "./editor-source/site/ChecksPage";
 import { ReviewListPage } from "./editor-source/site/ReviewListPage";
 import { CatalogPage } from "./editor/CatalogPage";
 import { KitchenSinkPage } from "./pages/figma/KitchenSinkPage";
@@ -168,6 +169,8 @@ export default function App() {
           <Route path="/inventory" element={<InventoryPage />} />
           {/* Карта блоков: карточки, квизы, цитаты, заготовки, видео, картинки */}
           <Route path="/blocks" element={<BlocksPage />} />
+          {/* Сторож выгрузки: что увидит разработчик, если возьмёт JSON сейчас */}
+          <Route path="/checks" element={<ChecksPage />} />
           {/* Витрина компонентов внутри обвязки сайта (только средняя колонка) */}
           <Route path="/unify" element={<ComponentsPage />} />
           <Route path="/catalog" element={<CatalogPage />} />

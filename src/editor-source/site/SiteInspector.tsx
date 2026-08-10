@@ -939,6 +939,13 @@ function SiteMode({
           >
             {exporting ? "Собираю…" : "Полный JSON"}
           </button>
+          {/* Рядом с выгрузкой — её сторож: что в этом файле сломано (см. /checks). */}
+          <Link
+            to="/checks"
+            className="rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 transition-colors hover:text-foreground"
+          >
+            Проверить
+          </Link>
           <button
             type="button"
             onClick={() => setSrcOpen(false)}
