@@ -2042,11 +2042,26 @@ export function buildDoc(
             иначе слово стоит и заголовком, и первой строкой текста.
           */
           const headIsLabel = isLabelBlock(t0);
-          const auto = headIsLabel ? { title: labelAsTitle(t0), body: "" } : splitTitleBody(t0);
+          /*
+            Блок-ЗАГОЛОВОК тоже даёт заголовок карточки и в тело не идёт.
+            Просьба «собрать в одну карточку» не отменяет того, что заголовок —
+            это заголовок: splitTitleBody не находит в нём ни жирного лида, ни
+            тире, поэтому title оставался пустым, а строка уезжала первым
+            абзацем текста. На «Этике и коммуникации» так потерялись заголовки
+            «Главное правило» и «Совет руководителю». Обычная ветка сборки
+            карточек это давно умеет — здесь проверку забыли.
+          */
+          const headIsHeading = head.b.kind === "heading";
+          const auto = headIsLabel
+            ? { title: labelAsTitle(t0), body: "" }
+            : headIsHeading
+              ? { title: t0, body: "" }
+              : splitTitleBody(t0);
           const title = titleFix(
             forcedTitle ?? (auto.title ? headingText(auto.title, fix) : undefined),
           );
-          const firstBody = headIsLabel ? "" : forcedTitle ? t0 : auto.body;
+          // Порядок тот же, что в обычной ветке: ярлык → заголовок из комментария → заголовок-блок.
+          const firstBody = headIsLabel ? "" : forcedTitle ? t0 : headIsHeading ? "" : auto.body;
           const icon = iconOf(head);
           const kids: Node[] = [];
           if (bodyText(firstBody) && !sameAsTitle(title, firstBody))
@@ -3825,6 +3840,21 @@ function annotate(doc: Doc): Doc {
   */
   let leadIn = "";
 
+  /*
+    СЛУЖЕБНЫЙ ЯРЛЫК — «Важно», «Например:», «Пример.» — не название таблицы, а
+    метка-врезка или зачин к перечислению. В подписи от него один вред:
+    скринридер читает «Важно. Столбцы: …», и слушатель не понимает, о чём
+    таблица. Такие строки в подпись не берём, и она падает к ближайшему
+    настоящему заголовку.
+
+    Ловим только голый ярлык целиком. «Пример 1. Соискатель…» и «Например,
+    дорожная карта может быть устроена так» — уже осмысленные подписи, их не
+    трогаем.
+  */
+  const SERVICE_LABEL =
+    /^[*_\s]*(?:на)?(?:пример|важно|суть|итог|вывод|совет|правило|запомнить)\p{L}*\s*[:.]?[*_\s]*$/iu;
+  const isServiceLabel = (t: string) => SERVICE_LABEL.test(t.trim());
+
   const captionFor = (t: { header: string[] }) => {
     const cols = t.header.map((h) => stripEmph(h).trim()).filter(Boolean).join(", ");
     const head = (leadIn || lastHeading).trim().replace(/\s*:$/u, "");
@@ -3851,10 +3881,12 @@ function annotate(doc: Doc): Doc {
         return { ...n, children: walk(n.children) };
       }
       if (n.component === "General Card" && n.title) {
-        lastHeading = n.title;
+        // Карточка-врезка «Важно» именем таблицы быть не может, но подводку выше обрывает.
+        if (!isServiceLabel(n.title)) lastHeading = n.title;
         leadIn = "";
       }
-      if (n.component === "Text" && /:\s*$/u.test(n.text)) leadIn = n.text;
+      if (n.component === "Text" && /:\s*$/u.test(n.text))
+        leadIn = isServiceLabel(n.text) ? "" : n.text;
       // Подпись — первым полем: её читают глазами раньше, чем строки таблицы.
       if (n.component === "Table") {
         const caption = n.caption ?? captionFor(n);
