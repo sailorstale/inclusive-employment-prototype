@@ -106,6 +106,45 @@ export function isMenuActive(itemPath: string, pathname: string): boolean {
   return pathname === itemPath || pathname.startsWith(itemPath + "/");
 }
 
+/*
+  КОЛОНКИ ССЫЛОК В ПОДВАЛЕ. Лежат здесь, а не в самом подвале: подвал — такая же
+  навигация, как шапка и боковое меню, и разработчику он уезжает вместе с ними
+  (см. siteMenu.ts). Пока колонки были внутри компонента, до выгрузки они не
+  доходили, и имена в них успели разойтись с меню.
+
+  У НКО перечислены ЧЕТЫРЕ ГРУППЫ бокового меню, а не страницы: всех
+  четырнадцати в подвал не поместить, а группы дают ту же карту раздела в
+  четыре строки. Ссылка ведёт на первую страницу группы.
+*/
+export const FOOTER_COLUMNS: {
+  title: string;
+  links: { label: string; to: string }[];
+}[] = [
+  {
+    title: "Для компаний",
+    links: [
+      { label: "Инклюзивное трудоустройство", to: "/general/start" },
+      { label: "Договор и оформление", to: "/general/legal/contract" },
+      { label: "Наём по шагам", to: "/companies" },
+      { label: "Этика и коммуникация", to: "/general/team" },
+    ],
+  },
+  {
+    title: "Для НКО",
+    links: [
+      { label: "Запуск программы", to: "/ngo/start" },
+      { label: "Соискатели", to: "/ngo/candidates" },
+      { label: "Работодатели", to: "/ngo/employers" },
+      { label: "Развитие и масштабирование", to: "/ngo/roadmap" },
+    ],
+  },
+  {
+    title: "Для соискателей",
+    // Раздел-заглушка — без подразделов, одна ссылка на раздел.
+    links: [{ label: "Обзор раздела", to: "/jobseekers" }],
+  },
+];
+
 export type SidebarItem = {
   label: string;
   path: string;

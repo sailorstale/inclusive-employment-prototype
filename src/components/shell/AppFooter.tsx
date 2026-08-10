@@ -1,40 +1,11 @@
 import { Link } from "react-router-dom";
 import { Separator } from "../ui/separator";
+import { FOOTER_COLUMNS as columns } from "@/data/nav";
 
 // AppFooter (00 — Карта сайта) — три колонки ссылок по трекам + нижняя строка
-// (копирайт + мета-ссылки). Подписи — дословно из спеки подвала.
-
-const columns: { title: string; links: { label: string; to: string }[] }[] = [
-  {
-    title: "Для компаний",
-    links: [
-      { label: "Инклюзивное трудоустройство", to: "/general/start" },
-      { label: "Договор и оформление", to: "/general/legal/contract" },
-      { label: "Наём по шагам", to: "/companies" },
-      { label: "Этика и коммуникация", to: "/general/team" },
-    ],
-  },
-  {
-    /*
-      Подписи повторяют ЧЕТЫРЕ ГРУППЫ бокового меню раздела (новая структура от
-      клиента, 10 августа 2026), а ссылка ведёт на первую страницу группы. Все
-      четырнадцать страниц в подвале не поместятся, а группы дают ту же карту
-      раздела в четыре строки.
-    */
-    title: "Для НКО",
-    links: [
-      { label: "Запуск программы", to: "/ngo/start" },
-      { label: "Соискатели", to: "/ngo/candidates" },
-      { label: "Работодатели", to: "/ngo/employers" },
-      { label: "Развитие и масштабирование", to: "/ngo/roadmap" },
-    ],
-  },
-  {
-    title: "Для соискателей",
-    // Раздел-заглушка — без подразделов, одна ссылка на раздел.
-    links: [{ label: "Обзор раздела", to: "/jobseekers" }],
-  },
-];
+// (копирайт + мета-ссылки). Сами колонки живут в карте навигации рядом с
+// остальным меню: подвал — такая же навигация, и уезжает разработчику вместе с
+// шапкой и боковым меню (см. siteMenu.ts).
 
 const footerLink =
   "text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm";

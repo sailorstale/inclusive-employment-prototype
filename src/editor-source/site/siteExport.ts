@@ -24,6 +24,7 @@ import {
   type PageMeta,
   type PageMetaOg,
 } from "./pageMeta";
+import { buildSiteMenu, navLabelFor, type SiteMenu } from "./siteMenu";
 
 /*
   ЕДИНЫЙ JSON ВСЕГО САЙТА — одно ТЗ разработчику на все страницы сразу:
@@ -61,12 +62,29 @@ function toSections(blocks: SourceBlock[]): Section[] {
 */
 export type PageExport = {
   slug: string;
+  /*
+    nav — подпись страницы в боковом меню. Стоит рядом с h1 и намеренно от него
+    отличается: в меню пункт читается под заголовком своей группы и повторять её
+    слова незачем («Поиск» под «Работодателями» вместо «Поиска работодателей»).
+    Поле есть у КАЖДОЙ страницы, даже когда совпадает с h1: поле, которого то
+    нет, то есть, заставляет каждый раз проверять, не забыли ли мы его.
+  */
+  nav: string;
   meta: PageMeta;
   "meta-og": PageMetaOg;
   h1: string;
   article: unknown[];
 };
-export type OsnovyExport = { section: string; pages: PageExport[] };
+/*
+  Меню идёт ОТДЕЛЬНЫМ блоком, а не только подписями внутри страниц: заголовки
+  групп («Соискатели», «Работодатели») страницами не являются, и в списке
+  страниц им места нет. Устройство блока — в siteMenu.ts.
+*/
+export type OsnovyExport = {
+  section: string;
+  menu: SiteMenu;
+  pages: PageExport[];
+};
 
 /*
   ДЕРЕВО СТРАНИЦЫ ДО ВЫГРУЗКИ — те же узлы, что рисует сайт, но ещё со всеми
@@ -141,11 +159,12 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     const seo = metaFor(t.slug, t.title);
     return {
       slug: t.slug,
+      nav: navLabelFor(t.slug),
       meta: seo.meta,
       "meta-og": seo.og,
       h1: t.title,
       article: toExport(t.nodes),
     };
   });
-  return { section: "Сайт", pages };
+  return { section: "Сайт", menu: buildSiteMenu(), pages };
 }
