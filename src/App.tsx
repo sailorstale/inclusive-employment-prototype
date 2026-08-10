@@ -144,9 +144,12 @@ export default function App() {
           <Route path="/ngo/candidates/guidance" element={<GeneratedPage />} />
           <Route path="/ngo/candidates/psychology" element={<GeneratedPage />} />
           <Route path="/ngo/candidates/vacancies" element={<GeneratedPage />} />
+          <Route path="/ngo/candidates/resume" element={<GeneratedPage />} />
+          <Route path="/ngo/candidates/interview" element={<GeneratedPage />} />
           <Route path="/ngo/employers" element={<GeneratedPage />} />
           <Route path="/ngo/employers/talks" element={<GeneratedPage />} />
           <Route path="/ngo/support" element={<GeneratedPage />} />
+          <Route path="/ngo/roadmap" element={<GeneratedPage />} />
           <Route path="/ngo/scale" element={<GeneratedPage />} />
           <Route path="/ngo/funding" element={<GeneratedPage />} />
 

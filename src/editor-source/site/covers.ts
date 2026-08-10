@@ -40,9 +40,12 @@ const COVERS: Record<string, Cover> = {
   "/ngo/candidates/guidance": { src: "" },
   "/ngo/candidates/psychology": { src: "" },
   "/ngo/candidates/vacancies": { src: "" },
+  "/ngo/candidates/resume": { src: "" },
+  "/ngo/candidates/interview": { src: "" },
   "/ngo/employers": { src: "" },
   "/ngo/employers/talks": { src: "" },
   "/ngo/support": { src: "" },
+  "/ngo/roadmap": { src: "" },
   "/ngo/scale": { src: "" },
   "/ngo/funding": { src: "" },
 };

@@ -717,30 +717,96 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       "podvedem-itogi-2",
     ],
   },
+  /*
+    ВОСЕМЬ ШАГОВ ПОДБОРА РАЗРЕЗАНЫ НА ТРИ СТРАНИЦЫ — новая структура раздела от
+    клиента, решение дизайнера 10 августа 2026. Раньше все восемь стояли одной
+    страницей на сорок три тысячи знаков, самой длинной в разделе.
+
+    Шов прошёл по смыслу работы: сначала кандидат и НКО выбирают, на что
+    откликаться, потом готовят резюме, потом готовятся к встрече. Вступление
+    главы («Поиск работы включает несколько этапов») осталось лидом первой
+    страницы: оно перечисляет ровно эти три темы.
+
+    Номера «Шаг N» из заголовков сняты (см. NGO_VACANCY_STEPS ниже): на трёх
+    коротких страницах нумерация начиналась бы с четвёртого и шестого шага, и
+    читателю негде было бы найти начало.
+  */
   {
     slug: "/ngo/candidates/vacancies",
-    title: "Подбор вакансий и собеседование",
+    title: "Подбор вакансий",
     module: "m6-2",
+    intro: "podbor-vakansiy-i-podgotovka-k-sobesedovaniyu",
     sections: [
-      "podbor-vakansiy-i-podgotovka-k-sobesedovaniyu",
       "shag-1-opredelenie-prioritetov",
       "shag-2-poisk-vakansiy-na-podhodyaschih-ploschadk",
       "shag-3-pomosch-kandidatu-v-ponimanii-opisaniya-v",
-      "shag-4-sostavlenie-ili-obnovlenie-rezyume",
-      "shag-5-soglasovanie-resheniya-ob-otklike",
-      "shag-6-podgotovka-k-sobesedovaniyu",
-      "shag-7-provedenie-sobesedovaniya",
-      "shag-8-posle-sobesedovaniya",
-      "podvedem-itogi-3",
     ],
     outline: {
       sections: [
         "shag-1-opredelenie-prioritetov",
         "shag-2-poisk-vakansiy-na-podhodyaschih-ploschadk",
         "shag-3-pomosch-kandidatu-v-ponimanii-opisaniya-v",
+      ],
+    },
+  },
+  {
+    slug: "/ngo/candidates/resume",
+    title: "Помощь с резюме",
+    module: "m6-2",
+    /*
+      «Согласование решения об отклике» стоит здесь ВРЕМЕННО — дизайнер решает
+      отдельно, куда его отнести. По тексту оно идёт сразу за резюме (кандидат
+      откликается уже с готовым резюме), но по смыслу тянется и к подбору
+      вакансий. Чтобы перенести, достаточно переставить якорь отсюда на
+      страницу «Подбор вакансий», в sections и в outline.
+    */
+    sections: [
+      "shag-4-sostavlenie-ili-obnovlenie-rezyume",
+      "shag-5-soglasovanie-resheniya-ob-otklike",
+    ],
+    outline: {
+      sections: [
         "shag-4-sostavlenie-ili-obnovlenie-rezyume",
+        "chto-vazhno-uchityvat-pri-sostavlenii-rezyume",
         "shag-5-soglasovanie-resheniya-ob-otklike",
-        "shag-6-podgotovka-k-sobesedovaniyu",
+      ],
+    },
+  },
+  {
+    slug: "/ngo/candidates/interview",
+    title: "Подготовка к собеседованию",
+    module: "m6-2",
+    /*
+      Итог главы («Подведём итоги») достаётся последней из трёх страниц: он
+      подводит черту под всем путём от приоритетов до разбора встречи. Сам текст
+      итога на страницу не попадает (см. recap.ts), от секции остаётся хвост —
+      практическое задание.
+    */
+    sections: [
+      "shag-6-podgotovka-k-sobesedovaniyu",
+      "shag-7-provedenie-sobesedovaniya",
+      "shag-8-posle-sobesedovaniya",
+      "podvedem-itogi-3",
+    ],
+    /*
+      Заглавный раздел «Подготовка к собеседованию» разделом страницы НЕ стоит:
+      он слово в слово повторял бы её название в шапке. Вместо него разделами
+      стали его семь частей, а вводный абзац («собеседование — это не экзамен»)
+      открывает страницу лидом. Так же собраны страницы шагов найма у компаний.
+
+      Вместе с заглавным уходит и подзаголовок «Что важно проверить и
+      подготовить заранее»: он объявлял ровно тот список, который теперь стоит
+      разделами прямо под ним.
+    */
+    outline: {
+      sections: [
+        "informaciya-o-kompanii",
+        "format-sobesedovaniya-i-dostupnost-mesta-vstrech",
+        "vneshniy-vid",
+        "dokumenty",
+        "podgotovka-k-razgovoru",
+        "tipichnye-voprosy-rabotodatelya",
+        "voprosy-so-storony-kandidata",
         "shag-7-provedenie-sobesedovaniya",
         "shag-8-posle-sobesedovaniya",
         "podvedem-itogi-3",
@@ -763,7 +829,14 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
   },
   {
     slug: "/ngo/employers/talks",
-    title: "Разговор с работодателем",
+    /*
+      Название вернулось к формулировке источника — так эта глава называется в
+      гугл-доке, и так же на неё ссылается текст соседней страницы («читайте в
+      разделах „Поиск работодателей“ и „Взаимодействие с работодателями“»).
+      В меню пункт стоит под заголовком группы «Работодатели» и называется
+      просто «Взаимодействие».
+    */
+    title: "Взаимодействие с работодателями",
     module: "m6-3",
     sections: [
       "vzaimodeystvie-s-rabotodatelyami",
@@ -792,15 +865,20 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
   },
   {
     slug: "/ngo/support",
-    title: "Сопровождать сотрудника",
+    title: "Сопровождение сотрудника",
     module: "m6-4",
+    /*
+      ДОРОЖНОЙ КАРТЫ ЗДЕСЬ БОЛЬШЕ НЕТ — новая структура раздела от клиента,
+      решение дизайнера 10 августа 2026. Она лежала вторым куском этой страницы
+      и занимала около тридцати тысяч знаков, то есть больше половины. В новой
+      структуре у неё своя страница в группе «Развитие и масштабирование»: карта
+      описывает программу целиком, а не поддержку конкретного сотрудника.
+    */
     sections: [
       "soprovozhdenie-na-etape-trudoustroystva",
       "dva-formata-soprovozhdeniya",
       "chto-dalshe-krizis-menedzhment-na-rabochem-meste",
       "podvedem-itog-2",
-      "dorozhnaya-karta",
-      "podvedem-itogi-6",
     ],
     outline: {
       sections: [
@@ -809,7 +887,31 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "shag-2-oformlenie-dogovora",
         "shag-3-vyhod-na-rabotu-soprovozhdenie-v-pervye-n",
         "chto-dalshe-krizis-menedzhment-na-rabochem-meste",
-        "dorozhnaya-karta",
+      ],
+    },
+  },
+  {
+    /*
+      Дорожная карта — отдельная страница (новая структура раздела от клиента,
+      10 августа 2026). В источнике это самостоятельная глава со своим «в этом
+      разделе вы узнаете», поэтому вынималась она целиком, без разрезов по
+      живому. Восемь её частей подняты в разделы: без этого страница на тридцать
+      тысяч знаков состояла бы из одного раздела и оглавления бы не имела.
+    */
+    slug: "/ngo/roadmap",
+    title: "Дорожная карта",
+    module: "m6-4",
+    sections: ["dorozhnaya-karta", "podvedem-itogi-6"],
+    outline: {
+      sections: [
+        "s-chego-nachinaetsya-rabota",
+        "ishodnaya-situaciya",
+        "celi",
+        "zadachi-dlya-resheniya",
+        "kak-mozhet-vyglyadet-dorozhnaya-karta",
+        "razberem-kazhdyy-blok",
+        "individualnyy-ili-gruppovoy-format-raboty",
+        "parallelnye-processy-chto-vazhno-delat-odnovreme",
         "podvedem-itogi-6",
       ],
     },
@@ -871,10 +973,8 @@ export const pageBySlug = (slug: string): OsnovyPage | undefined =>
   отдельной страницей: номер уже стоит в меню слева и в шапке страницы, поэтому
   в самом заголовке он третий по счёту — читатель видит «Шаг 2» трижды подряд.
 
-  Снимаем префикс ТОЛЬКО у заглавной секции страницы, которая сама называется
-  «Шаг N. …» (шесть страниц трека «Для компаний»). Восемь шагов подбора вакансий
-  у НКО живут на одной странице — там нумерация единственный признак
-  последовательности, и её мы не трогаем.
+  Снимаем префикс у заглавной секции страницы, которая сама называется
+  «Шаг N. …» (шесть страниц трека «Для компаний»).
 */
 const STEP_TITLE_ANCHORS = new Set(
   OSNOVY_PAGES.filter((p) => /^Шаг\s+\d+\./u.test(p.title)).map(
@@ -882,13 +982,42 @@ const STEP_TITLE_ANCHORS = new Set(
   ),
 );
 
-/** Заголовок H2 заглавной секции шага — без ведущего «Шаг N.». */
+/*
+  ВОСЕМЬ ШАГОВ ПОДБОРА ВАКАНСИЙ — номера сняты со ВСЕХ восьми заголовков
+  (решение дизайнера 10 августа 2026). Раньше они жили одной страницей, и
+  сквозная нумерация была там единственным признаком последовательности.
+
+  По новой структуре раздела шаги разъехались на три страницы: подбор вакансий,
+  помощь с резюме и подготовка к собеседованию. Страница про резюме начиналась
+  бы с «Шага 4», страница про собеседование — с «Шага 6», и читатель, пришедший
+  из меню, искал бы начало, которого на странице нет. Порядок при этом никуда не
+  делся: он виден по меню слева и по порядку разделов на странице.
+
+  Список якорей заведён руками, а не вычислен по заголовкам: правило «снять
+  номер везде, где он есть» задело бы и пять шагов работы НКО на «Запустить
+  программу», и три шага оформления на «Сопровождении сотрудника», где страницы
+  целые и нумерация читается.
+*/
+const NGO_VACANCY_STEPS = new Set([
+  "shag-1-opredelenie-prioritetov",
+  "shag-2-poisk-vakansiy-na-podhodyaschih-ploschadk",
+  "shag-3-pomosch-kandidatu-v-ponimanii-opisaniya-v",
+  "shag-4-sostavlenie-ili-obnovlenie-rezyume",
+  "shag-5-soglasovanie-resheniya-ob-otklike",
+  "shag-6-podgotovka-k-sobesedovaniyu",
+  "shag-7-provedenie-sobesedovaniya",
+  "shag-8-posle-sobesedovaniya",
+]);
+
+/** Заголовок шага — без ведущего «Шаг N.». */
 export function dropStepNumber(
   type: string,
   md: string,
   anchor?: string,
 ): string {
-  if (type !== "h2" || !anchor || !STEP_TITLE_ANCHORS.has(anchor)) return md;
+  if (type !== "h2" || !anchor) return md;
+  if (!STEP_TITLE_ANCHORS.has(anchor) && !NGO_VACANCY_STEPS.has(anchor))
+    return md;
   const out = md.replace(/^\s*Шаг\s+\d+\s*(?:[.)]|—|–|-|:)?\s+/u, "");
   return out.trim() ? out : md;
 }

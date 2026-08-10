@@ -110,16 +110,32 @@ const RELATED: Record<string, string[]> = {
     "/ngo/candidates/guidance",
     "/ngo/candidates",
   ],
+  /*
+    Три страницы подбора идут друг за другом по ходу работы: сначала выбор
+    вакансии, потом резюме, потом подготовка к встрече. Поэтому первая карточка
+    у каждой — следующий шаг этого пути.
+  */
   "/ngo/candidates/vacancies": [
-    "/ngo/employers",
-    "/ngo/candidates",
+    "/ngo/candidates/resume",
+    "/ngo/candidates/interview",
     "/ngo/candidates/guidance",
+  ],
+  "/ngo/candidates/resume": [
+    "/ngo/candidates/interview",
+    "/ngo/candidates/vacancies",
+    "/ngo/candidates",
+  ],
+  "/ngo/candidates/interview": [
+    "/ngo/support",
+    "/ngo/candidates/resume",
+    "/ngo/candidates/vacancies",
   ],
   "/ngo/employers": ["/ngo/employers/talks", "/ngo/support", "/general/how"],
   "/ngo/employers/talks": ["/ngo/support", "/ngo/employers", "/general/how"],
-  "/ngo/support": ["/ngo/scale", "/ngo/funding", "/ngo/employers/talks"],
-  "/ngo/scale": ["/ngo/funding", "/ngo/start", "/ngo/support"],
-  "/ngo/funding": ["/ngo/scale", "/ngo/start", "/ngo/audience"],
+  "/ngo/support": ["/ngo/roadmap", "/ngo/scale", "/ngo/employers/talks"],
+  "/ngo/roadmap": ["/ngo/scale", "/ngo/funding", "/ngo/support"],
+  "/ngo/scale": ["/ngo/funding", "/ngo/roadmap", "/ngo/start"],
+  "/ngo/funding": ["/ngo/scale", "/ngo/roadmap", "/ngo/audience"],
 };
 
 export type RelatedCard = { title: string; href: string };
