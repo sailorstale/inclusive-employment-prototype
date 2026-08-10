@@ -8,9 +8,30 @@
 
 const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;
 
+/*
+  ССЫЛКИ ПО НЕЗАЩИЩЁННОМУ ПРОТОКОЛУ. В снимке источника часть адресов записана
+  как http://: браузер помечает такую ссылку небезопасной, а сам источник
+  править нельзя — от его текста считается адрес блока, и правка молча оторвала
+  бы от блока разметку и замечания.
+
+  Поэтому чиним на границе, но ТОЛЬКО для сайтов, которые мы проверили руками.
+  Огульно поднимать все http до https нельзя: официальный портал правовой
+  информации (publication.pravo.gov.ru) по https не отвечает вовсе, и ссылка на
+  приказ Минтруда просто перестала бы открываться.
+
+  Новый адрес добавляем сюда после проверки, а не по догадке.
+*/
+const HTTPS_READY = new Set(["hh.ru", "www.hh.ru"]);
+
+function upgradeProtocol(url: string): string {
+  if (!url.startsWith("http://")) return url;
+  const host = url.slice("http://".length).split(/[/?#]/)[0].toLowerCase();
+  return HTTPS_READY.has(host) ? `https://${url.slice("http://".length)}` : url;
+}
+
 export function safeHref(url: string): string | null {
   const u = url.trim();
-  return SAFE_URL.test(u) ? u : null;
+  return SAFE_URL.test(u) ? upgradeProtocol(u) : null;
 }
 
 /*
