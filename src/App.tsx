@@ -6,6 +6,7 @@ import { NotFound } from "./pages/NotFound";
 import { ChangesPage } from "./editor/ChangesPage";
 import { InventoryPage } from "./editor/InventoryPage";
 import { BlocksPage } from "./editor-source/site/BlocksPage";
+import { ReviewListPage } from "./editor-source/site/ReviewListPage";
 import { CatalogPage } from "./editor/CatalogPage";
 import { KitchenSinkPage } from "./pages/figma/KitchenSinkPage";
 import { ComponentsPage } from "./pages/figma/ComponentsPage";
@@ -158,6 +159,12 @@ export default function App() {
 
           {/* Сквозные */}
           <Route path="/changes" element={<ChangesPage />} />
+          {/*
+            Все замечания клиента по всему сайту одним списком. На самих
+            страницах видно только их собственные замечания, и что осталось
+            сделать по сайту, оттуда не понять.
+          */}
+          <Route path="/review" element={<ReviewListPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           {/* Карта блоков: карточки, квизы, цитаты, заготовки, видео, картинки */}
           <Route path="/blocks" element={<BlocksPage />} />

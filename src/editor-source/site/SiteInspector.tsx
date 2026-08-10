@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link, useLocation } from "react-router-dom";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { sourceModulesMeta, type SourceBlock } from "@/editor-source/content/source.generated";
 import { JsonView } from "@/editor-source/source/JsonView";
@@ -192,6 +193,19 @@ export function SiteInspector({
   const [commentsOpen, setCommentsOpen] = React.useState(() =>
     readFlag(COMMENTS_OPEN_KEY, true),
   );
+
+  /*
+    Пришли по ссылке из общего списка замечаний (/review): в адресе лежит
+    опознаватель замечания. Панель комментариев тогда открываем принудительно —
+    иначе человек нажал на замечание, а попал на страницу без панели, и
+    непонятно, сработала ссылка или нет. Свой выбор при этом не портим: флаг в
+    хранилище перезапишется тем же значением «открыто», и это ровно то, что
+    человек сейчас и попросил.
+  */
+  const wanted = new URLSearchParams(useLocation().search).get("c");
+  React.useEffect(() => {
+    if (wanted) setCommentsOpen(true);
+  }, [wanted]);
 
   // Запоминаем выбранный режим, чтобы он пережил переход между страницами.
   React.useEffect(() => {
@@ -803,6 +817,25 @@ function SiteMode({
     [rightBox, comments],
   );
 
+  /*
+    ПЕРЕХОД ПО ССЫЛКЕ ИЗ ОБЩЕГО СПИСКА (/review). В адресе лежит опознаватель
+    замечания — подводим к нему страницу, как будто по карточке щёлкнули здесь.
+
+    Ждём двух вещей. Замечания должны приехать с сервера, иначе искать снимок
+    блока не в чем. Страница должна отрисоваться, иначе искать блок негде — за
+    это отвечает rightBox: пока колонки нет, он пустой.
+
+    Срабатывает один раз на замечание: дальше человек листает страницу сам, и
+    возвращать его к блоку на каждую перерисовку нельзя.
+  */
+  const wantedComment = new URLSearchParams(useLocation().search).get("c");
+  const jumped = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!wantedComment || !rightBox || !comments.length) return;
+    if (jumped.current === wantedComment) return;
+    jumped.current = wantedComment;
+    goToComment(wantedComment);
+  }, [wantedComment, rightBox, comments, goToComment]);
 
   const srcHighlight = React.useMemo(() => {
     if (!selected || !blocks) return null;
@@ -1068,6 +1101,17 @@ function SiteMode({
                 к правке {commentsToDo}
               </span>
             )}
+            {/*
+              Отсюда видно только замечания этой страницы. Ссылка ведёт туда,
+              где видно все — иначе про общий список просто не узнают.
+            */}
+            <Link
+              to="/review"
+              title="Все замечания клиента по всему сайту"
+              className="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              все страницы
+            </Link>
             {/*
               На локальной машине комментарии приезжают с БОЕВОГО сервера (см.
               vite.config.ts): список у клиента и у нас один. Подпись нужна,
