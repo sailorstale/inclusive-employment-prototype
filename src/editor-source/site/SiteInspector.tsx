@@ -23,6 +23,7 @@ import { stripMarks } from "@/editor-source/richText";
 import { PageSourceView } from "./PageSourceView";
 import { CommentFrames, type CommentFrame } from "./CommentFrames";
 import { PageComments, type CommentGroup } from "./PageComments";
+import { commentState, type CommentState } from "./commentState";
 import { commentId, pathsOf } from "./commentIds";
 import { resolveAnchor } from "./commentAnchor";
 import { findHomes, type PageRef } from "./commentHome";
@@ -534,7 +535,7 @@ function SiteMode({
     «slug::адреса::uid», где адреса — один или несколько путей через плюс: одно
     замечание нередко относится к нескольким блокам подряд.
   */
-  const { comments, setComment, toggleSkipped, setNote } = useComments();
+  const { comments, setComment, toggleSkipped, setNote, addReply } = useComments();
   const [activeComment, setActiveComment] = React.useState<string | null>(null);
   /* id замечаний, которые слой рамок сумел поставить на страницу. Остальные
      показываем в списке с пометкой «блок не найден». */
@@ -599,9 +600,19 @@ function SiteMode({
     };
   }, [comments]);
 
-  /** Сколько замечаний этой страницы уже разобрано — для счётчика в шапке. */
+  /*
+    Сколько замечаний этой страницы уже разобрано — для счётчика в шапке.
+    Замечание, на которое клиент ответил, сюда не попадает: разговор по нему
+    продолжается, и считать его закрытым рано.
+  */
   const commentsDone = React.useMemo(
-    () => pageComments.filter((g) => appliedFor(g.id) || g.rec.resolved).length,
+    () => pageComments.filter((g) => commentState(g.rec) === "done").length,
+    [pageComments],
+  );
+
+  /** Замечания, на которые клиент ответил и ждёт нашей правки. */
+  const commentsRound = React.useMemo(
+    () => pageComments.filter((g) => commentState(g.rec) === "round").length,
     [pageComments],
   );
 
@@ -624,17 +635,10 @@ function SiteMode({
         id: g.id,
         paths: g.paths,
         /*
-          «Сделано» сильнее «не применять»: если правка уже внесена, спор о том,
-          браться ли за неё, потерял смысл. Признак берём из журнала разбора
-          (appliedComments.ts), а серверное resolved уважаем как раньше — им
-          помечены замечания, разобранные до появления журнала.
+          Состояние считаем там же, где его показывает список (commentState), чтобы
+          рамка на странице и карточка в панели не разошлись.
         */
-        state:
-          appliedFor(g.id) || g.rec.resolved
-            ? "applied"
-            : g.rec.skipped
-              ? "skipped"
-              : "open",
+        state: FRAME_STATE[commentState(g.rec)],
         snapshot: g.rec.original,
         label: g.rec.author || "комментарий",
       })),
@@ -1045,6 +1049,16 @@ function SiteMode({
               </span>
             )}
             {/*
+              Замечания, на которые клиент ответил после нашего разбора. Это
+              самая срочная очередь: клиент уже сказал, что сделанного мало, и
+              ждёт ответа.
+            */}
+            {commentsRound > 0 && (
+              <span className="rounded bg-[color:var(--comment-round)] px-1.5 py-0.5 text-[10px] leading-none text-white">
+                новый раунд {commentsRound}
+              </span>
+            )}
+            {/*
               Замечания с решением дизайнера, но ещё без правки. Это очередь
               работы: по ним понятно, что делать, и браться можно не
               переспрашивая.
@@ -1081,6 +1095,7 @@ function SiteMode({
               onDelete={(id) => setComment({ id }, "")}
               onSkipped={(id, skipped) => toggleSkipped(id, skipped)}
               onNote={(id, note) => setNote(id, note)}
+              onReply={(id, who, text) => addReply(id, who, text)}
               onGoTo={goToComment}
               onClearPick={() => setPicked(new Set())}
             />
@@ -1155,6 +1170,17 @@ function HandmadeBody({
     </div>
   );
 }
+
+/*
+  Состояние карточки в панели → цвет рамки на странице. Названия разошлись
+  исторически: в списке исход называется «сделано», а у рамки — «применено».
+*/
+const FRAME_STATE: Record<CommentState, CommentFrame["state"]> = {
+  open: "open",
+  round: "round",
+  skipped: "skipped",
+  done: "applied",
+};
 
 const REVIEW_AUTHOR_KEY = "inclusion-review-author";
 const uid = () =>

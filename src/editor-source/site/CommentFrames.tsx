@@ -19,13 +19,15 @@ import { resolveAnchor } from "./commentAnchor";
 */
 
 /*
-  СОСТОЯНИЕ ЗАМЕЧАНИЯ — три исхода, и у каждого свой цвет рамки:
+  СОСТОЯНИЕ ЗАМЕЧАНИЯ — четыре исхода, и у каждого свой цвет рамки:
 
   open     — синяя пунктирная: замечание ждёт работы;
   applied  — зелёная сплошная: сделано (запись в журнале разбора, appliedComments);
-  skipped  — серая сплошная: «не применять», дизайнер разбирает сам.
+  skipped  — серая сплошная: «не применять», дизайнер разбирает сам;
+  round    — оранжевая пунктирная: клиент ответил на наш разбор, и по замечанию
+             идёт второй раунд правок.
 */
-export type CommentState = "open" | "applied" | "skipped";
+export type CommentState = "open" | "applied" | "skipped" | "round";
 
 export type CommentFrame = {
   /** Ключ комментария: его id. */
@@ -61,6 +63,17 @@ export const FRAME_LOOK: Record<
     tint: "var(--comment-skipped-tint)",
     dashed: false,
     tail: " · не применяем",
+  },
+  /*
+    Пунктирная, как у открытого замечания: работа по нему снова предстоит.
+    Цветом отличается, потому что это не новое замечание, а продолжение старого
+    разговора, и читать к нему надо весь разбор целиком.
+  */
+  round: {
+    color: "var(--comment-round)",
+    tint: "var(--comment-round-tint)",
+    dashed: true,
+    tail: " · новый раунд",
   },
 };
 

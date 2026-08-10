@@ -160,10 +160,13 @@
   --comment-applied: #16a34a;
   /* «Не применять» — серая рамка: замечание разбирает дизайнер сам. */
   --comment-skipped: #94a3b8;
+  /* Новый раунд — оранжевая рамка: клиент ответил на наш разбор и ждёт правки. */
+  --comment-round: #ea580c;
   /* Заливка выбранного комментария — тот же цвет, восемь процентов непрозрачности. */
   --comment-tint: #6366f114;
   --comment-applied-tint: #16a34a14;
   --comment-skipped-tint: #94a3b814;
+  --comment-round-tint: #ea580c14;
 }
 .ds-pick > * {
   cursor: pointer;

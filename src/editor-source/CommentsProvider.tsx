@@ -43,6 +43,12 @@ type CommentsContextValue = {
     клиента остаётся.
   */
   setNote: (id: string, note: string) => void;
+  /*
+    Ответ на замечание — реплика второго раунда. Клиент прочитал, что мы
+    сделали, и говорит, что всё равно не то. Реплика уходит одна и дописывается
+    в конец ветки на сервере, а не заменяет весь список.
+  */
+  addReply: (id: string, author: string, text: string) => void;
 
   /** Открытых комментариев (с текстом, не решённых). */
   openCount: number;
@@ -214,6 +220,24 @@ export function CommentsProvider({
     [comments, save],
   );
 
+  /*
+    ОТВЕТ НА ЗАМЕЧАНИЕ. Отвечать можно только на существующую запись: реплика
+    всегда продолжает чей-то разговор, поэтому в пустоту её писать некуда.
+
+    Ни `resolved`, ни `skipped` ответ не трогает. Это данные клиента и решение
+    дизайнера, а вопрос «сделано или нет» решает журнал разбора в коде: метка
+    должна меняться тогда, когда страница действительно изменилась, а не когда
+    об этом зашёл разговор.
+  */
+  const addReply = React.useCallback(
+    (id: string, author: string, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || !comments[id]) return;
+      save({ id, reply: { author: author.trim(), text: trimmed } });
+    },
+    [comments, save],
+  );
+
   const dismissNotice = React.useCallback(() => setNotice(null), []);
 
   const list = React.useMemo(() => Object.values(comments), [comments]);
@@ -237,6 +261,7 @@ export function CommentsProvider({
       toggleResolved,
       toggleSkipped,
       setNote,
+      addReply,
       openCount,
       deletedCount,
       notice,
@@ -252,6 +277,7 @@ export function CommentsProvider({
       toggleResolved,
       toggleSkipped,
       setNote,
+      addReply,
       openCount,
       deletedCount,
       notice,

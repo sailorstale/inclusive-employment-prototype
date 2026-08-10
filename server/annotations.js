@@ -12,6 +12,31 @@ import { createJsonStore } from "./jsonStore.js";
   которых в запросе нет, берутся из прошлой записи: клиент шлёт только то, что
   меняет (например, одну галочку «решено»).
 */
+/*
+  ОТВЕТЫ НА ЗАМЕЧАНИЕ — переписка второго раунда.
+
+  Замечание разобрали, клиент прочитал ответ и остался недоволен: «всё равно не
+  то». Раньше сказать об этом было негде — оставалось завести новое замечание,
+  оторванное от старого разговора. Теперь под замечанием копится ветка ответов.
+
+  Ветка ДОПИСЫВАЕТСЯ, а не переписывается: клиент шлёт один ответ, сервер кладёт
+  его в конец. Иначе две открытые вкладки затирали бы ответы друг друга — обе
+  прислали бы свой список, и победил бы тот, кто сохранил последним.
+*/
+function withReply(prev, patch) {
+  const list = Array.isArray(prev?.replies) ? prev.replies : [];
+  const add = patch.reply;
+  if (!add || typeof add.text !== "string" || !add.text.trim()) return list;
+  return [
+    ...list,
+    {
+      author: typeof add.author === "string" ? add.author.trim() : "",
+      text: add.text.trim(),
+      at: new Date().toISOString(),
+    },
+  ];
+}
+
 /** Запись аннотации: чего нет в запросе — берём из прошлой версии. */
 export function annotationRecord(id, patch, prev) {
   const now = new Date().toISOString();
@@ -40,6 +65,7 @@ export function annotationRecord(id, patch, prev) {
     */
     skipped:
       typeof patch.skipped === "boolean" ? patch.skipped : prev?.skipped ?? false,
+    replies: withReply(prev, patch),
     createdAt: prev?.createdAt ?? now,
     updatedAt: now,
   };

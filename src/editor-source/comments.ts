@@ -6,6 +6,19 @@
 import { apiFetch } from "./auth";
 import type { Scope } from "./store";
 
+/*
+  ОТВЕТ НА ЗАМЕЧАНИЕ — реплика второго раунда. Замечание разобрали, клиент
+  прочитал, что мы сделали, и отвечает: «всё равно не то» или «а теперь вот это».
+  Ответы копятся веткой под замечанием, и разговор не рассыпается на отдельные
+  несвязанные записи.
+*/
+export type CommentReply = {
+  author: string;
+  text: string;
+  /** Когда написан, ISO-строка. */
+  at: string;
+};
+
 export type Comment = {
   /** Адрес блока (autoId) — одна аннотация на блок. */
   id: string;
@@ -34,6 +47,11 @@ export type Comment = {
     («применено») намеренно: это разные исходы, и путать их нельзя.
   */
   skipped?: boolean;
+  /*
+    Ветка ответов под замечанием. Дописывается с конца: клиент шлёт одну реплику,
+    сервер кладёт её в хвост. Старые записи поля не имеют — читать через `?? []`.
+  */
+  replies?: CommentReply[];
   createdAt: string;
   updatedAt: string;
   /** Автор комментария (поток «review»: клиент/разработчик представляется). */
@@ -55,6 +73,11 @@ export type CommentInput = {
   resolved?: boolean;
   skipped?: boolean;
   author?: string | null;
+  /*
+    Одна новая реплика в ветку. Именно одна, а не весь список: сервер дописывает
+    её в конец, поэтому две открытые вкладки не затирают ответы друг друга.
+  */
+  reply?: { author: string; text: string };
 };
 
 const API = { site: "/api", source: "/api/source", review: "/api/review" } as const;
@@ -101,6 +124,17 @@ export async function loadComments(scope: Scope = "site"): Promise<Comment[]> {
   return Object.values(readLocal(scope));
 }
 
+/** Дописать реплику в ветку ответов — как это делает сервер (annotations.js). */
+function appendReply(
+  prev: CommentReply[] | undefined,
+  add: CommentInput["reply"],
+  now: string
+): CommentReply[] {
+  const list = prev ?? [];
+  if (!add || !add.text.trim()) return list;
+  return [...list, { author: add.author.trim(), text: add.text.trim(), at: now }];
+}
+
 /** Создать/обновить аннотацию блока (апсерт по id). */
 export async function saveComment(
   input: CommentInput,
@@ -128,6 +162,13 @@ export async function saveComment(
     note: typeof input.note === "string" ? input.note : prev?.note ?? "",
     deleted: typeof input.deleted === "boolean" ? input.deleted : prev?.deleted ?? false,
     resolved: typeof input.resolved === "boolean" ? input.resolved : prev?.resolved ?? false,
+    /*
+      Локальная копия повторяет то же, что делает сервер (annotations.js), иначе
+      без сети пометки и ветка ответов пропадали бы при каждом сохранении.
+    */
+    skipped: typeof input.skipped === "boolean" ? input.skipped : prev?.skipped ?? false,
+    anchorText: prev?.anchorText ?? null,
+    replies: appendReply(prev?.replies, input.reply, now),
     createdAt: prev?.createdAt ?? now,
     updatedAt: now,
   };

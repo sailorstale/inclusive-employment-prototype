@@ -1,8 +1,9 @@
 import * as React from "react";
-import { Ban, Pencil, Trash2 } from "lucide-react";
-import type { Comment } from "@/editor-source/comments";
+import { Ban, CornerDownRight, Pencil, Trash2 } from "lucide-react";
+import type { Comment, CommentReply } from "@/editor-source/comments";
 import { stripMarks } from "@/editor-source/richText";
-import { appliedFor } from "./appliedComments";
+import { appliedAllFor } from "./appliedComments";
+import { commentState, type CommentState } from "./commentState";
 import { cn } from "@/lib/utils";
 
 /*
@@ -23,6 +24,12 @@ import { cn } from "@/lib/utils";
   боевой стенд, и вместе с ней панель показывает, ЧТО сделали, как было и как
   стало. Старое серверное поле resolved тоже уважаем: им помечены замечания,
   разобранные до появления журнала.
+
+  ВТОРОЙ РАУНД. Сделанное замечание — не конец разговора: клиент читает наш
+  разбор и может ответить прямо здесь, под ним. Ответы копятся веткой, и по
+  такому замечанию мы правим ещё раз. Пока ответ клиента без нашей правки,
+  замечание горит как «новый раунд» и стоит в очереди работы, а не теряется
+  среди двух десятков сделанных.
 */
 
 export type CommentGroup = {
@@ -32,6 +39,22 @@ export type CommentGroup = {
   paths: string[];
   rec: Comment;
 };
+
+/*
+  ФИЛЬТР СПИСКА. На странице замечания разного возраста лежат вперемешку:
+  сделанные, отложенные и те, за которые ещё браться. Кнопки сверху оставляют в
+  списке одну группу — например только «не применяем», чтобы разобрать их
+  подряд, или наоборот убрать их с глаз и видеть очередь работы.
+*/
+type CommentFilter = "all" | CommentState;
+
+const FILTERS: { key: CommentFilter; label: string }[] = [
+  { key: "all", label: "Все" },
+  { key: "open", label: "В работе" },
+  { key: "round", label: "Новый раунд" },
+  { key: "skipped", label: "Не применяем" },
+  { key: "done", label: "Сделано" },
+];
 
 export function PageComments({
   groups,
@@ -45,6 +68,7 @@ export function PageComments({
   onDelete,
   onSkipped,
   onNote,
+  onReply,
   onGoTo,
   onClearPick,
 }: {
@@ -72,11 +96,37 @@ export function PageComments({
   onSkipped: (id: string, skipped: boolean) => void;
   /** Сохранить решение дизайнера поверх замечания. Пусто — стереть его. */
   onNote: (id: string, note: string) => void;
+  /** Дописать ответ в ветку под замечанием — начать следующий раунд. */
+  onReply: (id: string, author: string, text: string) => void;
   onGoTo: (id: string) => void;
   onClearPick: () => void;
 }) {
   const [name, setName] = React.useState(author);
   const [text, setText] = React.useState("");
+  const [filter, setFilter] = React.useState<CommentFilter>("all");
+
+  const counts = React.useMemo(() => {
+    const c = { all: groups.length, open: 0, round: 0, skipped: 0, done: 0 };
+    for (const g of groups) c[commentState(g.rec)] += 1;
+    return c;
+  }, [groups]);
+
+  const shown = React.useMemo(
+    () => (filter === "all" ? groups : groups.filter((g) => commentState(g.rec) === filter)),
+    [groups, filter],
+  );
+
+  /*
+    Кликнули на странице по блоку, чей комментарий фильтр сейчас прячет, —
+    возвращаем список к «Всем». Иначе клик выглядел бы сломанным: рамка на
+    странице подсветилась, а карточки в списке нет.
+  */
+  React.useEffect(() => {
+    if (!activeId) return;
+    const hidden =
+      groups.some((g) => g.id === activeId) && !shown.some((g) => g.id === activeId);
+    if (hidden) setFilter("all");
+  }, [activeId, groups, shown]);
 
   // Имя приезжает из хранилища асинхронно — подхватываем, пока поле не трогали.
   React.useEffect(() => {
@@ -169,18 +219,57 @@ export function PageComments({
         )}
       </div>
 
-      {/* СПИСОК — все комментарии этой страницы. */}
+      {/*
+        ФИЛЬТР. Показываем, только когда группировать есть что: на странице с
+        тремя одинаковыми замечаниями кнопки были бы лишним шумом.
+      */}
+      {groups.length > 0 && counts.all > counts.open && (
+        <div className="flex shrink-0 flex-wrap gap-1 border-b px-3 py-2">
+          {FILTERS.map((f) => {
+            const n = counts[f.key];
+            const active = filter === f.key;
+            return (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setFilter(f.key)}
+                disabled={n === 0}
+                aria-pressed={active}
+                className={cn(
+                  "rounded border px-1.5 py-0.5 text-[11px] transition-colors disabled:opacity-40",
+                  active
+                    ? "border-foreground bg-accent text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {f.label}
+                <span className="ml-1 text-muted-foreground">{n}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* СПИСОК — комментарии этой страницы. */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {groups.length === 0 ? (
           <p className="p-3 text-xs text-muted-foreground">
             На этой странице комментариев пока нет.
           </p>
+        ) : shown.length === 0 ? (
+          <p className="p-3 text-xs text-muted-foreground">
+            В этой группе комментариев нет.
+          </p>
         ) : (
           <ul className="divide-y">
-            {groups.map((g) => {
-              const done = appliedFor(g.id);
-              const applied = Boolean(done) || Boolean(g.rec.resolved);
+            {shown.map((g) => {
+              /* Раунды разбора по порядку: первый сверху, следующие под ним. */
+              const rounds = appliedAllFor(g.id);
+              const done = rounds.length > 0;
+              const applied = done || Boolean(g.rec.resolved);
+              const state = commentState(g.rec);
               const skipped = Boolean(g.rec.skipped);
+              const replies = g.rec.replies ?? [];
               const note = (g.rec.note || "").trim();
               return (
                 <li
@@ -212,9 +301,19 @@ export function PageComments({
                         разбора — она уезжает тем же коммитом, что и сама
                         правка. Здесь метка только показывается.
                       */}
-                      {applied && (
+                      {state === "done" && (
                         <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-applied)] px-1 py-0.5 text-[10px] leading-none text-white">
                           сделано
+                        </span>
+                      )}
+                      {/*
+                        Клиент ответил на наш разбор, а правки под этот ответ ещё
+                        нет. Метка нужна, чтобы такое замечание не потерялось
+                        среди сделанных: разговор по нему продолжается.
+                      */}
+                      {state === "round" && (
+                        <span className="ml-auto shrink-0 rounded bg-[color:var(--comment-round)] px-1 py-0.5 text-[10px] leading-none text-white">
+                          новый раунд
                         </span>
                       )}
                       {skipped && !applied && (
@@ -269,20 +368,34 @@ export function PageComments({
                         ОТВЕТ НА ЗАМЕЧАНИЕ: что сделали и как страница выглядела
                         до и после. Пустое «стало» значит, что блок убран, — так
                         и пишем, вместо пустой строки.
+
+                        Раундов может быть несколько: клиент ответил, мы правили
+                        ещё раз. Показываем их все по порядку — историю правок
+                        клиент должен видеть целиком.
                       */
-                      <span className="mt-2 block rounded border border-[color:var(--comment-applied)]/40 bg-[color:var(--comment-applied-tint)] p-2">
-                        <span className="block text-foreground">{done.what}</span>
-                        <span className="mt-1.5 block text-[11px] text-muted-foreground">
-                          Было
+                      rounds.map((r, i) => (
+                        <span
+                          key={r.date + i}
+                          className="mt-2 block rounded border border-[color:var(--comment-applied)]/40 bg-[color:var(--comment-applied-tint)] p-2"
+                        >
+                          {rounds.length > 1 && (
+                            <span className="mb-1 block text-[11px] text-muted-foreground">
+                              Раунд {i + 1} · {r.date}
+                            </span>
+                          )}
+                          <span className="block text-foreground">{r.what}</span>
+                          <span className="mt-1.5 block text-[11px] text-muted-foreground">
+                            Было
+                          </span>
+                          <span className="block text-foreground/80">{r.before}</span>
+                          <span className="mt-1.5 block text-[11px] text-muted-foreground">
+                            Стало
+                          </span>
+                          <span className="block text-foreground/80">
+                            {r.after || "Блока на этой странице больше нет."}
+                          </span>
                         </span>
-                        <span className="block text-foreground/80">{done.before}</span>
-                        <span className="mt-1.5 block text-[11px] text-muted-foreground">
-                          Стало
-                        </span>
-                        <span className="block text-foreground/80">
-                          {done.after || "Блока на этой странице больше нет."}
-                        </span>
-                      </span>
+                      ))
                     ) : g.rec.original ? (
                       /*
                         Метки снимаем и здесь, а не только при записи: девять
@@ -294,6 +407,19 @@ export function PageComments({
                       </span>
                     ) : null}
                   </button>
+                  {/*
+                    ВЕТКА ОТВЕТОВ — продолжение разговора по этому замечанию.
+                    Вне кнопки перехода к блоку по той же причине, что и
+                    решение дизайнера: поле ввода внутри кнопки не работает.
+                  */}
+                  <ReplyThread
+                    replies={replies}
+                    author={author}
+                    /* После нашей правки отвечать зовём прямо: разбор прочитан,
+                       и клиент должен видеть, что слово снова за ним. */
+                    invite={state === "done"}
+                    onSend={(who, t) => onReply(g.id, who, t)}
+                  />
                   {/*
                     РЕШЕНИЕ ДИЗАЙНЕРА — вне кнопки перехода к блоку: внутрь
                     кнопки поле ввода класть нельзя, клик по нему уводил бы
@@ -348,6 +474,140 @@ export function PageComments({
           </ul>
         )}
       </div>
+    </div>
+  );
+}
+
+/*
+  ВЕТКА ОТВЕТОВ ПОД ЗАМЕЧАНИЕМ — второй раунд правок.
+
+  Мы разобрали замечание и написали в панели, что сделали. Клиент это читает и
+  вполне может не согласиться: «поправили, но всё равно тяжело читается». Раньше
+  сказать об этом было негде — оставалось завести новое замечание, оторванное от
+  старого разговора, и разбираться заново, о чём вообще речь.
+
+  Теперь ответ дописывается сюда же, под замечание. Разговор виден целиком: что
+  просили, что мы сделали, что клиент ответил. Пока ответ без нашей правки,
+  замечание горит меткой «новый раунд» и стоит в очереди работы.
+
+  Отвечать можно на любое замечание, не только на сделанное. Разница только в
+  зазывании: после нашего разбора кнопку показываем сразу, в остальных случаях
+  она скромная ссылка — там разговор обычно и так продолжается правкой.
+*/
+function ReplyThread({
+  replies,
+  author,
+  invite,
+  onSend,
+}: {
+  replies: CommentReply[];
+  /** Имя из хранилища; пустое — сначала попросим представиться. */
+  author: string;
+  /** Звать отвечать заметной кнопкой, а не ссылкой. */
+  invite: boolean;
+  onSend: (author: string, text: string) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [name, setName] = React.useState(author);
+  const [text, setText] = React.useState("");
+
+  // Имя приезжает из хранилища асинхронно — как в форме нового комментария.
+  React.useEffect(() => {
+    if (author) setName(author);
+  }, [author]);
+
+  const canSend = text.trim().length > 0 && name.trim().length > 0;
+  const send = () => {
+    if (!canSend) return;
+    onSend(name.trim(), text.trim());
+    setText("");
+    setOpen(false);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      {replies.map((r, i) => (
+        <div
+          key={r.at + i}
+          className="rounded border border-[color:var(--comment-round)]/40 bg-[color:var(--comment-round-tint)] p-2"
+        >
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[11px] font-medium text-[color:var(--comment-round)]">
+              {r.author || "без имени"} ответил
+            </span>
+            <span className="text-[11px] text-muted-foreground">
+              {r.at.slice(0, 10)}
+            </span>
+          </div>
+          <p className="mt-1 whitespace-pre-wrap text-foreground">{r.text}</p>
+        </div>
+      ))}
+
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={cn(
+            "flex items-center gap-1 text-[11px] underline-offset-2",
+            invite
+              ? "rounded border border-[color:var(--comment-round)] px-1.5 py-0.5 text-[color:var(--comment-round)]"
+              : "text-muted-foreground hover:text-foreground hover:underline",
+          )}
+        >
+          <CornerDownRight className="size-3" aria-hidden />
+          {replies.length ? "Ответить ещё" : "Ответить"}
+        </button>
+      ) : (
+        <div className="space-y-1.5">
+          {!author && (
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ваше имя"
+              className="w-full rounded-md border bg-background px-2 py-1 text-xs outline-none focus:border-ring"
+            />
+          )}
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter отправляет, Shift+Enter переносит строку — как в форме выше.
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+              if (e.key === "Escape") {
+                setText("");
+                setOpen(false);
+              }
+            }}
+            autoFocus
+            rows={3}
+            placeholder="Что не так? Что поправить ещё?"
+            className="w-full resize-y rounded-md border bg-background px-2 py-1.5 text-xs outline-none focus:border-ring"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={send}
+              disabled={!canSend}
+              className="rounded-md bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground transition-opacity disabled:opacity-40"
+            >
+              Отправить
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setText("");
+                setOpen(false);
+              }}
+              className="text-[11px] text-muted-foreground underline-offset-2 hover:underline"
+            >
+              отмена
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
