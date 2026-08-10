@@ -2834,6 +2834,27 @@ export function buildDoc(
         const WHOLE_BOLD = /^\s*\*\*([\s\S]+)\*\*\s*$/;
         const unbold = (t: string) => WHOLE_BOLD.exec(t.trim())?.[1] ?? t;
         const stripBold = (t: string) => t.replace(/\*\*/g, "").trim();
+        /*
+          ТЕКСТ ВАРИАНТА ОТВЕТА — без хвостовой пунктуации. Замечание Юли от
+          7 августа 2026: «убрать в квизах знаки препинания после вариантов
+          ответов».
+
+          В источнике варианты набраны как обычный список внутри предложения:
+          «незрячий человек;», «слабовидящий человек;», «плоховидящий.». В
+          сплошном тексте это верно, а в квизе каждый вариант — отдельная
+          кнопка, и точка с запятой на её конце обещает продолжение, которого
+          нет.
+
+          Снимаем ТОЛЬКО точку, запятую и точку с запятой. Вопросительный и
+          восклицательный знаки остаются: варианты-реплики («Помочь вам открыть
+          дверь?») без них меняют смысл. Закавыченную реплику правило не
+          задевает — она кончается кавычкой, а не знаком.
+
+          Порядок важен: сначала снимается жирный, потом пунктуация. Жирный в
+          этих квизах помечает верный ответ, и проверять его надо на исходной
+          строке (см. WHOLE_BOLD ниже).
+        */
+        const optionText = (t: string) => t.replace(/\s*[.,;]+\s*$/u, "").trim();
         const isQuestionBlock = (it: Item) =>
           it.b.kind === "heading" || WHOLE_BOLD.test(md(it, fix).trim());
 
@@ -2914,7 +2935,7 @@ export function buildDoc(
             if (it.b.kind === "list") {
               cur.options.push(
                 ...it.b.items.map((li) => ({
-                  text: stripBold(applyFix(liText(it, li), fix).trim()),
+                  text: optionText(stripBold(applyFix(liText(it, li), fix).trim())),
                 })),
               );
               continue;
@@ -3026,7 +3047,7 @@ export function buildDoc(
                 quizzes.push(cur);
                 mode = "question";
               }
-              cur.options.push({ text: stripBold(raw.replace(CIRCLE, "")) });
+              cur.options.push({ text: optionText(stripBold(raw.replace(CIRCLE, ""))) });
               continue;
             }
             if (mode === "explanation") cur.expl.push(stripBold(raw));
@@ -3200,7 +3221,10 @@ export function buildDoc(
               cur.options.push(
                 ...lines.map((raw) => {
                   const correct = WHOLE_BOLD.test(raw);
-                  return { text: stripBold(raw), ...(correct ? { correct: true } : {}) };
+                  return {
+                    text: optionText(stripBold(raw)),
+                    ...(correct ? { correct: true } : {}),
+                  };
                 }),
               );
               continue;
@@ -3378,7 +3402,7 @@ export function buildDoc(
               const lines = it.b.items.map((li) => applyFix(liText(it, li), fix));
               // Список ПОСЛЕ вопроса — это варианты ответа, до вопроса — часть описания.
               if (cur.asked && !cur.options.length)
-                cur.options = lines.map((text) => ({ text: stripBold(text) }));
+                cur.options = lines.map((text) => ({ text: optionText(stripBold(text)) }));
               else cur.qParts.push(lines.map((l) => `• ${stripBold(l)}`).join("\n"));
               continue;
             }
@@ -3451,7 +3475,9 @@ export function buildDoc(
               cur = { qParts: it.b.items.map((li) => stripBold(liText(it, li))), options: [] };
             } else if (it.b.kind === "list") {
               // Маркированный пункт — вариант; следом может идти его «ОС».
-              const text = stripBold(it.b.items.map((li) => liText(it, li)).join(" "));
+              const text = optionText(
+                stripBold(it.b.items.map((li) => liText(it, li)).join(" ")),
+              );
               const next = items[i + 1];
               const fb = next && isOS(next) ? stripOS(md(next, fix)) : "";
               if (fb) i++; // «ОС» съели
@@ -3526,7 +3552,10 @@ export function buildDoc(
               ? optionsBlock.items.map((li) => {
                   const raw = liText(items[b.opts], li);
                   const correct = WHOLE_BOLD.test(raw.trim());
-                  return { text: unbold(raw).trim(), ...(correct ? { correct } : {}) };
+                  return {
+                    text: optionText(unbold(raw).trim()),
+                    ...(correct ? { correct } : {}),
+                  };
                 })
               : [];
           const end = bounds[i + 1]?.start ?? items.length;

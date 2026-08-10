@@ -8,6 +8,7 @@ import { canonize } from "./canon";
 import { dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { applyClientEdits } from "./clientEdits";
+import { wrapImportantCards } from "./importantCards";
 import { cutFromCards } from "./cutFromCard";
 import { loadEdits } from "@/editor-source/store";
 import { useLogoIndex, useAvatarIndex } from "@/editor-source/source/orgLogo";
@@ -125,7 +126,18 @@ export function useModuleDoc(moduleId: string): Doc | null {
       sourceSections,
       placeDirectives(sourceSections, pathname, moduleId, directives),
     );
-    return applyClientEdits(cleaned.sections, cleaned.directiveAt);
+    const edited = applyClientEdits(cleaned.sections, cleaned.directiveAt);
+    // Карточки «Важно» — последними: они не трогают блоки, только говорят
+    // раскладке, какие из них собрать вместе (см. importantCards).
+    return {
+      sections: edited.sections,
+      directiveAt: wrapImportantCards(
+        edited.sections,
+        pathname,
+        moduleId,
+        edited.directiveAt,
+      ),
+    };
   }, [sourceSections, pathname, moduleId, directives]);
   const logoIndex = useLogoIndex();
   const avatarIndex = useAvatarIndex();
