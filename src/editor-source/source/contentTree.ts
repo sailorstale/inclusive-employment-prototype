@@ -3779,10 +3779,25 @@ function annotate(doc: Doc): Doc {
   const used = new Set<string>();
   // Ближайший заголовок сверху — из него растёт подпись таблицы.
   let lastHeading = "";
+  /*
+    ПОДВОДКА — строка прямо над таблицей, которая заканчивается двоеточием
+    («Возможны следующие ситуации:»). Она называет таблицу точнее, чем заголовок
+    раздела, и потому идёт в подпись первой.
+
+    Понадобилось после замечания клиента 6 августа 2026: заголовок «Важные
+    нюансы» со страницы «Договор и оформление» сняли, и подпись таблицы уехала к
+    предыдущему уцелевшему заголовку — «Особенности графика». Незрячему
+    читателю таблица представлялась чужим именем, а на вид страницы это никак
+    не влияло, то есть заметить глазами было нельзя.
+
+    Живёт до ближайшего заголовка и до первой же таблицы: подводка вводит одну
+    таблицу, а не всё, что стоит ниже по разделу.
+  */
+  let leadIn = "";
 
   const captionFor = (t: { header: string[] }) => {
     const cols = t.header.map((h) => stripEmph(h).trim()).filter(Boolean).join(", ");
-    const head = lastHeading.trim();
+    const head = (leadIn || lastHeading).trim().replace(/\s*:$/u, "");
     return (
       [head && `${head}.`, cols && `Столбцы: ${cols}.`].filter(Boolean).join(" ") ||
       "Таблица"
@@ -3797,18 +3812,27 @@ function annotate(doc: Doc): Doc {
         const anchor = toShare ?? anchorSlug(n.anchor || n.text, used);
         toShare = undefined;
         lastHeading = n.text;
+        leadIn = "";
         return { ...n, anchor };
       }
       if (n.component === "Accordion") {
         lastHeading = n.question;
+        leadIn = "";
         return { ...n, children: walk(n.children) };
       }
-      if (n.component === "General Card" && n.title) lastHeading = n.title;
+      if (n.component === "General Card" && n.title) {
+        lastHeading = n.title;
+        leadIn = "";
+      }
+      if (n.component === "Text" && /:\s*$/u.test(n.text)) leadIn = n.text;
       // Подпись — первым полем: её читают глазами раньше, чем строки таблицы.
-      if (n.component === "Table")
+      if (n.component === "Table") {
+        const caption = n.caption ?? captionFor(n);
+        leadIn = "";
         return n.caption
           ? n
-          : { component: n.component, caption: captionFor(n), header: n.header, rows: n.rows };
+          : { component: n.component, caption, header: n.header, rows: n.rows };
+      }
       if ("children" in n && Array.isArray(n.children))
         return { ...n, children: walk(n.children) } as Node;
       return n;

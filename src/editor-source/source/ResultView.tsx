@@ -398,9 +398,36 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
         </Quote>
       );
 
-    case "Table":
-      return (
-        <Table caption={node.caption}>
+    case "Table": {
+      /*
+        ШИРОКАЯ ТАБЛИЦА ЕДЕТ ВБОК, А НЕ СЖИМАЕТСЯ.
+
+        Замечание клиента 6 августа 2026 к таблице про справку и ИПРА:
+        «визуально сложно выглядит». Причина была в ширине: четыре колонки
+        прозы делили 652 пикселя колонки текста, каждая выходила по 155, и
+        таблица вытягивалась на 1920 пикселей вниз — читать её приходилось не
+        строками, а колодцами.
+
+        Решение дизайнера: на боевом сайте такая таблица прокручивается вбок.
+        Повторяем это здесь — каждой колонке даём не меньше 15rem, и если сумма
+        не влезает в колонку текста, таблица получает СВОЮ полосу прокрутки.
+        Страница при этом вбок не едет: прокручивается только обёртка.
+
+        Порог — от трёх колонок. Таблицы из двух колонок делятся пополам
+        (см. Table) и всегда влезают; давать им минимум значило бы включить
+        прокрутку там, где она не нужна.
+      */
+      const columns = node.header.length || node.rows[0]?.length || 0;
+      const table = (
+        <Table
+          caption={node.caption}
+          className={columns >= 3 ? "min-w-[var(--table-min-width)]" : undefined}
+          style={
+            columns >= 3
+              ? ({ "--table-min-width": `${columns * 15}rem` } as React.CSSProperties)
+              : undefined
+          }
+        >
           {node.header.some(Boolean) && (
             <TableRow header>
               {node.header.map((c, i) => (
@@ -417,6 +444,8 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           ))}
         </Table>
       );
+      return columns >= 3 ? <div className="overflow-x-auto">{table}</div> : table;
+    }
 
     case "Image":
       return <Image src={node.src} alt={node.alt} />;

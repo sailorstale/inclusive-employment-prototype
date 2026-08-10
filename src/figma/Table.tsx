@@ -148,6 +148,12 @@ type TableProps = {
   caption?: string;
   children?: React.ReactNode;
   className?: string;
+  /*
+    Инлайновые стили нужны там, где значение считается на ходу и класса под него
+    нет: минимальная ширина широкой таблицы зависит от числа колонок
+    (см. ResultView). Оформление таблицы задаётся классами и остаётся здесь.
+  */
+  style?: React.CSSProperties;
 };
 
 // Строка-шапка? — та, у которой проп header (TableRow header).
@@ -163,7 +169,7 @@ function columnsOf(row: React.ReactNode): number {
   return React.Children.count((row.props as TableRowProps).children);
 }
 
-export function Table({ headers, caption, children, className }: TableProps) {
+export function Table({ headers, caption, children, className, style }: TableProps) {
   const rows = React.Children.toArray(children);
   const headerRows = rows.filter(isHeaderRow);
   const bodyRows = rows.filter((r) => !isHeaderRow(r));
@@ -206,6 +212,7 @@ export function Table({ headers, caption, children, className }: TableProps) {
         "rounded-[var(--radius-m)] border border-[color:var(--border-divider)]",
         className,
       )}
+      style={style}
     >
       {caption && <caption className="sr-only">{caption}</caption>}
       {columns === 2 && (
