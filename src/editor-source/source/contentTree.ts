@@ -1205,6 +1205,23 @@ function listInside(n?: Node): Extract<Node, { component: "Stack" }> | undefined
 }
 
 /*
+  ТИП МАРКЕРА СПИСКА. Флаг ordered для склейки слишком грубый: он различает
+  только «номера или не номера», а точка и иконка для него одно и то же. Из-за
+  этого список площадок поиска (точки) слипался со списком телеграм-каналов
+  (иконка-ссылка), маркер поднимался по первому пункту, и шесть иконок молча
+  пропадали.
+
+  Маркер берём по первому пункту — тому самому, по которому его потом поднимает
+  hoistListFields.
+*/
+function listMarker(s: Extract<Node, { component: "Stack" }>): "Dot" | "Icon" | "Number" {
+  const item = s.children.find(
+    (c): c is Extract<Node, { component: "List Item" }> => c.component === "List Item",
+  );
+  return item ? item.type : s.ordered ? "Number" : "Dot";
+}
+
+/*
   Однородный конверт: какой ОДИН тип компонента лежит внутри Block.
   Служебные пометки инструмента не в счёт — они не контент.
 */
@@ -1265,7 +1282,7 @@ function mergeSiblings(nodes: Node[]): Node[] {
     // 1. Списки
     const a = listInside(prev);
     const b = listInside(n);
-    if (a && b && a.ordered === b.ordered) {
+    if (a && b && a.ordered === b.ordered && listMarker(a) === listMarker(b)) {
       const merged = { ...a, children: [...a.children, ...b.children] };
       out[out.length - 1] =
         prev!.component === "Block"
@@ -4192,7 +4209,15 @@ const cleanForExport = (
       */
       if (k === "anchor" && isSection) continue;
       if (v === undefined || v === null || v === false) continue;
-      if (Array.isArray(v) && v.length === 0) continue;
+      /*
+        Пустой массив полем не едет — кроме строк таблицы. У дорожной карты на
+        «Сопровождать сотрудника» в документе клиента есть только строка с
+        названиями колонок, строк тела нет вовсе. Без поля разработчик получает
+        таблицу, у которой rows просто отсутствует, и читает это как потерю в
+        раскладке. Пустой массив говорит прямо: строк нет и в источнике.
+      */
+      if (Array.isArray(v) && v.length === 0 && !(component === "Table" && k === "rows"))
+        continue;
       if (typeof v === "string" && !v.trim()) continue;
       if (k === "children") {
         const kids = (v as Node[])
