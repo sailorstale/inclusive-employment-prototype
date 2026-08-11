@@ -81,6 +81,31 @@ globalThis.fetch = async (url, init) => {
 };
 
 const { buildSiteTrees } = await importTs("src/editor-source/site/siteExport.ts");
+const { stripMarks } = await importTs("src/editor-source/richText.tsx");
+
+/*
+  МЕТКИ ЗАМЕН СНИМАЕМ. Дамп печатает дерево страницы ДО выгрузки, а замены
+  раскурсовки в нём ещё помечены служебными символами из приватной зоны Юникода
+  (U+E000…U+E002): между ними лежат оба варианта, новый и прежний. На сайте по
+  этой метке рисуется подсказка «было: …», а в выгрузке разработчику метки
+  снимает mdToTags. В дампе же они невидимы — символы без начертания, — и строка
+  выглядит задвоенной: «…для работодателей…для работодателя».
+
+  Так уже случилось 11 августа 2026: сессия «Шага 2» приняла это за ошибку
+  сборки и потратила время на поиск несуществующей поломки. Снимаем метки тем же
+  stripMarks, что и остальные места, где строку показывают как есть. Просто
+  выбросить служебные символы нельзя — оба варианта склеились бы в одну строку,
+  и получилось бы ровно то задвоение, от которого мы уходим.
+*/
+const clean = (v) =>
+  typeof v === "string"
+    ? stripMarks(v)
+    : Array.isArray(v)
+      ? v.map(clean)
+      : v && typeof v === "object"
+        ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clean(x)]))
+        : v;
+
 const trees = await buildSiteTrees();
 const slug = process.argv[2] ?? "/general/how";
 const tree = trees.find((t) => t.slug === slug);
@@ -88,12 +113,17 @@ if (!tree) {
   console.error(`Нет такой страницы: ${slug}\nЕсть: ${trees.map((t) => t.slug).join(", ")}`);
   process.exit(1);
 }
-if (process.argv[3]) await fs.writeFile(process.argv[3], JSON.stringify(tree, null, 1));
+if (process.argv[3])
+  await fs.writeFile(process.argv[3], JSON.stringify(clean(tree), null, 1));
 
 /** Служебные поля узла в одну строку: всё, кроме детей и имени компонента. */
 const skip = new Set(["children", "kind", "type"]);
-const brief = (v) =>
-  typeof v === "string" ? JSON.stringify(v.slice(0, 160)) : JSON.stringify(v).slice(0, 200);
+const brief = (v) => {
+  const c = clean(v);
+  return typeof c === "string"
+    ? JSON.stringify(c.slice(0, 160))
+    : JSON.stringify(c).slice(0, 200);
+};
 
 function walk(nodes, prefix) {
   nodes.forEach((n, i) => {
