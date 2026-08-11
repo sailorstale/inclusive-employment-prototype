@@ -25,7 +25,7 @@ await build({
       export { buildDoc } from "@/editor-source/source/contentTree";
       export { pageToc, pageChildren } from "@/editor-source/site/pageStructure";
       export { pageBySlug, OSNOVY_PAGES } from "@/editor-source/site/pageMap";
-      export { pageParts } from "@/editor-source/site/pageOutline";
+      export { pageParts, hiddenFromToc } from "@/editor-source/site/pageOutline";
     `,
     resolveDir: ROOT,
     loader: "ts",
@@ -38,7 +38,8 @@ await build({
   alias: { "@": SRC },
   loader: { ".css": "empty", ".svg": "empty" },
 });
-const { buildDoc, pageToc, pageBySlug, pageParts, OSNOVY_PAGES } = await import(pathToFileURL(out).href);
+const { buildDoc, pageToc, pageBySlug, pageParts, hiddenFromToc, OSNOVY_PAGES } =
+  await import(pathToFileURL(out).href);
 
 const slugs = process.argv.slice(2).length ? process.argv.slice(2) : OSNOVY_PAGES.map((p) => p.slug);
 const all = await fetch("http://localhost:8787/api/source/directives").then((r) => r.json());
@@ -74,6 +75,8 @@ for (const slug of slugs) {
   // Разделы страницы — тем же кодом, что и на сайте (с перекройкой по карте).
   const { chosen } = pageParts(doc, page);
   console.log(`\n### ${slug} — ${page.title} (${page.module})`);
-  for (const t of pageToc(chosen, page.slug))
+  // Скрытые заголовки (noToc и врезки) передаём так же, как страница: иначе
+  // инструмент показывал бы строки, которых в меню у читателя нет.
+  for (const t of pageToc(chosen, page.slug, hiddenFromToc(page)))
     console.log(`${t.level === 2 ? "" : "    "}H${t.level}  ${t.label.slice(0, 90)}`);
 }
