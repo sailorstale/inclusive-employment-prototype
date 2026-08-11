@@ -44,7 +44,7 @@ import { ngoAudienceEdits } from "./ngoAudience";
   разбирать руками.
 */
 
-const PAGES: PageEdits[] = [
+export const PAGES: PageEdits[] = [
   contractEdits,
   quotasEdits,
   howEdits,
