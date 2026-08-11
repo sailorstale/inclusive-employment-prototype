@@ -2073,9 +2073,17 @@ export function buildDoc(
 
           Единицу деления берём однозначную, без догадок: либо блоков ровно N
           (каждый блок — карточка), либо это один список из N пунктов (каждый
-          пункт — карточка). Не сошлось — не выдумываем: оставляем автоматику и
-          говорим об этом заметкой, иначе дизайнер будет думать, что просьба
-          исполнена.
+          пункт — карточка), либо это одна таблица из двух колонок и N строк
+          (каждая строка — карточка). Не сошлось — не выдумываем: оставляем
+          автоматику и говорим об этом заметкой, иначе дизайнер будет думать,
+          что просьба исполнена.
+
+          ТАБЛИЦА ТОЛЬКО ДВУХКОЛОНОЧНАЯ. У такой строки деление на карточку
+          очевидно: первая ячейка — название, вторая — текст под ним. С тремя
+          колонками очевидности нет: непонятно, что из них заголовок, а что тело,
+          и куда девать названия колонок. Угадывать здесь нельзя — молча
+          получилась бы каша, поэтому широкие таблицы в это правило не попадают
+          и остаются таблицами.
         */
         /*
           «Все в одну карточку» — обратное делению. Автоматика разложила бы набор
@@ -2134,7 +2142,14 @@ export function buildDoc(
             ? it.b.items.map((li) => applyFix(liText(it, li), fix)).join(" ")
             : md(it, fix);
 
-        let units: { it: Item; text: string }[] | null = null;
+        /*
+          Единица деления. Обычно это строка текста, которую ещё надо разобрать
+          на заголовок и тело (splitTitleBody ищет жирный лид или тире). У строки
+          таблицы разбирать нечего — границу колонок задал автор, — поэтому она
+          приходит уже разобранной, парой title/body.
+        */
+        type Unit = { it: Item; text: string; title?: string; body?: Node[] };
+        let units: Unit[] | null = null;
         if (want) {
           if (items.length === want) {
             units = items.map((it) => ({ it, text: unitText(it) }));
@@ -2148,12 +2163,31 @@ export function buildDoc(
               it,
               text: applyFix(liText(it, li), fix),
             }));
+          } else if (
+            items.length === 1 &&
+            items[0].b.kind === "table" &&
+            items[0].b.header.length === 2 &&
+            items[0].b.rows.length === want
+          ) {
+            const it = items[0];
+            units = (it.b as { rows: string[][] }).rows.map((row) => ({
+              it,
+              text: row[0],
+              title: applyFix(row[0], fix),
+              /*
+                Тело гоним через cellNodes — тот же разбор ячейки, что у
+                «таблицы в текст»: он знает про пункты через «•» и про
+                подзаголовки внутри ячейки. Обычный Text склеил бы их в абзац.
+              */
+              body: cellNodes(applyFix(row[1] ?? "", fix)),
+            }));
           }
         }
 
         if (units) {
-          return withNumbers(units.map(({ it, text }) => {
-            const { title, body } = splitTitleBody(text);
+          return withNumbers(units.map(({ it, text, title: ready, body: nodes }) => {
+            const split = ready === undefined ? splitTitleBody(text) : null;
+            const title = ready ?? split?.title;
             const icon = iconOf(it);
             return {
               component: "General Card",
@@ -2162,9 +2196,11 @@ export function buildDoc(
               icon: mods.icon && icon ? icon : undefined,
               ...cardArt(title),
               title: titleFix(title ? headingText(title, fix) : undefined),
-              children: bodyText(body)
-                ? [{ component: "Text", size: "M", text: bodyText(body) }]
-                : [],
+              children:
+                nodes ??
+                (bodyText(split?.body ?? "")
+                  ? [{ component: "Text", size: "M", text: bodyText(split?.body ?? "") }]
+                  : []),
             };
           }));
         }

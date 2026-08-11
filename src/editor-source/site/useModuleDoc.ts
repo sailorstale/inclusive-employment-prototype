@@ -9,7 +9,6 @@ import { dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { applyClientEdits } from "./clientEdits";
 import { wrapImportantCards } from "./importantCards";
-import { wrapQuotes } from "./quoteCards";
 import { dropCardTitles } from "./cardTitle";
 import { cutFromCards } from "./cutFromCard";
 import { loadEdits } from "@/editor-source/store";
@@ -142,7 +141,7 @@ export function useModuleDoc(moduleId: string): Doc | null {
           edited.sections,
           pathname,
           moduleId,
-          wrapQuotes(edited.sections, pathname, moduleId, edited.directiveAt),
+          edited.directiveAt,
         ),
       ),
     };

@@ -16,7 +16,6 @@ import { dropScaffold } from "./dropScaffold";
 import { cutFromCards } from "./cutFromCard";
 import { applyClientEdits } from "./clientEdits";
 import { wrapImportantCards } from "./importantCards";
-import { wrapQuotes } from "./quoteCards";
 import { dropCardTitles } from "./cardTitle";
 import { decourse } from "./decourse";
 import { canonize } from "./canon";
@@ -139,8 +138,7 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
       cleaned.directiveAt,
     );
     /*
-      Карточки и цитаты по замечаниям — последними, ровно как на сайте. До
-      11 августа
+      Карточки по замечаниям — последними, ровно как на сайте. До 11 августа
       2026 этого шага здесь не было, и выгрузка расходилась со страницей: на
       «Этике и коммуникации» читатель видел шесть карточек «Важно», а
       разработчик получал те же блоки простым списком. Заодно карточки
@@ -149,12 +147,7 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
     const withCards = dropCardTitles(
       sections,
       pathname,
-      wrapImportantCards(
-        sections,
-        pathname,
-        page.module,
-        wrapQuotes(sections, pathname, page.module, directiveAt),
-      ),
+      wrapImportantCards(sections, pathname, page.module, directiveAt),
     );
     const doc = buildDoc(page.module, sections, resolve, logoIndex, withCards, avatarIndex);
 
