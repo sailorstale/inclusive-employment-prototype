@@ -99,6 +99,7 @@ function directiveFor(
 ): Directive {
   const target = spec.target ?? "GeneralCard";
   const quote = target === "Quote";
+  const video = target === "Video";
   return {
     id: `important:${spec.blocks[0]}`,
     module: moduleId,
@@ -115,9 +116,11 @@ function directiveFor(
       модификаторы, но запись, которая врёт о себе, собьёт с толку панель
       разметки и проверку выгрузки.
     */
-    targetLabel: quote ? "Цитата" : "General Card",
+    targetLabel: quote ? "Цитата" : video ? "Видео" : "General Card",
     modifiers: quote
       ? { size: "L", yandex: false }
+      : video
+      ? {}
       : {
           orient: "Vertical",
           icon: false,
@@ -138,6 +141,9 @@ function directiveFor(
       spec.split ? `Сделать ${spec.split} карточек` : "",
       spec.noPhoto ? "Без фото" : "",
       spec.listIcon ? `Иконка ${spec.listIcon}` : "",
+      // Адрес ролика раскладка достаёт из комментария (см. case «Video» в
+      // contentTree): в самом блоке его нет, там стоит только пометка «ВИДЕО».
+      spec.href ? `Ссылка: ${spec.href}` : "",
     ]
       .filter(Boolean)
       .join(". "),

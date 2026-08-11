@@ -552,7 +552,21 @@ export function instructionOf(comment: string): string {
   return (i < 0 ? lines : lines.slice(0, i)).join("\n").trim();
 }
 
+/*
+  Адрес ролика, написанный прямо в комментарии. Его читает ветка «Video»: в
+  самом блоке ссылки нет, там стоит одна пометка «ВИДЕО», а адрес живёт текстом
+  в соседнем абзаце, забрать который в директиву нельзя.
+
+  Нужно и страховке ниже: комментарий, из которого раскладка взяла адрес,
+  разобран, и жаловаться на него не на что.
+*/
+const videoUrl = (d?: Directive): string | undefined =>
+  d?.target === "Video"
+    ? /(https?:\/\/[^\s)]+)/.exec(d?.comment || "")?.[1]
+    : undefined;
+
 const commentRecognized = (d?: Directive): boolean =>
+  videoUrl(d) !== undefined ||
   wantsDelete(d) ||
   wantsUnlink(d) ||
   linkPhrase(d) !== undefined ||
@@ -3826,7 +3840,7 @@ export function buildDoc(
           стоит в соседнем абзаце текстом: забрать абзац в директиву нельзя, он
           пропал бы целиком, ведь эта ветка отдаёт только плеер.
         */
-        const url = inBlocks ?? /(https?:\/\/[^\s)]+)/.exec(dir.comment || "")?.[1];
+        const url = inBlocks ?? videoUrl(dir);
         return [{ component: "Video", ...(url ? { href: url } : {}) }];
       }
 
