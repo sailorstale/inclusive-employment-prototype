@@ -14,6 +14,8 @@ import { loadDirectives } from "@/editor-source/directives";
 import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { cutFromCards } from "./cutFromCard";
+import { withCodeMarkup } from "./markup";
+import { withCodeEdits } from "./sourceEdits";
 import { applyClientEdits, dropClientLinks } from "./clientEdits";
 import { wrapImportantCards } from "./importantCards";
 import { dropCardTitles } from "./cardTitle";
@@ -114,14 +116,16 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
     блок, вынесенный из карточки по замечанию клиента, уезжает разработчику
     по-прежнему внутри неё.
   */
-  const directives = cutFromCards(markup);
+  // Та же добавка, что и на сайте: разметка из кода дополняет серверную,
+  // иначе выгрузка и карта блоков разошлись бы со страницей (см. markup).
+  const directives = cutFromCards(withCodeMarkup(markup));
 
   const out: PageTree[] = [];
   for (const page of OSNOVY_PAGES) {
     const mod = await moduleLoaders[page.module]();
     const sourceSections = toSections(normalizeSourceBlocks(mod.blocks));
     const pathname = `/source/${page.module}`;
-    const base = makeMdResolver(edits, pathname);
+    const base = makeMdResolver(withCodeEdits(edits), pathname);
     const resolve = (type: string, text: string, md: string, anchor?: string) => {
       // Ссылку, снятую по замечанию клиента, убираем СРАЗУ ПОСЛЕ резолвера:
       // до него её вернула бы правка редактора, а она у каждого стенда своя

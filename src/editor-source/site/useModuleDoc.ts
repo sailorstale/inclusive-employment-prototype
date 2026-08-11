@@ -11,6 +11,8 @@ import { applyClientEdits, dropClientLinks } from "./clientEdits";
 import { wrapImportantCards } from "./importantCards";
 import { dropCardTitles } from "./cardTitle";
 import { cutFromCards } from "./cutFromCard";
+import { withCodeMarkup } from "./markup";
+import { withCodeEdits } from "./sourceEdits";
 import { loadEdits } from "@/editor-source/store";
 import { useLogoIndex, useAvatarIndex } from "@/editor-source/source/orgLogo";
 import { loadDirectives, type Directive } from "@/editor-source/directives";
@@ -76,7 +78,9 @@ export function useModuleDoc(moduleId: string): Doc | null {
   React.useEffect(() => {
     let alive = true;
     loadEdits("source").then((m) => {
-      if (alive) setEdits(m);
+      // Правки текста дополняем теми, что лежат в коде: у боевого стенда данные
+      // свои, и без этого клиент видит прежние формулировки (см. sourceEdits).
+      if (alive) setEdits(withCodeEdits(m));
     });
     return () => {
       alive = false;
@@ -99,7 +103,10 @@ export function useModuleDoc(moduleId: string): Doc | null {
     // Директивы укорачиваем сразу на входе: дальше по конвейеру их адреса уже
     // считаются, и подрезать было бы поздно (см. cutFromCard).
     loadDirectives().then((d) => {
-      if (alive) setDirectives(cutFromCards(d));
+      // Разметку с сервера дополняем той, что лежит в коде: у боевого стенда
+      // данные свои, и без этого клиент видит страницу голым текстом (см.
+      // markup/index.ts).
+      if (alive) setDirectives(cutFromCards(withCodeMarkup(d)));
     });
     return () => {
       alive = false;
