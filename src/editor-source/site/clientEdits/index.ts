@@ -100,6 +100,7 @@ function mergeRecords<T>(
 }
 
 const CELL_TEXT = mergeRecords<string>("ячейка таблицы", (p) => p.cells);
+const CELL_ROWS = mergeRecords<string[]>("строка таблицы", (p) => p.cellRows);
 const REWRITE = mergeRecords<{ md: string; text: string }>(
   "текст блока",
   (p) => p.rewrite,
@@ -109,6 +110,22 @@ const LIST_ITEM_MD = mergeRecords<string>("пункт списка", (p) => p.li
 const NO_MARKUP = new Set<string>(PAGES.flatMap((p) => p.noMarkup ?? []));
 const UNTYPE = new Set<string>(PAGES.flatMap((p) => p.untype ?? []));
 const INSERTS: Insert[] = PAGES.flatMap((p) => p.inserts ?? []);
+
+/*
+  Записи на строку таблицы, где ячеек не столько, сколько в источнике. Проверяем
+  здесь же, до общего сообщения об ошибке: лишняя или недостающая ячейка сдвинет
+  колонки во всей таблице, а заметить это можно только глазами.
+*/
+for (const page of PAGES)
+  for (const [key, cells] of Object.entries(page.cellRows ?? {})) {
+    const was = key.split(" | ").length;
+    if (cells.length === was) continue;
+    conflicts.push({
+      kind: `строка таблицы: ячеек ${cells.length} вместо ${was}`,
+      key,
+      pages: [page.page],
+    });
+  }
 
 /** Ключи, заявленные сразу двумя страницами. Пусто — всё в порядке. */
 export const editKeyConflicts: readonly EditKeyConflict[] = conflicts;
@@ -122,20 +139,33 @@ if (import.meta.env.DEV && conflicts.length) {
   );
 }
 
-/** Ячейки таблицы, переписанные по замечаниям. Не таблица — блок как был. */
+/*
+  Ячейки таблицы, переписанные по замечаниям. Не таблица — блок как был.
+
+  Сначала правила на всю строку, потом на отдельную ячейку. Порядок важен: ключ
+  строки считается по ИСХОДНЫМ ячейкам, и замена одной ячейки не должна уводить
+  из-под правила всю строку.
+
+  Строка другой длины не применяется. Лишняя или недостающая ячейка сдвинула бы
+  колонки во всей таблице, и заметить это можно было бы только глазами, поэтому
+  такая запись уходит в список конфликтов — он виден на странице «Проверки».
+*/
 function fixCells(b: SourceBlock): SourceBlock {
   if (b.kind !== "table") return b;
   let touched = false;
-  const rows = b.rows.map((row) =>
-    row.map((cell) => {
+  const rows = b.rows.map((row) => {
+    const whole = CELL_ROWS[row.map((c) => c.trim()).join(" | ")];
+    const base = whole && whole.length === row.length ? ((touched = true), whole) : row;
+    return base.map((cell) => {
       const next = CELL_TEXT[cell.trim()];
       if (next === undefined) return cell;
       touched = true;
       return next;
-    }),
-  );
+    });
+  });
   return touched ? { ...b, rows } : b;
 }
+
 
 type BlockSection = { anchor?: string; blocks: SourceBlock[] };
 type DirectiveAt = (si: number, bi: number) => Directive | undefined;
