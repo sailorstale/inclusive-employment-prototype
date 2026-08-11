@@ -118,7 +118,14 @@ function directiveFor(
     targetLabel: quote ? "Цитата" : "General Card",
     modifiers: quote
       ? { size: "L", yandex: false }
-      : { orient: "Vertical", icon: false, step: false },
+      : {
+          orient: "Vertical",
+          icon: false,
+          step: false,
+          // Значок пунктов у списков внутри карточки — как у обычной разметки
+          // списка: сам значок называет комментарий («иконка галочка»).
+          ...(spec.listIcon ? { marker: "Icon" } : {}),
+        },
     /*
       Комментарий здесь — рабочее поле, а не пояснение: раскладка вычитывает из
       него и заголовок карточки, и число карточек, и отказ от фото. Поэтому
@@ -130,6 +137,7 @@ function directiveFor(
       spec.title ? `Добавь заголовок ${spec.title}` : "",
       spec.split ? `Сделать ${spec.split} карточек` : "",
       spec.noPhoto ? "Без фото" : "",
+      spec.listIcon ? `Иконка ${spec.listIcon}` : "",
     ]
       .filter(Boolean)
       .join(". "),

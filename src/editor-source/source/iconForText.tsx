@@ -21,6 +21,7 @@ import {
   Link,
   MonitorSmartphone,
   Ban,
+  Check,
 } from "lucide-react";
 
 /*
@@ -67,6 +68,13 @@ const BY_NAME = new Map<string, LucideIcon>([
   */
   ["MonitorSmartphone", MonitorSmartphone],
   ["Ban", Ban],
+  /*
+    Галочка ставится у пунктов чек-листа («иконка галочка» в разметке) —
+    решение дизайнера 11 августа 2026 по замечанию клиента к «Шагу 1».
+    По тексту не угадывается: галочка говорит не о чём пункт, а о том, что
+    его нужно отметить.
+  */
+  ["Check", Check],
 ]);
 
 /** Иконка по тексту блока: {name, Icon}. */

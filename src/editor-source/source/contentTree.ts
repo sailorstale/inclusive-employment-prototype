@@ -429,6 +429,8 @@ const ICON_BY_WORD: [RegExp, string][] = [
   [/ссылк|линк|link/iu, "Link"],
   [/документ|файл|бумаг/iu, "FileText"],
   [/закон|прав|юрид/iu, "Scale"],
+  // Галочка у пунктов чек-листа: их не читают, по ним отмечаются.
+  [/галоч|чек|check/iu, "Check"],
 ];
 
 const listItemIcon = (d?: Directive): string | undefined => {
@@ -1482,8 +1484,24 @@ export function buildDoc(
   const liText = (it: Item, li: { text: string; md: string }) =>
     resolve("li", li.text, li.md, it.anchor);
 
+  /*
+    Значок пунктов списка, заданный разметкой. Обычный список рисует точку, но
+    внутри карточки список бывает чек-листом: у его пунктов галочка, потому что
+    по ним отмечаются, а не читают их подряд (замечание клиента msn9v1ccl7e4,
+    решение дизайнера 11 августа 2026 — «галочка должна быть иконкой»).
+
+    Нумерованный список значка не получает: у него уже есть номер, и номер несёт
+    смысл — порядок.
+  */
+  type ListMark = { icon: string } | undefined;
+
   /** Блок без директивы — обычная раскладка по правилам системы. */
-  const plainNodes = (it: Item, fix: TextFix, inCard = false): Node[] => {
+  const plainNodes = (
+    it: Item,
+    fix: TextFix,
+    inCard = false,
+    mark: ListMark = undefined,
+  ): Node[] => {
     const b = it.b;
     switch (b.kind) {
       case "heading":
@@ -1504,7 +1522,8 @@ export function buildDoc(
         // Quote — только речь человека с именем. Блок «>» автора не несёт,
         // поэтому по правилу это Phrase: фраза-врезка курсивом.
         return [{ component: "Phrase", size: "L", text: md(it, fix) }];
-      case "list":
+      case "list": {
+        const marked = Boolean(mark) && !b.ordered;
         return [
           {
             component: "Stack",
@@ -1512,11 +1531,16 @@ export function buildDoc(
             children: b.items.map((li) => ({
               component: "List Item" as const,
               size: "L" as const,
-              type: (b.ordered ? "Number" : "Dot") as "Number" | "Dot",
+              type: (b.ordered ? "Number" : marked ? "Icon" : "Dot") as
+                | "Number"
+                | "Dot"
+                | "Icon",
+              ...(marked ? { icon: mark!.icon } : {}),
               text: liText(it, li),
             })),
           },
         ];
+      }
       case "table":
         return [
           {
@@ -2205,6 +2229,15 @@ export function buildDoc(
           }));
         }
 
+        /*
+          Значок пунктов для списков ВНУТРИ карточки: «иконка галочка» в
+          разметке превращает точки в галочки. Спрашиваем один раз на всю
+          карточку — значок относится к ней целиком, а не к отдельному списку.
+        */
+        const cardMark = mods.marker === "Icon" && listItemIcon(dir)
+          ? { icon: listItemIcon(dir) as string }
+          : undefined;
+
         for (const it of items) {
           const t = md(it, fix);
           const lead = t.match(/^\s*\*\*(.+?)\*\*:?\s*/);
@@ -2224,9 +2257,23 @@ export function buildDoc(
             служебный ярлык, а не заголовок карточки: он остаётся внутри
             текущей, иначе каждый ярлык плодил бы пустую карточку.
           */
+          /*
+            ЗАГОЛОВОК ВНУТРИ КАРТОЧКИ, У КОТОРОЙ НАЗВАНИЕ УЖЕ ЗАДАНО, новой
+            карточки НЕ начинает. Название пришло со стороны, одно на всю
+            группу, — значит группа и есть одна карточка, а заголовки внутри
+            неё делят её содержимое, а не режут её саму.
+
+            Так собран чек-лист на «Шаге 1»: одна карточка «Чек-лист», внутри
+            три подзаголовка со своими списками вопросов (замечание клиента
+            msn9v1ccl7e4). Без этого правила выходило четыре карточки подряд, и
+            название «Чек-лист» доставалось только первой, пустой.
+
+            Без явного названия всё как было: заголовок начинает карточку и
+            становится её названием.
+          */
           const startsCard =
             (lead && after.trim().length > 0) ||
-            it.b.kind === "heading" ||
+            (it.b.kind === "heading" && !(forcedTitle && cards.length)) ||
             isLabelBlock(t);
           if (startsCard || !cards.length) {
             // Хвостовая пунктуация в заголовке не нужна: «**Пример.**» → «Пример».
@@ -2317,6 +2364,22 @@ export function buildDoc(
             */
             const ownText =
               it.b.kind !== "list" && it.b.kind !== "table" && it.b.kind !== "image";
+            /*
+              ЗАГОЛОВОК ПЕРВЫМ БЛОКОМ КАРТОЧКИ, У КОТОРОЙ ЗАГОЛОВОК УЖЕ ЗАДАН.
+              Это два разных заголовка, и путать их нельзя: «Пример» называет
+              карточку, а «Разбор вакансии Сборщик заказов на складе» открывает
+              её содержимое (замечание клиента msn9vmy8ny4c, решение дизайнера
+              11 августа 2026 — «сделать строку подзаголовком внутри карточки»).
+
+              Раньше ветка forced отдавала текст такого блока в тело, не глядя на
+              вид: подзаголовок приезжал обычным абзацем и от соседних строк
+              ничем не отличался.
+
+              Заголовок, ПОВТОРЯЮЩИЙ название карточки, по-прежнему исчезает
+              (sameAsTitle): второе такое же название внутри читалось бы ошибкой.
+            */
+            const headInside =
+              Boolean(forced) && it.b.kind === "heading" && !sameAsTitle(title, rest);
             cards.push({
               component: "General Card",
               orientation: "Vertical",
@@ -2324,19 +2387,20 @@ export function buildDoc(
               icon: mods.icon && icon ? icon : undefined,
               ...cardArt(title),
               title,
-              children:
-                bodyText(rest) && !sameAsTitle(title, rest)
+              children: headInside
+                ? plainNodes(it, fix, true, cardMark)
+                : bodyText(rest) && !sameAsTitle(title, rest)
                   ? [{ component: "Text", size: "M", text: bodyText(rest) }]
                   : ownText
                     ? []
-                    : plainNodes(it, fix, true),
+                    : plainNodes(it, fix, true, cardMark),
             });
           } else {
             const last = cards[cards.length - 1] as Extract<
               Node,
               { component: "General Card" }
             >;
-            last.children.push(...plainNodes(it, fix, true));
+            last.children.push(...plainNodes(it, fix, true, cardMark));
           }
         }
         /*

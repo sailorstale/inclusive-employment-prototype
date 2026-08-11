@@ -7,7 +7,7 @@ import { decourse } from "./decourse";
 import { canonize } from "./canon";
 import { dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
-import { applyClientEdits } from "./clientEdits";
+import { applyClientEdits, dropClientLinks } from "./clientEdits";
 import { wrapImportantCards } from "./importantCards";
 import { dropCardTitles } from "./cardTitle";
 import { cutFromCards } from "./cutFromCard";
@@ -113,7 +113,11 @@ export function useModuleDoc(moduleId: string): Doc | null {
   const resolve = React.useMemo(() => {
     const base = makeMdResolver(edits, pathname);
     return (type: string, text: string, md: string, anchor?: string) => {
-      const out = decourse(dropStepNumber(type, base(type, text, md, anchor), anchor), moduleId);
+      // Ссылку, снятую по замечанию клиента, убираем СРАЗУ ПОСЛЕ резолвера:
+      // до него её вернула бы правка редактора, а она у каждого стенда своя
+      // (см. unlink в clientEdits).
+      const own = dropClientLinks(text, base(type, text, md, anchor));
+      const out = decourse(dropStepNumber(type, own, anchor), moduleId);
       return type.startsWith("h") ? canonize(out) : out;
     };
   }, [edits, pathname, moduleId]);

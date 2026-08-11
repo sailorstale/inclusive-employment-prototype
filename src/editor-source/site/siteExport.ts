@@ -14,7 +14,7 @@ import { loadDirectives } from "@/editor-source/directives";
 import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { cutFromCards } from "./cutFromCard";
-import { applyClientEdits } from "./clientEdits";
+import { applyClientEdits, dropClientLinks } from "./clientEdits";
 import { wrapImportantCards } from "./importantCards";
 import { dropCardTitles } from "./cardTitle";
 import { decourse } from "./decourse";
@@ -123,7 +123,11 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
     const pathname = `/source/${page.module}`;
     const base = makeMdResolver(edits, pathname);
     const resolve = (type: string, text: string, md: string, anchor?: string) => {
-      const out = decourse(dropStepNumber(type, base(type, text, md, anchor), anchor), page.module);
+      // Ссылку, снятую по замечанию клиента, убираем СРАЗУ ПОСЛЕ резолвера:
+      // до него её вернула бы правка редактора, а она у каждого стенда своя
+      // (см. unlink в clientEdits).
+      const own = dropClientLinks(text, base(type, text, md, anchor));
+      const out = decourse(dropStepNumber(type, own, anchor), page.module);
       // Единые названия повторяющихся блоков — как на сайте (см. canon.ts).
       return type.startsWith("h") ? canonize(out) : out;
     };

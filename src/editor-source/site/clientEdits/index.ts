@@ -109,6 +109,7 @@ const RETYPE = mergeRecords<Retyped>("абзац стал заголовком",
 const LIST_ITEM_MD = mergeRecords<string>("пункт списка", (p) => p.listItemMd);
 const NO_MARKUP = new Set<string>(PAGES.flatMap((p) => p.noMarkup ?? []));
 const UNTYPE = new Set<string>(PAGES.flatMap((p) => p.untype ?? []));
+const UNLINK = new Set<string>(PAGES.flatMap((p) => p.unlink ?? []));
 const INSERTS: Insert[] = PAGES.flatMap((p) => p.inserts ?? []);
 
 /*
@@ -166,6 +167,19 @@ function fixCells(b: SourceBlock): SourceBlock {
   return touched ? { ...b, rows } : b;
 }
 
+
+/*
+  ССЫЛКИ, СНЯТЫЕ ПОСЛЕ РЕЗОЛВЕРА (см. unlink в types.ts). Зовут это отсюда обе
+  сборки страницы — сайт (useModuleDoc) и выгрузка (siteExport), — рядом с
+  раскурсовкой и снятием номера шага: все трое правят уже готовую строку.
+
+  Сверяем по ТЕКСТУ ИСТОЧНИКА, а не по строке, которая пришла: строка могла
+  приехать из правки редактора и выглядеть иначе на каждом стенде. Слова внутри
+  ссылки остаются, уходит только сама ссылка.
+*/
+export function dropClientLinks(text: string, md: string): string {
+  return UNLINK.has(text) ? md.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1") : md;
+}
 
 type BlockSection = { anchor?: string; blocks: SourceBlock[] };
 type DirectiveAt = (si: number, bi: number) => Directive | undefined;
