@@ -15,6 +15,8 @@ import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { cutFromCards } from "./cutFromCard";
 import { applyClientEdits } from "./clientEdits";
+import { wrapImportantCards } from "./importantCards";
+import { dropCardTitles } from "./cardTitle";
 import { decourse } from "./decourse";
 import { canonize } from "./canon";
 import { pageChildren } from "./pageStructure";
@@ -135,7 +137,19 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
       cleaned.sections,
       cleaned.directiveAt,
     );
-    const doc = buildDoc(page.module, sections, resolve, logoIndex, directiveAt, avatarIndex);
+    /*
+      Карточки по замечаниям — последними, ровно как на сайте. До 11 августа
+      2026 этого шага здесь не было, и выгрузка расходилась со страницей: на
+      «Этике и коммуникации» читатель видел шесть карточек «Важно», а
+      разработчик получал те же блоки простым списком. Заодно карточки
+      появляются в карте блоков — она собирается этим же кодом.
+    */
+    const withCards = dropCardTitles(
+      sections,
+      pathname,
+      wrapImportantCards(sections, pathname, page.module, directiveAt),
+    );
+    const doc = buildDoc(page.module, sections, resolve, logoIndex, withCards, avatarIndex);
 
     // Разделы страницы и вступление — тем же кодом, что и на сайте (включая
     // перекройку по карте, см. pageOutline.ts), иначе выгрузка разъедется.

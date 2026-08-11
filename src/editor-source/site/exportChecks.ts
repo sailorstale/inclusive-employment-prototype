@@ -1,5 +1,7 @@
 import { routeTitles } from "@/data/nav";
 import { KNOWN_ICONS } from "@/editor-source/source/iconForText";
+import { editKeyConflicts } from "./clientEdits";
+import { cardBlockConflicts } from "./importantCards";
 import type { OsnovyExport } from "./siteExport";
 
 /*
@@ -483,6 +485,36 @@ export function checkExport(site: OsnovyExport): Problem[] {
   const out: Problem[] = [];
   const pages = (site.pages ?? []) as unknown as Rec[];
   const routes = new Set([...pages.map((p) => str(p.slug)), ...Object.keys(routeTitles)]);
+
+  /*
+    Правки по замечаниям лежат по файлу на страницу, и ключом там всегда текст
+    блока в источнике. Один и тот же текст принадлежит одной странице, поэтому
+    совпадение ключа у двух страниц — ошибка: молча выиграет последний набор, а
+    правка соседней страницы просто перестанет работать. Проверка не про
+    выгрузку, но живёт здесь: это единственное место, куда человек смотрит перед
+    отправкой результата разработчику.
+  */
+  for (const c of editKeyConflicts)
+    out.push({
+      rule: "правка-задвоена",
+      severity: "high",
+      page: c.pages[0],
+      where: "clientEdits",
+      message: `${c.kind} «${c.key}» заявлен сразу несколькими страницами: ${c.pages.join(", ")}. Работает только последняя.`,
+    });
+
+  /*
+    То же самое у карточек: блок принадлежит одной карточке, и две записи на
+    него значат, что две страницы взялись за один кусок.
+  */
+  for (const c of cardBlockConflicts)
+    out.push({
+      rule: "карточка-задвоена",
+      severity: "high",
+      page: c.pages[0],
+      where: "importantCards",
+      message: `Блок ${c.block} заявлен в карточку сразу несколькими страницами: ${c.pages.join(", ")}. Вторая запись не работает.`,
+    });
 
   const seenSlugs = new Set<string>();
   const seenDescriptions = new Map<string, string>();
