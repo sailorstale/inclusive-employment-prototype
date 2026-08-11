@@ -14,6 +14,7 @@ import { loadDirectives } from "@/editor-source/directives";
 import { OSNOVY_PAGES, dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { cutFromCards } from "./cutFromCard";
+import { mergeQuizFeedback } from "./quizAnswers";
 import { withCodeMarkup } from "./markup";
 import { withCodeEdits } from "./sourceEdits";
 import { applyClientEdits, dropClientLinks } from "./clientEdits";
@@ -118,7 +119,7 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
   */
   // Та же добавка, что и на сайте: разметка из кода дополняет серверную,
   // иначе выгрузка и карта блоков разошлись бы со страницей (см. markup).
-  const directives = cutFromCards(withCodeMarkup(markup));
+  const directives = cutFromCards(mergeQuizFeedback(withCodeMarkup(markup)));
 
   const out: PageTree[] = [];
   for (const page of OSNOVY_PAGES) {

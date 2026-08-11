@@ -11,6 +11,7 @@ import { applyClientEdits, dropClientLinks } from "./clientEdits";
 import { wrapImportantCards } from "./importantCards";
 import { dropCardTitles } from "./cardTitle";
 import { cutFromCards } from "./cutFromCard";
+import { mergeQuizFeedback } from "./quizAnswers";
 import { withCodeMarkup } from "./markup";
 import { withCodeEdits } from "./sourceEdits";
 import { loadEdits } from "@/editor-source/store";
@@ -106,7 +107,7 @@ export function useModuleDoc(moduleId: string): Doc | null {
       // Разметку с сервера дополняем той, что лежит в коде: у боевого стенда
       // данные свои, и без этого клиент видит страницу голым текстом (см.
       // markup/index.ts).
-      if (alive) setDirectives(cutFromCards(withCodeMarkup(d)));
+      if (alive) setDirectives(cutFromCards(mergeQuizFeedback(withCodeMarkup(d))));
     });
     return () => {
       alive = false;

@@ -100,6 +100,10 @@ function mergeRecords<T>(
   return out;
 }
 
+const RETABLE = mergeRecords<{ header: string[]; rows: string[][] }>(
+  "таблица целиком",
+  (p) => p.retable,
+);
 const CELL_TEXT = mergeRecords<string>("ячейка таблицы", (p) => p.cells);
 const CELL_ROWS = mergeRecords<string[]>("строка таблицы", (p) => p.cellRows);
 const REWRITE = mergeRecords<{ md: string; text: string }>(
@@ -156,6 +160,20 @@ if (import.meta.env.DEV && conflicts.length) {
   колонки во всей таблице, и заметить это можно было бы только глазами, поэтому
   такая запись уходит в список конфликтов — он виден на странице «Проверки».
 */
+/*
+  ТАБЛИЦА, ПЕРЕСОБРАННАЯ ЦЕЛИКОМ (см. retable в types.ts). Идёт ПЕРВОЙ в
+  цепочке правок: дальше по ней работают правила на строку и на ячейку, и
+  считать их надо уже по новым ячейкам, а не по старым.
+
+  Ключ — адрес блока ИСТОЧНИКА, поэтому правка находит свою таблицу один раз и
+  на своей же новой таблице искать себя не начинает.
+*/
+function reshapeTable(b: SourceBlock, id: string): SourceBlock {
+  if (b.kind !== "table") return b;
+  const next = RETABLE[id];
+  return next ? { ...b, header: next.header, rows: next.rows } : b;
+}
+
 function fixCells(b: SourceBlock): SourceBlock {
   if (b.kind !== "table") return b;
   let touched = false;
@@ -224,13 +242,20 @@ function retype(b: SourceBlock): SourceBlock {
   if (b.kind !== "paragraph") return b;
   const next = RETYPE[b.text];
   if (!next) return b;
-  return {
-    kind: "heading",
+  const head = {
+    kind: "heading" as const,
     level: next.level,
     md: next.md,
     text: next.text,
     anchor: next.anchor,
   };
+  /*
+    ПЯТЫЙ УРОВЕНЬ. Снимок источника знает только уровни 2–4: в гугл-доке глубже
+    не пишут, и генерируемый файл мы не трогаем. Раскладка и набор компонентов
+    H5 понимают (HeadingLevel в contentTree, Heading.tsx), поэтому уровень
+    отдаём как есть.
+  */
+  return head as SourceBlock;
 }
 
 /*
@@ -302,7 +327,9 @@ export function applyClientEdits(
         правило искать себя не должно.
       */
       const id = blockRefId(b, pathname, sec.anchor);
-      blocks.push(untype(retype(rewriteText(boldListItems(fixCells(b)), id))));
+      blocks.push(
+        untype(retype(rewriteText(boldListItems(fixCells(reshapeTable(b, id))), id))),
+      );
       from.push(NO_MARKUP.has(text) ? null : bi);
       for (const ins of INSERTS)
         if (ins.after?.test(text))

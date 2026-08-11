@@ -14,6 +14,8 @@ import type { PageCards } from "./types";
 
 const INTRO = "/source/m5-2::shag-3-sozdanie-inklyuzivnoy-sredy";
 const VOICES = "/source/m5-2::chto-govoryat-lyudi-s-invalidnostyu-3";
+const BIZ3 = "/source/m5-2::chto-govorit-biznes-3";
+const BIZ4 = "/source/m5-2::chto-govorit-biznes-4";
 
 export const step3Cards: PageCards = {
   page: "/companies/hire/step-3",
@@ -48,7 +50,35 @@ export const step3Cards: PageCards = {
       «Важное» — абзац про то, что ИИ не заменяет доступные материалы. Он стоит
       сразу после речи Сергея Исаева и подводит черту под всем разделом про
       нейросети.
+
+      Адрес — от текста УЖЕ БЕЗ зачина «Важно помнить:» (замечание Мити от
+      11 августа 2026, см. rewrite в clientEdits/step3.ts). Правки текста идут
+      раньше карточек, поэтому здесь стоит новый отпечаток, а не тот, что в
+      источнике.
     */
-    { blocks: [`${VOICES}::paragraph::3oc4tv`], title: "Важно" },
+    { blocks: [`${VOICES}::paragraph::1ex34m8`], title: "Важно" },
+
+    /*
+      ДВЕ ЦИТАТЫ ВМЕСТО СЛУЖЕБНЫХ ВОПРОСОВ — замечания Юли от 10 августа 2026.
+      Строка авторства выросла из самого вопроса (rewrite), речь приехала
+      отдельными блоками (inserts) — оба в clientEdits/step3.ts. Здесь блоки
+      только заворачиваются в карточку цитаты.
+
+      Портрета и логотипа у обеих спикеров пока нет: снимков нам не дали, и на
+      их месте останутся серые заглушки — как у прочих цитат, ждущих фото.
+    */
+    {
+      blocks: [`${BIZ3}::paragraph::18soa2g`, `${BIZ3}::paragraph::yamu7h`],
+      target: "Quote",
+    },
+    {
+      blocks: [
+        `${BIZ4}::paragraph::2ke0ox`,
+        `${BIZ4}::paragraph::1tbb8ux`,
+        `${BIZ4}::paragraph::ulkret`,
+        `${BIZ4}::paragraph::az16wq`,
+      ],
+      target: "Quote",
+    },
   ],
 };

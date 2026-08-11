@@ -66,6 +66,20 @@ type Props = {
     чтобы страницы-витрины, которые зовут Quiz напрямую, не поехали.
   */
   mode?: "single" | "multiple";
+  /*
+    Разбор виден сразу по выбору, без кнопки «Проверить». Обычно это считается
+    по наличию разбора у вариантов, но когда разбор переехал в сам вариант
+    (квизы «Как устроен наём», замечание Мити от 11 августа 2026), считать стало
+    нечем — и режим приезжает сюда полем.
+  */
+  instant?: boolean;
+  /*
+    Не показывать строку-вердикт над разбором. Замечание Мити от 11 августа
+    2026 по квизам «Этики и коммуникации»: вариант там либо верный, либо нет, и
+    слово «частично» сбивало. Что верно, а что нет, читатель видит по плашкам в
+    самих строках ответа.
+  */
+  noVerdict?: boolean;
   /** Текст разбора, Body M — показывается после проверки. */
   explanation?: React.ReactNode;
   className?: string;
@@ -78,6 +92,8 @@ export function Quiz({
   items,
   explanation,
   mode,
+  instant: instantProp,
+  noVerdict,
   className,
 }: Props) {
   const questionId = React.useId();
@@ -90,8 +106,11 @@ export function Quiz({
     Квиз с разбором на каждый вариант («ОС:») работает БЕЗ кнопки «Проверить»:
     один выбор — и сразу виден разбор выбранного варианта. Обычный квиз (общий
     разбор, множественный выбор) — по кнопке. Отличаем по наличию feedback.
+
+    Слово раскладки сильнее: когда разбор переехал в сам вариант, наличием
+    feedback режим уже не определить, и она называет его прямо.
   */
-  const instant = items.some((i) => i.feedback);
+  const instant = instantProp ?? items.some((i) => i.feedback);
   // Есть ли что проверять: без верных вариантов это самопроверка (см. isJudged).
   const judged = isJudged(items);
   /*
@@ -197,7 +216,7 @@ export function Quiz({
           items={items}
           selected={selected}
           explanation={explanation}
-          showScore={!instant && judged}
+          showScore={!instant && judged && !noVerdict}
         />
       ) : null}
     </div>

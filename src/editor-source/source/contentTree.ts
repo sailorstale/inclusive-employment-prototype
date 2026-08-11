@@ -23,6 +23,7 @@ import type { Directive } from "@/editor-source/directives";
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
+import { mergesFirstColumn } from "@/editor-source/site/mergedTables";
 import { cardArt } from "./cardArt";
 import { linkOrgSites } from "./orgSites";
 import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
@@ -130,7 +131,20 @@ type NodeKind =
     «все caption только для скринридеров, сгенерируй их сам, скрой визуально»).
     Собирается из ближайшего заголовка и шапки таблицы.
   */
-  | { component: "Table"; caption?: string; header: string[]; rows: TableCellValue[][] }
+  | {
+      component: "Table";
+      caption?: string;
+      header: string[];
+      rows: TableCellValue[][];
+      /*
+        Первая колонка объединена: одинаковые ячейки подряд рисуются одной
+        растянутой на всю группу строк. Замечание Мити от 11 августа 2026 по
+        таблице «Как нейросети помогают в работе» — в гугл-доке она такой и была,
+        а выгрузка объединение потеряла, и название группы повторялось в каждой
+        строке. Включается по адресу блока, см. site/mergedTables.ts.
+      */
+      mergeFirstColumn?: boolean;
+    }
   /*
     Ячейка с перечислением. Обычная ячейка остаётся строкой — иначе выгрузка
     толстеет на ровном месте: перечисления есть примерно в одной ячейке из
@@ -170,6 +184,20 @@ type NodeKind =
       mode: "single" | "multiple";
       items: { text: string; correct?: boolean; feedback?: string }[];
       explanation?: string;
+      /*
+        Разбор виден сразу по выбору, без кнопки «Проверить». Обычно это
+        считается по наличию разбора у вариантов, но когда разбор переехал в сам
+        вариант (см. optionWithFeedback), считать стало нечем, — поэтому режим
+        приезжает полем.
+      */
+      instant?: boolean;
+      /*
+        Строка-вердикт («Верно» / «Частично верно» / «Неверно») над разбором не
+        показывается. Замечание Мити от 11 августа 2026 по квизам «Этики и
+        коммуникации»: там вариант либо верный, либо нет, и слово «частично»
+        сбивало. Ставится по странице — см. site/quizVerdict.ts.
+      */
+      noVerdict?: boolean;
     }
   /*
     defaultRole — роль, выбранная заранее. На странице трека читатель уже назвал
@@ -431,6 +459,8 @@ const ICON_BY_WORD: [RegExp, string][] = [
   [/закон|прав|юрид/iu, "Scale"],
   // Галочка у пунктов чек-листа: их не читают, по ним отмечаются.
   [/галоч|чек|check/iu, "Check"],
+  // Крестик у списка того, чего избегать: пункт не перечисляет, а запрещает.
+  [/крест|икс/iu, "X"],
 ];
 
 const listItemIcon = (d?: Directive): string | undefined => {
@@ -438,6 +468,21 @@ const listItemIcon = (d?: Directive): string | undefined => {
   if (!m) return undefined;
   return ICON_BY_WORD.find(([re]) => re.test(m[1]))?.[1];
 };
+
+/*
+  ВАРИАНТ ОТВЕТА ВМЕСТЕ С ЕГО РАЗБОРОМ — замечание Мити от 11 августа 2026 по
+  четырём квизам на «Как устроен наём». Там варианты назывались одним словом
+  («Работодателя», «НКО»), а что за этим словом стоит, читатель узнавал только
+  после ответа. Теперь описание действия стоит прямо в варианте, через точку.
+
+  Склейка живёт здесь, в сборке квиза, а не в правке текста блока: у всех
+  четырёх «Работодателя» один и тот же адрес и один и тот же текст, правкой их
+  не различить. И главное — верный вариант ищется вхождением слова из
+  комментария, а в разборе варианта «НКО» есть слово «работодателя»: склей мы
+  текст раньше, во втором квизе верными стали бы оба варианта.
+*/
+const optionWithFeedback = (d?: Directive) =>
+  /вариант\p{L}*\s+ответа\s+вместе\s+с\s+разбором/iu.test(d?.comment || "");
 
 /** Сколько квизов просили собрать. undefined — не просили. */
 const quizCount = (d?: Directive): number | undefined => {
@@ -591,6 +636,7 @@ const commentRecognized = (d?: Directive): boolean =>
   wantsLinePairs(d) ||
   listItemIcon(d) !== undefined ||
   listCount(d) !== undefined ||
+  optionWithFeedback(d) ||
   quizCount(d) !== undefined ||
   splitCount(d) !== undefined ||
   explicitTitle(d) !== undefined ||
@@ -806,9 +852,13 @@ const isQuestionLabel = (t: string) =>
   жёлтым (решение дизайнера 5 августа 2026). Ловим только сам ярлык, с любой
   хвостовой пунктуацией: «Важно», «Важно:», «Важно!». Заголовок-предложение
   («На этом этапе важно», «…важно заранее договориться») остаётся синим.
+
+  «Важно понять» — то же самое название, только длиннее: замечание Мити от
+  11 августа 2026 по карточке на «Шаге 1». Он просил переименовать карточку, а
+  не перекрасить её, и без этой оговорки она стала бы синей и потеряла картинку.
 */
 const isImportantTitle = (t?: string) =>
-  Boolean(t && /^[*_\s]*важно[*_\s:.!]*$/iu.test(t.trim()));
+  Boolean(t && /^[*_\s]*важно(?:\s+понять)?[*_\s:.!]*$/iu.test(t.trim()));
 
 /*
   ВЕРХУШКА КВИЗА — заголовок, описание и сам вопрос.
@@ -1427,7 +1477,20 @@ export function cellWithLines(cell: string): string {
 */
 export function cellValue(cell: string): TableCellValue {
   const text = cellWithLines(cell);
-  if (!text.includes("•")) return text;
+  /*
+    Перенос строки внутри ячейки тоже разбирает её на узлы, не только маркер
+    «•». Понадобилось для таблицы «Сборщик заказов на складе» на «Шаге 1»:
+    замечание Мити от 11 августа 2026 просит после «Да» и «Нет» переносить
+    объяснение на другую строчку.
+
+    Иначе перенос уехал бы в выгрузку служебным символом внутри поля, и сторож
+    выгрузки справедливо на него пожаловался бы. Здесь же он становится вторым
+    узлом Text — так, как уже едут ячейки с перечислениями.
+
+    Сверяемся с текстом ПОСЛЕ cellWithLines: переносы ставит и она сама, перед
+    жирным ярлыком внутри ячейки.
+  */
+  if (!text.includes("•") && !text.includes("\n")) return text;
 
   const children: Node[] = [];
   let items: Node[] = [];
@@ -1555,14 +1618,25 @@ export function buildDoc(
           },
         ];
       }
-      case "table":
+      case "table": {
+        /*
+          Первая колонка объединяется у поимённо названных таблиц — см.
+          site/mergedTables.ts. Адресуем блок его собственным адресом, а не
+          разметкой: разметка живёт в данных, у каждого стенда своя, и решение
+          по замечанию клиента до него бы не доехало.
+        */
+        const merge = mergesFirstColumn(
+          blockRefId(b, `/source/${moduleId}`, it.anchor),
+        );
         return [
           {
             component: "Table",
             header: b.header,
             rows: b.rows.map((r) => r.map(cellValue)),
+            ...(merge ? { mergeFirstColumn: true as const } : {}),
           },
         ];
+      }
       case "image":
         return b.src
           ? [{ component: "Image", src: b.src, alt: b.alt }]
@@ -3494,16 +3568,30 @@ export function buildDoc(
           }
 
           const names = correctNames();
+          const merged = optionWithFeedback(dir);
           const out: Node[] = quizzes.map((q, i) => {
             const want = names[i];
             const options = q.options.map((o) =>
               want && isWanted(o.text, want) ? { ...o, correct: true } : o,
             );
+            /*
+              Разбор варианта переезжает в сам вариант — уже ПОСЛЕ того, как
+              верный размечен по короткому ярлыку (см. optionWithFeedback).
+              Мгновенный режим при этом сохраняем отдельным полем: он держался на
+              наличии разбора у варианта, а разбора там больше нет, и без пометки
+              квиз оброс бы кнопкой «Проверить», которой у него не было.
+            */
+            const items = merged
+              ? options.map(({ feedback, ...o }) =>
+                  feedback ? { ...o, text: `${o.text}. ${feedback}` } : o,
+                )
+              : options;
             return {
               component: "Quiz",
               ...splitQuizTop("", q.qParts),
               mode: options.filter((o) => o.correct).length > 1 ? "multiple" : "single",
-              items: options,
+              items,
+              ...(merged ? { instant: true } : {}),
               ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
             };
           });
@@ -4160,9 +4248,21 @@ function annotate(doc: Doc): Doc {
       if (n.component === "Table") {
         const caption = n.caption ?? captionFor(n);
         leadIn = "";
+        /*
+          Пересобираем узел, а не дополняем: подпись должна стоять первым полем,
+          её читают раньше строк. Поэтому и остальные поля перечислены поимённо
+          — новое поле узла надо не забыть добавить сюда, иначе оно молча
+          пропадёт (так и случилось с объединением первой колонки).
+        */
         return n.caption
           ? n
-          : { component: n.component, caption, header: n.header, rows: n.rows };
+          : {
+              component: n.component,
+              caption,
+              header: n.header,
+              rows: n.rows,
+              ...(n.mergeFirstColumn ? { mergeFirstColumn: true as const } : {}),
+            };
       }
       if ("children" in n && Array.isArray(n.children))
         return { ...n, children: walk(n.children) } as Node;

@@ -32,11 +32,22 @@ import type { Directive } from "@/editor-source/directives";
   тремя цитатами, как в гугл-доке. Цитатам это ничем не грозит: у директивы
   остаются ровно те девять блоков, из которых три цитаты и собирались.
 
+  Три блока в «Дополнительных форматах занятости» на «Форматах занятости» —
+  замечание Мити от 11 августа 2026: «Убрать карточки, оставить текст. Это
+  просто два предложения». Разметка «Три карточки» держала цепочку из девяти
+  блоков; шесть первых сняты со страницы прошлым замечанием Юли, и оставшийся
+  хвост из трёх блоков превратился в три синие карточки подряд — подводку, сам
+  список из двух пунктов и вывод. Снимаем этот хвост с разметки, и раздел
+  читается обычным текстом: абзац, список с маркерами, абзац.
+
   Адресуем блок его собственным id, а не текстом: id у блока стабильный, и
   правка формулировки в источнике не расклеит эту привязку.
 */
 const OUT_OF_CARD = new Set<string>([
   "/source/m2::sohranyatsya-li-posobiya-i-lgoty-pri-trudoustroy::paragraph::139d97q",
+  "/source/m2::dopolnitelnye-formaty-zanyatosti::paragraph::1geoicn",
+  "/source/m2::dopolnitelnye-formaty-zanyatosti::list::voz3e6",
+  "/source/m2::dopolnitelnye-formaty-zanyatosti::paragraph::b7q6j3",
   "/source/m4::chto-govorit-biznes::paragraph::12nw0je",
   "/source/m4::chto-govorit-biznes::paragraph::1l7bjxr",
   "/source/m4::chto-govorit-biznes::paragraph::186ccr1",

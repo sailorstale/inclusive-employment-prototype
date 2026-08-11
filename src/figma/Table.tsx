@@ -45,6 +45,12 @@ type TableCellProps = {
   weight?: TableCellWeight;
   children?: React.ReactNode;
   className?: string;
+  /*
+    Ячейка растянута на несколько строк — объединение, как в исходном документе
+    (см. mergeFirstColumn в contentTree). В Figma такого свойства нет: там
+    таблица нарисована ячейка к ячейке, а объединение живёт только в вёрстке.
+  */
+  rowSpan?: number;
 };
 
 export function TableCell({
@@ -52,9 +58,11 @@ export function TableCell({
   weight = "Regular",
   children,
   className,
+  rowSpan,
 }: TableCellProps) {
   return (
     <td
+      rowSpan={rowSpan}
       data-component={`Table cell · ${align} · ${weight}`}
       className={cn(
         CELL_PADDING,

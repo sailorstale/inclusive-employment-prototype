@@ -2,6 +2,8 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Directive } from "@/editor-source/directives";
 import { blockRefId } from "@/editor-source/source/blockId";
 import type { CardSpec, PageCards } from "./types";
+import { startCards } from "./start";
+import { howCards } from "./how";
 import { teamCards } from "./team";
 import { step1Cards } from "./step1";
 import { step2Cards } from "./step2";
@@ -34,6 +36,8 @@ import { ngoAudienceCards } from "./ngoAudience";
 */
 
 const PAGES: PageCards[] = [
+  startCards,
+  howCards,
   teamCards,
   step1Cards,
   step2Cards,
