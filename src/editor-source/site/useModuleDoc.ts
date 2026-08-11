@@ -131,7 +131,7 @@ export function useModuleDoc(moduleId: string): Doc | null {
       sourceSections,
       placeDirectives(sourceSections, pathname, moduleId, directives),
     );
-    const edited = applyClientEdits(cleaned.sections, cleaned.directiveAt);
+    const edited = applyClientEdits(cleaned.sections, cleaned.directiveAt, pathname);
     // Карточки «Важно» — последними: они не трогают блоки, только говорят
     // раскладке, какие из них собрать вместе (см. importantCards). Снятие
     // названия идёт следом за ними: тогда оно достаёт и до карточек, собранных

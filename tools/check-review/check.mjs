@@ -160,6 +160,49 @@ for (const page of PAGES) {
       );
 }
 
+// ── 2б. Правки, адресованные не текстом, а адресом блока ────────────────────
+/*
+  У правки по адресу (rewriteById) промах выглядит иначе, чем у правки по
+  тексту. Лишнего она не заденет: адрес называет один блок и на соседнюю
+  страницу перекинуться не может. Зато она молча перестаёт работать, стоит
+  тексту блока измениться, — адрес считается по отпечатку чистого текста.
+  Страница при этом выглядит нормально, просто правки на ней больше нет.
+
+  Поэтому сверяем адреса с источником: каждый должен найти ровно один блок.
+  Считаем их тем же кодом, что и приложение, — иначе проверка и правила
+  разойдутся при первой же переделке.
+*/
+const { normalizeSourceBlocks } = await importTs(
+  "src/editor-source/source/normalizeBlocks.ts",
+);
+const { blockRefId, toSections } = await importTs(
+  "src/editor-source/source/blockId.ts",
+);
+const { moduleLoaders } = await importTs(
+  "src/editor-source/content/source.generated.ts",
+);
+
+const byId = new Map();
+for (const [moduleId, load] of Object.entries(moduleLoaders)) {
+  const mod = await load();
+  for (const sec of toSections(normalizeSourceBlocks(mod.blocks)))
+    for (const b of sec.blocks) {
+      const id = blockRefId(b, `/source/${moduleId}`, sec.anchor);
+      byId.set(id, (byId.get(id) ?? 0) + 1);
+    }
+}
+
+for (const page of PAGES)
+  for (const key of Object.keys(page.rewriteById ?? {})) {
+    const n = byId.get(key) ?? 0;
+    if (n === 1) continue;
+    note(
+      n === 0
+        ? `Правка по адресу на странице ${page.page} не находит блока:\n    «${key}»\n    Текст блока изменился, и отпечаток в адресе стал другим. Возьмите новый адрес из карты блоков (/blocks).`
+        : `Правка по адресу на странице ${page.page} находит ${n} блоков:\n    «${key}»\n    Так быть не должно — адрес обязан называть один блок.`,
+    );
+  }
+
 // ── 3. Опознаватели в журнале разбора ───────────────────────────────────────
 const applied = await importTs("src/editor-source/site/appliedComments.ts");
 /*

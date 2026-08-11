@@ -1,5 +1,6 @@
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Directive } from "@/editor-source/directives";
+import { blockRefId } from "@/editor-source/source/blockId";
 import type { Insert, PageEdits, Retyped } from "./types";
 import { contractEdits } from "./contract";
 import { quotasEdits } from "./quotas";
@@ -105,6 +106,10 @@ const REWRITE = mergeRecords<{ md: string; text: string }>(
   "текст блока",
   (p) => p.rewrite,
 );
+const REWRITE_BY_ID = mergeRecords<{ md: string; text: string }>(
+  "текст блока по адресу",
+  (p) => p.rewriteById,
+);
 const RETYPE = mergeRecords<Retyped>("абзац стал заголовком", (p) => p.retype);
 const LIST_ITEM_MD = mergeRecords<string>("пункт списка", (p) => p.listItemMd);
 const NO_MARKUP = new Set<string>(PAGES.flatMap((p) => p.noMarkup ?? []));
@@ -198,10 +203,15 @@ const textOf = (b: SourceBlock): string =>
   полный источник ДО этого слоя (см. useModuleDoc), и к моменту правки каждая
   директива уже нашла свои блоки.
 */
-function rewriteText(b: SourceBlock): SourceBlock {
+function rewriteText(b: SourceBlock, id?: string): SourceBlock {
   if (b.kind !== "heading" && b.kind !== "paragraph" && b.kind !== "quote")
     return b;
-  const next = REWRITE[b.text];
+  /*
+    Правка по адресу сильнее правки по тексту: адрес называет один блок, а текст
+    может встретиться и на соседних страницах. Если на блок пришли обе — точная
+    выигрывает.
+  */
+  const next = (id ? REWRITE_BY_ID[id] : undefined) ?? REWRITE[b.text];
   return next ? { ...b, md: next.md, text: next.text } : b;
 }
 
@@ -261,6 +271,12 @@ function boldListItems(b: SourceBlock): SourceBlock {
 export function applyClientEdits(
   sections: BlockSection[],
   at: DirectiveAt,
+  /*
+    Адрес страницы-модуля («/source/m6-1») — из него и якоря раздела считается
+    адрес блока для правок rewriteById. Без него правка по адресу работать не
+    может, поэтому параметр обязателен у обоих вызывающих (сайт и выгрузка).
+  */
+  pathname: string,
 ): { sections: BlockSection[]; directiveAt: DirectiveAt } {
   /*
     Для каждого нового номера блока — его прежний номер. null значит «разметки у
@@ -280,7 +296,13 @@ export function applyClientEdits(
             blocks.push(nb);
             from.push(null);
           }
-      blocks.push(untype(retype(rewriteText(boldListItems(fixCells(b))))));
+      /*
+        Адрес считаем по блоку ИСТОЧНИКА, до правок: правка меняет разметку, а
+        отпечаток берётся с чистого текста, и на своём же изменённом блоке
+        правило искать себя не должно.
+      */
+      const id = blockRefId(b, pathname, sec.anchor);
+      blocks.push(untype(retype(rewriteText(boldListItems(fixCells(b)), id))));
       from.push(NO_MARKUP.has(text) ? null : bi);
       for (const ins of INSERTS)
         if (ins.after?.test(text))

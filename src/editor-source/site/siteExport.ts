@@ -140,6 +140,7 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
     const { sections, directiveAt } = applyClientEdits(
       cleaned.sections,
       cleaned.directiveAt,
+      pathname,
     );
     /*
       Карточки по замечаниям — последними, ровно как на сайте. До 11 августа
