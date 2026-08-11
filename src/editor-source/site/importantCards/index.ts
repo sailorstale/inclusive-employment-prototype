@@ -97,6 +97,8 @@ function directiveFor(
   moduleId: string,
   src: SourceBlock[],
 ): Directive {
+  const target = spec.target ?? "GeneralCard";
+  const quote = target === "Quote";
   return {
     id: `important:${spec.blocks[0]}`,
     module: moduleId,
@@ -105,10 +107,20 @@ function directiveFor(
       kind: src[k]?.kind ?? "paragraph",
       snippet: "",
     })),
-    target: "GeneralCard",
-    targetLabel: "General Card",
-    modifiers: { orient: "Vertical", icon: false, step: false },
-    comment: `Добавь заголовок ${spec.title}`,
+    target,
+    /*
+      Название цели и модификаторы записываем такими же, какие стоят у пометок
+      дизайнера в данных: «Цитата» и размер L у цитат, «General Card» с
+      вертикальной раскладкой у карточек. Раскладка читает отсюда только цель и
+      модификаторы, но запись, которая врёт о себе, собьёт с толку панель
+      разметки и проверку выгрузки.
+    */
+    targetLabel: quote ? "Цитата" : "General Card",
+    modifiers: quote
+      ? { size: "L", yandex: false }
+      : { orient: "Vertical", icon: false, step: false },
+    // У цитаты названия нет: подпись собирается из имени и должности.
+    comment: spec.title ? `Добавь заголовок ${spec.title}` : "",
     status: "applied",
     createdAt: "2026-08-10T00:00:00.000Z",
   };
