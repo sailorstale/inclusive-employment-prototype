@@ -60,6 +60,7 @@ globalThis.localStorage = {
   setItem: () => {},
   removeItem: () => {},
 };
+const API_BASE = process.env.API || "http://localhost:8787";
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (url, init) => {
   const u = String(url);
@@ -68,7 +69,10 @@ globalThis.fetch = async (url, init) => {
       `https://inclusion-editor-production.up.railway.app${u}`,
       init,
     );
-  if (u.startsWith("/api")) return realFetch(`http://localhost:8787${u}`, init);
+  // Сервер правок — по умолчанию локальный. Переменная API позволяет собрать
+  // страницу НА ДАННЫХ ДРУГОГО СТЕНДА (например, боевого) и сравнить с нашей:
+  // код один и тот же, значит вся разница — в разметке, которая туда не доехала.
+  if (u.startsWith("/api")) return realFetch(`${API_BASE}${u}`, init);
   if (u.startsWith("/")) {
     try {
       const body = await fs.readFile(path.join(ROOT, "public", u.slice(1)), "utf8");

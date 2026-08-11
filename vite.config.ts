@@ -34,6 +34,12 @@ export default defineConfig(({ command }) => ({
 
     Адрес можно переопределить переменной REVIEW_API — например, направить на
     локальный сервер, когда боевой недоступен или трогать его не хочется.
+
+    Так же переопределяется и сервер правок — переменной EDITS_API. Это нужно,
+    чтобы открыть страницу НА ДАННЫХ ДРУГОГО СТЕНДА и увидеть её глазами клиента:
+    разметка живёт в данных, у каждого стенда они свои, и разойтись они могут
+    незаметно. Писать при этом будем тоже туда — открывать боевой адрес стоит
+    только для просмотра.
   */
   server: {
     proxy: {
@@ -43,7 +49,10 @@ export default defineConfig(({ command }) => ({
           "https://inclusion-editor-production.up.railway.app",
         changeOrigin: true,
       },
-      "/api": "http://localhost:8787",
+      "/api": {
+        target: process.env.EDITS_API ?? "http://localhost:8787",
+        changeOrigin: true,
+      },
     },
   },
 }));
