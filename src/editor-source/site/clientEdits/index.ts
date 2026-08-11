@@ -31,8 +31,8 @@ import { ngoAudienceEdits } from "./ngoAudience";
   dropScaffold (там блок вовсе не доезжает) и cutFromCard (там блок доезжает, но
   уже не внутри карточки). Здесь — оставшиеся случаи: заменить текст внутри
   ячейки таблицы, переписать текст блока, набрать жирным пункт списка,
-  превратить абзац в заголовок, вставить новый блок и поставить заголовок перед
-  группой.
+  превратить абзац в заголовок и заголовок в абзац, вставить новый блок и
+  поставить заголовок перед группой.
 
   Работает ТОЛЬКО на сайте и в выгрузке — там же, где dropScaffold. Инструмент
   «Редактура источника» этот слой не проходит.
@@ -107,6 +107,7 @@ const REWRITE = mergeRecords<{ md: string; text: string }>(
 const RETYPE = mergeRecords<Retyped>("абзац стал заголовком", (p) => p.retype);
 const LIST_ITEM_MD = mergeRecords<string>("пункт списка", (p) => p.listItemMd);
 const NO_MARKUP = new Set<string>(PAGES.flatMap((p) => p.noMarkup ?? []));
+const UNTYPE = new Set<string>(PAGES.flatMap((p) => p.untype ?? []));
 const INSERTS: Insert[] = PAGES.flatMap((p) => p.inserts ?? []);
 
 /** Ключи, заявленные сразу двумя страницами. Пусто — всё в порядке. */
@@ -178,6 +179,17 @@ function retype(b: SourceBlock): SourceBlock {
   };
 }
 
+/*
+  Заголовок, ставший обычным абзацем, — зеркало retype. Уровень и якорь
+  отбрасываем намеренно: якорь и есть то, по чему заголовок попадает в
+  оглавление справа, и оставь мы его — строка ушла бы из текста, но осталась в
+  меню.
+*/
+function untype(b: SourceBlock): SourceBlock {
+  if (b.kind !== "heading" || !UNTYPE.has(b.text)) return b;
+  return { kind: "paragraph", md: b.md, text: b.text };
+}
+
 /** Пункты списка, набранные жирным по замечанию. Не список — блок как был. */
 function boldListItems(b: SourceBlock): SourceBlock {
   if (b.kind !== "list") return b;
@@ -224,7 +236,7 @@ export function applyClientEdits(
             blocks.push(nb);
             from.push(null);
           }
-      blocks.push(retype(rewriteText(boldListItems(fixCells(b)))));
+      blocks.push(untype(retype(rewriteText(boldListItems(fixCells(b))))));
       from.push(NO_MARKUP.has(text) ? null : bi);
       for (const ins of INSERTS)
         if (ins.after?.test(text))

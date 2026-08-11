@@ -95,21 +95,24 @@ export function pageToc(
   своё название (правила общения), оно задаётся полем tail в recap.ts.
 */
 
+/*
+  Где начинается хвост. Обычно это подзаголовок H3 («Практическое задание…»).
+  Но заголовка среди узлов может не быть вовсе: пять правил общения в «Команде»
+  разметка собрала в карточки, а «Выберите вакансию для пилотного найма» на
+  «Шаге 1» стал обычным текстом по замечанию клиента. Искать «первый не-текст»
+  нельзя — в самой сводке попадаются списки, — поэтому начало задаётся полем
+  fromAt (адрес блока в источнике, самый точный способ) или полем from (вид
+  узла).
+*/
+function startsTail(n: Node, tail?: Recap["tail"]): boolean {
+  if (tail?.fromAt) return Boolean(n.at?.includes(tail.fromAt));
+  if (tail?.from) return n.component === tail.from;
+  return n.component === "Heading" && n.level === "H3";
+}
+
 /** Раздел из хвоста секции итогов (задание, правила) — или null, если хвоста нет. */
 function tailSection(sec: SectionNode, tail?: Recap["tail"]): SectionNode | null {
-  /*
-    Где начинается хвост. Обычно это подзаголовок H3 («Практическое задание…»).
-    Но разметка могла превратить его во что-то другое: пять правил общения в
-    «Команде» собраны в карточки, и заголовка среди узлов уже нет. Тогда начало
-    хвоста задаётся полем from — искать «первый не-текст» нельзя, в самой сводке
-    попадаются списки.
-  */
-  const from = tail?.from;
-  const i = sec.children.findIndex((n) =>
-    from
-      ? n.component === from
-      : n.component === "Heading" && n.level === "H3",
-  );
+  const i = sec.children.findIndex((n) => startsTail(n, tail));
   if (i < 0) return null;
   if (tail)
     return {
