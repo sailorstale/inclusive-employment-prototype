@@ -112,6 +112,17 @@ type NodeKind =
       */
       logo?: string;
       photo?: string;
+      /*
+        ФОТО НЕ НУЖНО — решение клиента по конкретной цитате, а не «фото пока не
+        нашли». Разница видна на странице: пока фото просто нет, на его месте
+        стоит серый кружок-заглушка под будущий снимок, и «дополнить авторство»
+        напоминает его добавить. Здесь напоминать не о чем — снимка не будет, и
+        кружок тоже лишний.
+
+        Поле едет и в выгрузку: разработчику надо знать, что место под фото у
+        этой цитаты не пустует, а отменено.
+      */
+      noPhoto?: true;
       paragraphs: string[];
     }
   /*
@@ -559,6 +570,7 @@ const commentRecognized = (d?: Directive): boolean =>
   wantsCapitalize(d) ||
   wantsNoColon(d) ||
   wantsTableToText(d) ||
+  wantsNoPhoto(d) ||
   headingsToBold(d).length > 0 ||
   wantsLinePairs(d) ||
   listItemIcon(d) !== undefined ||
@@ -578,6 +590,16 @@ const commentRecognized = (d?: Directive): boolean =>
 */
 const wantsCapitalize = (d?: Directive) =>
   /с\s+бол\p{L}*ш\p{L}*\s+букв/iu.test(d?.comment || "");
+
+/*
+  «без фото» у цитаты — клиент отказался от снимка автора. Тогда на его месте не
+  должно остаться и серого кружка-заглушки, а напоминание «дополнить авторство»
+  фото больше не требует (см. ветку Quote).
+
+  Это не то же самое, что «фото пока не нашли»: там кружок как раз нужен — он
+  держит место под будущий снимок.
+*/
+const wantsNoPhoto = (d?: Directive) => /без\s+фото/iu.test(d?.comment || "");
 
 /*
   «без двоеточия» — источник пишет ярлык как «Важно:», и двоеточие тянется в
@@ -2393,8 +2415,13 @@ export function buildDoc(
           логотип; организация из ссылки — прямоугольный.
 
           «Убери кавычки» в комментарии — снимаем « » вокруг речи.
+
+          «Без фото» в комментарии — у цитаты не будет ни снимка, ни серого
+          кружка на его месте, и «дополнить авторство» о фото не напоминает. Так
+          просил клиент про благодарность Софьи Юдиной на «Запуске программы».
         */
         const dropQuotes = /кавыч/i.test(dir.comment || "");
+        const noPhoto = wantsNoPhoto(dir);
         const stripQuotes = (t: string) =>
           dropQuotes ? t.replace(/^\s*[«"„“]+|[»"“”]+\s*$/g, "").trim() : t;
 
@@ -2662,7 +2689,7 @@ export function buildDoc(
             !role && "должность",
             !org && "организация",
             org && !logo && `логотип «${org}» не найден в каталоге`,
-            author && !photo && "фото автора",
+            author && !photo && !noPhoto && "фото автора",
           ].filter(Boolean) as string[];
 
           out.push({
@@ -2674,6 +2701,7 @@ export function buildDoc(
             org,
             logo,
             photo,
+            ...(noPhoto ? { noPhoto: true as const } : {}),
             paragraphs: speech,
           });
           if (missing.length)

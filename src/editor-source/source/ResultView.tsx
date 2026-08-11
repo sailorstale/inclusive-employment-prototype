@@ -384,6 +384,9 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           author={node.author}
           // Должность приходит с markdown-ссылкой на сайт фонда (см. orgSites).
           role={node.role ? renderInline(node.role) : undefined}
+          // Клиент отказался от фото у этой цитаты — значит, и серого кружка на
+          // его месте быть не должно (см. noPhoto в contentTree).
+          photo={!node.noPhoto}
           photoSrc={
             node.photo
               ? `${import.meta.env.BASE_URL}figma/avatars/${node.photo}.jpg`
