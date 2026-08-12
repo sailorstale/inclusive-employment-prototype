@@ -90,19 +90,30 @@ export type CommentInput = {
   reply?: { author: string; text: string };
 };
 
-const API = { site: "/api", source: "/api/source", review: "/api/review" } as const;
+const API = {
+  site: "/api",
+  source: "/api/source",
+  review: "/api/review",
+  bible: "/api/bible",
+} as const;
 const LOCAL_KEY = {
   site: "inclusion-comments-v2",
   source: "inclusion-source-comments-v2",
   review: "inclusion-site-review-v1",
+  bible: "inclusion-bible-comments-v1",
 } as const;
 
-// review-поток — свой ключ в localStorage; серверного эндпоинта нет, поэтому
-// остаётся локальным (как и остальные комментарии в деве).
+/*
+  Режим у каждого потока свой и определяется на первой загрузке: сервер ответил —
+  работаем с ним, не ответил — с localStorage. Серверные адреса есть у source,
+  review и bible (см. server/index.js); у site его сейчас нет, и он всегда
+  локальный.
+*/
 const modes: Record<Scope, "server" | "local"> = {
   site: "local",
   source: "local",
   review: "local",
+  bible: "local",
 };
 export const getCommentsMode = (scope: Scope = "site") => modes[scope];
 

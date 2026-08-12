@@ -8,6 +8,7 @@ import * as sourceStore from "./sourceStore.js";
 import * as sourceComments from "./sourceComments.js";
 import * as sourceDirectives from "./sourceDirectives.js";
 import * as reviewComments from "./reviewComments.js";
+import * as bibleComments from "./bibleComments.js";
 
 // Локально читаем prototype/.env (пароль и т.п.). На хостинге переменные задаёт
 // сам хостинг — там .env нет, и это нормально. Реальные env-переменные имеют
@@ -101,6 +102,23 @@ reviewApi.put("/comments/:id", async (req, res) => {
 });
 reviewApi.delete("/comments/:id", async (req, res) => {
   await reviewComments.remove(req.params.id);
+  res.json({ ok: true });
+});
+
+/*
+  КОММЕНТАРИИ К СПРАВОЧНИКУ ФОРМАТА (скоуп bible, страница /bible) — вопросы
+  разработчика о самом формате. Роуты те же, хранилище своё
+  (см. bibleComments.js).
+*/
+const bibleApi = express.Router();
+bibleApi.get("/comments", async (_req, res) => {
+  res.json(await bibleComments.getAll());
+});
+bibleApi.put("/comments/:id", async (req, res) => {
+  res.json(await bibleComments.upsert(req.params.id, req.body || {}));
+});
+bibleApi.delete("/comments/:id", async (req, res) => {
+  await bibleComments.remove(req.params.id);
   res.json({ ok: true });
 });
 
@@ -222,6 +240,7 @@ sourceApi.patch("/directives/:id", async (req, res) => {
 
 api.use("/source", sourceApi);
 api.use("/review", reviewApi);
+api.use("/bible", bibleApi);
 
 // Честный 404 на неизвестные /api/* (иначе SPA-фоллбэк отдаёт HTML со статусом
 // 200, и клиент принимает опечатку за «сервер есть»).

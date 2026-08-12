@@ -8,20 +8,28 @@ import { apiFetch } from "./auth";
 
 // review — отдельный поток комментариев клиента/разработчика на самом сайте
 // (инспектор, режим «Сайт»), не смешивается с редакторскими правками source.
-export type Scope = "site" | "source" | "review";
+// bible — вопросы разработчика к справочнику формата (страница /bible).
+export type Scope = "site" | "source" | "review" | "bible";
 
-// review — поток комментариев сайта; правок в нём нет, но ключ нужен типам.
-const API = { site: "/api", source: "/api/source", review: "/api/review" } as const;
+// review и bible — потоки комментариев; правок в них нет, но ключ нужен типам.
+const API = {
+  site: "/api",
+  source: "/api/source",
+  review: "/api/review",
+  bible: "/api/bible",
+} as const;
 const LOCAL_KEY = {
   site: "inclusion-editor-edits-v2",
   source: "inclusion-source-edits-v2",
   review: "inclusion-review-edits-v1",
+  bible: "inclusion-bible-edits-v1",
 } as const;
 
 const modes: Record<Scope, "server" | "local"> = {
   site: "local",
   source: "local",
   review: "local",
+  bible: "local",
 };
 export const getMode = (scope: Scope = "site") => modes[scope];
 

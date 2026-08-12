@@ -28,7 +28,7 @@ const TOKEN_CLASS = {
   number: "text-amber-700",
 };
 
-function highlightJson(src: string): React.ReactNode[] {
+export function highlightJson(src: string): React.ReactNode[] {
   const out: React.ReactNode[] = [];
   let last = 0;
   let key = 0;

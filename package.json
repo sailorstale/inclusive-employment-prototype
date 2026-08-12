@@ -11,6 +11,7 @@
     "start": "node server/index.js",
     "preview": "vite preview",
     "icons": "node tools/icons/collect.mjs",
+    "bible": "node tools/bible/build.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",

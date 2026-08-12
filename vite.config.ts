@@ -49,6 +49,17 @@ export default defineConfig(({ command }) => ({
           "https://inclusion-editor-production.up.railway.app",
         changeOrigin: true,
       },
+      /*
+        Вопросы разработчика к справочнику формата — по той же причине на боевой
+        сервер: разработчик пишет их на боевом адресе, и читать их надо там же,
+        где они лежат. Переопределяется той же переменной REVIEW_API.
+      */
+      "/api/bible": {
+        target:
+          process.env.REVIEW_API ??
+          "https://inclusion-editor-production.up.railway.app",
+        changeOrigin: true,
+      },
       "/api": {
         target: process.env.EDITS_API ?? "http://localhost:8787",
         changeOrigin: true,

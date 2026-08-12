@@ -1,0 +1,188 @@
+import * as React from "react";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { CommentsProvider, useComments } from "@/editor-source/CommentsProvider";
+import { cn } from "@/lib/utils";
+import { BibleComments, type BibleCommentGroup } from "./BibleComments";
+import { BibleDoc } from "./BibleDoc";
+import { bibleBlocks, bibleToc } from "./bible.generated";
+import { bibleCommentId, blockOf, newUid } from "./commentIds";
+
+/*
+  СПРАВОЧНИК ФОРМАТА — страница /bible.
+
+  Три колонки: оглавление, документ, замечания. Раскладка та же, что у
+  инструмента сверки, и по той же причине: читаешь в середине, а всё
+  вспомогательное держишь по краям, не закрывая текст.
+
+  Страница живёт вне общей обвязки сайта (см. App.tsx): это документ для
+  разработчика, а не раздел сайта, и меню разделов с баннером ему только мешают.
+
+  Замечания идут отдельным потоком «bible» — своё хранилище на сервере
+  (server/bibleComments.js). Разговор о формате не смешивается с очередью
+  замечаний клиента по страницам.
+*/
+
+/** Имя автора спрашиваем один раз: паролей на стенде нет, подписаться нечем. */
+const AUTHOR_KEY = "inclusion-bible-author";
+
+const readAuthor = () => {
+  try {
+    return window.localStorage.getItem(AUTHOR_KEY) ?? "";
+  } catch {
+    return "";
+  }
+};
+
+function BibleBody() {
+  const { comments, storeMode, setComment, toggleClosed, addReply } = useComments();
+  const [selected, setSelected] = React.useState<string | null>(null);
+  const [scrollTo, setScrollTo] = React.useState<string | null>(null);
+  const [author, setAuthorState] = React.useState(readAuthor);
+  const [tocQuery, setTocQuery] = React.useState("");
+
+  const textById = React.useMemo(() => {
+    const map = new Map<string, string>();
+    for (const b of bibleBlocks) map.set(b.id, b.text);
+    return map;
+  }, []);
+
+  const groups = React.useMemo<BibleCommentGroup[]>(
+    () =>
+      comments
+        .filter((rec) => rec.id.includes("##") && (rec.text || "").trim())
+        .map((rec) => ({ rec, path: blockOf(rec.id) }))
+        .sort((a, b) => a.rec.createdAt.localeCompare(b.rec.createdAt)),
+    [comments],
+  );
+
+  const commented = React.useMemo(
+    () => new Set(groups.filter((g) => !g.rec.closed).map((g) => g.path)),
+    [groups],
+  );
+
+  const saveAuthor = (name: string) => {
+    setAuthorState(name);
+    try {
+      window.localStorage.setItem(AUTHOR_KEY, name);
+    } catch {
+      /* приватный режим браузера — просто не запомним имя */
+    }
+  };
+
+  const add = (text: string, who: string) => {
+    if (!selected) return;
+    setComment(
+      {
+        id: bibleCommentId(selected, newUid()),
+        page: "/bible",
+        blockType: bibleBlocks.find((b) => b.id === selected)?.kind ?? null,
+        original: textById.get(selected) ?? null,
+        author: who || author || null,
+      },
+      text,
+    );
+  };
+
+  const remove = (id: string) => {
+    const rec = comments.find((c) => c.id === id);
+    if (!rec) return;
+    setComment({ id, page: "/bible", author: rec.author }, "");
+  };
+
+  const toc = bibleToc.filter(
+    (t) => !tocQuery.trim() || t.text.toLowerCase().includes(tocQuery.trim().toLowerCase()),
+  );
+
+  return (
+    <div className="grid h-screen min-h-0 grid-cols-[240px_minmax(0,1fr)_340px] divide-x">
+      {/* ЛЕВО — оглавление с поиском: в справочнике 24 компонента, глазами их не найти. */}
+      <nav className="flex min-h-0 flex-col gap-2 overflow-y-auto bg-muted/30 p-3">
+        <input
+          value={tocQuery}
+          onChange={(e) => setTocQuery(e.target.value)}
+          placeholder="Найти компонент…"
+          aria-label="Поиск по оглавлению"
+          className="w-full rounded border bg-background px-2 py-1.5 text-sm"
+        />
+        <ul className="space-y-0.5">
+          {toc.map((t) => (
+            <li key={t.anchor}>
+              <a
+                href={`#${t.anchor}`}
+                className={cn(
+                  "block rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground",
+                  t.level === 2 &&
+                    "mt-3 text-[11px] font-medium uppercase tracking-wide text-foreground",
+                )}
+              >
+                {t.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* ЦЕНТР — сам документ. */}
+      <div className="flex min-h-0 flex-col">
+        <header className="flex items-center gap-3 border-b bg-muted/40 px-4 py-2">
+          <Link
+            to="/general/about"
+            className="inline-flex items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" aria-hidden /> К сайту
+          </Link>
+          <div className="min-w-0">
+            <h1 className="truncate text-sm font-semibold">JSON — библия компонентов</h1>
+            <p className="truncate text-xs text-muted-foreground">
+              Описание формата выгрузки: устройство файла, все компоненты, правила
+            </p>
+          </div>
+          <Link
+            to="/checks"
+            className="ml-auto rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 hover:text-foreground"
+          >
+            Проверить выгрузку
+          </Link>
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <BibleDoc
+            selected={selected}
+            onSelect={setSelected}
+            commented={commented}
+            scrollTo={scrollTo}
+          />
+        </div>
+      </div>
+
+      {/* ПРАВО — замечания. */}
+      <BibleComments
+        selected={selected}
+        selectedText={selected ? (textById.get(selected) ?? null) : null}
+        groups={groups}
+        author={author}
+        onAuthor={saveAuthor}
+        onAdd={add}
+        onReply={(id, text) => addReply(id, author || "без имени", text)}
+        onToggleClosed={toggleClosed}
+        onDelete={remove}
+        onGoTo={(path) => {
+          setSelected(path);
+          // Новая строка каждый раз: повторный клик по тому же замечанию
+          // должен снова подвести документ к месту.
+          setScrollTo(path);
+        }}
+        storeMode={storeMode}
+      />
+    </div>
+  );
+}
+
+export function BiblePage() {
+  return (
+    <CommentsProvider scope="bible">
+      <BibleBody />
+    </CommentsProvider>
+  );
+}

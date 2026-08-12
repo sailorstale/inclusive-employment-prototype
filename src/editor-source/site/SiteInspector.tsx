@@ -951,6 +951,14 @@ function SiteMode({
           >
             Проверить
           </Link>
+          {/* И описание самого формата: что за компоненты в этом файле и какие у
+              них поля. Там же разработчик оставляет вопросы к формату (/bible). */}
+          <Link
+            to="/bible"
+            className="rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-foreground/80 transition-colors hover:text-foreground"
+          >
+            Библия
+          </Link>
           <button
             type="button"
             onClick={() => setSrcOpen(false)}

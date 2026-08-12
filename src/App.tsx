@@ -8,6 +8,7 @@ import { InventoryPage } from "./editor/InventoryPage";
 import { BlocksPage } from "./editor-source/site/BlocksPage";
 import { ChecksPage } from "./editor-source/site/ChecksPage";
 import { ReviewListPage } from "./editor-source/site/ReviewListPage";
+import { BiblePage } from "./editor-source/bible/BiblePage";
 import { CatalogPage } from "./editor/CatalogPage";
 import { KitchenSinkPage } from "./pages/figma/KitchenSinkPage";
 import { ComponentsPage } from "./pages/figma/ComponentsPage";
@@ -50,6 +51,13 @@ export default function App() {
           (см. ниже, в группе Layout): там только средняя колонка.
         */}
         <Route path="/figma" element={<KitchenSinkPage />} />
+
+        {/*
+          Справочник формата выгрузки для разработчика — своя раскладка в три
+          колонки на всю высоту окна, вне общего Layout: это документ, а не
+          раздел сайта, и меню разделов с баннером ему только мешают.
+        */}
+        <Route path="/bible" element={<BiblePage />} />
 
         {/*
           Инструмент «Редактура источника» — три колонки (Google-док клиента,
