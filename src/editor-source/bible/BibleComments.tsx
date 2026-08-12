@@ -255,7 +255,7 @@ export function BibleComments(props: Props) {
   const closed = groups.filter((g) => g.rec.closed);
 
   return (
-    <aside className="flex min-h-0 flex-col gap-3 overflow-y-auto border-l bg-muted/20 p-3">
+    <aside className="flex flex-col gap-3 border-l bg-muted/20 p-3 md:min-h-0 md:overflow-y-auto">
       <header className="space-y-1">
         <h2 className="text-sm font-semibold">Замечания к справочнику</h2>
         <p className="text-xs text-muted-foreground">

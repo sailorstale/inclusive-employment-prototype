@@ -94,10 +94,17 @@ function BibleBody() {
     (t) => !tocQuery.trim() || t.text.toLowerCase().includes(tocQuery.trim().toLowerCase()),
   );
 
+  /*
+    Раскладка сжимается по ширине окна, а не ломается. Три колонки помещаются
+    примерно от 1100 точек; на окне поуже первым уходит оглавление (оно
+    вспомогательное), а на совсем узком колонки встают друг под друга и страница
+    прокручивается целиком. Без этого средняя колонка схлопывалась в ноль:
+    боковые заданы в точках и вместе занимали больше, чем всё окно.
+  */
   return (
-    <div className="grid h-screen min-h-0 grid-cols-[240px_minmax(0,1fr)_340px] divide-x">
+    <div className="grid min-h-screen grid-cols-1 divide-x md:h-screen md:min-h-0 md:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[240px_minmax(0,1fr)_340px]">
       {/* ЛЕВО — оглавление с поиском: в справочнике 24 компонента, глазами их не найти. */}
-      <nav className="flex min-h-0 flex-col gap-2 overflow-y-auto bg-muted/30 p-3">
+      <nav className="hidden min-h-0 flex-col gap-2 overflow-y-auto bg-muted/30 p-3 xl:flex">
         <input
           value={tocQuery}
           onChange={(e) => setTocQuery(e.target.value)}
@@ -146,7 +153,9 @@ function BibleBody() {
           </Link>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        {/* Своя прокрутка только там, где колонки стоят рядом: на узком экране
+            прокручивается вся страница целиком. */}
+        <div className="md:min-h-0 md:flex-1 md:overflow-y-auto">
           <BibleDoc
             selected={selected}
             onSelect={setSelected}
