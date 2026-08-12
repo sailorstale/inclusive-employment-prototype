@@ -71,7 +71,21 @@ export type AppliedBible = {
   Пока замечаний не разобрано, список пуст — и это честное состояние, а не
   забытый файл.
 */
-const LOG: AppliedBible[] = [];
+const LOG: AppliedBible[] = [
+  // ── Замечания Мити от 12 августа 2026 ────────────────────────────────────
+  {
+    id:
+      "bible::-::para::cox9pk+bible::-::para::1ybm5o0+bible::-::para::1sk2ptq" +
+      "+bible::zachem-etot-format-voobsche-nuzhen::heading::1hy4dpe" +
+      "+bible::zachem-etot-format-voobsche-nuzhen::para::12aeb2q" +
+      "+bible::zachem-etot-format-voobsche-nuzhen::para::112ht54##mspywrwc04s9",
+    what: "Убрали вступление целиком: справочник начинается сразу с устройства файла",
+    where: "текст",
+    before:
+      "Три вводных абзаца («Это описание формата…», «Как этот документ проверялся…», «Где живёт правда…») и раздел «Зачем этот формат вообще нужен» с двумя абзацами.",
+    date: "2026-08-12",
+  },
+];
 
 /** Все записи разбора по замечанию, по порядку появления. */
 export function appliedFor(id: string): AppliedBible[] {
