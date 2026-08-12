@@ -16,11 +16,18 @@ import { renderBibleInline } from "./inline";
 */
 
 type Props = {
-  /** Адрес выбранного блока — по нему открыта форма замечания. */
-  selected: string | null;
-  onSelect: (id: string) => void;
-  /** Адреса блоков, к которым уже есть замечания: помечаем значком. */
+  /*
+    Выделенные блоки — к ним открыта форма замечания. Набор, а не один адрес:
+    замечание часто относится к нескольким кускам подряд, например к правилу и
+    примеру под ним. Обычный клик выделяет один блок, клик с Shift, Cmd или Ctrl
+    добавляет ещё.
+  */
+  picked: Set<string>;
+  onPick: (id: string, add: boolean) => void;
+  /** Адреса блоков, к которым уже есть замечания: помечаем цветом и значком. */
   commented: Set<string>;
+  /** Блоки замечания, которое читают в панели: показываем их отдельной рамкой. */
+  active: Set<string>;
   /** Адрес блока, к которому надо подвести страницу (клик в списке замечаний). */
   scrollTo: string | null;
 };
@@ -115,7 +122,7 @@ function BlockBody({ block }: { block: BibleBlock }) {
   }
 }
 
-export function BibleDoc({ selected, onSelect, commented, scrollTo }: Props) {
+export function BibleDoc({ picked, onPick, commented, active, scrollTo }: Props) {
   const box = React.useRef<HTMLDivElement>(null);
 
   // Подвести документ к блоку, выбранному в списке замечаний.
@@ -128,29 +135,35 @@ export function BibleDoc({ selected, onSelect, commented, scrollTo }: Props) {
   return (
     <div ref={box} className="mx-auto max-w-3xl px-8 py-8">
       {bibleBlocks.map((block) => {
-        const isSelected = selected === block.id;
+        const isPicked = picked.has(block.id);
         const hasComment = commented.has(block.id);
+        const isActive = active.has(block.id);
         return (
           <div
             key={block.id}
             data-block={block.id}
             role="button"
             tabIndex={0}
-            aria-pressed={isSelected}
-            onClick={() => onSelect(block.id)}
+            aria-pressed={isPicked}
+            /* Shift, Cmd и Ctrl добавляют блок к выделению — так же, как в
+               инструменте сверки на страницах сайта. */
+            onClick={(e) => onPick(block.id, e.shiftKey || e.metaKey || e.ctrlKey)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                onSelect(block.id);
+                onPick(block.id, e.shiftKey || e.metaKey || e.ctrlKey);
               }
             }}
             className={cn(
               "relative -mx-3 cursor-pointer rounded-md px-3 py-1.5 transition-colors",
               "hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              isSelected && "bg-accent/70 ring-1 ring-primary/40",
+              isPicked && "bg-accent/70 ring-1 ring-primary/40",
               // Место с замечанием видно и цветом, и полосой слева: одного фона
               // мало, когда рядом идут несколько подсвеченных блоков подряд.
               hasComment && "border-l-2 border-amber-400 bg-amber-50/60 dark:bg-amber-950/20",
+              // Замечание, открытое в панели: рамка ярче, чтобы среди соседних
+              // жёлтых блоков было видно, о каких именно идёт речь.
+              isActive && "ring-2 ring-amber-500",
             )}
           >
             <BlockBody block={block} />

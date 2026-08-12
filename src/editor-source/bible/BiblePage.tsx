@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { BibleComments, type BibleCommentGroup } from "./BibleComments";
 import { BibleDoc } from "./BibleDoc";
 import { bibleBlocks, bibleToc } from "./bible.generated";
-import { bibleCommentId, blockOf, newUid } from "./commentIds";
+import { bibleCommentId, blocksOf, newUid } from "./commentIds";
 
 /*
   СПРАВОЧНИК ФОРМАТА — страница /bible.
@@ -36,7 +36,14 @@ const readAuthor = () => {
 
 function BibleBody() {
   const { comments, storeMode, setComment, toggleClosed, addReply } = useComments();
-  const [selected, setSelected] = React.useState<string | null>(null);
+  /*
+    Выделение множественное: одно замечание нередко относится к нескольким
+    кускам подряд. Обычный клик начинает выделение заново, клик с Shift, Cmd или
+    Ctrl добавляет место к уже выделенным.
+  */
+  const [picked, setPicked] = React.useState<string[]>([]);
+  /** Блоки замечания, открытого в панели: их подсвечиваем отдельной рамкой. */
+  const [active, setActive] = React.useState<string[]>([]);
   const [scrollTo, setScrollTo] = React.useState<string | null>(null);
   const [author, setAuthorState] = React.useState(readAuthor);
   const [tocQuery, setTocQuery] = React.useState("");
@@ -51,13 +58,13 @@ function BibleBody() {
     () =>
       comments
         .filter((rec) => rec.id.includes("##") && (rec.text || "").trim())
-        .map((rec) => ({ rec, path: blockOf(rec.id) }))
+        .map((rec) => ({ rec, paths: blocksOf(rec.id) }))
         .sort((a, b) => a.rec.createdAt.localeCompare(b.rec.createdAt)),
     [comments],
   );
 
   const commented = React.useMemo(
-    () => new Set(groups.filter((g) => !g.rec.closed).map((g) => g.path)),
+    () => new Set(groups.filter((g) => !g.rec.closed).flatMap((g) => g.paths)),
     [groups],
   );
 
@@ -70,18 +77,29 @@ function BibleBody() {
     }
   };
 
+  const pick = (id: string, addToPicked: boolean) =>
+    setPicked((prev) => {
+      if (!addToPicked) return prev.length === 1 && prev[0] === id ? [] : [id];
+      return prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id];
+    });
+
   const add = (text: string, who: string) => {
-    if (!selected) return;
+    if (!picked.length) return;
+    /*
+      Снимок берём по первому выделенному месту: в списке замечание подписано
+      одной строкой, а сколько мест оно держит, панель скажет отдельно.
+    */
     setComment(
       {
-        id: bibleCommentId(selected, newUid()),
+        id: bibleCommentId(picked, newUid()),
         page: "/bible",
-        blockType: bibleBlocks.find((b) => b.id === selected)?.kind ?? null,
-        original: textById.get(selected) ?? null,
+        blockType: bibleBlocks.find((b) => b.id === picked[0])?.kind ?? null,
+        original: textById.get(picked[0]) ?? null,
         author: who || author || null,
       },
       text,
     );
+    setPicked([]);
   };
 
   const remove = (id: string) => {
@@ -93,6 +111,9 @@ function BibleBody() {
   const toc = bibleToc.filter(
     (t) => !tocQuery.trim() || t.text.toLowerCase().includes(tocQuery.trim().toLowerCase()),
   );
+
+  const pickedSet = React.useMemo(() => new Set(picked), [picked]);
+  const activeSet = React.useMemo(() => new Set(active), [active]);
 
   /*
     Раскладка сжимается по ширине окна, а не ломается. Три колонки помещаются
@@ -157,9 +178,10 @@ function BibleBody() {
             прокручивается вся страница целиком. */}
         <div className="md:min-h-0 md:flex-1 md:overflow-y-auto">
           <BibleDoc
-            selected={selected}
-            onSelect={setSelected}
+            picked={pickedSet}
+            onPick={pick}
             commented={commented}
+            active={activeSet}
             scrollTo={scrollTo}
           />
         </div>
@@ -167,8 +189,9 @@ function BibleBody() {
 
       {/* ПРАВО — замечания. */}
       <BibleComments
-        selected={selected}
-        selectedText={selected ? (textById.get(selected) ?? null) : null}
+        picked={picked}
+        pickedTexts={picked.map((id) => textById.get(id) ?? "")}
+        onClearPicked={() => setPicked([])}
         groups={groups}
         author={author}
         onAuthor={saveAuthor}
@@ -176,11 +199,12 @@ function BibleBody() {
         onReply={(id, text) => addReply(id, author || "без имени", text)}
         onToggleClosed={toggleClosed}
         onDelete={remove}
-        onGoTo={(path) => {
-          setSelected(path);
-          // Новая строка каждый раз: повторный клик по тому же замечанию
-          // должен снова подвести документ к месту.
-          setScrollTo(path);
+        onGoTo={(paths) => {
+          // Читаем чужое замечание — свои выделения при этом сбрасываем, иначе
+          // форма осталась бы открытой на местах, о которых речь не идёт.
+          setPicked([]);
+          setActive(paths);
+          setScrollTo(paths[0] ?? null);
         }}
         storeMode={storeMode}
       />
