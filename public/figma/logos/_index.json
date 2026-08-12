@@ -1171,6 +1171,11 @@
     "ogrn": "1216100032620"
   },
   {
+    "slug": "lemana-pro",
+    "name": "Лемана ПРО",
+    "stub": true
+  },
+  {
     "slug": "lestnitsa",
     "name": "Лестница",
     "ogrn": "1172300000861"
@@ -2016,6 +2021,11 @@
     "slug": "samyu-sosyal-moskva",
     "name": "САМЮ сосьяль Москва",
     "ogrn": "1037739947190"
+  },
+  {
+    "slug": "sberbank",
+    "name": "Сбербанк",
+    "stub": true
   },
   {
     "slug": "schaste-darit-schaste",

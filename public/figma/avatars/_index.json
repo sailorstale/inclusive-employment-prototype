@@ -30,6 +30,10 @@
   "name": "Денис Роза"
  },
  {
+  "slug": "ekaterina-fokina",
+  "name": "Екатерина Фокина"
+ },
+ {
   "slug": "ekaterina-siksimova",
   "name": "Екатерина Сиксимова"
  },
@@ -101,6 +105,10 @@
   "slug": "tatyana-tiunova",
   "name": "Татьяна Тиунова",
   "stub": true
+ },
+ {
+  "slug": "viktoriya-kravtsova",
+  "name": "Виктория Кравцова"
  },
  {
   "slug": "yuliya-ermilova",
