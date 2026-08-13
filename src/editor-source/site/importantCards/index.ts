@@ -2,6 +2,7 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Directive } from "@/editor-source/directives";
 import { blockRefId } from "@/editor-source/source/blockId";
 import type { CardSpec, PageCards } from "./types";
+import { aboutCards } from "./about";
 import { startCards } from "./start";
 import { howCards } from "./how";
 import { teamCards } from "./team";
@@ -36,6 +37,7 @@ import { ngoAudienceCards } from "./ngoAudience";
 */
 
 const PAGES: PageCards[] = [
+  aboutCards,
   startCards,
   howCards,
   teamCards,
@@ -104,6 +106,7 @@ function directiveFor(
   const target = spec.target ?? "GeneralCard";
   const quote = target === "Quote";
   const video = target === "Video";
+  const list = target === "List";
   return {
     id: `important:${spec.blocks[0]}`,
     module: moduleId,
@@ -120,11 +123,20 @@ function directiveFor(
       модификаторы, но запись, которая врёт о себе, собьёт с толку панель
       разметки и проверку выгрузки.
     */
-    targetLabel: quote ? "Цитата" : video ? "Видео" : "General Card",
+    targetLabel: quote
+      ? "Цитата"
+      : video
+      ? "Видео"
+      : list
+      ? "Список"
+      : "General Card",
     modifiers: quote
       ? { size: "L", yandex: false }
       : video
       ? {}
+      : list
+      ? // Обычный список, но со значком: сам значок называет комментарий.
+        { marker: "Icon" }
       : {
           orient: "Vertical",
           icon: false,
