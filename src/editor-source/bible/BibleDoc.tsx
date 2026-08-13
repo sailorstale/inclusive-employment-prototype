@@ -125,11 +125,15 @@ function BlockBody({ block }: { block: BibleBlock }) {
 export function BibleDoc({ picked, onPick, commented, active, scrollTo }: Props) {
   const box = React.useRef<HTMLDivElement>(null);
 
-  // Подвести документ к блоку, выбранному в списке замечаний.
+  /*
+    Подвести документ к блоку, выбранному в списке замечаний. Прокрутка
+    мгновенная по той же причине, что и переход по оглавлению: плавная внутри
+    вложенного контейнера выполняется не везде.
+  */
   React.useEffect(() => {
     if (!scrollTo) return;
     const el = box.current?.querySelector(`[data-block="${CSS.escape(scrollTo)}"]`);
-    el?.scrollIntoView({ block: "center", behavior: "smooth" });
+    el?.scrollIntoView({ block: "center" });
   }, [scrollTo]);
 
   return (

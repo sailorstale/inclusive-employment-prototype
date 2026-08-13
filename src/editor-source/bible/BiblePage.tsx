@@ -116,6 +116,24 @@ function BibleBody() {
   const activeSet = React.useMemo(() => new Set(active), [active]);
 
   /*
+    Переход к разделу — прокруткой, а НЕ ссылкой «#якорь».
+
+    Адреса приложения сами живут после решётки (HashRouter, см. main.tsx),
+    поэтому обычная якорная ссылка меняла не место на странице, а маршрут: из
+    «#/bible» получалось «#koren», и справочник закрывался. Прокрутку делаем
+    руками, адрес при этом не трогаем.
+  */
+  const goToAnchor = (anchor: string) => {
+    /*
+      Прокрутка мгновенная, без плавности: документ длинный, до дальнего раздела
+      «доезжать» пришлось бы секундами, а часть браузеров плавную прокрутку
+      внутри вложенного контейнера просто не выполняет — тогда переход не
+      срабатывал бы вовсе.
+    */
+    document.getElementById(anchor)?.scrollIntoView({ block: "start" });
+  };
+
+  /*
     Раскладка сжимается по ширине окна, а не ломается. Три колонки помещаются
     примерно от 1100 точек; на окне поуже первым уходит оглавление (оно
     вспомогательное), а на совсем узком колонки встают друг под друга и страница
@@ -136,16 +154,18 @@ function BibleBody() {
         <ul className="space-y-0.5">
           {toc.map((t) => (
             <li key={t.anchor}>
-              <a
-                href={`#${t.anchor}`}
+              <button
+                type="button"
+                onClick={() => goToAnchor(t.anchor)}
                 className={cn(
-                  "block rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground",
+                  "block w-full rounded px-2 py-1 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   t.level === 2 &&
                     "mt-3 text-[11px] font-medium uppercase tracking-wide text-foreground",
                 )}
               >
                 {t.text}
-              </a>
+              </button>
             </li>
           ))}
         </ul>
