@@ -136,29 +136,43 @@ type NodeKind =
       caption?: string;
       header: string[];
       rows: TableCellValue[][];
-      /*
-        Первая колонка объединена: одинаковые ячейки подряд рисуются одной
-        растянутой на всю группу строк. Замечание Мити от 11 августа 2026 по
-        таблице «Как нейросети помогают в работе» — в гугл-доке она такой и была,
-        а выгрузка объединение потеряла, и название группы повторялось в каждой
-        строке. Включается по адресу блока, см. site/mergedTables.ts.
-      */
-      mergeFirstColumn?: boolean;
     }
   /*
-    Ячейка с перечислением. Обычная ячейка остаётся строкой — иначе выгрузка
-    толстеет на ровном месте: перечисления есть примерно в одной ячейке из
-    семи. А там, где перечисление есть, внутрь ложатся настоящие узлы:
-    вступительная фраза (Text) и список (Stack из List Item).
+    ЯЧЕЙКА-УЗЕЛ. Обычная ячейка остаётся строкой — иначе выгрузка толстеет на
+    ровном месте. Узлом ячейка едет в двух случаях.
+
+    Первый: внутри перечисление (примерно одна ячейка из семи). Тогда внутрь
+    ложатся настоящие узлы — вступительная фраза (Text) и список (Stack из
+    List Item), — иначе разработчик собрал бы абзац с символами «•» вместо
+    списка.
+
+    Второй: ячейка объединена с соседними. Тогда у неё стоит rowSpan или
+    colSpan, а поглощённые ячейки в строку не едут вовсе — ровно как в вёрстке
+    таблицы. Объединять можно любые ячейки, а не только первую колонку:
+    замечание Мити от 13 августа 2026 «надо, чтобы можно было любые ячейки
+    мерджить, что-то более гибкое».
   */
-  | { component: "Table cell"; children: Node[] }
+  | {
+      component: "Table cell";
+      /** Простой текст ячейки. Либо он, либо children. */
+      text?: string;
+      children?: Node[];
+      /** На сколько строк вниз растянута ячейка. Без поля — на одну. */
+      rowSpan?: number;
+      /** На сколько колонок вправо растянута ячейка. Без поля — на одну. */
+      colSpan?: number;
+    }
   | { component: "Image"; src: string; alt?: string }
   | { component: "Video"; href?: string }
   /*
     Ряд людей с фотографиями: портрет, имя и должность. Наше дополнение к
     системе — в Figma компонентов пока нет (см. КОМПОНЕНТЫ.md, «Люди»).
+
+    Все три поля обязательны — решение Мити от 13 августа 2026. Человек без
+    имени, без должности или без портрета в ряду выглядит недоделкой, и
+    разработчику не нужно гадать, рисовать ли пустое место.
   */
-  | { component: "Person Item"; photo?: string; name: string; role?: string }
+  | { component: "Person Item"; photo: string; name: string; role: string }
   | { component: "Prompt"; title: string; subtitle: string; text: string }
   /*
     Компоненты, которых раскладка пока не собирает из источника, но которые есть
@@ -1544,6 +1558,48 @@ export function cellWithLines(cell: string): string {
   Размер M, а не L: текст внутри ячейки на ступень мельче прозы страницы —
   так же, как внутри карточки (сама ячейка нарисована стилем Body M).
 */
+/*
+  СКЛЕИТЬ ОДИНАКОВЫЕ ЯЧЕЙКИ ПОДРЯД В ОДНОЙ КОЛОНКЕ.
+
+  Первая ячейка серии становится узлом с rowSpan на всю серию, продолжения из
+  строк убираются совсем — так же, как это делает вёрстка таблицы. Раньше
+  объединение ехало флагом у всей таблицы (mergeFirstColumn), и склеить можно
+  было только первую колонку. Теперь объединение живёт у самой ячейки, поэтому
+  колонка тут — просто аргумент, а формат позволяет объединять что угодно.
+
+  Склеиваем только ячейки-строки: у ячейки с перечислением внутри одинаковость
+  определять нечем, да и повторяться такие не бывают.
+*/
+export function mergeSameCellsDown(
+  rows: TableCellValue[][],
+  column: number,
+): TableCellValue[][] {
+  const key = (row: TableCellValue[] | undefined) => {
+    const cell = row?.[column];
+    return typeof cell === "string" ? cell.trim() : null;
+  };
+  const eaten = new Set<number>();
+  const out = rows.map((row) => [...row]);
+
+  rows.forEach((row, i) => {
+    if (eaten.has(i)) return;
+    const here = key(row);
+    if (here === null || !here) return;
+    let span = 1;
+    while (key(rows[i + span]) === here) {
+      eaten.add(i + span);
+      span += 1;
+    }
+    if (span === 1) return;
+    out[i][column] = { component: "Table cell", text: here, rowSpan: span };
+  });
+
+  // Поглощённые ячейки убираем из своих строк: строка становится короче.
+  return out.map((row, i) =>
+    eaten.has(i) ? row.filter((_, c) => c !== column) : row,
+  );
+}
+
 export function cellValue(cell: string): TableCellValue {
   const text = cellWithLines(cell);
   /*
@@ -1697,12 +1753,12 @@ export function buildDoc(
         const merge = mergesFirstColumn(
           blockRefId(b, `/source/${moduleId}`, it.anchor),
         );
+        const rows = b.rows.map((r) => r.map(cellValue));
         return [
           {
             component: "Table",
             header: b.header,
-            rows: b.rows.map((r) => r.map(cellValue)),
-            ...(merge ? { mergeFirstColumn: true as const } : {}),
+            rows: merge ? mergeSameCellsDown(rows, 0) : rows,
           },
         ];
       }
@@ -3974,13 +4030,28 @@ export function buildDoc(
                 В самой директиве путь остаётся полным — по нему строка с
                 фотографией отличается от строки, начинающейся с имени.
               */
-              photo: hasPhoto ? parts[0].replace(/^.*\//, "").replace(/\.\w+$/, "") : undefined,
+              photo: hasPhoto ? parts[0].replace(/^.*\//, "").replace(/\.\w+$/, "") : "",
               name: (name ?? "").trim(),
-              role: role?.trim() || undefined,
+              role: role?.trim() || "",
             };
           })
           .filter((p) => p.name);
         if (!people.length) return [{ component: "note", text: "People: в комментарии нет ни одного человека" }];
+        /*
+          У человека обязательны все три поля — решение Мити от 13 августа 2026.
+          Неполная запись в ряд не идёт: разработчик получил бы карточку, у
+          которой нечем заполнить половину, и решал бы сам, что рисовать.
+          Молчать о ней тоже нельзя, поэтому вместо человека встаёт пометка —
+          её видно в инструменте, и понятно, чего не хватает.
+        */
+        const incomplete = people.filter((p) => !p.photo || !p.role);
+        if (incomplete.length)
+          return [
+            {
+              component: "note",
+              text: `People: у ${incomplete.map((p) => p.name).join(", ")} нет фотографии или должности — по формату они обязательны`,
+            },
+          ];
         /*
           Отдаём людей БЕЗ своей обёртки: конверт наденет общая машинерия
           (needsBlock + cardOrientation), и он же поставит их в ряд. Раньше
@@ -4341,7 +4412,6 @@ function annotate(doc: Doc): Doc {
               caption,
               header: n.header,
               rows: n.rows,
-              ...(n.mergeFirstColumn ? { mergeFirstColumn: true as const } : {}),
             };
       }
       if ("children" in n && Array.isArray(n.children))

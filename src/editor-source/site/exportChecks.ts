@@ -307,14 +307,31 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       */
       const blank = rows.filter((r) => Array.isArray(r) && r.some((c) => typeof c === "string" && !c.trim())).length;
       if (blank) add("таблица-пустые-ячейки", "medium", `Пустых ячеек в ${blank} строках — обычно это съехавшая разметка`);
+      /*
+        ШИРИНА СТРОКИ СЧИТАЕТСЯ С ОБЪЕДИНЕНИЯМИ. Ячейка с colSpan занимает
+        несколько колонок, а ячейка с rowSpan забирает место в строках ниже —
+        там её попросту нет. Считать голые длины строк после появления
+        объединений нельзя: любая склейка выглядела бы как рваная таблица.
+      */
+      const carried: number[] = []; // сколько колонок заняты сверху в этой строке
       rows.forEach((row, i) => {
-        if (Array.isArray(row) && header.length && row.length !== header.length)
+        if (!Array.isArray(row) || !header.length) return;
+        let width = carried[i] ?? 0;
+        for (const cell of row) {
+          const span = isRec(cell) ? cell : null;
+          const colSpan = typeof span?.colSpan === "number" ? span.colSpan : 1;
+          const rowSpan = typeof span?.rowSpan === "number" ? span.rowSpan : 1;
+          for (let r = 1; r < rowSpan; r += 1)
+            carried[i + r] = (carried[i + r] ?? 0) + colSpan;
+          width += colSpan;
+        }
+        if (width !== header.length)
           out.push({
             rule: "таблица-рваная",
             severity: "high",
             page,
             where: `${where}.rows.${i}`,
-            message: `В строке ${i + 1} ячеек ${row.length}, а в шапке столбцов ${header.length}`,
+            message: `В строке ${i + 1} колонок ${width} (с учётом объединений), а в шапке столбцов ${header.length}`,
           });
       });
       break;

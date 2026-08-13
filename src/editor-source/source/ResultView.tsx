@@ -206,7 +206,10 @@ function quizText(text?: string): React.ReactNode {
 }
 
 function cellContent(cell: TableCellValue): React.ReactNode {
-  if (typeof cell !== "string") return cellNodes(cell.children);
+  // Ячейка-узел несёт либо готовые узлы (перечисление), либо простой текст —
+  // текстом едут объединённые ячейки, у которых внутри ничего сложного нет.
+  if (typeof cell !== "string")
+    return cell.children ? cellNodes(cell.children) : renderInline(cell.text ?? "");
   const lines = cell.split("\n");
   if (lines.length === 1) return renderInline(cell);
   return lines.map((line, i) => {
@@ -422,30 +425,6 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
         прокрутку там, где она не нужна.
       */
       const columns = node.header.length || node.rows[0]?.length || 0;
-      /*
-        Длина серии одинаковых первых ячеек: у первой строки серии — сколько
-        строк она накрывает, у продолжений — ноль (такую ячейку не рисуем).
-        Пустой массив, когда объединения не просили, — тогда ветка ниже работает
-        как раньше.
-      */
-      const merged: number[] = [];
-      if (node.mergeFirstColumn)
-        node.rows.forEach((r, i) => {
-          const key = (x: TableCellValue) => (typeof x === "string" ? x.trim() : null);
-          const here = key(r[0]);
-          if (here !== null && i > 0 && key(node.rows[i - 1][0]) === here) {
-            merged.push(0);
-            return;
-          }
-          let n = 1;
-          while (
-            here !== null &&
-            i + n < node.rows.length &&
-            key(node.rows[i + n][0]) === here
-          )
-            n += 1;
-          merged.push(n);
-        });
       const table = (
         <Table
           caption={node.caption}
@@ -467,18 +446,18 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
             <TableRow key={ri}>
               {r.map((c, ci) => {
                 /*
-                  ОБЪЕДИНЁННАЯ ПЕРВАЯ КОЛОНКА. Ячейку рисуем один раз на всю
-                  серию одинаковых подряд идущих значений, а у остальных строк
-                  серии её не рисуем вовсе — так работает rowSpan.
-
-                  Только первая колонка и только простые строковые ячейки:
-                  ячейка с перечислением внутри — это узел с детьми, и сравнить
-                  такие можно было бы разве что по виду, а не по смыслу.
+                  ОБЪЕДИНЕНИЕ ЖИВЁТ У САМОЙ ЯЧЕЙКИ. Ячейка-узел может нести
+                  rowSpan и colSpan; поглощённых ячеек в строке просто нет —
+                  так же, как в вёрстке таблицы. Строка при этом короче
+                  остальных, и это нормально.
                 */
-                const span = ci === 0 ? merged[ri] : undefined;
-                if (span === 0) return null;
+                const span = typeof c === "string" ? undefined : c;
                 return (
-                  <TableCell key={ci} rowSpan={span && span > 1 ? span : undefined}>
+                  <TableCell
+                    key={ci}
+                    rowSpan={span?.rowSpan && span.rowSpan > 1 ? span.rowSpan : undefined}
+                    colSpan={span?.colSpan && span.colSpan > 1 ? span.colSpan : undefined}
+                  >
                     {cellContent(c)}
                   </TableCell>
                 );
