@@ -2,6 +2,7 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Directive } from "@/editor-source/directives";
 import { blockRefId } from "@/editor-source/source/blockId";
 import type { Insert, PageEdits, Retyped } from "./types";
+import { aboutEdits } from "./about";
 import { contractEdits } from "./contract";
 import { quotasEdits } from "./quotas";
 import { howEdits } from "./how";
@@ -46,6 +47,7 @@ import { ngoAudienceEdits } from "./ngoAudience";
 */
 
 export const PAGES: PageEdits[] = [
+  aboutEdits,
   contractEdits,
   quotasEdits,
   howEdits,

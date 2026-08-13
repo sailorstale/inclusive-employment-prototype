@@ -1,4 +1,25 @@
+import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { PageEdits } from "./types";
+
+/*
+  Заголовок «Примеры» — ПЯТОГО уровня, замечание Мити от 12 августа 2026
+  («Сделать H5»). Он стоит над карточками-примерами третьей степени, а соседние
+  подписи внутри тех же карточек («Что означает», «Как оформить») выходят на
+  страницу пятым уровнем. Третий уровень ставил «Примеры» вровень с названием
+  всего раздела про ИПРА и читался как начало новой темы.
+
+  Снимок источника знает только уровни 2–4: в гугл-доке глубже не пишут, а
+  generated-файл мы не трогаем. Раскладка и набор компонентов H5 понимают,
+  поэтому уровень задаём здесь и приводим тип — так же, как это сделано для
+  абзацев, ставших заголовками (retype в clientEdits/index.ts).
+*/
+const primeryHeading = {
+  kind: "heading" as const,
+  level: 5 as 2 | 3 | 4 | 5,
+  md: "Примеры",
+  text: "Примеры",
+  anchor: "primery-stepeni-ogranicheniya",
+} as SourceBlock;
 
 /*
   «ДОГОВОР И ОФОРМЛЕНИЕ» — /general/legal/contract, модуль m2.
@@ -54,15 +75,7 @@ export const contractEdits: PageEdits = {
         заголовку секции, и заняв его, «Примеры» увели бы к себе ссылку на весь
         раздел про ИПРА.
       */
-      blocks: [
-        {
-          kind: "heading",
-          level: 3,
-          md: "Примеры",
-          text: "Примеры",
-          anchor: "primery-stepeni-ogranicheniya",
-        },
-      ],
+      blocks: [primeryHeading],
     },
   ],
 };
