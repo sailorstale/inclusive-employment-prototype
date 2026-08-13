@@ -334,7 +334,7 @@ export function applyClientEdits(
       );
       from.push(NO_MARKUP.has(text) ? null : bi);
       for (const ins of INSERTS)
-        if (ins.after?.test(text))
+        if (ins.after?.test(text) || (ins.afterId && ins.afterId === id))
           for (const nb of ins.blocks) {
             blocks.push(nb);
             from.push(null);
