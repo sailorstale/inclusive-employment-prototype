@@ -146,8 +146,25 @@ export function PageComments({
     так и оставалась невидимой: клик по её блоку не показывал ничего. Поэтому у
     убранного открываем именно «Решено».
   */
+  /*
+    СРАБАТЫВАЕТ ТОЛЬКО НА НОВОМ ЗАМЕЧАНИИ, а не на любом его изменении. Разница
+    решающая. Нажали «Решено» на выбранной карточке — она уходит из текущей
+    группы, и правило «покажи спрятанное» утаскивало список следом, в «Решено».
+    Выбраться было нельзя: нажимаешь «Все», карточка снова прячется, и правило
+    возвращает обратно.
+
+    Теперь список едет за замечанием ровно один раз — когда на него перешли
+    кликом по блоку или по ссылке. Что с этим замечанием происходит дальше,
+    список уже не касается.
+  */
+  const followed = React.useRef<string | null>(null);
   React.useEffect(() => {
-    if (!activeId) return;
+    if (!activeId) {
+      followed.current = null;
+      return;
+    }
+    if (followed.current === activeId) return;
+    followed.current = activeId;
     const target = groups.find((g) => g.id === activeId);
     if (!target || shown.some((g) => g.id === activeId)) return;
     setFilter(isClosed(target.rec) ? "closed" : "all");
