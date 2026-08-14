@@ -11,6 +11,7 @@ import { step2Cards } from "./step2";
 import { step3Cards } from "./step3";
 import { ngoStartCards } from "./ngoStart";
 import { ngoAudienceCards } from "./ngoAudience";
+import { step6Cards } from "./step6";
 import { ngoCandidatesCards } from "./ngoCandidates";
 import { ngoGuidanceCards } from "./ngoGuidance";
 import { step5Cards } from "./step5";
@@ -56,6 +57,7 @@ const PAGES: PageCards[] = [
   step3Cards,
   ngoStartCards,
   ngoAudienceCards,
+  step6Cards,
   ngoCandidatesCards,
   ngoGuidanceCards,
   step5Cards,

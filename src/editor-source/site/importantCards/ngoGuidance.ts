@@ -12,28 +12,75 @@ import type { PageCards } from "./types";
   (/blocks). Блоки каждой карточки взяты по одному: клиент отметил ровно один
   абзац, и захватывать соседние нельзя.
 */
+
+const PLAN = "/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly";
+const MENTAL = "/source/m6-2::osobennosti-proforientacii-lyudey-s-mentalnoy-in";
+
 export const ngoGuidanceCards: PageCards = {
   page: "/ngo/candidates/guidance",
   cards: [
     /* «Важно не путать профориентацию с подбором вакансий.…» */
     { blocks: ["/source/m6-2::chto-takoe-proforientaciya-i-kogda-ona-nuzhna::paragraph::16wdwo7"], title: "Важно" },
     /* «Результат второго этапа: есть понимание, какие направления…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::1721ag4"], title: "Важно" },
-    /* «Результат этапа: заполненный профиль кандидата со всеми да…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::1nm8dip"], title: "Важно" },
+    { blocks: [`${PLAN}::paragraph::1721ag4`], title: "Важно" },
+    /*
+      «Результат первого этапа: заполненный профиль кандидата…»
+
+      Адрес НОВЫЙ: по замечанию клиента подпись получила номер этапа (см.
+      rewrite в clientEdits/ngoGuidance.ts), а отпечаток блока считается по его
+      чистому тексту. Прежний адрес — …paragraph::1nm8dip — больше ни на что не
+      указывает, и карточка по нему не собралась бы.
+    */
+    { blocks: [`${PLAN}::paragraph::1ita6ey`], title: "Важно" },
     /* «Результат третьего этапа: соискатель с инвалидностью поним…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::bpn79r"], title: "Важно" },
+    { blocks: [`${PLAN}::paragraph::bpn79r`], title: "Важно" },
     /* «Результат четвёртого этапа: у вас есть несколько карьерных…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::1qh2tx6"], title: "Важно" },
+    { blocks: [`${PLAN}::paragraph::1qh2tx6`], title: "Важно" },
     /* «Результат этапа: одна или несколько гипотез стали понятнее…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::c8890b"], title: "Важно" },
+    { blocks: [`${PLAN}::paragraph::c8890b`], title: "Важно" },
     /* «Важно: экскурсия не обязывает соискателя соглашаться на ра…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::1c2pxlf"], title: "Важно" },
+    { blocks: [`${PLAN}::paragraph::1c2pxlf`], title: "Важно" },
     /* «При выборе гипотезы ориентируйтесь на то, что:…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::8guri2"], title: "Важно" },
+    { blocks: [`${PLAN}::paragraph::8guri2`], title: "Важно" },
     /* «При этом важно, чтобы подготовительный этап не превращался…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::7oku8d"], title: "Важно" },
+    { blocks: [`${PLAN}::paragraph::7oku8d`], title: "Важно" },
     /* «Важно: если человек пока не готов к трудоустройству, это н…» */
-    { blocks: ["/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly::paragraph::1az3i5z"], title: "Важно" },
+    { blocks: [`${PLAN}::paragraph::1az3i5z`], title: "Важно" },
+
+    /*
+      ЦИТАТА ДЕНИСА РОЗЫ, ПЯТЬ БЛОКОВ — замечание клиента от 12 августа 2026:
+      «разбить на 4 абзаца как в гугдоке». Речь разложена на четыре абзаца в
+      clientEdits/ngoGuidance.ts, и карточку цитаты приходится собирать здесь
+      заново: разметка адресуется блоками источника, а трёх новых абзацев в
+      источнике нет — они выпали бы из карточки наружу.
+
+      Первый блок — строка авторства (имя, должность и фонд), остальные четыре
+      становятся речью (см. case «Quote» в contentTree).
+    */
+    {
+      blocks: [
+        `${PLAN}::paragraph::1mt39eq`,
+        `${PLAN}::paragraph::w9pfpa`,
+        `${PLAN}::paragraph::t0xzkb`,
+        `${PLAN}::paragraph::1ew6vxb`,
+        `${PLAN}::paragraph::hzaaef`,
+      ],
+      target: "Quote",
+    },
+
+    /*
+      ЦИТАТА ЕКАТЕРИНЫ СИКСИМОВОЙ, ТРИ БЛОКА — замечания клиента от 12 августа
+      2026: «цитата» и «разбить на 2 абзаца как в гугдоке». В источнике имя,
+      должность и вся речь слиплись в один абзац; в clientEdits он разобран на
+      строку авторства и две части речи, а карточку цитаты собираем здесь.
+    */
+    {
+      blocks: [
+        `${MENTAL}::paragraph::1n9inlf`,
+        `${MENTAL}::paragraph::hodtvz`,
+        `${MENTAL}::paragraph::1uxqy8t`,
+      ],
+      target: "Quote",
+    },
   ],
 };
