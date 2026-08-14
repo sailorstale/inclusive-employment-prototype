@@ -25,5 +25,15 @@ export const ngoTalksCards: PageCards = {
     { blocks: ["/source/m6-3::kak-predstavit-kandidata-s-invalidnostyu-rabotod::paragraph::ur96bg"], title: "Важно" },
     /* «Важно помнить, что отказ не всегда связан с принципиальной…» */
     { blocks: ["/source/m6-3::chto-delat-esli-vam-otkazali::paragraph::1y4ni9y"], title: "Важно" },
+    /*
+      ТАБЛИЦА СТАЛА КАРТОЧКАМИ — замечание клиента «карточки». Строки друг с
+      другом не сравнивают: каждая отвечает на свой случай, и читать их подряд
+      как таблицу незачем. Строка становится карточкой: левая ячейка — название,
+      правая — текст.
+
+      Число обязано сойтись с источником. Станет строк больше или меньше —
+      раскладка оставит таблицу и скажет об этом заметкой на странице.
+    */
+    { blocks: ["/source/m6-3::kak-predstavit-kandidata-s-invalidnostyu-rabotod::table::xw3q5i"], split: 3 },
   ],
 };

@@ -19,5 +19,15 @@ export const ngoVacanciesCards: PageCards = {
     { blocks: ["/source/m6-2::shag-1-opredelenie-prioritetov::paragraph::t7ycdg"], title: "Важно" },
     /* «Важно заранее обсудить с кандидатом, какую информацию о се…» */
     { blocks: ["/source/m6-2::shag-3-pomosch-kandidatu-v-ponimanii-opisaniya-v::paragraph::1d4yiwj"], title: "Важно" },
+    /*
+      ТАБЛИЦА СТАЛА КАРТОЧКАМИ — замечание клиента «карточки». Строки друг с
+      другом не сравнивают: каждая отвечает на свой случай, и читать их подряд
+      как таблицу незачем. Строка становится карточкой: левая ячейка — название,
+      правая — текст.
+
+      Число обязано сойтись с источником. Станет строк больше или меньше —
+      раскладка оставит таблицу и скажет об этом заметкой на странице.
+    */
+    { blocks: ["/source/m6-2::shag-1-opredelenie-prioritetov::table::nsev15"], split: 5 },
   ],
 };
