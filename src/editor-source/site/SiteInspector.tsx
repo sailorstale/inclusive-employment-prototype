@@ -616,52 +616,64 @@ function SiteMode({
   }, [comments]);
 
   /*
+    РЕШЁННОЕ УХОДИТ СО СТРАНИЦЫ СОВСЕМ. Кнопка «Решено» значит «убрать с глаз»,
+    и половинчато это делать нельзя: пока рамка на странице оставалась, а
+    счётчики в шапке считали убранное наравне с остальным, страница выглядела
+    так же занято, как до уборки, и разобрать её было невозможно.
+
+    Поэтому здесь работаем только с актуальными замечаниями: рамки, счётчики и
+    подсветка по клику. Сами записи из pageComments не выбрасываем — панель
+    показывает их в своей группе «Решено», и вернуть замечание в работу можно
+    оттуда.
+  */
+  const activeComments = React.useMemo(
+    () => pageComments.filter((g) => !isClosed(g.rec)),
+    [pageComments],
+  );
+
+  /*
     Сколько замечаний этой страницы уже разобрано — для счётчика в шапке.
     Замечание, на которое клиент ответил, сюда не попадает: разговор по нему
     продолжается, и считать его закрытым рано.
   */
   const commentsDone = React.useMemo(
-    () => pageComments.filter((g) => commentState(g.rec) === "done").length,
-    [pageComments],
+    () => activeComments.filter((g) => commentState(g.rec) === "done").length,
+    [activeComments],
   );
 
-  /** Замечания, на которые клиент ответил и ждёт нашей правки. */
+  /** Замечания, на которые клиент ответил и ждут нашей правки. */
   const commentsRound = React.useMemo(
-    () => pageComments.filter((g) => commentState(g.rec) === "round").length,
-    [pageComments],
+    () => activeComments.filter((g) => commentState(g.rec) === "round").length,
+    [activeComments],
   );
 
   /** Замечания с решением дизайнера, но ещё без правки — очередь работы. */
   const commentsToDo = React.useMemo(
     () =>
-      pageComments.filter(
+      activeComments.filter(
         (g) =>
           (g.rec.note || "").trim() &&
           !appliedFor(g.id) &&
           !g.rec.resolved &&
           !g.rec.skipped,
       ).length,
-    [pageComments],
+    [activeComments],
   );
 
   const commentFrames = React.useMemo<CommentFrame[]>(
     () =>
-      pageComments.map((g) => ({
+      activeComments.map((g) => ({
         id: g.id,
         paths: g.paths,
         /*
           Состояние считаем там же, где его показывает список (commentState), чтобы
           рамка на странице и карточка в панели не разошлись.
         */
-        /*
-          Убранное с глаз показываем бирюзовой рамкой: на странице оно всё ещё
-          есть, но в очереди работы его больше нет.
-        */
-        state: isClosed(g.rec) ? "closed" : FRAME_STATE[commentState(g.rec)],
+        state: FRAME_STATE[commentState(g.rec)],
         snapshot: g.rec.original,
         label: g.rec.author || "комментарий",
       })),
-    [pageComments],
+    [activeComments],
   );
 
   /*
@@ -754,16 +766,16 @@ function SiteMode({
       а если он не совпал ни с одним замечанием — чиним привязку тем же
       способом, что и рамки.
     */
-    const byPath = pageComments.find((g) => g.paths.includes(selected));
+    const byPath = activeComments.find((g) => g.paths.includes(selected));
     const hit =
       byPath ??
       (rightBox
-        ? pageComments.find((g) =>
+        ? activeComments.find((g) =>
             resolveAnchor(rightBox, g.paths, g.rec.original).includes(selected),
           )
         : undefined);
     setActiveComment(hit ? hit.id : null);
-  }, [selected, pageComments, rightBox]);
+  }, [selected, activeComments, rightBox]);
 
   /** Один комментарий на всё выделение: адреса блоков едут в id через плюс. */
   const addComment = React.useCallback(
@@ -1113,7 +1125,7 @@ function SiteMode({
         <section className="flex min-h-0 flex-col">
           <div className="flex shrink-0 items-center gap-2 border-b bg-muted/40 px-3 py-2">
             <span className="text-xs font-medium text-muted-foreground">
-              Комментарии{pageComments.length ? ` · ${pageComments.length}` : ""}
+              Комментарии{activeComments.length ? ` · ${activeComments.length}` : ""}
             </span>
             {/*
               Сколько замечаний страницы уже разобрано. Без этой цифры состояние
@@ -1122,7 +1134,7 @@ function SiteMode({
             */}
             {commentsDone > 0 && (
               <span className="rounded bg-[color:var(--comment-applied)] px-1.5 py-0.5 text-[10px] leading-none text-white">
-                сделано {commentsDone} из {pageComments.length}
+                сделано {commentsDone} из {activeComments.length}
               </span>
             )}
             {/*
