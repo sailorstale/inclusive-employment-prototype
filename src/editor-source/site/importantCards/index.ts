@@ -11,6 +11,16 @@ import { step2Cards } from "./step2";
 import { step3Cards } from "./step3";
 import { ngoStartCards } from "./ngoStart";
 import { ngoAudienceCards } from "./ngoAudience";
+import { ngoCandidatesCards } from "./ngoCandidates";
+import { ngoGuidanceCards } from "./ngoGuidance";
+import { step5Cards } from "./step5";
+import { ngoPsychologyCards } from "./ngoPsychology";
+import { ngoVacanciesCards } from "./ngoVacancies";
+import { ngoResumeCards } from "./ngoResume";
+import { ngoEmployersCards } from "./ngoEmployers";
+import { ngoTalksCards } from "./ngoTalks";
+import { ngoRoadmapCards } from "./ngoRoadmap";
+import { ngoScaleCards } from "./ngoScale";
 
 /*
   КАРТОЧКА ПО ЗАМЕЧАНИЮ КЛИЕНТА — блоки остаются на странице, но собираются в
@@ -46,6 +56,16 @@ const PAGES: PageCards[] = [
   step3Cards,
   ngoStartCards,
   ngoAudienceCards,
+  ngoCandidatesCards,
+  ngoGuidanceCards,
+  step5Cards,
+  ngoPsychologyCards,
+  ngoVacanciesCards,
+  ngoResumeCards,
+  ngoEmployersCards,
+  ngoTalksCards,
+  ngoRoadmapCards,
+  ngoScaleCards,
 ];
 
 /*

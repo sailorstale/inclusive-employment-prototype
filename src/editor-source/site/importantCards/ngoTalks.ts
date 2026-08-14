@@ -1,0 +1,29 @@
+import type { PageCards } from "./types";
+
+/*
+  «Разговор с работодателем» — /ngo/employers/talks, модуль m6-3.
+
+  КАРТОЧКИ «ВАЖНО» ПО ЗАМЕЧАНИЯМ КЛИЕНТА. На каждом из этих абзацев стоит
+  замечание «важное»: мысль подводит черту под разбором и обычным текстом
+  теряется между соседними абзацами. Жёлтая карточка с названием «Важно» её
+  выделяет.
+
+  Адрес блока — «страница::раздел::вид::отпечаток», он же виден в карте блоков
+  (/blocks). Блоки каждой карточки взяты по одному: клиент отметил ровно один
+  абзац, и захватывать соседние нельзя.
+*/
+export const ngoTalksCards: PageCards = {
+  page: "/ngo/employers/talks",
+  cards: [
+    /* «Задача первого контакта — не рассказать всё о программе и …» */
+    { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::3qenf4"], title: "Важно" },
+    /* «При этом важно не подменять кандидата там, где он может де…» */
+    { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::1g9cbi4"], title: "Важно" },
+    /* «При этом важно представлять кандидата через его навыки, оп…» */
+    { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::15hujfw"], title: "Важно" },
+    /* «Диагноз, медицинская история, особенности здоровья, семейн…» */
+    { blocks: ["/source/m6-3::kak-predstavit-kandidata-s-invalidnostyu-rabotod::paragraph::ur96bg"], title: "Важно" },
+    /* «Важно помнить, что отказ не всегда связан с принципиальной…» */
+    { blocks: ["/source/m6-3::chto-delat-esli-vam-otkazali::paragraph::1y4ni9y"], title: "Важно" },
+  ],
+};
