@@ -12,6 +12,15 @@ import { step2Edits } from "./step2";
 import { step3Edits } from "./step3";
 import { ngoStartEdits } from "./ngoStart";
 import { ngoAudienceEdits } from "./ngoAudience";
+import { ngoTalksEdits } from "./ngoTalks";
+import { ngoRoadmapEdits } from "./ngoRoadmap";
+import { ngoFundingEdits } from "./ngoFunding";
+import { ngoScaleEdits } from "./ngoScale";
+import { ngoInterviewEdits } from "./ngoInterview";
+import { ngoEmployersEdits } from "./ngoEmployers";
+import { ngoCandidatesEdits } from "./ngoCandidates";
+import { ngoGuidanceEdits } from "./ngoGuidance";
+import { step5Edits } from "./step5";
 
 /*
   ПРАВКИ ПО ЗАМЕЧАНИЯМ КЛИЕНТА, КОТОРЫЕ НЕ УМЕЩАЮТСЯ В «УБРАТЬ БЛОК».
@@ -57,6 +66,15 @@ export const PAGES: PageEdits[] = [
   step3Edits,
   ngoStartEdits,
   ngoAudienceEdits,
+  ngoTalksEdits,
+  ngoRoadmapEdits,
+  ngoFundingEdits,
+  ngoScaleEdits,
+  ngoInterviewEdits,
+  ngoEmployersEdits,
+  ngoCandidatesEdits,
+  ngoGuidanceEdits,
+  step5Edits,
 ];
 
 /*
