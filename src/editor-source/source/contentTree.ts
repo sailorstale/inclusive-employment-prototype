@@ -701,6 +701,22 @@ const capitalizeFirst = (t: string) =>
   t.replace(/^\s*(\p{Ll})/u, (m, c: string) => m.replace(c, c.toUpperCase()));
 
 /*
+  ОСТАТОК ПОСЛЕ ВЫНЕСЕННОГО ЗАГОЛОВКА — замечания клиента с «Разговора с
+  работодателем»: «убрать запятую в начале», шесть штук подряд.
+
+  В источнике абзац устроен так: «**Если работодатель пока не готов обсуждать
+  конкретную вакансию**, предложите консультацию…». Жирное начало уходит в
+  заголовок карточки, а тело остаётся с запятой впереди — обрубок посреди
+  предложения.
+
+  Поэтому сначала срезаем знак препинания, оставшийся от разрыва, и только потом
+  поднимаем первую букву. Порядок важен: пока впереди стоит запятая, первая
+  буква для capitalizeFirst не первая, и текст оставался бы со строчной.
+*/
+const bodyAfterTitle = (t: string) =>
+  capitalizeFirst(t.replace(/^\s*[,;:—–-]+\s*/u, "").trim());
+
+/*
   «Слово Важно убрать в начале предложения», «Слово Суть убрать» — источник
   начинает абзац служебным словом-ярлыком («Важно: …», «Суть — …»), которое в
   карточке дублирует заголовок. Убираем это слово ТОЛЬКО из начала текста:
@@ -762,7 +778,7 @@ const splitTitleBody = (text: string): { title?: string; body: string } => {
     if (rest.trim())
       return {
         title: bold[1].trim().replace(/[.:;]+$/, ""),
-        body: capitalizeFirst(rest.trim()),
+        body: bodyAfterTitle(rest),
       };
     return { body: text.trim() };
   }
@@ -2555,13 +2571,13 @@ export function buildDoc(
             const rest = labelOnly
               ? ""
               : movedLead
-                ? capitalizeFirst(after)
+                ? bodyAfterTitle(after)
                 : forced
                   ? lead && !after.trim()
                     ? lead[1]
                     : t
                   : lead
-                  ? capitalizeFirst(after)
+                  ? bodyAfterTitle(after)
                   : it.b.kind === "heading"
                     ? ""
                     : t;
