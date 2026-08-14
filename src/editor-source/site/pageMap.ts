@@ -776,6 +776,20 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "chto-govoryat-lyudi-s-invalidnostyu-4",
         "chto-govorit-biznes-6",
       ],
+      /*
+        Пять заголовков убраны из меню справа — замечания клиента от 12–14
+        августа 2026 (msprc4ctt3k8, msprc8oud8zt, msprfehfx6qm, msprfkdi5yh5,
+        msprfpmwonpq) и пометка дизайнера «H4» к каждому. Это разборы отдельных
+        случаев внутри своих разделов: две крайности помощи новичку и три
+        причины, по которым адаптация идёт не по плану.
+      */
+      level: {
+        "razumnaya-adaptaciya": "H4",
+        giperopeka: "H4",
+        "peresmotr-formata-i-usloviy-raboty": "H4",
+        "izmenenie-zhiznennyh-prioritetov": "H4",
+        "perezhivaniya-svyazannye-s-priobretennoy-invalid": "H4",
+      },
     },
   },
   {
@@ -880,6 +894,15 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "kak-zavershit-pervuyu-vstrechu",
         "podvedem-itog",
       ],
+      /*
+        Два заголовка убраны из меню справа — замечания клиента от 14 августа
+        2026 (msogt9847b04, msogtdyzgfht) и пометка дизайнера «H4» к обоим. Оба
+        подводят черту под уже описанной встречей, своей темы не открывают.
+      */
+      level: {
+        "chto-vazhno-ponyat-po-itogam-intervyu": "H4",
+        "kakim-mozhet-byt-sleduyuschiy-shag": "H4",
+      },
     },
   },
   {
@@ -905,7 +928,18 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         один и тот же заголовок, метка «H4»). Строка продолжает разговор о том,
         что такое профориентация, и отдельной темы страницы не открывает.
       */
-      level: { "kogda-neobhodima-proforientaciya": "H4" },
+      /*
+        Ещё три заголовка убраны из меню справа — замечания клиента от 14 августа
+        2026 (msq3w8os3gj8, msq3wissww4s, msq3yb703w0l), пометка «H4» к каждому.
+        «Теоретическая часть» и «Практическая часть» делят одно упражнение,
+        «Фиксируйте результаты наблюдений» — совет внутри разбора вакансий.
+      */
+      level: {
+        "kogda-neobhodima-proforientaciya": "H4",
+        "teoreticheskaya-chast": "H4",
+        "prakticheskaya-chast": "H4",
+        "fiksiruyte-rezultaty-nablyudeniy": "H4",
+      },
     },
   },
   {
@@ -1012,6 +1046,17 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "shag-8-posle-sobesedovaniya",
         "podvedem-itogi-3",
       ],
+      /*
+        Три заголовка убраны из меню справа — замечания клиента от 14 августа
+        2026 (msq4qjyljn21, msq4qo9lim96, msq4qtlhvpvq) и пометка дизайнера «H4»
+        к каждому. Все три — части одного раздела «После собеседования»: сначала
+        разбор встречи, потом два возможных исхода.
+      */
+      level: {
+        "razbor-vstrechi": "H4",
+        "esli-prishel-otkaz": "H4",
+        "esli-kandidat-poluchil-predlozhenie-o-rabote": "H4",
+      },
     },
   },
   {
@@ -1148,21 +1193,25 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     outline: {
       sections: [
         "s-chego-nachinaetsya-rabota",
-        "ishodnaya-situaciya",
-        "celi",
-        "zadachi-dlya-resheniya",
         "kak-mozhet-vyglyadet-dorozhnaya-karta",
-        "razberem-kazhdyy-blok",
         "podvedem-itogi-6",
       ],
       /*
-        Формат работы и параллельные процессы разделами быть перестали —
-        замечания дизайнера от 14 августа 2026 (mssubjoq66y1, mssubszwl2tk),
-        в обоих одна метка «H4». Это не новые темы карты, а примечания к тому,
-        как её вести, поэтому из меню справа они уходят и остаются мелкими
-        подзаголовками в конце разбора.
+        Шесть заголовков разделами быть перестали — замечания от 14 августа 2026
+        (mssotsh9q9mg, mssotv2bkith, mssou1k2tc30, mssou7pdtyxz, mssubjoq66y1,
+        mssubszwl2tk), в каждом метка «H4».
+
+        «Исходная ситуация», «Цели» и «Задачи для решения» — три части одного
+        разговора о том, с чего начинается работа. «Разберём каждый блок»,
+        «Индивидуальный или групповой формат работы» и «Параллельные процессы»
+        объясняют, как вести уже показанную карту. Ни одно из шести не открывает
+        новой темы страницы, поэтому в меню справа их больше нет.
       */
       level: {
+        "ishodnaya-situaciya": "H4",
+        celi: "H4",
+        "zadachi-dlya-resheniya": "H4",
+        "razberem-kazhdyy-blok": "H4",
         "individualnyy-ili-gruppovoy-format-raboty": "H4",
         "parallelnye-processy-chto-vazhno-delat-odnovreme": "H4",
       },
@@ -1195,6 +1244,13 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "kak-podelitsya-svoey-ekspertizoy",
         "podvedem-itogi-7",
       ],
+      /*
+        «Чек-лист готовности команды» убран из меню справа — замечание клиента от
+        14 августа 2026 (mssp8f2a7q5u) и пометка дизайнера «H4». В источнике он и
+        стоит четвёртым уровнем: это список вопросов внутри разговора о том, как
+        оценить готовность команды.
+      */
+      level: { "chek-list-gotovnosti-komandy": "H4" },
     },
   },
   {
@@ -1212,6 +1268,19 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "struktura-zayavki",
         "podvedem-itogi-8",
       ],
+      /*
+        Четыре принципа заявки убраны из меню справа — замечания клиента от
+        14 августа 2026 (msspbxz74g6b, msspc76ob1uu, msspccp9h38y, msspchgkbk5p)
+        и пометка дизайнера «H4» к каждому. В источнике все четыре и стоят
+        четвёртым уровнем: пересчёт от раздела поднимал их до третьего, и они
+        попадали в меню.
+      */
+      level: {
+        "prostota-yazyka": "H4",
+        "logicheskaya-cepochka": "H4",
+        "opora-na-fakty": "H4",
+        "gotovnost-predostavit-otchetnost": "H4",
+      },
     },
   },
 ];
