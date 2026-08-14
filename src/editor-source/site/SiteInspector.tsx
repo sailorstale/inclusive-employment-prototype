@@ -737,9 +737,33 @@ function SiteMode({
   */
   React.useEffect(() => {
     if (!selected) return;
-    const hit = pageComments.find((g) => g.paths.includes(selected));
+    /*
+      АДРЕС БЛОКА МОГ СЪЕХАТЬ. Записанный в замечании адрес — это место блока в
+      дереве страницы на день, когда клиент писал. С тех пор со страницы убрали
+      строки и абзацы по другим замечаниям, и всё, что стояло ниже, сдвинулось:
+      на «Как устроен наём» из 21 замечания записанный адрес не находится уже у
+      двенадцати.
+
+      Рамку на странице это не ломало: слой рамок чинит привязку по снимку
+      текста (resolveAnchor). А вот подсветка карточки ломалась — она сверяла
+      сегодняшний адрес с записанным, и по половине замечаний клик проходил
+      мимо. Со стороны это выглядело так, будто связь блока с комментарием
+      пропала.
+
+      Поэтому сначала пробуем записанный адрес (это быстро и чаще всего верно),
+      а если он не совпал ни с одним замечанием — чиним привязку тем же
+      способом, что и рамки.
+    */
+    const byPath = pageComments.find((g) => g.paths.includes(selected));
+    const hit =
+      byPath ??
+      (rightBox
+        ? pageComments.find((g) =>
+            resolveAnchor(rightBox, g.paths, g.rec.original).includes(selected),
+          )
+        : undefined);
     setActiveComment(hit ? hit.id : null);
-  }, [selected, pageComments]);
+  }, [selected, pageComments, rightBox]);
 
   /** Один комментарий на всё выделение: адреса блоков едут в id через плюс. */
   const addComment = React.useCallback(
