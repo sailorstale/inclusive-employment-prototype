@@ -366,6 +366,24 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       break;
     }
 
+    /*
+      «Читайте также» ведёт ВНУТРИ своего раздела (решение Мити от 13 августа
+      2026). Человек читает трек подряд, как инструкцию, и карточка в чужой
+      раздел выбивает его из этого чтения. Раздел — первый кусок адреса:
+      /general, /companies, /ngo.
+    */
+    case "Read More Item": {
+      const href = str(n.href);
+      const track = (s: string) => s.split("/")[1] ?? "";
+      if (href.startsWith("/") && track(href) !== track(page))
+        add(
+          "читайте-также-наружу",
+          "medium",
+          `Карточка ведёт в раздел «${track(href)}», а страница из раздела «${track(page)}»`,
+        );
+      break;
+    }
+
     case "Person Item": {
       if (!str(n.name)) add("человек-без-имени", "high", "У карточки человека нет имени");
       const photo = str(n.photo);

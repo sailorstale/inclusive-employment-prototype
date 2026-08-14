@@ -61,11 +61,21 @@ const RELATED: Record<string, string[]> = {
   ],
   "/general/team": ["/general/how", "/general/start", "/general/legal/contract"],
 
-  // Внутри трека ведём читателя по шагам: следующий, через один и предыдущий.
+  /*
+    Внутри трека ведём читателя по шагам: следующий, через один и предыдущий.
+
+    ВСЕ ТРИ КАРТОЧКИ — СВОЕГО РАЗДЕЛА (решение Мити от 13 августа 2026). Раньше
+    у трёх шагов третья ссылка уводила в «Основы»: с первого шага — на «Как
+    устроен наём», с пятого — на «Этику и коммуникацию», с шестого — на «Квоты
+    и господдержку». Человек читает трек подряд, как инструкцию, и карточка в
+    чужой раздел выбивала его из этого чтения.
+
+    У первого шага предыдущего нет, поэтому там три следующих подряд.
+  */
   "/companies/hire/step-1": [
     "/companies/hire/step-2",
     "/companies/hire/step-3",
-    "/general/how",
+    "/companies/hire/step-4",
   ],
   "/companies/hire/step-2": [
     "/companies/hire/step-3",
@@ -85,12 +95,17 @@ const RELATED: Record<string, string[]> = {
   "/companies/hire/step-5": [
     "/companies/hire/step-6",
     "/companies/hire/step-4",
-    "/general/team",
+    "/companies/hire/step-3",
   ],
+  /*
+    Шестой шаг последний, поэтому первой карточкой возвращаем читателя к началу
+    трека: затраты считают, когда весь путь уже понятен, и естественный
+    следующий ход — пройти его ещё раз осознанно.
+  */
   "/companies/hire/step-6": [
     "/companies/hire/step-1",
     "/companies/hire/step-5",
-    "/general/legal/quotas",
+    "/companies/hire/step-4",
   ],
 
   "/ngo/start": ["/ngo/audience", "/ngo/candidates", "/ngo/employers"],
@@ -130,8 +145,14 @@ const RELATED: Record<string, string[]> = {
     "/ngo/candidates/resume",
     "/ngo/candidates/vacancies",
   ],
-  "/ngo/employers": ["/ngo/employers/talks", "/ngo/support", "/general/how"],
-  "/ngo/employers/talks": ["/ngo/support", "/ngo/employers", "/general/how"],
+  /*
+    Обе страницы про работодателей раньше третьей карточкой уводили в «Основы»,
+    на «Как устроен наём». Теперь ведут по своему треку: с поиска работодателей
+    — назад к аудитории программы (с кем работаем, тем и предлагаем людей), с
+    разговора — вперёд к дорожной карте, которой этот разговор и заканчивается.
+  */
+  "/ngo/employers": ["/ngo/employers/talks", "/ngo/support", "/ngo/audience"],
+  "/ngo/employers/talks": ["/ngo/support", "/ngo/employers", "/ngo/roadmap"],
   "/ngo/support": ["/ngo/roadmap", "/ngo/scale", "/ngo/employers/talks"],
   "/ngo/roadmap": ["/ngo/scale", "/ngo/funding", "/ngo/support"],
   "/ngo/scale": ["/ngo/funding", "/ngo/roadmap", "/ngo/start"],
