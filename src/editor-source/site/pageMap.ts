@@ -703,6 +703,48 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "prakticheskoe-zadanie-dlya-rabotodateley",
       ],
       inline: ["chto-govorit-biznes-5"],
+      /*
+        ТРИ ДЛИННЫХ ПЕРЕЧНЯ УБРАНЫ ИЗ МЕНЮ СПРАВА — замечания дизайнера от
+        14 августа 2026 (mssqds86t53f, mssqjy1b9el5, mssqiob8p0n9), во всех трёх
+        одна метка «H4».
+
+        Где искать кандидатов — пять источников, как готовить собеседование —
+        десять правил, как оформлять — восемь советов. Пересчёт от раздела давал
+        всем двадцати трём третий уровень, а третий уровень идёт в меню справа:
+        оглавление страницы становилось списком из тридцати с лишним строк, и
+        разделы в нём терялись.
+
+        Четвёртый уровень оставляет строки заголовками — они видны на странице и
+        приходят заголовками в выгрузку, — но в меню не идут.
+      */
+      level: {
+        // «Где искать кандидатов с инвалидностью» — пять источников поиска.
+        nko: "H4",
+        "rabotnye-sayty": "H4",
+        "sluzhby-zanyatosti-naseleniya": "H4",
+        "vuzy-i-kolledzhi": "H4",
+        "professionalnye-soobschestva-i-socialnye-seti": "H4",
+        // «Как подготовить и провести собеседование» — десять правил подряд.
+        "utochnite-kakoy-format-sobesedovaniya-udoben-kan": "H4",
+        "opredelite-kanal-svyazi": "H4",
+        "obsudite-format-vstrechi": "H4",
+        "podgotovte-materialy": "H4",
+        "budte-gotovy-k-prisutstviyu-soprovozhdayuschego": "H4",
+        "adaptiruyte-kommunikaciyu": "H4",
+        "ocenivayte-kompetencii-a-ne-osobennosti-zdorovya": "H4",
+        "govorite-prosto-i-ponyatno": "H4",
+        "budte-gotovy-k-dopolnitelnym-voprosam": "H4",
+        "proforientacionnaya-ekskursiya": "H4",
+        // «Оформление сотрудников с инвалидностью» — восемь советов подряд.
+        "sovet-1-obyasnite-poryadok-oformleniya": "H4",
+        "sovet-2-ne-zaprashivayte-lishnie-dokumenty": "H4",
+        "sovet-3-obsuzhdayte-ne-diagnoz-a-usloviya-raboty": "H4",
+        "sovet-4-srazu-fiksiruyte-vazhnye-dogovorennosti": "H4",
+        "sovet-5-naznachte-kontaktnoe-lico": "H4",
+        "sovet-6-esli-kandidat-prishel-s-kuratorom-nko-za": "H4",
+        "sovet-7-ne-zatyagivayte-process-bez-obyasneniy": "H4",
+        "sovet-8-spokoyno-otvechayte-na-voprosy": "H4",
+      },
     },
   },
   {
@@ -857,6 +899,13 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "kak-provodit-proforientaciyu-poshagovyy-plan-dly",
         "osobennosti-proforientacii-lyudey-s-mentalnoy-in",
       ],
+      /*
+        «Когда необходима профориентация» ушло из меню справа — замечания от
+        14 августа 2026 (msoh9p2hzykc клиента и msssm7z8lb5h дизайнера, оба про
+        один и тот же заголовок, метка «H4»). Строка продолжает разговор о том,
+        что такое профориентация, и отдельной темы страницы не открывает.
+      */
+      level: { "kogda-neobhodima-proforientaciya": "H4" },
     },
   },
   {
@@ -1013,6 +1062,19 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "chto-delat-esli-vam-otkazali",
         "podvedem-itogi-5",
       ],
+      /*
+        Два заголовка убраны из меню справа — замечания клиента от 14 августа
+        2026 (msq7n14bhm97, msq7rx5yyxrc) и метка дизайнера «H4» к обоим.
+
+        «Ситуация: работодатель говорит…» — разбор одного возражения внутри
+        раздела о возражениях, а в меню он занимал строку длиннее самого
+        раздела. «Структура итогового письма» — часть письма, о котором идёт
+        речь строкой выше.
+      */
+      level: {
+        "situaciya-rabotodatel-govorit-my-boimsya-chto-ko": "H4",
+        "struktura-itogovogo-pisma": "H4",
+      },
     },
   },
   {
@@ -1032,13 +1094,42 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       "chto-dalshe-krizis-menedzhment-na-rabochem-meste",
       "podvedem-itog-2",
     ],
+    /*
+      ТРИ ШАГА СОПРОВОЖДЕНИЯ УШЛИ ПОД «РОЛЬ НКО» — замечания клиента от
+      14 августа 2026 (mssoi56m05n2, mssoizsventi, msson7h4tl0b, mssopc257obo,
+      mssoqvtvbcu5) и решение дизайнера: H2 первым двум, H3 трём шагам.
+
+      Было так: раздел «Два формата сопровождения» тянулся до конца главы и
+      держал внутри себя две большие темы, а медкомиссия, договор и выход на
+      работу стояли разделами вровень с ним. Из меню справа читатель не мог
+      понять, что эти три шага — части работы НКО при трудоустройстве.
+
+      Стало так: «Сопровождение работодателя» и «Роль НКО в процессе адаптации»
+      сами стали разделами, а три шага — подзаголовками внутри «Роли НКО».
+    */
     outline: {
       sections: [
         "dva-formata-soprovozhdeniya",
+        "soprovozhdenie-rabotodatelya-pri-trudoustroystve",
+        "rol-nko-v-processe-adaptacii",
+        "chto-dalshe-krizis-menedzhment-na-rabochem-meste",
+      ],
+      /*
+        «Что может сделать сотрудник НКО при прохождении медкомиссии» и «Для
+        людей с ментальной инвалидностью» стоят в источнике вровень с самой
+        медкомиссией, хотя это её части. Пока медкомиссия была разделом, разница
+        держалась на разделе; теперь она подзаголовок, и без выравнивания её
+        части встали бы с ней на одну ступень.
+
+        Договор и выход на работу названы здесь по другой причине: они тоже
+        стоят вровень с медкомиссией, но её частями не являются. Группу
+        закрывает только заголовок выше открывшего, поэтому без этой записи оба
+        уехали бы вниз вместе с частями медкомиссии.
+      */
+      nest: [
         "shag-1-proyti-medkomissiyu",
         "shag-2-oformlenie-dogovora",
         "shag-3-vyhod-na-rabotu-soprovozhdenie-v-pervye-n",
-        "chto-dalshe-krizis-menedzhment-na-rabochem-meste",
       ],
     },
   },
@@ -1062,10 +1153,19 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
         "zadachi-dlya-resheniya",
         "kak-mozhet-vyglyadet-dorozhnaya-karta",
         "razberem-kazhdyy-blok",
-        "individualnyy-ili-gruppovoy-format-raboty",
-        "parallelnye-processy-chto-vazhno-delat-odnovreme",
         "podvedem-itogi-6",
       ],
+      /*
+        Формат работы и параллельные процессы разделами быть перестали —
+        замечания дизайнера от 14 августа 2026 (mssubjoq66y1, mssubszwl2tk),
+        в обоих одна метка «H4». Это не новые темы карты, а примечания к тому,
+        как её вести, поэтому из меню справа они уходят и остаются мелкими
+        подзаголовками в конце разбора.
+      */
+      level: {
+        "individualnyy-ili-gruppovoy-format-raboty": "H4",
+        "parallelnye-processy-chto-vazhno-delat-odnovreme": "H4",
+      },
     },
   },
   {

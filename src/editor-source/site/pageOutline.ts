@@ -73,6 +73,24 @@ export type PageOutline = {
     исправляем, а не подгоняем под внешний вид.
   */
   nest?: string[];
+  /*
+    Уровень заголовка, названный решением дизайнера: якорь → уровень. Отменяет
+    пересчёт от раздела для этого одного заголовка.
+
+    Нужно там, где дизайнер отвечает на замечание клиента одной меткой — «H4».
+    Пересчёт даёт таким заголовкам третий уровень, а третий уровень идёт в меню
+    справа: получается, что «убрать из меню» и «сделать помельче» пересчётом не
+    выполнить. Снять заголовок совсем (untype) — не то же самое: строка перестаёт
+    быть заголовком и в выгрузке для разработчика приходит абзацем.
+
+    Части заголовка едут за ним: сдвиг запоминается той же стопкой, что и
+    пересчёт (makeDemoter), поэтому подзаголовки внутри опускаются на столько же.
+
+    Разделу уровень так не задать: он всегда H2. Заголовок, названный и здесь, и
+    в sections, останется разделом — чтобы опустить его, надо убрать его из
+    sections.
+  */
+  level?: Record<string, HeadingLevel>;
 };
 
 const LEVEL: Record<HeadingLevel, number> = { H2: 2, H3: 3, H4: 4, H5: 5 };
@@ -100,11 +118,16 @@ const isHeading = (n: Node): n is HeadingNode => n.component === "Heading";
 */
 function makeDemoter(base: number) {
   const stack: { level: number; extra: number }[] = [];
-  return (level: number): HeadingLevel => {
+  /*
+    forced — уровень, названный картой страницы (см. level в PageOutline). Он
+    заменяет пересчитанный, но в стопку кладётся тем же порядком: значит части
+    заголовка опустятся ровно на столько же, на сколько опустился он сам.
+  */
+  return (level: number, forced?: HeadingLevel): HeadingLevel => {
     while (stack.length && stack[stack.length - 1].level >= level) stack.pop();
     const inherited = stack.length ? stack[stack.length - 1].extra : 0;
     const natural = 2 + (level - base) + inherited;
-    const final = levelByNumber(natural);
+    const final = forced ?? levelByNumber(natural);
     stack.push({ level, extra: LEVEL[final] - (2 + (level - base)) });
     return final;
   };
@@ -139,6 +162,7 @@ export function recutSections(
   const wanted = new Set(outline.sections);
   const inline = new Set(outline.inline ?? []);
   const dropped = new Set(outline.drop ?? []);
+  const forced = outline.level ?? {};
   const intro: Node[] = [];
   const sections: SectionNode[] = [];
   let cur: SectionNode | null = null;
@@ -175,7 +199,13 @@ export function recutSections(
              не должна сдвигать уровни следующих за ней подзаголовков.
           */
           { ...node, level: "H3" }
-        : { ...node, level: demote(LEVEL[node.level]) };
+        : {
+            ...node,
+            level: demote(
+              LEVEL[node.level],
+              node.anchor ? forced[node.anchor] : undefined,
+            ),
+          };
     if (cur) cur.children.push(next);
     else intro.push(next);
   }
