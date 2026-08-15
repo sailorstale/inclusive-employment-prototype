@@ -1,5 +1,6 @@
 import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Directive } from "@/editor-source/directives";
+import { blockRefId } from "@/editor-source/source/blockId";
 
 /*
   ЛЕСА КУРСА — блоки, которые на сайте лишние. Это не правка текста, а выбор
@@ -272,6 +273,51 @@ export const CUT_BY_CLIENT: CutRule[] = [
   Сверка `npm run check:review` этот список пока не проверяет: она считает
   попадания по текстовым блокам, а здесь текста нет.
 */
+/*
+  БЛОКИ, СНЯТЫЕ ПО АДРЕСУ, А НЕ ПО ТЕКСТУ. Отдельно от правил выше, потому что
+  их текст встречается по всему сайту и правило по нему снесло бы чужие блоки
+  заодно.
+
+  Адрес — «страница::раздел::вид::отпечаток», тот же, что в карте блоков
+  (/blocks), и считается он по ЧИСТОМУ тексту блока в источнике. Значит для
+  блока, который правится где-то ещё, сюда идёт ИСХОДНЫЙ адрес: снятие
+  происходит раньше правок текста.
+
+  Сверка `npm run check:review` этот список не проверяет: она считает попадания
+  по текстовым правилам. Опечатка в адресе тихая — блок просто останется на
+  странице, поэтому после правки смотрим саму страницу.
+*/
+export const CUT_BY_ID: string[] = [
+  /*
+    «Например:» внутри карточки «Пример» на «Выходить на работодателей» —
+    замечание Мити mst1okynxgqi («Убрать»). Строка стоит первой в карточке
+    перед тремя формулировками ориентира и объявляет то, что и так видно по
+    названию карточки.
+
+    Текстом её не взять: «Например:» встречается в источнике семнадцать раз.
+  */
+  "/source/m6-3::kak-nayti-rabotodateley::paragraph::14qlj30",
+  /*
+    Заголовок «Пример» перед двумя карточками-примерами там же — замечание Мити
+    mst1r6k0nnxc («удалить»). Обе карточки теперь называются «Пример» сами
+    (см. importantCards/ngoEmployers.ts), и заголовок над ними повторяет их
+    названия.
+  */
+  "/source/m6-3::kak-nayti-rabotodateley::h3::1vmly8z",
+  /*
+    Заголовок «Пример» перед историей про моногород на «Развивать и
+    масштабировать» — замечание Фроловой mssp1ay3k6m0: «Убрать оформление как
+    пример, убрать заголовок „пример“ и в начале текста добавить „Например, “».
+
+    Снятие заголовка делает сразу две вещи. Сам заголовок уходит со страницы и
+    из оглавления справа. И карточка рассыпается: пометка дизайнера держит
+    ровно два блока — заголовок и абзац, — а цепочка из двух блоков без первого
+    уже не совпадает, и абзац выходит на страницу обычным текстом. Ровно этого
+    и просили.
+  */
+  "/source/m6-4::masshtabirovanie-i-ustoychivost-kak-vyrasti-ne-t::h3::1vmly8z",
+];
+
 export const CUT_IMAGES: string[] = [
   /*
     Схема с семью этапами найма на «Шаге 1». Она дублирует сам раздел: под ней
@@ -281,8 +327,10 @@ export const CUT_IMAGES: string[] = [
   "/source-media/m5/img1.png",
 ];
 
-const isScaffold = (b: SourceBlock, directive?: Directive): boolean => {
+const isScaffold = (b: SourceBlock, id: string, directive?: Directive): boolean => {
+  // Заголовок h2 не снимаем никаким способом: по нему режется секция.
   if (b.kind === "heading" && b.level === 2) return false;
+  if (CUT_BY_ID.includes(id)) return true;
   if (b.kind === "image") return CUT_IMAGES.includes(b.src);
   const text = (b as { text?: string }).text;
   if (typeof text !== "string") return false;
@@ -306,9 +354,12 @@ type DirectiveAt = (si: number, bi: number) => Directive | undefined;
 export function dropScaffold(
   sections: BlockSection[],
   at: DirectiveAt,
+  pathname: string,
 ): { sections: BlockSection[]; directiveAt: DirectiveAt } {
   const kept = sections.map((sec, si) =>
-    sec.blocks.flatMap((b, bi) => (isScaffold(b, at(si, bi)) ? [] : [bi])),
+    sec.blocks.flatMap((b, bi) =>
+      isScaffold(b, blockRefId(b, pathname, sec.anchor), at(si, bi)) ? [] : [bi],
+    ),
   );
   return {
     sections: sections.map((sec, si) => ({

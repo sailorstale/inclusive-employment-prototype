@@ -141,6 +141,7 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
     const cleaned = dropScaffold(
       sourceSections,
       placeDirectives(sourceSections, pathname, page.module, directives),
+      pathname,
     );
     const { sections, directiveAt } = applyClientEdits(
       cleaned.sections,

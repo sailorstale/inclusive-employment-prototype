@@ -48,6 +48,13 @@ import type { Directive } from "@/editor-source/directives";
   укорачивается до трёх абзацев, а вывод выходит наружу и подводит к
   следующему разделу.
 
+  Пример про моногород на «Развивать и масштабировать» — замечание Фроловой от
+  15 августа 2026: «Не делать оформление карточкой, просто текст с заголовком
+  Например». Бежевая карточка «Пример» держала два блока — заголовок и сам
+  абзац. Абзац хвостовой, поэтому снимается здесь; заголовок уходит со страницы
+  совсем (CUT_BY_ID в dropScaffold.ts). В карточке не остаётся ни одного блока,
+  и она не рисуется вовсе — от неё остаётся обычный текст, как и просили.
+
   Адресуем блок его собственным id, а не текстом: id у блока стабильный, и
   правка формулировки в источнике не расклеит эту привязку.
 */
@@ -61,6 +68,7 @@ const OUT_OF_CARD = new Set<string>([
   "/source/m4::chto-govorit-biznes::paragraph::186ccr1",
   "/source/m4::chto-govorit-biznes::paragraph::1fp0ol3",
   "/source/m6-2::psihologicheskaya-podderzhka-soiskatelya-s-inval::paragraph::lfmbtk",
+  "/source/m6-4::masshtabirovanie-i-ustoychivost-kak-vyrasti-ne-t::paragraph::1fgvd5g",
 ]);
 
 /*

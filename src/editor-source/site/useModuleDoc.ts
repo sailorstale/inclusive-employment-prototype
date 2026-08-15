@@ -138,6 +138,7 @@ export function useModuleDoc(moduleId: string): Doc | null {
     const cleaned = dropScaffold(
       sourceSections,
       placeDirectives(sourceSections, pathname, moduleId, directives),
+      pathname,
     );
     const edited = applyClientEdits(cleaned.sections, cleaned.directiveAt, pathname);
     // Карточки «Важно» — последними: они не трогают блоки, только говорят
