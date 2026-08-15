@@ -1,6 +1,6 @@
 # Иконки сайта
 
-Здесь 67 иконок — ровно те, что используются в коде прототипа.
+Здесь 71 иконок — ровно те, что используются в коде прототипа.
 
 **Папка собирается автоматически.** Команда: `npm run icons`. Руками сюда
 ничего не кладите и файлы не правьте — следующая сборка всё сотрёт.
@@ -23,6 +23,7 @@
 - Ban
 - Bold
 - Boxes
+- Brain
 - Briefcase
 - Building2
 - Camera
@@ -36,7 +37,9 @@
 - Cloud
 - Combine
 - Copy
+- CornerDownRight
 - Download
+- Ear
 - ExternalLink
 - Eye
 - FileText
@@ -51,18 +54,18 @@
 - Info
 - Italic
 - Landmark
+- LayoutGrid
 - Lightbulb
 - Link
 - ListChecks
 - Mail
 - MapPin
-- MessageCircle
-- MessageCirclePlus
 - MessageSquare
-- MessageSquarePlus
 - MessageSquareText
 - Minus
 - MonitorSmartphone
+- PanelLeftClose
+- PanelLeftOpen
 - Pencil
 - PencilLine
 - PenLine
@@ -73,6 +76,7 @@
 - Send
 - ShieldCheck
 - Sparkles
+- Speech
 - Tag
 - Target
 - Trash2

@@ -9,6 +9,7 @@ import { teamCards } from "./team";
 import { step1Cards } from "./step1";
 import { step2Cards } from "./step2";
 import { step3Cards } from "./step3";
+import { step4Cards } from "./step4";
 import { ngoStartCards } from "./ngoStart";
 import { ngoAudienceCards } from "./ngoAudience";
 import { step6Cards } from "./step6";
@@ -55,6 +56,7 @@ const PAGES: PageCards[] = [
   step1Cards,
   step2Cards,
   step3Cards,
+  step4Cards,
   ngoStartCards,
   ngoAudienceCards,
   step6Cards,
