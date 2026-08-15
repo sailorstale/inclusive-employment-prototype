@@ -19,8 +19,14 @@ const MENTAL = "/source/m6-2::osobennosti-proforientacii-lyudey-s-mentalnoy-in";
 export const ngoGuidanceCards: PageCards = {
   page: "/ngo/candidates/guidance",
   cards: [
-    /* «Важно не путать профориентацию с подбором вакансий.…» */
-    { blocks: ["/source/m6-2::chto-takoe-proforientaciya-i-kogda-ona-nuzhna::paragraph::16wdwo7"], title: "Важно" },
+    /*
+      «Не перепутайте профориентацию с подбором вакансий.»
+
+      Адрес НОВЫЙ: начало фразы переписано по замечанию (см. rewrite в
+      clientEdits/ngoGuidance.ts), а отпечаток блока считается по его чистому
+      тексту. Прежний адрес — …paragraph::16wdwo7.
+    */
+    { blocks: ["/source/m6-2::chto-takoe-proforientaciya-i-kogda-ona-nuzhna::paragraph::uuwe7v"], title: "Важно" },
     /* «Результат второго этапа: есть понимание, какие направления…» */
     { blocks: [`${PLAN}::paragraph::1721ag4`], title: "Важно" },
     /*
@@ -38,14 +44,17 @@ export const ngoGuidanceCards: PageCards = {
     { blocks: [`${PLAN}::paragraph::1qh2tx6`], title: "Важно" },
     /* «Результат этапа: одна или несколько гипотез стали понятнее…» */
     { blocks: [`${PLAN}::paragraph::c8890b`], title: "Важно" },
-    /* «Важно: экскурсия не обязывает соискателя соглашаться на ра…» */
-    { blocks: [`${PLAN}::paragraph::1c2pxlf`], title: "Важно" },
+    /* «Экскурсия не обязывает соискателя соглашаться на работу…» — адрес новый,
+       прежний …paragraph::1c2pxlf. */
+    { blocks: [`${PLAN}::paragraph::eqbnwu`], title: "Важно" },
     /* «При выборе гипотезы ориентируйтесь на то, что:…» */
     { blocks: [`${PLAN}::paragraph::8guri2`], title: "Важно" },
-    /* «При этом важно, чтобы подготовительный этап не превращался…» */
-    { blocks: [`${PLAN}::paragraph::7oku8d`], title: "Важно" },
-    /* «Важно: если человек пока не готов к трудоустройству, это н…» */
-    { blocks: [`${PLAN}::paragraph::1az3i5z`], title: "Важно" },
+    /* «Следите, чтобы подготовительный этап не превращался…» — адрес новый,
+       прежний …paragraph::7oku8d. */
+    { blocks: [`${PLAN}::paragraph::18ltqwa`], title: "Важно" },
+    /* «Если человек пока не готов к трудоустройству…» — адрес новый, прежний
+       …paragraph::1az3i5z. */
+    { blocks: [`${PLAN}::paragraph::3q8rk8`], title: "Важно" },
 
     /*
       ЦИТАТА ДЕНИСА РОЗЫ, ПЯТЬ БЛОКОВ — замечание клиента от 12 августа 2026:

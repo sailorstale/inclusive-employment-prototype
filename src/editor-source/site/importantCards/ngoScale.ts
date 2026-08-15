@@ -15,8 +15,14 @@ import type { PageCards } from "./types";
 export const ngoScaleCards: PageCards = {
   page: "/ngo/scale",
   cards: [
-    /* «Важно реалистично оценивать возможности организации и не б…» */
-    { blocks: ["/source/m6-4::masshtabirovanie-i-ustoychivost-kak-vyrasti-ne-t::paragraph::l0n59o"], title: "Важно" },
+    /*
+      «Реалистично оценивайте возможности организации…»
+
+      Адрес НОВЫЙ: начало фразы переписано по замечанию (см. rewrite в
+      clientEdits/ngoScale.ts), а отпечаток блока считается по его чистому
+      тексту. Прежний адрес — …paragraph::l0n59o.
+    */
+    { blocks: ["/source/m6-4::masshtabirovanie-i-ustoychivost-kak-vyrasti-ne-t::paragraph::1y7w3zz"], title: "Важно" },
     /* «Если внутренней экспертизы пока недостаточно, не стоит боя…» */
     { blocks: ["/source/m6-4::masshtabirovanie-i-ustoychivost-kak-vyrasti-ne-t::paragraph::wuax3e"], title: "Важно" },
   ],

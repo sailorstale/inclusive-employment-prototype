@@ -15,7 +15,13 @@ import type { PageCards } from "./types";
 export const ngoPsychologyCards: PageCards = {
   page: "/ngo/candidates/psychology",
   cards: [
-    /* «При этом важно, чтобы поддержка не превращалась в гиперопе…» */
-    { blocks: ["/source/m6-2::kak-nko-mozhet-pomoch::paragraph::1txn7br"], title: "Важно" },
+    /*
+      «Следите, чтобы поддержка не превращалась в гиперопеку…»
+
+      Адрес НОВЫЙ: начало фразы переписано по замечанию (см. rewrite в
+      clientEdits/ngoPsychology.ts), а отпечаток блока считается по его чистому
+      тексту. Прежний адрес — …paragraph::1txn7br.
+    */
+    { blocks: ["/source/m6-2::kak-nko-mozhet-pomoch::paragraph::1leoene"], title: "Важно" },
   ],
 };

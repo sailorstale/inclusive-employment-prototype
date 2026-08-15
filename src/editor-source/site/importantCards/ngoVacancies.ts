@@ -15,10 +15,17 @@ import type { PageCards } from "./types";
 export const ngoVacanciesCards: PageCards = {
   page: "/ngo/candidates/vacancies",
   cards: [
-    /* «Важно помнить, что один и тот же кандидат может успешно сп…» */
-    { blocks: ["/source/m6-2::shag-1-opredelenie-prioritetov::paragraph::t7ycdg"], title: "Важно" },
-    /* «Важно заранее обсудить с кандидатом, какую информацию о се…» */
-    { blocks: ["/source/m6-2::shag-3-pomosch-kandidatu-v-ponimanii-opisaniya-v::paragraph::1d4yiwj"], title: "Важно" },
+    /*
+      «Помните, что один и тот же кандидат может успешно справляться…»
+
+      Адрес НОВЫЙ: начало фразы переписано по замечанию (см. rewrite в
+      clientEdits/ngoVacancies.ts), а отпечаток блока считается по его чистому
+      тексту. Прежний адрес — …paragraph::t7ycdg.
+    */
+    { blocks: ["/source/m6-2::shag-1-opredelenie-prioritetov::paragraph::1oijgls"], title: "Важно" },
+    /* «Заранее обсудите с кандидатом, какую информацию о себе…» — адрес новый,
+       прежний …paragraph::1d4yiwj. */
+    { blocks: ["/source/m6-2::shag-3-pomosch-kandidatu-v-ponimanii-opisaniya-v::paragraph::1ni6xzd"], title: "Важно" },
     /*
       ТАБЛИЦА СТАЛА КАРТОЧКАМИ — замечание клиента «карточки». Строки друг с
       другом не сравнивают: каждая отвечает на свой случай, и читать их подряд

@@ -17,14 +17,21 @@ export const ngoTalksCards: PageCards = {
   cards: [
     /* «Задача первого контакта — не рассказать всё о программе и …» */
     { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::3qenf4"], title: "Важно" },
-    /* «При этом важно не подменять кандидата там, где он может де…» */
-    { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::1g9cbi4"], title: "Важно" },
-    /* «При этом важно представлять кандидата через его навыки, оп…» */
-    { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::15hujfw"], title: "Важно" },
+    /*
+      «Не подменяйте кандидата там, где он может действовать самостоятельно.» и
+      «Представляйте кандидата через его навыки, опыт…».
+
+      Адреса НОВЫЕ: начало фразы переписано по замечаниям (см. rewrite в
+      clientEdits/ngoTalks.ts), а отпечаток блока считается по его чистому
+      тексту. Прежние адреса — …1g9cbi4 и …15hujfw.
+    */
+    { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::1tai40z"], title: "Важно" },
+    { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::5qrekf"], title: "Важно" },
     /* «Диагноз, медицинская история, особенности здоровья, семейн…» */
     { blocks: ["/source/m6-3::kak-predstavit-kandidata-s-invalidnostyu-rabotod::paragraph::ur96bg"], title: "Важно" },
-    /* «Важно помнить, что отказ не всегда связан с принципиальной…» */
-    { blocks: ["/source/m6-3::chto-delat-esli-vam-otkazali::paragraph::1y4ni9y"], title: "Важно" },
+    /* «Помните, что отказ не всегда связан с принципиальной позицией…» — адрес
+       новый, прежний …paragraph::1y4ni9y. */
+    { blocks: ["/source/m6-3::chto-delat-esli-vam-otkazali::paragraph::gi9ksy"], title: "Важно" },
     /*
       ТАБЛИЦА СТАЛА КАРТОЧКАМИ — замечание клиента «карточки». Строки друг с
       другом не сравнивают: каждая отвечает на свой случай, и читать их подряд

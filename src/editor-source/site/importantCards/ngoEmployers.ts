@@ -17,12 +17,18 @@ export const ngoEmployersCards: PageCards = {
   cards: [
     /* «В результате этого этапа у вас должен появиться понятный о…» */
     { blocks: ["/source/m6-3::kak-nayti-rabotodateley::paragraph::1oojb94"], title: "Важно" },
-    /* «Важно помнить: наличие контакта ещё не означает готовность…» */
-    { blocks: ["/source/m6-3::kak-nayti-rabotodateley::paragraph::ff9ul1"], title: "Важно" },
-    /* «При этом важно помнить: наличие квотируемого рабочего мест…» */
-    { blocks: ["/source/m6-3::kak-nayti-rabotodateley::paragraph::9ie7n8"], title: "Важно" },
-    /* «При этом важно не путать интерес к социальной повестке с г…» */
-    { blocks: ["/source/m6-3::kak-nayti-rabotodateley::paragraph::s3t53c"], title: "Важно" },
+    /*
+      Три карточки ниже — «Помните — наличие контакта…», «Помните: наличие
+      квотируемого рабочего места…» и «Не путайте интерес к социальной
+      повестке…».
+
+      Адреса НОВЫЕ: начало фразы у каждой переписано по замечанию (см. rewrite в
+      clientEdits/ngoEmployers.ts), а отпечаток блока считается по его чистому
+      тексту. Прежние адреса — …ff9ul1, …9ie7n8 и …s3t53c.
+    */
+    { blocks: ["/source/m6-3::kak-nayti-rabotodateley::paragraph::1qyqmd3"], title: "Важно" },
+    { blocks: ["/source/m6-3::kak-nayti-rabotodateley::paragraph::1cfrdiy"], title: "Важно" },
+    { blocks: ["/source/m6-3::kak-nayti-rabotodateley::paragraph::p705v5"], title: "Важно" },
 
     /*
       ВСТУПЛЕНИЕ СТРАНИЦЫ — замечание клиента «важное». Абзац задаёт всю рамку
