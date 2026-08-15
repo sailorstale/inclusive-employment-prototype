@@ -27,6 +27,7 @@ import {
   Eye,
   Brain,
   Speech,
+  HeartPulse,
 } from "lucide-react";
 
 /*
@@ -83,6 +84,7 @@ const BY_NAME = new Map<string, LucideIcon>([
   ["Eye", Eye],
   ["Brain", Brain],
   ["Speech", Speech],
+  ["HeartPulse", HeartPulse],
   /*
     Галочка ставится у пунктов чек-листа («иконка галочка» в разметке) —
     решение дизайнера 11 августа 2026 по замечанию клиента к «Шагу 1».

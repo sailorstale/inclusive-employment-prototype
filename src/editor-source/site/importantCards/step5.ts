@@ -15,12 +15,22 @@ import type { PageCards } from "./types";
 export const step5Cards: PageCards = {
   page: "/companies/hire/step-5",
   cards: [
-    /* «Важно не путать разумную адаптацию с гиперопекой. Разумная…» */
-    { blocks: ["/source/m5-3::pochemu-adaptaciya-vazhna-dlya-novichkov::paragraph::1ljvthu"], title: "Важно" },
+    /*
+      «Не путайте разумную адаптацию с гиперопекой. Разумная…»
+
+      Адрес НОВЫЙ: начало фразы переписано по замечанию (см. rewrite в
+      clientEdits/step5.ts), а отпечаток блока считается по его чистому тексту.
+      Прежний адрес — …paragraph::1ljvthu — больше ни на что не указывает.
+    */
+    { blocks: ["/source/m5-3::pochemu-adaptaciya-vazhna-dlya-novichkov::paragraph::hc6ew7"], title: "Важно" },
     /* «Если сотрудника с инвалидностью чрезмерно оберегают, избег…» */
     { blocks: ["/source/m5-3::pochemu-adaptaciya-vazhna-dlya-novichkov::paragraph::gzei95"], title: "Важно" },
-    /* «При этом важно не объяснять любые сложности инвалидностью …» */
-    { blocks: ["/source/m5-3::chto-delat-esli-adaptaciya-idet-ne-po-planu::paragraph::m27eof"], title: "Важно" },
+    /*
+      «Не объясняйте любые сложности инвалидностью сотрудника…»
+
+      Адрес тоже НОВЫЙ, по той же причине: прежний — …paragraph::m27eof.
+    */
+    { blocks: ["/source/m5-3::chto-delat-esli-adaptaciya-idet-ne-po-planu::paragraph::1mo8yym"], title: "Важно" },
     /*
       ТАБЛИЦА СТАЛА КАРТОЧКАМИ — замечание клиента «карточки». Строки друг с
       другом не сравнивают: каждая отвечает на свой случай, и читать их подряд
@@ -61,5 +71,39 @@ export const step5Cards: PageCards = {
       раскладка оставит таблицу и скажет об этом заметкой на странице.
     */
     { blocks: ["/source/m5-3::kto-mozhet-pomoch-adaptirovatsya-sotrudniku-s-in::table::157vp30"], split: 2 },
+
+    /*
+      ДВЕ ЦИТАТЫ ИЗ «МОН’ДЭЛИС В РОССИИ» — замечания Юли от 12 августа 2026
+      (msq1p889i527 и msq1o0atsp39), тексты присланы Юлией Фроловой 14 августа
+      прямо в замечаниях (mst0gkt3x42e и mst0ecwpp8go).
+
+      Первая строка каждой группы читается как авторство, остальные становятся
+      речью. Имя даёт портрет, название компании в кавычках — логотип. Строки
+      приезжают из clientEdits/step5.ts: вопрос интервью переписан в авторство,
+      речь вставлена блоками.
+
+      У Ольги Крыловой речь идёт пятью блоками, и четвёртый — список из трёх
+      шагов первых недель: карточка цитаты рисует его пунктами внутри речи.
+    */
+    {
+      blocks: [
+        "/source/m5-3::chto-govoryat-lyudi-s-invalidnostyu-4::paragraph::1scidjm",
+        "/source/m5-3::chto-govoryat-lyudi-s-invalidnostyu-4::paragraph::1amhr26",
+        "/source/m5-3::chto-govoryat-lyudi-s-invalidnostyu-4::paragraph::bzj757",
+        "/source/m5-3::chto-govoryat-lyudi-s-invalidnostyu-4::paragraph::6biw4y",
+        "/source/m5-3::chto-govoryat-lyudi-s-invalidnostyu-4::list::epvoim",
+        "/source/m5-3::chto-govoryat-lyudi-s-invalidnostyu-4::paragraph::1ts62vx",
+      ],
+      target: "Quote",
+    },
+    {
+      blocks: [
+        "/source/m5-3::chto-govorit-biznes-6::paragraph::1woh7fd",
+        "/source/m5-3::chto-govorit-biznes-6::paragraph::h080b5",
+        "/source/m5-3::chto-govorit-biznes-6::paragraph::1noqqsy",
+        "/source/m5-3::chto-govorit-biznes-6::paragraph::15xnpns",
+      ],
+      target: "Quote",
+    },
   ],
 };
