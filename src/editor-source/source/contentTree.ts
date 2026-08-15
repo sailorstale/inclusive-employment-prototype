@@ -3110,13 +3110,30 @@ export function buildDoc(
         const marker =
           mods.marker === "Number" ? "Number" : mods.marker === "Icon" ? "Icon" : "Dot";
         const icon = marker === "Icon" ? listItemIcon(dir) : undefined;
-        const item = (text: string): Node => ({
-          component: "List Item",
-          size: "L",
-          type: marker,
-          ...(icon ? { icon } : {}),
-          text,
-        });
+        /*
+          ЗНАЧОК ССЫЛКИ — ТОЛЬКО ТЕМ ПУНКТАМ, КОТОРЫЕ ПРАВДА ССЫЛКИ. Замечания
+          Мити msq53ababp05 и mst1swvk7w2w: в перечне площадок часть строк —
+          ссылки, часть нет («региональные сайты вакансий», «профессиональные
+          сообщества и чаты»), а значок стоял у всех подряд и обещал переход,
+          которого нет.
+
+          Разбирается это здесь, а не в разметке: значок задаётся списку
+          целиком, поштучно его выставить нечем. Остальные значки (галочка,
+          крестик) остаются у всех пунктов — они говорят не о переходе, а о том,
+          что с пунктом делать.
+        */
+        const linkOnly = icon === "Link";
+        const isLink = (text: string) => /^\s*\[[^\]]+\]\(/.test(text);
+        const item = (text: string): Node => {
+          const own = icon && (!linkOnly || isLink(text)) ? icon : undefined;
+          return {
+            component: "List Item",
+            size: "L",
+            type: own ? marker : "Dot",
+            ...(own ? { icon: own } : {}),
+            text,
+          };
+        };
         /*
           ПУНКТ ИЗ ДВУХ СТРОК. Источник разложил пункт на заголовок-ссылку и
           абзац-описание — по просьбе «ссылка, потом после переноса строки
