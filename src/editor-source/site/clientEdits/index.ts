@@ -26,6 +26,7 @@ import { ngoGuidanceEdits } from "./ngoGuidance";
 import { step5Edits } from "./step5";
 import { ngoPsychologyEdits } from "./ngoPsychology";
 import { ngoVacanciesEdits } from "./ngoVacancies";
+import { formatsEdits } from "./formats";
 
 /*
   ПРАВКИ ПО ЗАМЕЧАНИЯМ КЛИЕНТА, КОТОРЫЕ НЕ УМЕЩАЮТСЯ В «УБРАТЬ БЛОК».
@@ -85,6 +86,7 @@ export const PAGES: PageEdits[] = [
   step5Edits,
   ngoPsychologyEdits,
   ngoVacanciesEdits,
+  formatsEdits,
 ];
 
 /*
