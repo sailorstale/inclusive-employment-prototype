@@ -49,7 +49,6 @@ export const TARGET_GROUPS: TargetGroup[] = [
             label: "Размер",
             type: "select",
             options: [
-              { value: "XL", label: "XL — лид" },
               { value: "L", label: "L — основной" },
               { value: "M", label: "M — пояснение" },
               { value: "S", label: "S — сноска" },

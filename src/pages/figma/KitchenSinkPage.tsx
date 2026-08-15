@@ -116,10 +116,11 @@ export function KitchenSinkPage() {
 
         {/* Колонка контента 768 */}
         <main className="w-[var(--column-width)] shrink-0">
-          <Text size="XL">
-            Лид страницы — Text · XL. Он и Page Summary ниже лежат вне Section
-            Container: в живом шаблоне это единственные блоки колонки без
-            секции-обёртки.
+          <Text size="L">
+            Лид страницы — Text · L. Отдельного крупного размера у лида больше
+            нет: с 15 августа 2026 он читается тем же кеглем, что и остальной
+            текст. Он и Page Summary ниже лежат вне Section Container: в живом
+            шаблоне это единственные блоки колонки без секции-обёртки.
           </Text>
 
           <PageSummary image="Скрепка">

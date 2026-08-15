@@ -13,10 +13,18 @@ import { cn } from "@/lib/utils";
   и CardButton.tsx (так сделано в Figma). Здесь остаётся только проза.
 */
 
-export type TextSize = "XL" | "L" | "M" | "S";
+/*
+  РАЗМЕРА XL БОЛЬШЕ НЕТ — решение дизайнера 15 августа 2026. До него первый
+  абзац вступления на каждой странице приходил крупным и назывался лидом. Теперь
+  вступление читается тем же кеглем, что и остальной текст, а вариант убран из
+  набора, чтобы его нельзя было поставить снова.
+
+  Стиль Body XXL остался в шкале (tokens.css): шкала — общий словарь с Figma, и
+  выкидывать из неё ступень значило бы менять дизайн-систему, а не сайт.
+*/
+export type TextSize = "L" | "M" | "S";
 
 const STYLE: Record<TextSize, string> = {
-  XL: "ds-body-xxl", // Desktop/Body XXL 28/1.3 — лид страницы
   L: "ds-body-l", // Desktop/Body L 18/1.4 — основной текст лонгрида
   M: "ds-body-m", // Desktop/Body M 16/1.3 — пояснения
   S: "ds-body-s", // Desktop/Body S 14/1.3 — сноски, подписи
@@ -24,7 +32,6 @@ const STYLE: Record<TextSize, string> = {
 
 // Верхний отступ зависит от размера — так задано в Figma.
 const PAD_TOP: Record<TextSize, string> = {
-  XL: "pt-[var(--space-2xl)]", // 40
   L: "pt-[var(--space-l)]", // 24
   M: "pt-[var(--space-m)]", // 16
   S: "pt-[var(--space-m)]", // 16

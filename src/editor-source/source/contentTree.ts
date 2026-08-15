@@ -40,7 +40,7 @@ import {
 } from "./orgLogo";
 
 export type HeadingLevel = "H2" | "H3" | "H4" | "H5";
-export type TextSize = "XL" | "L" | "M" | "S";
+export type TextSize = "L" | "M" | "S";
 export type PhraseSize = "L" | "M";
 
 type NodeKind =
@@ -3058,7 +3058,14 @@ export function buildDoc(
             ? { component: "Phrase", size: "L", text: md(it, fix) }
             : {
                 component: "Text",
-                size: (["XL", "L", "M", "S"] as const).includes(mods.size as "L")
+                /*
+                  Размера XL на сайте больше нет (решение дизайнера 15 августа
+                  2026). Старые пометки с ним остаются в данных на сервере, и
+                  трогать их нельзя — они принадлежат дизайнеру. Здесь такая
+                  пометка просто не проходит проверку и падает в L, как любое
+                  незнакомое значение: страница не ломается и не жалуется.
+                */
+                size: (["L", "M", "S"] as const).includes(mods.size as "L")
                   ? (mods.size as TextSize)
                   : "L",
                 text: md(it, fix),
@@ -4113,7 +4120,8 @@ export function buildDoc(
   const children: (SectionNode | Node)[] = [];
   /*
     ВСТУПЛЕНИЕ СТРАНИЦЫ — в своём Section Container (проверено по Figma,
-    узел 7054:4797): в его слоте лежат лид Text XL и Page Summary.
+    узел 7054:4797): в его слоте лежат лид и Page Summary. Лид — обычный Text,
+    крупным он был до 15 августа 2026.
 
     Раньше Page Summary клали в корень документа, мимо секций. Дизайнер изменил
     макет — и правило вслед за ним: у вступления такая же секция-обёртка, как у
@@ -4697,7 +4705,7 @@ const TEXT_ARRAY_KEYS = new Set(["paragraphs", "header"]);
   2. Имена ПОЛЕЙ переименовываем там, где одно слово значило разное: у пункта
      списка type — это маркер, у кнопки type — вид кнопки.
   3. Значения-перечисления едут строчными: "dot", "vertical", "collapsed".
-     Размеры (L, M, XL) и уровни заголовков (H2…H5) НЕ трогаем — это
+     Размеры (L, M, S) и уровни заголовков (H2…H5) НЕ трогаем — это
      обозначения шкалы, а не слова; «l» и «h2» читались бы хуже.
 */
 const EXPORT_COMPONENTS: Record<
