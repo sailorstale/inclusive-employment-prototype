@@ -29,5 +29,23 @@ export const ngoCandidatesCards: PageCards = {
       карточку не берётся: про него замечания не было.
     */
     { blocks: ["/source/m6-2::sostavlenie-portreta-soiskatelya::paragraph::xubqj8"], title: "Пример" },
+
+    /*
+      ЦИТАТА ТАТЬЯНЫ САМБУРОВОЙ, ДВА БЛОКА — замечание Юли msoh4nzfzqmm с
+      пометкой дизайнера «Преврати в цитату». В источнике имя, должность и вся
+      история Андрея слиплись в один абзац; в clientEdits он разобран на строку
+      авторства и речь, а карточку цитаты собираем здесь.
+
+      Адреса НОВЫЕ: карточки собираются после правок текста, а отпечаток
+      считается по чистому тексту. Прежний адрес слипшегося абзаца —
+      …paragraph::kvqbkx — больше ни на что не указывает.
+    */
+    {
+      blocks: [
+        "/source/m6-2::sostavlenie-portreta-soiskatelya::paragraph::27kks7",
+        "/source/m6-2::sostavlenie-portreta-soiskatelya::paragraph::1o567z9",
+      ],
+      target: "Quote",
+    },
   ],
 };
