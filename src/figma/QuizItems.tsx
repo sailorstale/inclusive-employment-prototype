@@ -24,6 +24,12 @@ import { QuizBadge } from "./QuizBadge";
   3) Focus и Disabled в наборе Figma отсутствуют — кольцо фокуса и вид «уже
      проверено» добавлены нами, иначе с клавиатуры блоком пользоваться нельзя.
   4) Checkbox Atom отдельным файлом не выносим — рисуем здесь по токенам из разбора.
+  5) КРУЖОК ВМЕСТО КВАДРАТА у квиза с одним ответом (просьба Мити 16 августа
+     2026). В наборе Figma у строки только квадрат-чекбокс, а квадрат означает
+     «отметь всё подходящее». Там, где верный ответ один, это обещание неверное:
+     читатель отмечает второй вариант, и первый молча снимается. Кружок говорит
+     правду сразу. Рисуем его теми же токенами, что и Radio Atom (Radio.tsx),
+     чтобы два кружка на сайте не разъехались.
 
   Разбираем только Platform=Desktop.
 */
@@ -61,8 +67,12 @@ type Props = {
   onCheckedChange?: (checked: boolean) => void;
   /** После проверки строка только показывает результат, отметку менять нельзя. */
   disabled?: boolean;
-  /** Спрятать квадрат-чекбокс. Для квиза с одним ответом: выбор — клик по строке. */
+  /** Спрятать отметку совсем: выбор остаётся кликом по строке. */
   hideBox?: boolean;
+  /** Квиз с одним ответом: кружок-радио вместо квадрата-чекбокса. */
+  radio?: boolean;
+  /** Общее имя группы радио — без него стрелки клавиатуры не переключают варианты. */
+  name?: string;
   /** Текст варианта. Длина свободная — строка растёт в высоту. */
   children?: React.ReactNode;
   className?: string;
@@ -74,6 +84,8 @@ export function QuizItems({
   onCheckedChange,
   disabled = false,
   hideBox = false,
+  radio = false,
+  name,
   children,
   className,
 }: Props) {
@@ -104,13 +116,18 @@ export function QuizItems({
       )}
     >
       <input
-        type="checkbox"
+        type={radio ? "radio" : "checkbox"}
+        name={name}
         className="sr-only"
         checked={checked}
         disabled={disabled}
         onChange={(e) => onCheckedChange?.(e.target.checked)}
       />
-      {hideBox ? null : <CheckboxAtom checked={checked} />}
+      {hideBox ? null : radio ? (
+        <RadioAtom checked={checked} />
+      ) : (
+        <CheckboxAtom checked={checked} />
+      )}
       <span className="ds-body-m grow text-[color:var(--text-primary)]">
         {children}
       </span>
@@ -141,6 +158,32 @@ function CheckboxAtom({ checked }: { checked: boolean }) {
           className="size-[18px] text-[color:var(--control-active-fg)]"
           strokeWidth={2.5}
         />
+      ) : null}
+    </span>
+  );
+}
+
+/*
+  Radio Atom (Desktop): кружок 24 теми же токенами, что и Radio.tsx.
+  Отмеченный — рамка control/active и точка того же цвета внутри; заливки нет,
+  в отличие от чекбокса. Собственный input тут не нужен: настоящий уже лежит
+  выше в строке, а это только вид.
+*/
+function RadioAtom({ checked }: { checked: boolean }) {
+  return (
+    <span
+      data-component="Radio Atom"
+      aria-hidden="true"
+      className={cn(
+        "grid size-6 shrink-0 place-content-center rounded-full border transition-colors",
+        checked
+          ? "border-[color:var(--control-active)] bg-[color:var(--control-bg)]"
+          : "border-[color:var(--control-border)] bg-[color:var(--control-bg)]",
+      )}
+    >
+      {checked ? (
+        // 42% от 24 — та же доля, что в Radio.tsx.
+        <span className="size-[42%] rounded-full bg-[color:var(--control-active)]" />
       ) : null}
     </span>
   );
