@@ -23,6 +23,7 @@ import { ngoEmployersCards } from "./ngoEmployers";
 import { ngoTalksCards } from "./ngoTalks";
 import { ngoRoadmapCards } from "./ngoRoadmap";
 import { ngoScaleCards } from "./ngoScale";
+import { ngoInterviewCards } from "./ngoInterview";
 
 /*
   КАРТОЧКА ПО ЗАМЕЧАНИЮ КЛИЕНТА — блоки остаются на странице, но собираются в
@@ -70,6 +71,7 @@ const PAGES: PageCards[] = [
   ngoTalksCards,
   ngoRoadmapCards,
   ngoScaleCards,
+  ngoInterviewCards,
 ];
 
 /*
@@ -131,6 +133,7 @@ function directiveFor(
   const quote = target === "Quote";
   const video = target === "Video";
   const list = target === "List";
+  const accordion = target === "Accordion";
   return {
     id: `important:${spec.blocks[0]}`,
     module: moduleId,
@@ -153,6 +156,8 @@ function directiveFor(
       ? "Видео"
       : list
       ? "Список"
+      : accordion
+      ? "Accordion — вопрос-ответ"
       : "General Card",
     modifiers: quote
       ? { size: "L", yandex: false }
@@ -161,6 +166,9 @@ function directiveFor(
       : list
       ? // Обычный список, но со значком: сам значок называет комментарий.
         { marker: "Icon" }
+      : accordion
+      ? // Свёрнут по умолчанию — как у пометок дизайнера в данных.
+        { state: "Collapsed" }
       : {
           orient: "Vertical",
           icon: false,
@@ -181,7 +189,9 @@ function directiveFor(
     */
     comment: [
       spec.title ? `Добавь заголовок ${spec.title}` : "",
-      spec.split ? `Сделать ${spec.split} карточек` : "",
+      spec.split
+        ? `Сделать ${spec.split} ${accordion ? "аккордеонов" : "карточек"}`
+        : "",
       spec.noPhoto ? "Без фото" : "",
       spec.listIcon ? `Иконка ${spec.listIcon}` : "",
       // Адрес ролика раскладка достаёт из комментария (см. case «Video» в
