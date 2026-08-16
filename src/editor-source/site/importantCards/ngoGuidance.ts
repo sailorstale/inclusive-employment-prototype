@@ -50,8 +50,12 @@ export const ngoGuidanceCards: PageCards = {
     { blocks: [`${PLAN}::paragraph::1d7pme5`], title: "Результат второго этапа", bg: "yellow" },
     { blocks: [`${PLAN}::paragraph::12dkh0m`], title: "Результат третьего этапа", bg: "yellow" },
     { blocks: [`${PLAN}::paragraph::11u3nr4`], title: "Результат четвёртого этапа", bg: "yellow" },
-    /* «Результат этапа: одна или несколько гипотез стали понятнее…» */
-    { blocks: [`${PLAN}::paragraph::c8890b`], title: "Важно" },
+    /*
+      ИТОГ ПЯТОГО ЭТАПА — то же решение, что и у четырёх выше. Подписи с номером
+      в источнике не было, поэтому номер появляется только здесь, в названии
+      карточки. Прежний адрес блока — …paragraph::c8890b.
+    */
+    { blocks: [`${PLAN}::paragraph::nrfg8n`], title: "Результат пятого этапа", bg: "yellow" },
     /* «Экскурсия не обязывает соискателя соглашаться на работу…» — адрес новый,
        прежний …paragraph::1c2pxlf. */
     { blocks: [`${PLAN}::paragraph::eqbnwu`], title: "Важно" },
