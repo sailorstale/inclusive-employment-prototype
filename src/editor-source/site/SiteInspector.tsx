@@ -510,6 +510,8 @@ function SiteMode({
     всегда охватывает несколько блоков подряд.
   */
   const [picked, setPicked] = React.useState<Set<string>>(new Set());
+  /* Сколько раз человек кликнул по блоку — см. onPick ниже. */
+  const [pickSeq, setPickSeq] = React.useState(0);
   const [exporting, setExporting] = React.useState(false);
   const blocks = usePageBlocks(page.module, page.sections);
 
@@ -726,6 +728,13 @@ function SiteMode({
     к нужному месту, и он же нужен пинам.
   */
   const onPick = React.useCallback((path: string, additive: boolean) => {
+    /*
+      Считаем клики человека по блокам. Панель комментариев по ним возвращается
+      из общего списка замечаний к списку этой страницы — там форма. Отличить
+      клик от программного выделения (переход к замечанию) больше нечем: набор
+      выделенного в обоих случаях меняется одинаково.
+    */
+    setPickSeq((n) => n + 1);
     setSelected(path);
     setPicked((prev) => {
       /*
@@ -1185,9 +1194,14 @@ function SiteMode({
           <div className="min-h-0 flex-1">
             <PageComments
               groups={pageComments}
+              /* Вторая половина панели — замечания всего сайта: тот же поток,
+                 просто без отбора по странице. */
+              all={comments}
+              page={page.slug}
               placed={placed}
               homes={homes}
               picked={picked.size}
+              pickSeq={pickSeq}
               pickedAbout={snippet([...picked].map((p) => textAt(p)).join(" ⁄ "))}
               author={author}
               activeId={activeComment}

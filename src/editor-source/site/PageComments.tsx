@@ -3,7 +3,14 @@ import { Ban, Check, CornerDownRight, Pencil, Trash2 } from "lucide-react";
 import type { Comment, CommentReply } from "@/editor-source/comments";
 import { stripMarks } from "@/editor-source/richText";
 import { appliedAllFor } from "./appliedComments";
-import { commentState, isClosed, type CommentState } from "./commentState";
+import { commentState, isClosed } from "./commentState";
+import {
+  countFilters,
+  matchesFilter,
+  FilterChips,
+  type CommentFilter,
+} from "./commentFilters";
+import { AllComments } from "./AllComments";
 import { cn } from "@/lib/utils";
 
 /*
@@ -41,31 +48,29 @@ export type CommentGroup = {
 };
 
 /*
-  ФИЛЬТР СПИСКА. На странице замечания разного возраста лежат вперемешку:
-  сделанные, отложенные и те, за которые ещё браться. Кнопки сверху оставляют в
-  списке одну группу — например только «не применяем», чтобы разобрать их
-  подряд, или наоборот убрать их с глаз и видеть очередь работы.
-*/
-/*
-  «Решено» стоит в том же ряду, но означает другое: не исход, а «убрано с глаз».
-  Все остальные группы показывают только актуальное — убранное в них не мешает.
-*/
-type CommentFilter = "all" | CommentState | "closed";
+  ЧТО ПОКАЗЫВАЕТ ПАНЕЛЬ — замечания открытой страницы или весь сайт разом.
 
-const FILTERS: { key: CommentFilter; label: string }[] = [
-  { key: "all", label: "Все" },
-  { key: "open", label: "В работе" },
-  { key: "round", label: "Новый раунд" },
-  { key: "skipped", label: "Не применяем" },
-  { key: "closed", label: "Решено" },
-  { key: "done", label: "Сделано" },
-];
+  Пока работаешь по странице, нужны её замечания и форма, чтобы дописать новое.
+  Но замечание нередко ищут по всему сайту: клиент где-то просил убрать
+  заголовок «пример», а на какой странице — не помнит никто. Поэтому у панели
+  есть вторая половина, «Все комментарии»: тот же список по всему сайту с
+  поиском, и нажатие открывает нужную страницу на нужном блоке (AllComments).
+
+  Выбор помним на уровне модуля, а не в состоянии компонента: переход на другую
+  страницу пересобирает панель, а человек, который листает замечания всего
+  сайта, ждёт, что список останется общим.
+*/
+type CommentScope = "page" | "all";
+let lastScope: CommentScope = "page";
 
 export function PageComments({
   groups,
+  all,
+  page,
   placed,
   homes,
   picked,
+  pickSeq,
   pickedAbout,
   author,
   activeId,
@@ -79,6 +84,10 @@ export function PageComments({
   onClearPick,
 }: {
   groups: CommentGroup[];
+  /** Все замечания сайта — для второй половины панели. */
+  all: Comment[];
+  /** Адрес открытой страницы: в общем списке её замечания открываются на месте. */
+  page: string;
   /*
     id замечаний, которые удалось поставить на страницу. Чего здесь нет — у того
     блок не нашёлся: его переписали или убрали.
@@ -92,6 +101,8 @@ export function PageComments({
   homes: Record<string, { slug: string; title: string }>;
   /** Сколько блоков выделено сейчас. */
   picked: number;
+  /** Счётчик кликов по блокам страницы: растёт только от клика человека. */
+  pickSeq: number;
   /** Снимок текста выделенного — чтобы было видно, о чём пишешь. */
   pickedAbout: string;
   /** Имя автора; пустое — сначала попросим представиться. */
@@ -112,26 +123,39 @@ export function PageComments({
   const [name, setName] = React.useState(author);
   const [text, setText] = React.useState("");
   const [filter, setFilter] = React.useState<CommentFilter>("all");
+  const [scope, setScope] = React.useState<CommentScope>(lastScope);
 
-  const counts = React.useMemo(() => {
-    const c = { all: 0, open: 0, round: 0, skipped: 0, closed: 0, done: 0 };
-    for (const g of groups) {
-      if (isClosed(g.rec)) c.closed += 1;
-      else {
-        c.all += 1;
-        c[commentState(g.rec)] += 1;
-      }
-    }
-    return c;
-  }, [groups]);
+  React.useEffect(() => {
+    lastScope = scope;
+  }, [scope]);
+
+  /*
+    Кликнули по блоку страницы — собираются писать замечание, а форма живёт
+    только в списке страницы. Возвращаем панель туда сами: иначе клик по блоку
+    выглядел бы так, будто он ничего не делает.
+
+    Считаем именно клики человека (pickSeq), а не сам факт выделения. Переход к
+    замечанию тоже выделяет блок, но там панель переключать нельзя: человек
+    листает замечания всего сайта и после каждого перехода возвращался бы в
+    список одной страницы.
+  */
+  React.useEffect(() => {
+    if (pickSeq > 0) setScope("page");
+  }, [pickSeq]);
+
+  const counts = React.useMemo(
+    () => countFilters(groups.map((g) => g.rec)),
+    [groups],
+  );
+
+  /** Сколько замечаний по всему сайту — цифра на кнопке общего списка. */
+  const allCount = React.useMemo(
+    () => all.filter((c) => (c.text || "").trim() && !isClosed(c)).length,
+    [all],
+  );
 
   const shown = React.useMemo(
-    () =>
-      groups.filter((g) =>
-        filter === "closed"
-          ? isClosed(g.rec)
-          : !isClosed(g.rec) && (filter === "all" || commentState(g.rec) === filter),
-      ),
+    () => groups.filter((g) => matchesFilter(g.rec, filter)),
     [groups, filter],
   );
 
@@ -191,8 +215,35 @@ export function PageComments({
     setText("");
   };
 
+  if (scope === "all")
+    return (
+      <div className="flex h-full min-h-0 flex-col">
+        <ScopeSwitch
+          scope={scope}
+          onPick={setScope}
+          pageCount={counts.all}
+          allCount={allCount}
+        />
+        <div className="min-h-0 flex-1">
+          <AllComments
+            comments={all}
+            page={page}
+            activeId={activeId}
+            onGoTo={onGoTo}
+          />
+        </div>
+      </div>
+    );
+
   return (
     <div className="flex h-full min-h-0 flex-col">
+      <ScopeSwitch
+        scope={scope}
+        onPick={setScope}
+        pageCount={counts.all}
+        allCount={allCount}
+      />
+
       {/* ФОРМА — сверху, чтобы не искать её под списком. */}
       <div className="shrink-0 border-b p-3">
         {picked === 0 ? (
@@ -266,30 +317,7 @@ export function PageComments({
         тремя одинаковыми замечаниями кнопки были бы лишним шумом.
       */}
       {groups.length > 0 && groups.length > counts.open && (
-        <div className="flex shrink-0 flex-wrap gap-1 border-b px-3 py-2">
-          {FILTERS.map((f) => {
-            const n = counts[f.key];
-            const active = filter === f.key;
-            return (
-              <button
-                key={f.key}
-                type="button"
-                onClick={() => setFilter(f.key)}
-                disabled={n === 0}
-                aria-pressed={active}
-                className={cn(
-                  "rounded border px-1.5 py-0.5 text-[11px] transition-colors disabled:opacity-40",
-                  active
-                    ? "border-foreground bg-accent text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {f.label}
-                <span className="ml-1 text-muted-foreground">{n}</span>
-              </button>
-            );
-          })}
-        </div>
+        <FilterChips filter={filter} counts={counts} onPick={setFilter} />
       )}
 
       {/* СПИСОК — комментарии этой страницы. */}
@@ -547,6 +575,59 @@ export function PageComments({
           </ul>
         )}
       </div>
+    </div>
+  );
+}
+
+/*
+  ПЕРЕКЛЮЧАТЕЛЬ ПОЛОВИН ПАНЕЛИ. Стоит первой строкой, над формой: иначе про
+  общий список никто не узнает — под формой и фильтрами его не видно, а на
+  длинной странице до низа панели ещё надо долистать.
+
+  Цифры на кнопках не украшение: по ним видно, что замечаний на сайте много
+  больше, чем на этой странице, и есть смысл заглянуть.
+*/
+function ScopeSwitch({
+  scope,
+  onPick,
+  pageCount,
+  allCount,
+}: {
+  scope: CommentScope;
+  onPick: (scope: CommentScope) => void;
+  /** Сколько актуальных замечаний на этой странице. */
+  pageCount: number;
+  /** Сколько актуальных замечаний по всему сайту. */
+  allCount: number;
+}) {
+  const btn = (key: CommentScope, label: string, count: number) => (
+    <button
+      key={key}
+      type="button"
+      onClick={() => onPick(key)}
+      aria-pressed={scope === key}
+      className={cn(
+        "flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors",
+        scope === key
+          ? "bg-primary text-primary-foreground"
+          : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {label}
+      <span
+        className={cn(
+          "ml-1",
+          scope === key ? "text-primary-foreground/70" : "text-muted-foreground",
+        )}
+      >
+        {count}
+      </span>
+    </button>
+  );
+  return (
+    <div className="flex shrink-0 items-center gap-0.5 border-b bg-muted/40 p-1">
+      {btn("page", "Эта страница", pageCount)}
+      {btn("all", "Все комментарии", allCount)}
     </div>
   );
 }
