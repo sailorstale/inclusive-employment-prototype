@@ -24,6 +24,7 @@ import type { SourceBlock } from "@/editor-source/content/source.generated";
 import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
 import { mergesFirstColumn } from "@/editor-source/site/mergedTables";
+import { liftsOutOfQuiz } from "@/editor-source/site/outOfQuiz";
 import { cardArt } from "./cardArt";
 import { linkOrgSites } from "./orgSites";
 import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
@@ -3545,7 +3546,18 @@ export function buildDoc(
         };
         if (items.some(isFeedbackHeading)) {
           type Opt = NonNullable<Extract<Node, { component: "Quiz" }>["items"]>[number];
-          type Q = { question: string; qParts: string[]; options: Opt[]; expl: string[] };
+          type Q = {
+            question: string;
+            qParts: string[];
+            options: Opt[];
+            expl: string[];
+            /*
+              Блоки разбора, вынутые из квиза по замечанию клиента: они встают
+              отдельной строкой ПОД своим квизом, а не внутри разбора (см.
+              site/outOfQuiz.ts).
+            */
+            after: Node[];
+          };
           const quizzes: Q[] = [];
           let cur: Q | null = null;
           let mode: "question" | "explanation" = "question";
@@ -3595,6 +3607,7 @@ export function buildDoc(
                 qParts: [],
                 options: [],
                 expl: [],
+                after: [],
               };
               quizzes.push(cur);
               mode = "question";
@@ -3618,7 +3631,14 @@ export function buildDoc(
                 applyFix(liText(it, li), fix).trim(),
               );
               if (mode === "explanation") {
-                cur.expl.push(lines.map((l) => `- ${stripBold(l)}`).join("\n"));
+                /*
+                  Пункты разбора помечаем «•», а не дефисом: разметчик текста
+                  (textBlocks ниже) узнаёт только эту точку, и от дефиса список
+                  рассыпался четырьмя отдельными абзацами — и на странице, и в
+                  выгрузке. Замечено 16 августа 2026 на разборе самопроверки
+                  «Аудитории программы»; такое место на сайте единственное.
+                */
+                cur.expl.push(lines.map((l) => `• ${stripBold(l)}`).join("\n"));
                 continue;
               }
               cur.options.push(
@@ -3634,6 +3654,18 @@ export function buildDoc(
             }
             const raw = md(it, fix).trim();
             if (!raw) continue;
+            /*
+              Абзац разбора, вынутый из квиза по замечанию клиента: он не про
+              ответ, а про то, как проходить самопроверку дальше. Внутри разбора
+              его не видно вовсе — разбор открывается только после ответа.
+            */
+            if (
+              mode === "explanation" &&
+              liftsOutOfQuiz(blockRefId(it.b, `/source/${moduleId}`, it.anchor))
+            ) {
+              cur.after.push({ component: "Phrase", size: "L", text: raw });
+              continue;
+            }
             if (mode === "explanation") cur.expl.push(stripBold(raw));
             else cur.qParts.push(stripBold(raw));
           }
@@ -3661,7 +3693,7 @@ export function buildDoc(
           };
           const out: Node[] = quizzes
             .filter((q) => q.options.length)
-            .map((q, i) => {
+            .flatMap((q, i) => {
               const want = names[i];
               const byNum = want && /^\d+$/.test(want) ? Number(want) : 0;
               const marked = q.options.some((o) => o.correct)
@@ -3677,23 +3709,36 @@ export function buildDoc(
                     const fb = o.feedback ?? sharedFor(k + 1);
                     return fb ? { ...o, feedback: fb } : o;
                   });
-              return {
-                component: "Quiz" as const,
-                ...splitQuizTop(q.question, q.qParts),
-                mode: (options.filter((o) => o.correct).length > 1
-                  ? "multiple"
-                  : "single") as "single" | "multiple",
-                items: options,
-                ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
-              };
+              /*
+                За квизом сразу идут блоки, вынутые из его разбора по замечанию
+                клиента (см. site/outOfQuiz.ts). Чаще всего их нет, и тогда
+                список из одного узла — ровно то, что было до правки.
+              */
+              return [
+                {
+                  component: "Quiz" as const,
+                  ...splitQuizTop(q.question, q.qParts),
+                  mode: (options.filter((o) => o.correct).length > 1
+                    ? "multiple"
+                    : "single") as "single" | "multiple",
+                  items: options,
+                  ...(q.expl.length ? { explanation: q.expl.join("\n\n") } : {}),
+                },
+                ...q.after,
+              ];
             });
           const wantQuiz = quizCount(dir);
-          return wantQuiz && out.length !== wantQuiz
+          /*
+            Считаем именно КВИЗЫ, а не все узлы: рядом с ними могут стоять
+            вынутые из разбора строки, и по общей длине сверка соврала бы.
+          */
+          const madeQuiz = out.filter((n) => n.component === "Quiz").length;
+          return wantQuiz && madeQuiz !== wantQuiz
             ? [
                 ...out,
                 {
                   component: "note",
-                  text: `просили ${wantQuiz} квизов, получилось ${out.length} — проверьте`,
+                  text: `просили ${wantQuiz} квизов, получилось ${madeQuiz} — проверьте`,
                 },
               ]
             : out;
