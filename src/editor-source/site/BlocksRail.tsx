@@ -2,7 +2,7 @@ import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LayoutGrid, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { scrollToBlock } from "@/lib/scroll";
+import { scrollToBlock, scrollToBlockPath, flashBlockPath } from "@/lib/scroll";
 import {
   buildBlockIndex,
   BLOCK_KINDS,
@@ -75,13 +75,18 @@ export function BlocksRail() {
     return out;
   }, [filtered]);
 
-  /* Переход: если мы уже на нужной странице, просто прокручиваем. */
+  /*
+    Переход: если мы уже на нужной странице, просто прокручиваем — к самому
+    блоку и с вспышкой, чтобы среди соседних карточек было видно, о какой речь.
+    Блока на странице не нашлось — садимся на заголовок над ним.
+  */
   const go = (b: BlockRef) => {
     if (b.slug === pathname) {
-      if (b.anchor) scrollToBlock(b.anchor);
+      if (scrollToBlockPath(b.path)) flashBlockPath(b.path);
+      else if (b.anchor) scrollToBlock(b.anchor);
       return;
     }
-    navigate(b.slug, b.anchor ? { state: { anchor: b.anchor } } : undefined);
+    navigate(b.slug, { state: { block: b.path, anchor: b.anchor || undefined } });
   };
 
   if (!open)

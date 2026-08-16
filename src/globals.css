@@ -193,3 +193,24 @@
   outline-offset: 3px;
   border-radius: 6px;
 }
+
+/* Вспышка блока, к которому подвела карта блоков. Под одним заголовком лежит
+   до одиннадцати карточек: без подсветки читатель попадает в нужное место, но
+   не понимает, о каком именно блоке шла речь. Гаснет сама; движения в ней нет,
+   только цвет, поэтому «уменьшить движение» её не касается. */
+@keyframes ds-jump {
+  from {
+    outline-color: var(--pick-line);
+    background-color: hsl(var(--brand) / 0.12);
+  }
+  to {
+    outline-color: transparent;
+    background-color: transparent;
+  }
+}
+.ds-jump {
+  outline: 2px solid transparent;
+  outline-offset: 4px;
+  border-radius: 8px;
+  animation: ds-jump 1.6s ease-out;
+}

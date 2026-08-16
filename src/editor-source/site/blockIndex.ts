@@ -11,10 +11,15 @@ import { stripDecourse } from "./decourse";
   Своего разбора источника здесь нет намеренно: посчитай мы страницы иначе —
   карта показывала бы не то, что видит читатель.
 
-  Адрес блока — ближайший заголовок ВЫШЕ него. Своих якорей у карточки или
-  цитаты нет, а заголовок есть почти всегда, и по нему страница прокручивается
-  в нужное место. Если заголовка выше не нашлось (блок в самом начале), ссылка
-  ведёт просто на страницу.
+  Адрес блока — его МЕСТО В ДЕРЕВЕ страницы (поле path, «1.3.0»): тот же адрес
+  стоит на странице в data-json-path, и по нему переход попадает точно в блок.
+  Раньше опорой был ближайший заголовок сверху, и это работало плохо: под одним
+  заголовком лежит до одиннадцати карточек, а у одиннадцати блоков заголовка
+  выше не было вовсе, и переход не двигал страницу совсем.
+
+  Заголовок всё равно записываем (section и anchor): он подписывает блок в
+  списке и служит запасным местом посадки, если нужного узла на странице не
+  нашлось.
 */
 
 export const BLOCK_KINDS = [
@@ -22,6 +27,7 @@ export const BLOCK_KINDS = [
   "Quiz",
   "Quote",
   "Prompt",
+  "Table",
   "Video",
   "Image",
   "Person Item",
@@ -35,6 +41,7 @@ export const KIND_LABEL: Record<BlockKind, string> = {
   Quiz: "Квизы",
   Quote: "Цитаты",
   Prompt: "Заготовки «Скопировать»",
+  Table: "Таблицы",
   Video: "Видео",
   Image: "Изображения",
   "Person Item": "Люди",
@@ -46,9 +53,11 @@ export type BlockRef = {
   slug: string;
   /** Название страницы из карты сайта. */
   page: string;
+  /** Место блока в дереве страницы («1.3.0») — по нему и прокручиваем. */
+  path: string;
   /** Заголовок раздела, в котором лежит блок (для человека). */
   section: string;
-  /** Якорь этого заголовка — по нему прокручиваем страницу. */
+  /** Якорь этого заголовка — запасное место посадки. */
   anchor: string;
   /** Короткая подпись самого блока. */
   label: string;
@@ -67,6 +76,15 @@ function firstText(nodes: Node[] | undefined): string {
   return "";
 }
 
+type TableNode = Extract<Node, { component: "Table" }>;
+
+/** Первая половина подписи таблицы — фраза перед перечислением столбцов. */
+const tableLead = (n: TableNode) =>
+  (n.caption ?? "").split(/\s*Столбцы:/)[0].trim().replace(/\.$/, "");
+
+/** Шапка таблицы одной строкой: «Критерий · Трудовой договор · Самозанятость». */
+const tableHead = (n: TableNode) => n.header.filter(Boolean).join(" · ");
+
 /*
   Подпись блока в списке. У каждого типа она берётся из своего поля: у карточки
   это заголовок, у квиза вопрос, у цитаты автор с организацией. Пустая подпись
@@ -83,6 +101,14 @@ function labelOf(n: Node): string {
       return [n.author, n.org].filter(Boolean).join(", ") || n.paragraphs[0] || "";
     case "Prompt":
       return n.title || n.subtitle || n.text;
+    /*
+      У таблицы подпись — та самая caption, что уезжает скринридеру, но она
+      собрана из двух частей: «Лид. Столбцы: Критерий, Договор ГПХ…». В списке
+      нужна только первая: перечисление столбцов в неё не влезет, а сама
+      таблица их и так показывает. Подписи нет — берём шапку.
+    */
+    case "Table":
+      return tableLead(n) || tableHead(n);
     case "Video":
       return n.href || "без адреса";
     case "Image":
@@ -105,8 +131,14 @@ export async function buildBlockIndex(): Promise<BlockRef[]> {
     let section = "";
     let anchor = "";
 
-    const walk = (nodes: (Node | SectionNode)[]) => {
-      for (const raw of nodes) {
+    /*
+      prefix — адрес родителя. Считаем его ровно так же, как страница считает
+      data-json-path: номер по порядку внутри родителя через точку. Дерево тут
+      то же самое (pageChildren), поэтому адреса совпадают до символа.
+    */
+    const walk = (nodes: (Node | SectionNode)[], prefix: string) => {
+      nodes.forEach((raw, i) => {
+        const path = prefix ? `${prefix}.${i}` : String(i);
         const n = raw as Node;
         if (n.component === "Heading" && n.anchor) {
           // Заменённые раскурсовкой куски помечены в тексте служебными
@@ -115,21 +147,32 @@ export async function buildBlockIndex(): Promise<BlockRef[]> {
           section = stripDecourse(n.text);
           anchor = n.anchor;
         }
-        if (KINDS.has(n.component))
+        if (KINDS.has(n.component)) {
+          /*
+            Подпись таблицы собрана из ближайшего заголовка, и в списке она
+            слово в слово повторяла бы вторую строку — «Таблицы · тот же самый
+            заголовок». В таком случае показываем шапку: по столбцам таблица
+            узнаётся с одного взгляда.
+          */
+          const own = stripDecourse(labelOf(n));
+          const label =
+            n.component === "Table" && own === section ? tableHead(n) : own;
           out.push({
             kind: n.component as BlockKind,
             slug: tree.slug,
             page: tree.title,
+            path,
             section,
             anchor,
-            label: stripDecourse(labelOf(n)),
+            label,
           });
+        }
         const kids = (raw as { children?: (Node | SectionNode)[] }).children;
-        if (kids) walk(kids);
-      }
+        if (kids) walk(kids, path);
+      });
     };
 
-    walk(tree.nodes);
+    walk(tree.nodes, "");
   }
 
   return out;

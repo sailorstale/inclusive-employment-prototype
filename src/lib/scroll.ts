@@ -38,9 +38,7 @@ function scrollParent(el: HTMLElement): HTMLElement | null {
   return null;
 }
 
-export function scrollToBlock(rawId: string): boolean {
-  const el = document.getElementById(anchorId(rawId));
-  if (!el) return false;
+function scrollElement(el: HTMLElement): boolean {
   const box = scrollParent(el);
   if (!box) {
     // Обычная страница: прокручивается само окно.
@@ -50,4 +48,64 @@ export function scrollToBlock(rawId: string): boolean {
   }
   box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - TOP_GAP;
   return true;
+}
+
+export function scrollToBlock(rawId: string): boolean {
+  const el = document.getElementById(anchorId(rawId));
+  return el ? scrollElement(el) : false;
+}
+
+/*
+  ПРОКРУТКА К САМОМУ БЛОКУ, а не к заголовку над ним.
+
+  У карточки, цитаты или таблицы своего якоря на странице нет, и карта блоков
+  раньше вела к ближайшему заголовку сверху. Под одним заголовком лежит до
+  одиннадцати карточек, так что найти нужную всё равно приходилось глазами.
+
+  Опора — адрес узла в дереве страницы (data-json-path), тот же, по которому к
+  блоку привязаны замечания клиента. Он есть у каждого узла и на обычной
+  странице, и в инструменте сверки.
+*/
+function blockElement(path: string): HTMLElement | null {
+  const found = document.querySelectorAll<HTMLElement>(
+    `[data-json-path="${CSS.escape(path)}"]`,
+  );
+  for (const wrap of Array.from(found)) {
+    // В инструменте сверки тот же адрес стоит и у строки JSON в соседней
+    // колонке. Она лежит внутри <pre> — её пропускаем.
+    if (wrap.closest("pre")) continue;
+    /*
+      Сама обёртка узла коробки не имеет (display: contents), её
+      getBoundingClientRect — нули. Меряем и подсвечиваем первого ребёнка: это
+      и есть видимый блок.
+    */
+    const el = (wrap.firstElementChild as HTMLElement | null) ?? wrap;
+    return el;
+  }
+  return null;
+}
+
+export function scrollToBlockPath(path: string): boolean {
+  const el = blockElement(path);
+  return el ? scrollElement(el) : false;
+}
+
+/*
+  Вспышка вокруг блока, к которому подвели страницу. Без неё читатель видит
+  нужное место, но не понимает, о каком из соседних блоков шла речь. Класс
+  снимаем сами: анимация одноразовая, и следующий переход к тому же блоку
+  должен её запустить заново.
+*/
+const FLASH_CLASS = "ds-jump";
+const FLASH_MS = 1600;
+
+export function flashBlockPath(path: string) {
+  const el = blockElement(path);
+  if (!el) return;
+  el.classList.remove(FLASH_CLASS);
+  // Чтение раскладки перезапускает анимацию: без него браузер склеит снятие
+  // класса и его возврат в один кадр, и вспышки не будет.
+  void el.offsetWidth;
+  el.classList.add(FLASH_CLASS);
+  window.setTimeout(() => el.classList.remove(FLASH_CLASS), FLASH_MS);
 }
