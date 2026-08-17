@@ -1359,9 +1359,9 @@ export function Step5Page() {
       <StepNav
         prev={{
           label: "Шаг 4. Поиск и оформление",
-          to: "/companies/hire/step-4",
+          to: "/companies/step-4",
         }}
-        next={{ label: "Шаг 6. Затраты", to: "/companies/hire/step-6" }}
+        next={{ label: "Шаг 6. Затраты", to: "/companies/step-6" }}
       />
 
       <FeedbackForm defaultRole="company" />
@@ -1370,13 +1370,13 @@ export function Step5Page() {
         items={[
           {
             title: "Шаг 6. Затраты",
-            to: "/companies/hire/step-6",
+            to: "/companies/step-6",
             description:
               "Во что обходится наём и сопровождение, как оптимизировать расходы.",
           },
           {
             title: "Шаг 4. Поиск и оформление",
-            to: "/companies/hire/step-4",
+            to: "/companies/step-4",
             description:
               "Где искать кандидатов, доступное собеседование и оформление.",
           },

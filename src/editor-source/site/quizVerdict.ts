@@ -30,10 +30,10 @@ import type { Node, SectionNode } from "@/editor-source/source/contentTree";
 */
 const NO_VERDICT = new Set<string>([
   "/general/team",
-  "/general/legal/benefits",
-  "/companies/hire/step-4",
-  "/companies/hire/step-5",
-  "/ngo/employers/talks",
+  "/general/benefits",
+  "/companies/step-4",
+  "/companies/step-5",
+  "/ngo/talks",
 ]);
 
 /** Нужно ли прятать строку-вердикт на этой странице. */

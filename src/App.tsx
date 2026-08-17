@@ -95,24 +95,51 @@ export default function App() {
               на него ведут восемь ссылок из текста других страниц. */}
           <Route
             path="/general/legal"
-            element={<Navigate to="/general/legal/contract" replace />}
+            element={<Navigate to="/general/contract" replace />}
           />
-          <Route path="/general/legal/contract" element={<GeneratedPage />} />
-          <Route path="/general/legal/benefits" element={<GeneratedPage />} />
-          <Route path="/general/legal/formats" element={<GeneratedPage />} />
-          <Route path="/general/legal/quotas" element={<GeneratedPage />} />
-          <Route path="/general/legal/documents" element={<GeneratedPage />} />
+          <Route path="/general/contract" element={<GeneratedPage />} />
+          <Route path="/general/benefits" element={<GeneratedPage />} />
+          <Route path="/general/formats" element={<GeneratedPage />} />
+          <Route path="/general/quotas" element={<GeneratedPage />} />
+          <Route path="/general/documents" element={<GeneratedPage />} />
           <Route path="/general/team" element={<GeneratedPage />} />
           {/* «Особые ситуации» и «Вопросы и ответы» влились в «Договор и
               оформление» (правка клиента 5 августа 2026). Старые адреса ведут
               туда же: на них есть ссылки из текста и из чужих закладок. */}
           <Route
             path="/general/legal/status"
-            element={<Navigate to="/general/legal/contract" replace />}
+            element={<Navigate to="/general/contract" replace />}
           />
           <Route
             path="/general/legal/faq"
-            element={<Navigate to="/general/legal/contract" replace />}
+            element={<Navigate to="/general/contract" replace />}
+          />
+          {/*
+            СТАРЫЕ АДРЕСА С УРОВНЕМ «legal» (до 17 августа 2026). Уровень был
+            наследством курса: правовые страницы стоят в общем ряду меню, и
+            папка над ними ничего не значила. Адреса оставлены
+            перенаправлениями — на них ведут ссылки из текста страниц, закладки
+            и панель замечаний клиента.
+          */}
+          <Route
+            path="/general/legal/contract"
+            element={<Navigate to="/general/contract" replace />}
+          />
+          <Route
+            path="/general/legal/benefits"
+            element={<Navigate to="/general/benefits" replace />}
+          />
+          <Route
+            path="/general/legal/formats"
+            element={<Navigate to="/general/formats" replace />}
+          />
+          <Route
+            path="/general/legal/quotas"
+            element={<Navigate to="/general/quotas" replace />}
+          />
+          <Route
+            path="/general/legal/documents"
+            element={<Navigate to="/general/documents" replace />}
           />
 
           {/* Для компаний (М5 — Наём по шагам). Своей страницы у раздела нет:
@@ -125,18 +152,27 @@ export default function App() {
               Страницы шагов врастают из источника: GeneratedPage по карте. */}
           <Route
             path="/companies"
-            element={<Navigate to="/companies/hire/step-1" replace />}
+            element={<Navigate to="/companies/step-1" replace />}
           />
           <Route
             path="/companies/hire"
-            element={<Navigate to="/companies/hire/step-1" replace />}
+            element={<Navigate to="/companies/step-1" replace />}
           />
-          <Route path="/companies/hire/step-1" element={<GeneratedPage />} />
-          <Route path="/companies/hire/step-2" element={<GeneratedPage />} />
-          <Route path="/companies/hire/step-3" element={<GeneratedPage />} />
-          <Route path="/companies/hire/step-4" element={<GeneratedPage />} />
-          <Route path="/companies/hire/step-5" element={<GeneratedPage />} />
-          <Route path="/companies/hire/step-6" element={<GeneratedPage />} />
+          <Route path="/companies/step-1" element={<GeneratedPage />} />
+          <Route path="/companies/step-2" element={<GeneratedPage />} />
+          <Route path="/companies/step-3" element={<GeneratedPage />} />
+          <Route path="/companies/step-4" element={<GeneratedPage />} />
+          <Route path="/companies/step-5" element={<GeneratedPage />} />
+          <Route path="/companies/step-6" element={<GeneratedPage />} />
+          {/* Старые адреса с уровнем «hire» — перенаправлениями, по той же
+              причине, что и «legal» выше. */}
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <Route
+              key={n}
+              path={`/companies/hire/step-${n}`}
+              element={<Navigate to={`/companies/step-${n}`} replace />}
+            />
+          ))}
 
           {/* Для НКО (М6 — Программа НКО). Своей страницы у раздела тоже нет:
               адрес ведёт на «Запустить программу», вступление трека стоит там
@@ -149,17 +185,37 @@ export default function App() {
           <Route path="/ngo/start" element={<GeneratedPage />} />
           <Route path="/ngo/audience" element={<GeneratedPage />} />
           <Route path="/ngo/candidates" element={<GeneratedPage />} />
-          <Route path="/ngo/candidates/guidance" element={<GeneratedPage />} />
-          <Route path="/ngo/candidates/psychology" element={<GeneratedPage />} />
-          <Route path="/ngo/candidates/vacancies" element={<GeneratedPage />} />
-          <Route path="/ngo/candidates/resume" element={<GeneratedPage />} />
-          <Route path="/ngo/candidates/interview" element={<GeneratedPage />} />
+          <Route path="/ngo/guidance" element={<GeneratedPage />} />
+          <Route path="/ngo/psychology" element={<GeneratedPage />} />
+          <Route path="/ngo/vacancies" element={<GeneratedPage />} />
+          <Route path="/ngo/resume" element={<GeneratedPage />} />
+          <Route path="/ngo/interview" element={<GeneratedPage />} />
           <Route path="/ngo/employers" element={<GeneratedPage />} />
-          <Route path="/ngo/employers/talks" element={<GeneratedPage />} />
+          <Route path="/ngo/talks" element={<GeneratedPage />} />
           <Route path="/ngo/support" element={<GeneratedPage />} />
           <Route path="/ngo/roadmap" element={<GeneratedPage />} />
           <Route path="/ngo/scale" element={<GeneratedPage />} />
           <Route path="/ngo/funding" element={<GeneratedPage />} />
+          {/* Старые адреса с уровнями «candidates» и «employers» —
+              перенаправлениями. Сам /ngo/candidates остался страницей
+              («Первичное интервью»), уехали только его бывшие дети. */}
+          {[
+            ["guidance", "guidance"],
+            ["psychology", "psychology"],
+            ["vacancies", "vacancies"],
+            ["resume", "resume"],
+            ["interview", "interview"],
+          ].map(([old, now]) => (
+            <Route
+              key={old}
+              path={`/ngo/candidates/${old}`}
+              element={<Navigate to={`/ngo/${now}`} replace />}
+            />
+          ))}
+          <Route
+            path="/ngo/employers/talks"
+            element={<Navigate to="/ngo/talks" replace />}
+          />
 
           {/* Для соискателей — заглушка. Подразделов нет; старые адреса
               /jobseekers/* ведут на заглушку, чтобы не было битых ссылок. */}

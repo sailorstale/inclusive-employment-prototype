@@ -206,7 +206,7 @@ export function NgoSupportPage() {
         </Paragraph>
         <Paragraph>
           Подробнее о подготовке руководителей и коллектива читайте в теме{" "}
-          <SmartLink to="/companies/hire/step-3">
+          <SmartLink to="/companies/step-3">
             «Шаг 3. Создание инклюзивной среды»
           </SmartLink>
           .

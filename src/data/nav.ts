@@ -13,26 +13,26 @@ export const routeTitles: Record<string, string> = {
   "/general/about": "О проекте",
   // Страницы «Правовые основы» больше нет: адрес /general/legal ведёт на первую
   // правовую страницу. Название оставлено для старых ссылок в тексте.
-  "/general/legal/documents": "Полезные документы",
+  "/general/documents": "Полезные документы",
   "/general/start": "Инклюзивное трудоустройство",
   "/general/how": "Как устроен наём",
   "/general/legal": "Правовые основы",
-  "/general/legal/contract": "Договор и оформление",
-  "/general/legal/benefits": "Льготы сотрудников",
-  "/general/legal/formats": "Форматы занятости",
-  "/general/legal/quotas": "Квоты и господдержка",
+  "/general/contract": "Договор и оформление",
+  "/general/benefits": "Льготы сотрудников",
+  "/general/formats": "Форматы занятости",
+  "/general/quotas": "Квоты и господдержка",
   "/general/team": "Этика и коммуникация",
 
   // Трек «Для компаний» (М5 — Наём по шагам). Хаб трека = страница найма по
   // шагам; отдельной страницы «Наём по шагам» больше нет (старый адрес
   // /companies/hire ведёт на /companies).
   "/companies": "Для компаний",
-  "/companies/hire/step-1": "Шаг 1. Выбор вакансии",
-  "/companies/hire/step-2": "Шаг 2. Аудит рабочей среды",
-  "/companies/hire/step-3": "Шаг 3. Создание инклюзивной среды",
-  "/companies/hire/step-4": "Шаг 4. Поиск и оформление сотрудника",
-  "/companies/hire/step-5": "Шаг 5. Онбординг и сопровождение",
-  "/companies/hire/step-6": "Шаг 6. Затраты",
+  "/companies/step-1": "Шаг 1. Выбор вакансии",
+  "/companies/step-2": "Шаг 2. Аудит рабочей среды",
+  "/companies/step-3": "Шаг 3. Создание инклюзивной среды",
+  "/companies/step-4": "Шаг 4. Поиск и оформление сотрудника",
+  "/companies/step-5": "Шаг 5. Онбординг и сопровождение",
+  "/companies/step-6": "Шаг 6. Затраты",
 
   /*
     Трек «Для НКО» — Программа НКО (М6). Модули 6.1–6.3 разрезаны на страницы по
@@ -58,13 +58,13 @@ export const routeTitles: Record<string, string> = {
   "/ngo/start": "Запустить программу",
   "/ngo/audience": "Аудитория программы",
   "/ngo/candidates": "Первичное интервью",
-  "/ngo/candidates/guidance": "Профориентация",
-  "/ngo/candidates/psychology": "Психологическая поддержка",
-  "/ngo/candidates/vacancies": "Подбор вакансий",
-  "/ngo/candidates/resume": "Помощь с резюме",
-  "/ngo/candidates/interview": "Подготовка к собеседованию",
+  "/ngo/guidance": "Профориентация",
+  "/ngo/psychology": "Психологическая поддержка",
+  "/ngo/vacancies": "Подбор вакансий",
+  "/ngo/resume": "Помощь с резюме",
+  "/ngo/interview": "Подготовка к собеседованию",
   "/ngo/employers": "Поиск работодателей",
-  "/ngo/employers/talks": "Взаимодействие с работодателями",
+  "/ngo/talks": "Взаимодействие с работодателями",
   "/ngo/support": "Сопровождение сотрудника",
   "/ngo/roadmap": "Дорожная карта",
   "/ngo/scale": "Развивать и масштабировать",
@@ -126,7 +126,7 @@ export const FOOTER_COLUMNS: {
     title: "Для компаний",
     links: [
       { label: "Инклюзивное трудоустройство", to: "/general/start" },
-      { label: "Договор и оформление", to: "/general/legal/contract" },
+      { label: "Договор и оформление", to: "/general/contract" },
       { label: "Наём по шагам", to: "/companies" },
       { label: "Этика и коммуникация", to: "/general/team" },
     ],
@@ -185,18 +185,18 @@ export const sidebars: Record<Track, SidebarSpec> = {
             формы занятости», законы стали страницей «Полезные документы», а
             меню раздела стало одноуровневым.
           */
-          { label: "Договор и оформление", path: "/general/legal/contract" },
-          { label: "Льготы сотрудников", path: "/general/legal/benefits" },
-          { label: "Форматы занятости", path: "/general/legal/formats" },
+          { label: "Договор и оформление", path: "/general/contract" },
+          { label: "Льготы сотрудников", path: "/general/benefits" },
+          { label: "Форматы занятости", path: "/general/formats" },
           /*
             Порядок хвоста задан дизайнером 7 августа 2026: квоты, этика, наём,
             документы. «Как устроен наём» переехал с третьего места сюда — обзор
             процесса читают после правовой части, а не до неё.
           */
-          { label: "Квоты и господдержка", path: "/general/legal/quotas" },
+          { label: "Квоты и господдержка", path: "/general/quotas" },
           { label: "Этика и коммуникация", path: "/general/team" },
           { label: "Как устроен наём", path: "/general/how" },
-          { label: "Полезные документы", path: "/general/legal/documents" },
+          { label: "Полезные документы", path: "/general/documents" },
         ],
       },
     ],
@@ -218,24 +218,24 @@ export const sidebars: Record<Track, SidebarSpec> = {
             и группа договаривает за него («Поиск» под «Работодателями»). Здесь
             групп нет, пункт стоит сам по себе, и договаривать за него некому.
           */
-          { label: "Шаг 1. Выбор вакансии", path: "/companies/hire/step-1" },
+          { label: "Шаг 1. Выбор вакансии", path: "/companies/step-1" },
           {
             label: "Шаг 2. Аудит рабочей среды",
-            path: "/companies/hire/step-2",
+            path: "/companies/step-2",
           },
           {
             label: "Шаг 3. Создание инклюзивной среды",
-            path: "/companies/hire/step-3",
+            path: "/companies/step-3",
           },
           {
             label: "Шаг 4. Поиск и оформление сотрудника",
-            path: "/companies/hire/step-4",
+            path: "/companies/step-4",
           },
           {
             label: "Шаг 5. Онбординг и сопровождение",
-            path: "/companies/hire/step-5",
+            path: "/companies/step-5",
           },
-          { label: "Шаг 6. Затраты", path: "/companies/hire/step-6" },
+          { label: "Шаг 6. Затраты", path: "/companies/step-6" },
         ],
       },
     ],
@@ -268,16 +268,16 @@ export const sidebars: Record<Track, SidebarSpec> = {
         label: "Соискатели",
         items: [
           { label: "Первичное интервью", path: "/ngo/candidates" },
-          { label: "Профориентация", path: "/ngo/candidates/guidance" },
+          { label: "Профориентация", path: "/ngo/guidance" },
           {
             label: "Психологическая поддержка",
-            path: "/ngo/candidates/psychology",
+            path: "/ngo/psychology",
           },
-          { label: "Подбор вакансий", path: "/ngo/candidates/vacancies" },
-          { label: "Помощь с резюме", path: "/ngo/candidates/resume" },
+          { label: "Подбор вакансий", path: "/ngo/vacancies" },
+          { label: "Помощь с резюме", path: "/ngo/resume" },
           {
             label: "Подготовка к собеседованию",
-            path: "/ngo/candidates/interview",
+            path: "/ngo/interview",
           },
         ],
       },
@@ -289,7 +289,7 @@ export const sidebars: Record<Track, SidebarSpec> = {
         label: "Работодатели",
         items: [
           { label: "Поиск", path: "/ngo/employers" },
-          { label: "Взаимодействие", path: "/ngo/employers/talks" },
+          { label: "Взаимодействие", path: "/ngo/talks" },
           { label: "Сопровождение сотрудника", path: "/ngo/support" },
         ],
       },

@@ -201,7 +201,7 @@ export function Step6Page() {
                   <Paragraph>
                     Снизить этот риск помогут чек-листы и шаблоны технического
                     задания из{" "}
-                    <SmartLink to="/companies/hire/step-2">шага 2</SmartLink>.
+                    <SmartLink to="/companies/step-2">шага 2</SmartLink>.
                   </Paragraph>
                   <Paragraph>
                     Если в компании уже работает человек с такой же формой
@@ -664,7 +664,7 @@ export function Step6Page() {
                   <Paragraph>
                     Подробно о распределении ролей, адаптации рабочих процессов
                     и сопровождении сотрудника мы рассказывали в{" "}
-                    <SmartLink to="/companies/hire/step-5">шаге 5</SmartLink>,
+                    <SmartLink to="/companies/step-5">шаге 5</SmartLink>,
                     поэтому здесь остановимся только на вопросах оптимизации
                     затрат.
                   </Paragraph>
@@ -974,7 +974,7 @@ export function Step6Page() {
       </ContentSection>
 
       <StepNav
-        prev={{ label: "Шаг 5. Онбординг", to: "/companies/hire/step-5" }}
+        prev={{ label: "Шаг 5. Онбординг", to: "/companies/step-5" }}
         next={{
           label: "Наём по шагам — к началу маршрута",
           to: "/companies/hire",
@@ -987,13 +987,13 @@ export function Step6Page() {
         items={[
           {
             title: "Шаг 5. Онбординг",
-            to: "/companies/hire/step-5",
+            to: "/companies/step-5",
             description:
               "Адаптация сотрудника, распределение ролей и сопровождение; затраты на онбординг отсылают именно сюда.",
           },
           {
             title: "Шаг 2. Аудит",
-            to: "/companies/hire/step-2",
+            to: "/companies/step-2",
             description:
               "Чек-листы и шаблон технического задания, на которые опирается раздел «Затраты на аудит».",
           },

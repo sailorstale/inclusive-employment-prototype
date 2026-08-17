@@ -49,7 +49,7 @@ export const KIND_LABEL: Record<BlockKind, string> = {
 
 export type BlockRef = {
   kind: BlockKind;
-  /** Адрес страницы, например «/companies/hire/step-2». */
+  /** Адрес страницы, например «/companies/step-2». */
   slug: string;
   /** Название страницы из карты сайта. */
   page: string;

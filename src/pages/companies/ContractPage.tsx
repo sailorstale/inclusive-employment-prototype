@@ -105,7 +105,7 @@ export function ContractPage() {
         <Paragraph>
           После получения справки работодатель обязан предоставить сотруднику
           все льготы, положенные по закону (
-          <SmartLink to="/general/legal/benefits">
+          <SmartLink to="/general/benefits">
             о льготах — далее
           </SmartLink>
           ).
@@ -316,7 +316,7 @@ export function ContractPage() {
         />
         <Footnote>
           * О льготах сотрудников с инвалидностью{" "}
-          <SmartLink to="/general/legal/benefits">расскажем далее</SmartLink>.
+          <SmartLink to="/general/benefits">расскажем далее</SmartLink>.
         </Footnote>
 
         <Paragraph>
@@ -919,13 +919,13 @@ export function ContractPage() {
         items={[
           {
             title: "Льготы и формы занятости",
-            to: "/general/legal/benefits",
+            to: "/general/benefits",
             description:
               "Какие льготы положены сотруднику и какие формы занятости доступны (ГПХ, самозанятость).",
           },
           {
             title: "Квоты и господдержка",
-            to: "/general/legal/quotas",
+            to: "/general/quotas",
             description:
               "Что такое квоты, как их выполнить, какие субсидии положены работодателю.",
           },

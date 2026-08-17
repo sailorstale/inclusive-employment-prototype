@@ -22,10 +22,10 @@ const primeryHeading = {
 } as SourceBlock;
 
 /*
-  «ДОГОВОР И ОФОРМЛЕНИЕ» — /general/legal/contract, модуль m2.
+  «ДОГОВОР И ОФОРМЛЕНИЕ» — /general/contract, модуль m2.
 */
 export const contractEdits: PageEdits = {
-  page: "/general/legal/contract",
+  page: "/general/contract",
 
   /*
     Заголовки степеней — замечание Юли от 6 августа 2026, по одному на каждую из

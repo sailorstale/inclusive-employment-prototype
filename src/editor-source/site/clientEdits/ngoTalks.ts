@@ -57,7 +57,7 @@ const pamyatkaTable = {
 } as SourceBlock;
 
 /*
-  «Разговор с работодателем» — /ngo/employers/talks, модуль m6-3.
+  «Разговор с работодателем» — /ngo/talks, модуль m6-3.
 
   ЗАГОЛОВКОВ, СНЯТЫХ СОВСЕМ, здесь больше нет. Девять строк («Говорите с
   позиции партнёра», «Письмо», «Отклик на вакансию», «Встреча» и другие) сначала
@@ -72,7 +72,7 @@ const pamyatkaTable = {
   карта страницы (level в pageMap.ts).
 */
 export const ngoTalksEdits: PageEdits = {
-  page: "/ngo/employers/talks",
+  page: "/ngo/talks",
 
   /*
     ДВЕ ВВОДНЫЕ СТРОКИ ЖИРНЫМ — замечания клиента от 12 августа 2026 («жирным»).

@@ -1,7 +1,7 @@
 import type { PageEdits } from "./types";
 
 /*
-  «ШАГ 1. ВЫБОР ВАКАНСИИ» — /companies/hire/step-1.
+  «ШАГ 1. ВЫБОР ВАКАНСИИ» — /companies/step-1.
 
   Правки по замечаниям Юли от 11 августа 2026. Что где лежит, разобрано в
   types.ts; карточки «Важно» и «Пример» этой страницы — в соседней папке
@@ -18,7 +18,7 @@ import type { PageEdits } from "./types";
   адреса переписанных блоков, а не исходных.
 */
 export const step1Edits: PageEdits = {
-  page: "/companies/hire/step-1",
+  page: "/companies/step-1",
 
   /*
     ТАБЛИЦА «ВАКАНСИЯ: СБОРЩИК ЗАКАЗОВ НА СКЛАДЕ» — замечание Мити от 11 августа

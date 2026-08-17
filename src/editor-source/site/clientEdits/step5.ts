@@ -1,7 +1,7 @@
 import type { PageEdits } from "./types";
 
 /*
-  «Шаг 5. Онбординг» — /companies/hire/step-5, модуль m5-3.
+  «Шаг 5. Онбординг» — /companies/step-5, модуль m5-3.
 
   ЗАГОЛОВКИ, УБРАННЫЕ ИЗ ОГЛАВЛЕНИЯ СПРАВА, ЖИВУТ НЕ ЗДЕСЬ. Сначала их снимали
   совсем (untype), и строка оставалась на странице обычным текстом. Дизайнер
@@ -154,7 +154,7 @@ const INSERTS: PageEdits["inserts"] = [
 ];
 
 export const step5Edits: PageEdits = {
-  page: "/companies/hire/step-5",
+  page: "/companies/step-5",
 
   rewrite: { ...REWRITE, ...QUOTE_INTRO },
   inserts: INSERTS,

@@ -139,7 +139,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       Деление четырнадцати вопросов на пять тем приехало вместе с ними (questions
       ниже): без него в оглавлении был бы список из четырнадцати строк подряд.
     */
-    slug: "/general/legal/contract",
+    slug: "/general/contract",
     title: "Договор и оформление",
     module: "m2",
     /*
@@ -201,7 +201,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     ],
   },
   {
-    slug: "/general/legal/benefits",
+    slug: "/general/benefits",
     title: "Льготы сотрудников",
     module: "m2",
     /*
@@ -252,7 +252,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       разделами: на этой странице это не итог, а сравнение форматов. Разделом
       «Как выбрать подходящий формат» страница и заканчивается — в нём таблица.
     */
-    slug: "/general/legal/formats",
+    slug: "/general/formats",
     title: "Форматы занятости",
     module: "m2",
     sections: [
@@ -295,7 +295,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     ],
   },
   {
-    slug: "/general/legal/quotas",
+    slug: "/general/quotas",
     title: "Квоты и господдержка",
     module: "m2",
     /*
@@ -460,7 +460,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       повторял бы название страницы), а под названием сразу лежат вводная фраза
       и список.
     */
-    slug: "/general/legal/documents",
+    slug: "/general/documents",
     title: "Полезные документы",
     module: "m2",
     sections: [],
@@ -477,7 +477,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
       2026: пункт «Для компаний» ведёт сразу на первый шаг, как «Основы» ведут
       на «О проекте».
     */
-    slug: "/companies/hire/step-1",
+    slug: "/companies/step-1",
     title: "Шаг 1. Выбор вакансии",
     module: "m5-1",
     intro: "vvedenie",
@@ -537,7 +537,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     noToc: ["proverte-sebya"],
   },
   {
-    slug: "/companies/hire/step-2",
+    slug: "/companies/step-2",
     /*
       НАЗВАНИЯ ЧЕТЫРЁХ ШАГОВ ПОДРОБНЕЕ — список от клиента, принят дизайнером
       10 августа 2026. Строение трека не менялось: те же шесть страниц в том же
@@ -615,7 +615,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     названы четыре темы шага, итог и задание, а голоса разжалованы во врезки.
   */
   {
-    slug: "/companies/hire/step-3",
+    slug: "/companies/step-3",
     title: "Шаг 3. Создание инклюзивной среды",
     module: "m5-2",
     sections: [
@@ -660,7 +660,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     },
   },
   {
-    slug: "/companies/hire/step-4",
+    slug: "/companies/step-4",
     title: "Шаг 4. Поиск и оформление сотрудника",
     module: "m5-2",
     /*
@@ -795,7 +795,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     },
   },
   {
-    slug: "/companies/hire/step-5",
+    slug: "/companies/step-5",
     title: "Шаг 5. Онбординг и сопровождение",
     module: "m5-3",
     sections: [
@@ -857,7 +857,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     },
   },
   {
-    slug: "/companies/hire/step-6",
+    slug: "/companies/step-6",
     title: "Шаг 6. Затраты",
     module: "m5-3",
     sections: [
@@ -975,7 +975,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     },
   },
   {
-    slug: "/ngo/candidates/guidance",
+    slug: "/ngo/guidance",
     title: "Профориентация",
     module: "m6-2",
     sections: [
@@ -1012,7 +1012,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     },
   },
   {
-    slug: "/ngo/candidates/psychology",
+    slug: "/ngo/psychology",
     title: "Психологическая поддержка",
     module: "m6-2",
     sections: [
@@ -1036,7 +1036,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     читателю негде было бы найти начало.
   */
   {
-    slug: "/ngo/candidates/vacancies",
+    slug: "/ngo/vacancies",
     title: "Подбор вакансий",
     module: "m6-2",
     intro: "podbor-vakansiy-i-podgotovka-k-sobesedovaniyu",
@@ -1054,7 +1054,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     },
   },
   {
-    slug: "/ngo/candidates/resume",
+    slug: "/ngo/resume",
     title: "Помощь с резюме",
     module: "m6-2",
     /*
@@ -1077,7 +1077,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     },
   },
   {
-    slug: "/ngo/candidates/interview",
+    slug: "/ngo/interview",
     title: "Подготовка к собеседованию",
     module: "m6-2",
     /*
@@ -1143,7 +1143,7 @@ export const OSNOVY_PAGES: OsnovyPage[] = [
     },
   },
   {
-    slug: "/ngo/employers/talks",
+    slug: "/ngo/talks",
     /*
       Название вернулось к формулировке источника — так эта глава называется в
       гугл-доке, и так же на неё ссылается текст соседней страницы («читайте в

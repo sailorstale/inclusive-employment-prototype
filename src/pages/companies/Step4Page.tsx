@@ -1656,8 +1656,8 @@ export function Step4Page() {
       </ContentSection>
 
       <StepNav
-        prev={{ label: "Шаг 3. Создание среды", to: "/companies/hire/step-3" }}
-        next={{ label: "Шаг 5. Онбординг", to: "/companies/hire/step-5" }}
+        prev={{ label: "Шаг 3. Создание среды", to: "/companies/step-3" }}
+        next={{ label: "Шаг 5. Онбординг", to: "/companies/step-5" }}
       />
 
       <FeedbackForm defaultRole="company" />
@@ -1666,7 +1666,7 @@ export function Step4Page() {
         items={[
           {
             title: "Шаг 5. Онбординг и сопровождение",
-            to: "/companies/hire/step-5",
+            to: "/companies/step-5",
             description:
               "Следующий шаг: адаптация сотрудника после оформления.",
           },
@@ -1678,7 +1678,7 @@ export function Step4Page() {
           },
           {
             title: "Шаг 3. Создание инклюзивной среды",
-            to: "/companies/hire/step-3",
+            to: "/companies/step-3",
             description: "Предыдущий шаг: подготовка доступной рабочей среды.",
           },
         ]}

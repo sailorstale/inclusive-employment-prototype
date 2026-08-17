@@ -1,10 +1,10 @@
 import type { PageEdits } from "./types";
 
 /*
-  «Психологическая поддержка» — /ngo/candidates/psychology, модуль m6-2.
+  «Психологическая поддержка» — /ngo/psychology, модуль m6-2.
 */
 export const ngoPsychologyEdits: PageEdits = {
-  page: "/ngo/candidates/psychology",
+  page: "/ngo/psychology",
 
   /*
     ЗАКРЫВАЮЩАЯ КАВЫЧКА УЕЗЖАЛА НА СЛЕДУЮЩУЮ СТРОКУ — замечание Юли

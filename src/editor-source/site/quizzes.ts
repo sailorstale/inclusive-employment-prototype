@@ -18,11 +18,11 @@ import type { Doc, Node, SectionNode } from "@/editor-source/source/contentTree"
   вместо квиза появится служебная пометка — молча пропасть он не может.
 */
 const QUIZ_PAGES: Record<string, string[]> = {
-  "/general/legal/contract": [
+  "/general/contract": [
     "Что из перечисленного может быть указано в ИПРА",
     "Какие утверждения верны",
   ],
-  "/general/legal/benefits": [
+  "/general/benefits": [
     "Какие льготы положены сотруднику с инвалидностью I или II группы",
   ],
   /*
@@ -34,13 +34,13 @@ const QUIZ_PAGES: Record<string, string[]> = {
     или самозанятость, — то есть проверяет ровно ту тему, которой посвящена эта
     страница, а не оформление сотрудника по ИПРА.
   */
-  "/general/legal/formats": [
+  "/general/formats": [
     "Частному детскому саду нужна разовая консультация юриста",
     "Предположим, что человек с инвалидностью II группы",
     "Какой из перечисленных видов деятельности запрещён для самозанятых",
     "Крупной IT-компании нужен тестировщик",
   ],
-  "/general/legal/quotas": ["Какая форма занятости позволяет выполнить квоту"],
+  "/general/quotas": ["Какая форма занятости позволяет выполнить квоту"],
 };
 
 /** Якорь и заголовок раздела с квизами — одинаковые на всех страницах. */
@@ -64,7 +64,7 @@ const QUIZ_TITLE = "Проверьте себя";
   оглавление справа он не идёт — страница объявляет его в noToc (см. pageMap).
 */
 const QUIZ_INSIDE: Record<string, string> = {
-  "/general/legal/benefits": "kakie-lgoty-polozheny-sotrudnikam-s-invalidnosty",
+  "/general/benefits": "kakie-lgoty-polozheny-sotrudnikam-s-invalidnosty",
 };
 
 /** Якорь раздела, внутрь которого идёт квиз, — или ничего, если он отдельный. */

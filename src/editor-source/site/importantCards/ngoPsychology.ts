@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «Психологическая поддержка» — /ngo/candidates/psychology, модуль m6-2.
+  «Психологическая поддержка» — /ngo/psychology, модуль m6-2.
 
   КАРТОЧКИ «ВАЖНО» ПО ЗАМЕЧАНИЯМ КЛИЕНТА. На каждом из этих абзацев стоит
   замечание «важное»: мысль подводит черту под разбором и обычным текстом
@@ -13,7 +13,7 @@ import type { PageCards } from "./types";
   абзац, и захватывать соседние нельзя.
 */
 export const ngoPsychologyCards: PageCards = {
-  page: "/ngo/candidates/psychology",
+  page: "/ngo/psychology",
   cards: [
     /*
       «Следите, чтобы поддержка не превращалась в гиперопеку…»

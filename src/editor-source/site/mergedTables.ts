@@ -27,7 +27,7 @@
   объединение молча пропадёт; пересчитать его можно на странице /blocks.
 */
 const MERGE_FIRST_COLUMN = new Set<string>([
-  // «Как нейросети помогают в работе», /companies/hire/step-3.
+  // «Как нейросети помогают в работе», /companies/step-3.
   "/source/m5-2::chto-govoryat-lyudi-s-invalidnostyu-2::table::1cye4p9",
 ]);
 

@@ -972,7 +972,7 @@ export function Step1Page() {
       <StepNav
         next={{
           label: "Шаг 2. Аудит готовности",
-          to: "/companies/hire/step-2",
+          to: "/companies/step-2",
         }}
       />
 
@@ -982,13 +982,13 @@ export function Step1Page() {
         items={[
           {
             title: "Шаг 2. Внутренний аудит",
-            to: "/companies/hire/step-2",
+            to: "/companies/step-2",
             description:
               "как проверить, готова ли среда, процессы и материалы принять выбранного кандидата.",
           },
           {
             title: "Договор и оформление",
-            to: "/general/legal/contract",
+            to: "/general/contract",
             description:
               "справочник по юридическому оформлению сотрудника с инвалидностью, понадобится дальше по треку.",
           },

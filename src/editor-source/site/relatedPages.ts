@@ -24,27 +24,27 @@ const RELATED: Record<string, string[]> = {
     про то, как устроен наём, потом про общение с человеком.
   */
   "/general/about": ["/general/start", "/general/how", "/general/team"],
-  "/general/start": ["/general/how", "/general/legal/contract", "/general/team"],
-  "/general/how": ["/general/legal/contract", "/general/team", "/general/start"],
-  "/general/legal/contract": [
-    "/general/legal/benefits",
-    "/general/legal/formats",
-    "/general/legal/quotas",
+  "/general/start": ["/general/how", "/general/contract", "/general/team"],
+  "/general/how": ["/general/contract", "/general/team", "/general/start"],
+  "/general/contract": [
+    "/general/benefits",
+    "/general/formats",
+    "/general/quotas",
   ],
-  "/general/legal/benefits": [
-    "/general/legal/formats",
-    "/general/legal/contract",
-    "/general/legal/quotas",
+  "/general/benefits": [
+    "/general/formats",
+    "/general/contract",
+    "/general/quotas",
   ],
-  "/general/legal/formats": [
-    "/general/legal/benefits",
-    "/general/legal/contract",
-    "/general/legal/quotas",
+  "/general/formats": [
+    "/general/benefits",
+    "/general/contract",
+    "/general/quotas",
   ],
-  "/general/legal/quotas": [
-    "/general/legal/benefits",
-    "/general/legal/formats",
-    "/general/legal/contract",
+  "/general/quotas": [
+    "/general/benefits",
+    "/general/formats",
+    "/general/contract",
   ],
   /*
     «Полезные документы» — список нормативки без своих разделов, и до сих пор
@@ -54,12 +54,12 @@ const RELATED: Record<string, string[]> = {
     господдержка», Трудовой кодекс и порядок ИПРА — «Договор и оформление»,
     льготы и гарантии — «Льготы сотрудников».
   */
-  "/general/legal/documents": [
-    "/general/legal/quotas",
-    "/general/legal/contract",
-    "/general/legal/benefits",
+  "/general/documents": [
+    "/general/quotas",
+    "/general/contract",
+    "/general/benefits",
   ],
-  "/general/team": ["/general/how", "/general/start", "/general/legal/contract"],
+  "/general/team": ["/general/how", "/general/start", "/general/contract"],
 
   /*
     Внутри трека ведём читателя по шагам: следующий, через один и предыдущий.
@@ -72,57 +72,57 @@ const RELATED: Record<string, string[]> = {
 
     У первого шага предыдущего нет, поэтому там три следующих подряд.
   */
-  "/companies/hire/step-1": [
-    "/companies/hire/step-2",
-    "/companies/hire/step-3",
-    "/companies/hire/step-4",
+  "/companies/step-1": [
+    "/companies/step-2",
+    "/companies/step-3",
+    "/companies/step-4",
   ],
-  "/companies/hire/step-2": [
-    "/companies/hire/step-3",
-    "/companies/hire/step-4",
-    "/companies/hire/step-1",
+  "/companies/step-2": [
+    "/companies/step-3",
+    "/companies/step-4",
+    "/companies/step-1",
   ],
-  "/companies/hire/step-3": [
-    "/companies/hire/step-4",
-    "/companies/hire/step-5",
-    "/companies/hire/step-2",
+  "/companies/step-3": [
+    "/companies/step-4",
+    "/companies/step-5",
+    "/companies/step-2",
   ],
-  "/companies/hire/step-4": [
-    "/companies/hire/step-5",
-    "/companies/hire/step-6",
-    "/companies/hire/step-3",
+  "/companies/step-4": [
+    "/companies/step-5",
+    "/companies/step-6",
+    "/companies/step-3",
   ],
-  "/companies/hire/step-5": [
-    "/companies/hire/step-6",
-    "/companies/hire/step-4",
-    "/companies/hire/step-3",
+  "/companies/step-5": [
+    "/companies/step-6",
+    "/companies/step-4",
+    "/companies/step-3",
   ],
   /*
     Шестой шаг последний, поэтому первой карточкой возвращаем читателя к началу
     трека: затраты считают, когда весь путь уже понятен, и естественный
     следующий ход — пройти его ещё раз осознанно.
   */
-  "/companies/hire/step-6": [
-    "/companies/hire/step-1",
-    "/companies/hire/step-5",
-    "/companies/hire/step-4",
+  "/companies/step-6": [
+    "/companies/step-1",
+    "/companies/step-5",
+    "/companies/step-4",
   ],
 
   "/ngo/start": ["/ngo/audience", "/ngo/candidates", "/ngo/employers"],
   "/ngo/audience": ["/ngo/candidates", "/ngo/employers", "/ngo/start"],
   "/ngo/candidates": [
-    "/ngo/candidates/guidance",
-    "/ngo/candidates/psychology",
-    "/ngo/candidates/vacancies",
+    "/ngo/guidance",
+    "/ngo/psychology",
+    "/ngo/vacancies",
   ],
-  "/ngo/candidates/guidance": [
-    "/ngo/candidates/psychology",
-    "/ngo/candidates/vacancies",
+  "/ngo/guidance": [
+    "/ngo/psychology",
+    "/ngo/vacancies",
     "/ngo/candidates",
   ],
-  "/ngo/candidates/psychology": [
-    "/ngo/candidates/vacancies",
-    "/ngo/candidates/guidance",
+  "/ngo/psychology": [
+    "/ngo/vacancies",
+    "/ngo/guidance",
     "/ngo/candidates",
   ],
   /*
@@ -130,20 +130,20 @@ const RELATED: Record<string, string[]> = {
     вакансии, потом резюме, потом подготовка к встрече. Поэтому первая карточка
     у каждой — следующий шаг этого пути.
   */
-  "/ngo/candidates/vacancies": [
-    "/ngo/candidates/resume",
-    "/ngo/candidates/interview",
-    "/ngo/candidates/guidance",
+  "/ngo/vacancies": [
+    "/ngo/resume",
+    "/ngo/interview",
+    "/ngo/guidance",
   ],
-  "/ngo/candidates/resume": [
-    "/ngo/candidates/interview",
-    "/ngo/candidates/vacancies",
+  "/ngo/resume": [
+    "/ngo/interview",
+    "/ngo/vacancies",
     "/ngo/candidates",
   ],
-  "/ngo/candidates/interview": [
+  "/ngo/interview": [
     "/ngo/support",
-    "/ngo/candidates/resume",
-    "/ngo/candidates/vacancies",
+    "/ngo/resume",
+    "/ngo/vacancies",
   ],
   /*
     Обе страницы про работодателей раньше третьей карточкой уводили в «Основы»,
@@ -151,9 +151,9 @@ const RELATED: Record<string, string[]> = {
     — назад к аудитории программы (с кем работаем, тем и предлагаем людей), с
     разговора — вперёд к дорожной карте, которой этот разговор и заканчивается.
   */
-  "/ngo/employers": ["/ngo/employers/talks", "/ngo/support", "/ngo/audience"],
-  "/ngo/employers/talks": ["/ngo/support", "/ngo/employers", "/ngo/roadmap"],
-  "/ngo/support": ["/ngo/roadmap", "/ngo/scale", "/ngo/employers/talks"],
+  "/ngo/employers": ["/ngo/talks", "/ngo/support", "/ngo/audience"],
+  "/ngo/talks": ["/ngo/support", "/ngo/employers", "/ngo/roadmap"],
+  "/ngo/support": ["/ngo/roadmap", "/ngo/scale", "/ngo/talks"],
   "/ngo/roadmap": ["/ngo/scale", "/ngo/funding", "/ngo/support"],
   "/ngo/scale": ["/ngo/funding", "/ngo/roadmap", "/ngo/start"],
   "/ngo/funding": ["/ngo/scale", "/ngo/roadmap", "/ngo/audience"],

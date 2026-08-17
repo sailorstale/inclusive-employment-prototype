@@ -41,3 +41,36 @@ const NAV_LABELS = new Map<string, string>(
 export function navLabelFor(slug: string): string {
   return NAV_LABELS.get(slug) ?? pageBySlug(slug)?.title ?? "";
 }
+
+/*
+  ЗАГОЛОВОК ГРУППЫ, В КОТОРОЙ СТОИТ СТРАНИЦА, — поле navGroup в выгрузке
+  (просьба разработчика 17 августа 2026).
+
+  Группа в меню — не уровень адреса, а просто разделитель списка. «Соискатели» и
+  «Работодатели» страницами не являются: у них нет ни адреса, ни текста. Пока
+  меню ехало отдельным блоком, разработчик брал заголовки оттуда; теперь блока
+  нет, и группу говорит сама страница.
+
+  ПОЛЯ НЕТ У СТРАНИЦ ВНЕ ГРУПП. У «Основ» и «Для компаний» меню одноуровневое,
+  групп там не существует вовсе, и пустая строка врала бы: она читается как
+  «группа есть, но забыли назвать». Отсутствие поля читается однозначно.
+*/
+const NAV_GROUPS = new Map<string, string>(
+  Object.values(sidebars).flatMap((spec) =>
+    spec.groups.flatMap((g) =>
+      g.label
+        ? g.items.flatMap((item) => [
+            [item.path, g.label] as [string, string],
+            ...(item.children ?? []).map(
+              (c) => [c.path, g.label as string] as [string, string],
+            ),
+          ])
+        : [],
+    ),
+  ),
+);
+
+/** Заголовок группы бокового меню или undefined, если страница вне групп. */
+export function navGroupFor(slug: string): string | undefined {
+  return NAV_GROUPS.get(slug);
+}

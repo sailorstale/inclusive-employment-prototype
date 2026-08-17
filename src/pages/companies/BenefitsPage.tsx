@@ -306,7 +306,7 @@ export function BenefitsPage() {
             <li>
               доплата до прожиточного минимума может быть прекращена — если ваш
               ежемесячный доход превысит этот минимум (
-              <SmartLink to="/general/legal/benefits#lb-payments">
+              <SmartLink to="/general/benefits#lb-payments">
                 как рассчитать, мы рассказывали ранее
               </SmartLink>
               ).
@@ -880,13 +880,13 @@ export function BenefitsPage() {
         items={[
           {
             title: "Квоты и господдержка",
-            to: "/general/legal/quotas",
+            to: "/general/quotas",
             description:
               "Что требует закон по квотам и какая есть господдержка работодателю.",
           },
           {
             title: "Договор и оформление",
-            to: "/general/legal/contract",
+            to: "/general/contract",
             description:
               "Как правильно оформить сотрудника с инвалидностью: справка, ИПРА, формулировки в договоре.",
           },

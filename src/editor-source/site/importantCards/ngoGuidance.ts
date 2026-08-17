@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «Профориентация» — /ngo/candidates/guidance, модуль m6-2.
+  «Профориентация» — /ngo/guidance, модуль m6-2.
 
   КАРТОЧКИ «ВАЖНО» ПО ЗАМЕЧАНИЯМ КЛИЕНТА. На каждом из этих абзацев стоит
   замечание «важное»: мысль подводит черту под разбором и обычным текстом
@@ -17,7 +17,7 @@ const PLAN = "/source/m6-2::kak-provodit-proforientaciyu-poshagovyy-plan-dly";
 const MENTAL = "/source/m6-2::osobennosti-proforientacii-lyudey-s-mentalnoy-in";
 
 export const ngoGuidanceCards: PageCards = {
-  page: "/ngo/candidates/guidance",
+  page: "/ngo/guidance",
   cards: [
     /*
       «Не перепутайте профориентацию с подбором вакансий.»

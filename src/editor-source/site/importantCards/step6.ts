@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «Шаг 6. Затраты» — /companies/hire/step-6, модуль m5-3.
+  «Шаг 6. Затраты» — /companies/step-6, модуль m5-3.
 
   ПЯТЬ ТАБЛИЦ СТАЛИ КАРТОЧКАМИ — замечания клиента «карточки», по одному на
   каждую таблицу страницы. Устроены все одинаково: слева группа сотрудников,
@@ -23,7 +23,7 @@ const FIRST = "/source/m5-3::kakie-pervonachalnye-zatraty-mogut-vozniknut-i-k";
 const REGULAR = "/source/m5-3::kakie-regulyarnye-rashody-nuzhno-uchityvat-i-moz";
 
 export const step6Cards: PageCards = {
-  page: "/companies/hire/step-6",
+  page: "/companies/step-6",
   cards: [
     /* Затраты на адаптацию физической среды — четыре группы сотрудников. */
     { blocks: [`${FIRST}::table::1eduwj3`], split: 4 },

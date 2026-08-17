@@ -1016,7 +1016,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Шесть шагов найма",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "BulletList",
     variant: null,
     semanticType: "прочее",
@@ -1026,7 +1026,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Вступление",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "ImagePlaceholder",
     variant: null,
     semanticType: "прочее",
@@ -1035,7 +1035,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Вступление",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Callout",
     variant: "info",
     semanticType: "предупреждение",
@@ -1046,7 +1046,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "3. Сравните вакансии между собой и выберите позицию для пилота",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1056,7 +1056,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Чек-лист",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1066,7 +1066,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Чек-лист",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Paragraph + BulletList",
     variant: null,
     semanticType: "пример",
@@ -1076,7 +1076,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "4. Выпишите функционал вакансии",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "BulletList",
     variant: null,
     semanticType: "пример",
@@ -1087,7 +1087,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Подумайте, кандидатам с какими особенностями здоровья вакансия подходит лучше всего",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1098,7 +1098,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Подумайте, кандидатам с какими особенностями здоровья вакансия подходит лучше всего",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "DataTable",
     variant: null,
     semanticType: "пример",
@@ -1109,7 +1109,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Подумайте, кандидатам с какими особенностями здоровья вакансия подходит лучше всего",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Disclosure",
     variant: null,
     semanticType: "кейс",
@@ -1120,7 +1120,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Прочитайте описание вакансии и подумайте, для какой формы инвалидности она подходит",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Paragraph",
     variant: null,
     semanticType: "задание",
@@ -1131,7 +1131,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Прочитайте описание вакансии и подумайте, для какой формы инвалидности она подходит",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Paragraph",
     variant: null,
     semanticType: "пример",
@@ -1142,7 +1142,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "5. Оцените безопасность вакансии вместе со специалистами охраны труда",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Paragraph",
     variant: null,
     semanticType: "пример",
@@ -1152,7 +1152,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Передача недоступной задачи другому специалисту",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Paragraph",
     variant: null,
     semanticType: "пример",
@@ -1162,7 +1162,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Обмен задачами между коллегами на основе сильных сторон",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Paragraph",
     variant: null,
     semanticType: "пример",
@@ -1173,7 +1173,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Создание новой роли, основанной на сильных сторонах специалистов",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Paragraph",
     variant: null,
     semanticType: "пример",
@@ -1183,7 +1183,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Автоматизация процессов",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "Paragraph",
     variant: null,
     semanticType: "задание",
@@ -1193,7 +1193,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Практическое задание для работодателей",
   },
   {
-    route: "/companies/hire/step-1",
+    route: "/companies/step-1",
     component: "RelatedLinks",
     variant: null,
     semanticType: "прочее",
@@ -1202,7 +1202,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: null,
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Callout",
     variant: "highlight",
     semanticType: "прочее",
@@ -1212,7 +1212,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "PageHero (Шаг 2. Внутренний аудит рабочей среды...)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Callout",
     variant: "briefing",
     semanticType: "прочее",
@@ -1222,7 +1222,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "PageHero (Шаг 2. Внутренний аудит рабочей среды...)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "DataTable",
     variant: null,
     semanticType: "прочее",
@@ -1232,7 +1232,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Участники аудита",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "BulletList",
     variant: null,
     semanticType: "пример",
@@ -1242,7 +1242,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Участники аудита (h3: Эксперт — проводник в аудите)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Callout",
     variant: "info",
     semanticType: "совет",
@@ -1252,7 +1252,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Участники аудита (h3: Эксперт — проводник в аудите)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "BulletList",
     variant: null,
     semanticType: "пример",
@@ -1262,7 +1262,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Участники аудита (h3: Эксперт — проводник в аудите)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Paragraph",
     variant: null,
     semanticType: "пример",
@@ -1272,7 +1272,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что важно проверить во время аудита",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Blockquote",
     variant: null,
     semanticType: "пример",
@@ -1282,7 +1282,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что важно проверить во время аудита",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1293,7 +1293,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Публикация вакансии)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1304,7 +1304,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Дорога до собеседования или места работы)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1314,7 +1314,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что важно проверить во время аудита (h3: Собеседование)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1325,7 +1325,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Оформление документов)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1336,7 +1336,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Инструктаж и обучение)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1347,7 +1347,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Рабочее место и физическая среда)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1358,7 +1358,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Рабочие процессы и задачи)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1369,7 +1369,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Материалы и цифровые сервисы)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1380,7 +1380,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Безопасность и экстренные ситуации)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Checklist",
     variant: null,
     semanticType: "задание",
@@ -1391,7 +1391,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Что важно проверить во время аудита (h3: Особенности аудита удалённой работы)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "BulletList",
     variant: null,
     semanticType: "пример",
@@ -1402,7 +1402,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Как составить техническое задание на аудит (h3: Функционал вакансии)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Callout",
     variant: "info",
     semanticType: "прочее",
@@ -1413,7 +1413,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Как составить техническое задание на аудит (h3: Какой результат важно получить)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1424,7 +1424,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 1)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1435,7 +1435,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 2)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1446,7 +1446,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 3)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1457,7 +1457,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 4)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1468,7 +1468,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 5)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1479,7 +1479,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 6)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1490,7 +1490,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 7)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1501,7 +1501,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 8)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1512,7 +1512,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 9)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1523,7 +1523,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 10)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "ContentSection",
     variant: null,
     semanticType: "предупреждение",
@@ -1534,7 +1534,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Типичные ошибки работодателей при проведении аудита (h3: Ошибка 11)",
   },
   {
-    route: "/companies/hire/step-2",
+    route: "/companies/step-2",
     component: "Disclosure",
     variant: null,
     semanticType: "задание",
@@ -1544,7 +1544,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Подведём итоги",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Callout",
     variant: "info",
     semanticType: "прочее",
@@ -1554,7 +1554,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: null,
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Callout",
     variant: "info",
     semanticType: "совет",
@@ -1564,7 +1564,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: null,
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Paragraph",
     variant: null,
     semanticType: "определение",
@@ -1574,7 +1574,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что такое разумная адаптация",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Callout",
     variant: "highlight",
     semanticType: "пример",
@@ -1584,7 +1584,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что такое разумная адаптация",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1594,7 +1594,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как подготовить пространство к нештатным ситуациям",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Callout",
     variant: "briefing",
     semanticType: "задание",
@@ -1604,7 +1604,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как подготовить пространство к нештатным ситуациям",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1613,7 +1613,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как убрать барьеры на входе и в навигации",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Paragraph",
     variant: null,
     semanticType: "пример",
@@ -1623,7 +1623,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как убрать барьеры на входе и в навигации",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1632,7 +1632,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как адаптировать рабочее место под повседневные задачи",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1641,7 +1641,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как убрать барьеры в общих зонах",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Blockquote",
     variant: null,
     semanticType: "цитата",
@@ -1651,7 +1651,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что говорит бизнес",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Blockquote",
     variant: null,
     semanticType: "цитата",
@@ -1661,7 +1661,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что говорят люди с инвалидностью",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "BulletList",
     variant: null,
     semanticType: "прочее",
@@ -1672,7 +1672,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Как адаптировать материалы, цифровые сервисы и рабочие инструменты",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1682,7 +1682,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как сделать рабочие и обучающие материалы доступными",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Paragraph",
     variant: null,
     semanticType: "промпт-шаблон",
@@ -1692,7 +1692,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как сделать рабочие и обучающие материалы доступными",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1702,7 +1702,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как настроить рабочие инструменты и технику",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Blockquote",
     variant: null,
     semanticType: "цитата",
@@ -1712,7 +1712,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что говорят люди с инвалидностью",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "CollapsibleBlock",
     variant: null,
     semanticType: "сравнение",
@@ -1721,7 +1721,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как нейросети помогают в работе",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Blockquote",
     variant: null,
     semanticType: "цитата",
@@ -1731,7 +1731,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что говорят люди с инвалидностью",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Callout",
     variant: "briefing",
     semanticType: "задание",
@@ -1741,7 +1741,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что говорит бизнес",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1750,7 +1750,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как подготовить руководителя и команду",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -1759,7 +1759,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как подготовить руководителя и команду",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Callout",
     variant: "briefing",
     semanticType: "задание",
@@ -1769,7 +1769,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что говорит бизнес",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Paragraph + BulletList",
     variant: null,
     semanticType: "задание",
@@ -1779,7 +1779,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Практическое задание для работодателей",
   },
   {
-    route: "/companies/hire/step-3",
+    route: "/companies/step-3",
     component: "Callout",
     variant: "info",
     semanticType: "прочее",
@@ -1789,7 +1789,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Практическое задание для работодателей",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Callout",
     variant: "briefing",
     semanticType: "задание",
@@ -1799,7 +1799,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Практическое задание",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Blockquote",
     variant: null,
     semanticType: "пример",
@@ -1809,7 +1809,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Практическое задание",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "BulletList",
     variant: null,
     semanticType: "задание",
@@ -1819,7 +1819,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Практическое задание",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Disclosure",
     variant: null,
     semanticType: "кейс",
@@ -1829,7 +1829,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Практическое задание",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Blockquote",
     variant: null,
     semanticType: "пример",
@@ -1839,7 +1839,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Пример переработанной вакансии",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Blockquote",
     variant: null,
     semanticType: "пример",
@@ -1849,7 +1849,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Пример переработанной вакансии",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Disclosure",
     variant: null,
     semanticType: "прочее",
@@ -1859,7 +1859,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Где искать кандидатов с инвалидностью",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "DataTable",
     variant: null,
     semanticType: "совет",
@@ -1869,7 +1869,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Определите канал связи",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "DataTable",
     variant: null,
     semanticType: "совет",
@@ -1879,7 +1879,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Обсудите формат встречи",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "DataTable",
     variant: null,
     semanticType: "совет",
@@ -1889,7 +1889,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Подготовьте материалы",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "DataTable",
     variant: null,
     semanticType: "совет",
@@ -1899,7 +1899,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Адаптируйте коммуникацию",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "BulletList",
     variant: null,
     semanticType: "пример",
@@ -1909,7 +1909,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Оценивайте компетенции, а не особенности здоровья",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "BulletList",
     variant: null,
     semanticType: "промпт-шаблон",
@@ -1919,7 +1919,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Оценивайте компетенции, а не особенности здоровья",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Disclosure",
     variant: null,
     semanticType: "кейс",
@@ -1929,7 +1929,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Разбор ситуаций собеседования",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Disclosure",
     variant: null,
     semanticType: "совет",
@@ -1939,7 +1939,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Оформление сотрудников с инвалидностью",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Callout",
     variant: "briefing",
     semanticType: "задание",
@@ -1949,7 +1949,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Практическое задание для работодателей",
   },
   {
-    route: "/companies/hire/step-4",
+    route: "/companies/step-4",
     component: "Callout",
     variant: "info",
     semanticType: "прочее",
@@ -1959,7 +1959,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Остались вопросы или пожелания?",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "Callout",
     variant: "info",
     semanticType: "прочее",
@@ -1970,7 +1970,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "PageHero (Шаг 5. Онбординг и сопровождение сотрудника с инвалидностью)",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "CompareColumns",
     variant: null,
     semanticType: "сравнение",
@@ -1980,7 +1980,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Почему адаптация важна для новичков",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "Callout",
     variant: "warning",
     semanticType: "предупреждение",
@@ -1990,7 +1990,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Почему адаптация важна для новичков",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "Paragraph",
     variant: null,
     semanticType: "пример",
@@ -2001,7 +2001,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Почему адаптация важна для сотрудников с приобретённой инвалидностью",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "Callout",
     variant: "info",
     semanticType: "предупреждение",
@@ -2011,7 +2011,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Кто может помочь адаптироваться сотруднику с инвалидностью",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "DataTable",
     variant: null,
     semanticType: "совет",
@@ -2021,7 +2021,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как адаптировать график работы",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "DataTable",
     variant: null,
     semanticType: "совет",
@@ -2031,7 +2031,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как ставить задачи",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "DataTable",
     variant: null,
     semanticType: "совет",
@@ -2041,7 +2041,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Как сделать командную коммуникацию удобной",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "DataTable",
     variant: null,
     semanticType: "совет",
@@ -2052,7 +2052,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Как контролировать результаты работы и давать обратную связь",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "Disclosure",
     variant: null,
     semanticType: "задание",
@@ -2062,7 +2062,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что делать, если адаптация идёт не по плану",
   },
   {
-    route: "/companies/hire/step-5",
+    route: "/companies/step-5",
     component: "Callout",
     variant: "info",
     semanticType: "промпт-шаблон",
@@ -2072,7 +2072,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Что делать, если адаптация идёт не по плану",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "Callout",
     variant: "highlight",
     semanticType: "предупреждение",
@@ -2082,7 +2082,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Введение",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "Callout",
     variant: "info",
     semanticType: "прочее",
@@ -2092,7 +2092,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Введение",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "Disclosure",
     variant: null,
     semanticType: "шаги",
@@ -2103,7 +2103,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Какие первоначальные затраты могут возникнуть и как их оптимизировать",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -2114,7 +2114,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Какие первоначальные затраты могут возникнуть и как их оптимизировать",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -2125,7 +2125,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Какие первоначальные затраты могут возникнуть и как их оптимизировать",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -2136,7 +2136,7 @@ export const inventoryGenerated: InventoryBlock[] = [
       "Какие первоначальные затраты могут возникнуть и как их оптимизировать",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -2146,7 +2146,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Поддержка инфраструктуры",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "DataTable",
     variant: null,
     semanticType: "сравнение",
@@ -2156,7 +2156,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Время команды",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "Callout",
     variant: "highlight",
     semanticType: "совет",
@@ -2166,7 +2166,7 @@ export const inventoryGenerated: InventoryBlock[] = [
     sectionTitle: "Подведём итоги",
   },
   {
-    route: "/companies/hire/step-6",
+    route: "/companies/step-6",
     component: "Card",
     variant: null,
     semanticType: "задание",

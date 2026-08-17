@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «ШАГ 4. ПОИСК И ОФОРМЛЕНИЕ СОТРУДНИКА» — /companies/hire/step-4, модуль m5-2.
+  «ШАГ 4. ПОИСК И ОФОРМЛЕНИЕ СОТРУДНИКА» — /companies/step-4, модуль m5-2.
 
   Адрес блока — это «страница::раздел::вид::отпечаток», отпечаток считается от
   текста. Блоки одной карточки должны идти ПОДРЯД и совпасть целиком, иначе
@@ -12,7 +12,7 @@ const TALK = "/source/m5-2::kak-podgotovit-i-provesti-sobesedovanie-s-kandid";
 const BIZ5 = "/source/m5-2::chto-govorit-biznes-5";
 
 export const step4Cards: PageCards = {
-  page: "/companies/hire/step-4",
+  page: "/companies/step-4",
   cards: [
     /*
       ЧЕТЫРЕ ТАБЛИЦЫ СТАЛИ КАРТОЧКАМИ — замечания Юли от 12 августа 2026

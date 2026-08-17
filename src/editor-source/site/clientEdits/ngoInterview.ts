@@ -1,7 +1,7 @@
 import type { PageEdits } from "./types";
 
 /*
-  «Собеседование» — /ngo/candidates/interview, модуль m6-2.
+  «Собеседование» — /ngo/interview, модуль m6-2.
 
   ПРАВОК ПО ЗАМЕЧАНИЯМ У СТРАНИЦЫ ПОКА НЕТ. Раньше здесь лежал список из трёх
   заголовков («Разбор встречи» и соседние), которые снимались совсем, — так
@@ -11,5 +11,5 @@ import type { PageEdits } from "./types";
   под будущие правки текста.
 */
 export const ngoInterviewEdits: PageEdits = {
-  page: "/ngo/candidates/interview",
+  page: "/ngo/interview",
 };

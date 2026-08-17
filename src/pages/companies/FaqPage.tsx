@@ -461,19 +461,19 @@ export function FaqPage() {
         items={[
           {
             title: "Договор и оформление",
-            to: "/general/legal/contract",
+            to: "/general/contract",
             description:
               "как правильно оформить сотрудника с инвалидностью и как прописать условия труда.",
           },
           {
             title: "Квоты и господдержка",
-            to: "/general/legal/quotas",
+            to: "/general/quotas",
             description:
               "что требует закон по квотам и какие есть субсидии и меры поддержки.",
           },
           {
             title: "Льготы и формы занятости",
-            to: "/general/legal/benefits",
+            to: "/general/benefits",
             description:
               "льготы по трудовому договору, ГПХ и самозанятость, сравнение форм.",
           },

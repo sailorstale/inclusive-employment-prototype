@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «ШАГ 3. СОЗДАНИЕ ИНКЛЮЗИВНОЙ СРЕДЫ» — /companies/hire/step-3, модуль m5-2.
+  «ШАГ 3. СОЗДАНИЕ ИНКЛЮЗИВНОЙ СРЕДЫ» — /companies/step-3, модуль m5-2.
 
   Три замечания Юли от 10 августа 2026 просили оформить куски текста так же,
   как оформлены соседние: «оформить как пример», «оформить как цитату»,
@@ -18,7 +18,7 @@ const BIZ3 = "/source/m5-2::chto-govorit-biznes-3";
 const BIZ4 = "/source/m5-2::chto-govorit-biznes-4";
 
 export const step3Cards: PageCards = {
-  page: "/companies/hire/step-3",
+  page: "/companies/step-3",
   cards: [
     /*
       «Оформить как пример» — абзац про коврик и кресло-коляску. Он завершает

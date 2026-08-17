@@ -102,45 +102,45 @@
     "3.50":     ["/general/team", "2.50"]
   },
 
-  "/general/legal/contract": {
+  "/general/contract": {
     "0":       null,
-    "1.0":     ["/general/legal/contract", "0.0"],
-    "2.13":    ["/general/legal/contract", "1.13"],
-    "3.4":     ["/general/legal/contract", "2.4"],
-    "3.9.0":   ["/general/legal/contract", "2.9"],
-    "3.10":    ["/general/legal/contract", "2.10"],
-    "3.13.0":  ["/general/legal/contract", "2.13.0"],
-    "3.13.9":  ["/general/legal/contract", "2.13.9"],
-    "3.13.18": ["/general/legal/contract", "2.13.18"],
-    "3.13.28": ["/general/legal/contract", "2.13.7"],
-    "3.13.29": ["/general/legal/contract", "2.13.29"],
-    "3.14.0":  ["/general/legal/contract", "2.14.0"],
-    "5.1.2":   ["/general/legal/contract", "11.1.2"]
+    "1.0":     ["/general/contract", "0.0"],
+    "2.13":    ["/general/contract", "1.13"],
+    "3.4":     ["/general/contract", "2.4"],
+    "3.9.0":   ["/general/contract", "2.9"],
+    "3.10":    ["/general/contract", "2.10"],
+    "3.13.0":  ["/general/contract", "2.13.0"],
+    "3.13.9":  ["/general/contract", "2.13.9"],
+    "3.13.18": ["/general/contract", "2.13.18"],
+    "3.13.28": ["/general/contract", "2.13.7"],
+    "3.13.29": ["/general/contract", "2.13.29"],
+    "3.14.0":  ["/general/contract", "2.14.0"],
+    "5.1.2":   ["/general/contract", "11.1.2"]
   },
 
-  "/general/legal/benefits": {
+  "/general/benefits": {
     "0":      null,
-    "1.18":   ["/general/legal/benefits", "0.18"],
-    "1.19":   ["/general/legal/benefits", "0.19"],
-    "2.10.0": ["/general/legal/benefits", "1.10"],
-    "7.0":    ["/general/legal/benefits", "2.0"],
-    "3.0":    ["/general/legal/formats", "0.0"],
-    "3.1":    ["/general/legal/formats", "0.1"],
-    "3.2":    ["/general/legal/formats", "0.2"],
-    "3.15":   ["/general/legal/formats", "0.15"],
-    "3.3.0":  ["/general/legal/formats", "0.3.0"],
-    "3.3.1":  ["/general/legal/formats", "0.3.1"],
-    "3.3.2":  ["/general/legal/formats", "0.3.2"],
-    "4.3":    ["/general/legal/formats", "1.3"]
+    "1.18":   ["/general/benefits", "0.18"],
+    "1.19":   ["/general/benefits", "0.19"],
+    "2.10.0": ["/general/benefits", "1.10"],
+    "7.0":    ["/general/benefits", "2.0"],
+    "3.0":    ["/general/formats", "0.0"],
+    "3.1":    ["/general/formats", "0.1"],
+    "3.2":    ["/general/formats", "0.2"],
+    "3.15":   ["/general/formats", "0.15"],
+    "3.3.0":  ["/general/formats", "0.3.0"],
+    "3.3.1":  ["/general/formats", "0.3.1"],
+    "3.3.2":  ["/general/formats", "0.3.2"],
+    "4.3":    ["/general/formats", "1.3"]
   },
 
-  "/general/legal/quotas": {
+  "/general/quotas": {
     "0":    null,
-    "1.1":  ["/general/legal/quotas", "0.1"],
-    "2.10": ["/general/legal/quotas", "1.10"],
-    "4.1":  ["/general/legal/quotas", "3.1"],
-    "5.5":  ["/general/legal/quotas", "4.5"],
-    "5.8":  ["/general/legal/quotas", "4.8"]
+    "1.1":  ["/general/quotas", "0.1"],
+    "2.10": ["/general/quotas", "1.10"],
+    "4.1":  ["/general/quotas", "3.1"],
+    "5.5":  ["/general/quotas", "4.5"],
+    "5.8":  ["/general/quotas", "4.8"]
   },
 
   "/general/legal/faq": {

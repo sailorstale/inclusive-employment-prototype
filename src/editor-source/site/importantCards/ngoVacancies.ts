@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «Поиск вакансий» — /ngo/candidates/vacancies, модуль m6-2.
+  «Поиск вакансий» — /ngo/vacancies, модуль m6-2.
 
   КАРТОЧКИ «ВАЖНО» ПО ЗАМЕЧАНИЯМ КЛИЕНТА. На каждом из этих абзацев стоит
   замечание «важное»: мысль подводит черту под разбором и обычным текстом
@@ -13,7 +13,7 @@ import type { PageCards } from "./types";
   абзац, и захватывать соседние нельзя.
 */
 export const ngoVacanciesCards: PageCards = {
-  page: "/ngo/candidates/vacancies",
+  page: "/ngo/vacancies",
   cards: [
     /*
       «Помните, что один и тот же кандидат может успешно справляться…»

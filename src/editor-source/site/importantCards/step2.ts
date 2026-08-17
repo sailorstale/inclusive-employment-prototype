@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «ШАГ 2. АУДИТ РАБОЧЕЙ СРЕДЫ» — /companies/hire/step-2, модуль m5-1.
+  «ШАГ 2. АУДИТ РАБОЧЕЙ СРЕДЫ» — /companies/step-2, модуль m5-1.
 
   Три замечания Юли от 10 августа 2026, каждое просит выделить абзац как важное:
   «оформим как важно» у нюанса про разный опыт экспертов и по одному слову
@@ -29,7 +29,7 @@ const STEP = `${M5}::shag-2-vnutrenniy-audit-rabochey-sredy-processov`;
 const MISTAKES = `${M5}::tipichnye-oshibki-rabotodateley-pri-provedenii-a`;
 
 export const step2Cards: PageCards = {
-  page: "/companies/hire/step-2",
+  page: "/companies/step-2",
   cards: [
     /*
       Нюанс про разный опыт экспертов. Отпечаток r0elio — от текста уже без слов

@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «Шаг 5. Онбординг» — /companies/hire/step-5, модуль m5-3.
+  «Шаг 5. Онбординг» — /companies/step-5, модуль m5-3.
 
   КАРТОЧКИ «ВАЖНО» ПО ЗАМЕЧАНИЯМ КЛИЕНТА. На каждом из этих абзацев стоит
   замечание «важное»: мысль подводит черту под разбором и обычным текстом
@@ -13,7 +13,7 @@ import type { PageCards } from "./types";
   абзац, и захватывать соседние нельзя.
 */
 export const step5Cards: PageCards = {
-  page: "/companies/hire/step-5",
+  page: "/companies/step-5",
   cards: [
     /*
       «Не путайте разумную адаптацию с гиперопекой. Разумная…»

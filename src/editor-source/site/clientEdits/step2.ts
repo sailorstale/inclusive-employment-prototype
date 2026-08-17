@@ -1,7 +1,7 @@
 import type { PageEdits } from "./types";
 
 /*
-  «ШАГ 2. АУДИТ РАБОЧЕЙ СРЕДЫ» — /companies/hire/step-2, модуль m5-1.
+  «ШАГ 2. АУДИТ РАБОЧЕЙ СРЕДЫ» — /companies/step-2, модуль m5-1.
 
   Замечания Юли от 10 августа 2026. Семь записей ниже отвечают на семь
   замечаний; ещё одно (десять проверок стали разделами) живёт в карте страницы,
@@ -11,7 +11,7 @@ import type { PageEdits } from "./types";
   одиннадцати файлам источника, 4238 блоков.
 */
 export const step2Edits: PageEdits = {
-  page: "/companies/hire/step-2",
+  page: "/companies/step-2",
 
   rewrite: {
     /*

@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «ШАГ 1. ВЫБОР ВАКАНСИИ» — /companies/hire/step-1.
+  «ШАГ 1. ВЫБОР ВАКАНСИИ» — /companies/step-1.
 
   Пять карточек по замечаниям Юли от 11 августа 2026: три «Важно» и два
   «Пример». Клиент показала на пять кусков текста и написала «отметить как
@@ -18,7 +18,7 @@ const M = "/source/m5-1";
 const STEP1 = `${M}::shag-1-vybor-vakansii-dlya-inklyuzivnogo-nayma`;
 
 export const step1Cards: PageCards = {
-  page: "/companies/hire/step-1",
+  page: "/companies/step-1",
   cards: [
     /*
       ПЛЕЕР ВМЕСТО ПОМЕТКИ «ВИДЕО» — вторая половина замечания msn9ll8jap7v («не

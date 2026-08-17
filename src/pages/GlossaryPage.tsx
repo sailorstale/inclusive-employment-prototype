@@ -57,7 +57,7 @@ export function GlossaryPage() {
         items={[
           {
             title: "Договор и оформление",
-            to: "/general/legal/contract",
+            to: "/general/contract",
             description: "Как правильно оформить сотрудника с инвалидностью.",
           },
           {
@@ -67,7 +67,7 @@ export function GlossaryPage() {
           },
           {
             title: "Договор и оформление",
-            to: "/general/legal/contract",
+            to: "/general/contract",
             description: "Оформление сотрудника и ответы на частые вопросы.",
           },
         ]}

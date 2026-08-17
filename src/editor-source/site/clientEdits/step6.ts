@@ -1,10 +1,10 @@
 import type { PageEdits } from "./types";
 
 /*
-  «Шаг 6. Затраты» — /companies/hire/step-6, модуль m5-3.
+  «Шаг 6. Затраты» — /companies/step-6, модуль m5-3.
 */
 export const step6Edits: PageEdits = {
-  page: "/companies/hire/step-6",
+  page: "/companies/step-6",
 
   /*
     Заключительный абзац раздела о регулярных расходах — замечание клиента. Он

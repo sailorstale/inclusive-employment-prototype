@@ -10,7 +10,7 @@ import { loadModule } from "./lib.mjs";
   (pageToc). Проверка результата после правки уровней: в оглавление идут секции
   (H2) и подзаголовки H3, всё, что мельче, из него уходит.
 
-    node tools/directives/pagetoc.mjs /companies/hire/step-3
+    node tools/directives/pagetoc.mjs /companies/step-3
     node tools/directives/pagetoc.mjs            — все страницы
 */
 

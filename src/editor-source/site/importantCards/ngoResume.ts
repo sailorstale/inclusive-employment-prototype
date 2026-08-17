@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «Резюме» — /ngo/candidates/resume, модуль m6-2.
+  «Резюме» — /ngo/resume, модуль m6-2.
 
   КАРТОЧКИ «ВАЖНО» ПО ЗАМЕЧАНИЯМ КЛИЕНТА. На каждом из этих абзацев стоит
   замечание «важное»: мысль подводит черту под разбором и обычным текстом
@@ -13,7 +13,7 @@ import type { PageCards } from "./types";
   абзац, и захватывать соседние нельзя.
 */
 export const ngoResumeCards: PageCards = {
-  page: "/ngo/candidates/resume",
+  page: "/ngo/resume",
   cards: [
     /* «Отдельный вопрос — нужно ли указывать инвалидность в резюм…» */
     { blocks: ["/source/m6-2::shag-4-sostavlenie-ili-obnovlenie-rezyume::paragraph::13fkwy9"], title: "Важно" },

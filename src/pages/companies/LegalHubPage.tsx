@@ -114,19 +114,19 @@ export function LegalHubPage() {
         <CardGrid cols={2}>
           <Card
             link="internal"
-            to="/general/legal/contract"
+            to="/general/contract"
             title="Договор и оформление"
             description="Как оформить сотрудника по трудовому договору. Справка об инвалидности, группы, ИПРА."
           />
           <Card
             link="internal"
-            to="/general/legal/benefits"
+            to="/general/benefits"
             title="Льготы"
             description="Какие льготы положены сотрудникам с инвалидностью и какие формы занятости доступны."
           />
           <Card
             link="internal"
-            to="/general/legal/quotas"
+            to="/general/quotas"
             title="Квоты"
             description="Что такое квоты, как их выполнить, на какие субсидии и меры господдержки рассчитывать."
           />

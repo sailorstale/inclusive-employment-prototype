@@ -67,7 +67,7 @@ export function JobseekersStubPage() {
           },
           {
             title: "Льготы и формы занятости",
-            to: "/general/legal/benefits",
+            to: "/general/benefits",
             description:
               "Что даёт трудовой договор, что сохраняется при трудоустройстве и чем отличаются ГПХ и самозанятость.",
           },

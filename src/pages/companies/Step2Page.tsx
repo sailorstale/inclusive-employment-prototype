@@ -1349,8 +1349,8 @@ export function Step2Page() {
       </ContentSection>
 
       <StepNav
-        prev={{ label: "Шаг 1. Выбор вакансии", to: "/companies/hire/step-1" }}
-        next={{ label: "Шаг 3. Создание среды", to: "/companies/hire/step-3" }}
+        prev={{ label: "Шаг 1. Выбор вакансии", to: "/companies/step-1" }}
+        next={{ label: "Шаг 3. Создание среды", to: "/companies/step-3" }}
       />
 
       <FeedbackForm defaultRole="company" />
@@ -1359,12 +1359,12 @@ export function Step2Page() {
         items={[
           {
             title: "Шаг 3. Создание среды",
-            to: "/companies/hire/step-3",
+            to: "/companies/step-3",
             description: "Как адаптировать рабочее место и процессы.",
           },
           {
             title: "Шаг 1. Выбор вакансии",
-            to: "/companies/hire/step-1",
+            to: "/companies/step-1",
             description: "С каких позиций проще начать подбор.",
           },
           {

@@ -1281,7 +1281,7 @@ export function TeamPage() {
           </BulletList>
           <Paragraph>
             Подробнее о создании доступной среды мы расскажем в модуле 5{" "}
-            <SmartLink to="/companies/hire/step-3">
+            <SmartLink to="/companies/step-3">
               «Создание инклюзивной среды»
             </SmartLink>
             .
@@ -1577,7 +1577,7 @@ export function TeamPage() {
         items={[
           {
             title: "Создание среды",
-            to: "/companies/hire/step-3",
+            to: "/companies/step-3",
             description:
               "Как адаптировать рабочее место и процессы (модуль 5 «Создание инклюзивной среды»).",
           },

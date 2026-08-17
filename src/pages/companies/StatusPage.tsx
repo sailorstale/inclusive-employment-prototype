@@ -278,7 +278,7 @@ export function StatusPage() {
         />
         <Footnote>
           * О льготах сотрудников с инвалидностью{" "}
-          <SmartLink to="/general/legal/benefits">расскажем далее</SmartLink>.
+          <SmartLink to="/general/benefits">расскажем далее</SmartLink>.
         </Footnote>
       </ContentSection>
 
@@ -808,13 +808,13 @@ export function StatusPage() {
         items={[
           {
             title: "Договор и оформление",
-            to: "/general/legal/contract",
+            to: "/general/contract",
             description:
               "Как оформить сотрудника с инвалидностью по трудовому договору и какие условия в нём зафиксировать.",
           },
           {
             title: "Льготы и гарантии",
-            to: "/general/legal/benefits",
+            to: "/general/benefits",
             description:
               "Какие льготы положены сотруднику с инвалидностью, работающему по трудовому договору.",
           },

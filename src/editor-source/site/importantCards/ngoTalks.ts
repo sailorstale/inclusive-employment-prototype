@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «Разговор с работодателем» — /ngo/employers/talks, модуль m6-3.
+  «Разговор с работодателем» — /ngo/talks, модуль m6-3.
 
   КАРТОЧКИ «ВАЖНО» ПО ЗАМЕЧАНИЯМ КЛИЕНТА. На каждом из этих абзацев стоит
   замечание «важное»: мысль подводит черту под разбором и обычным текстом
@@ -13,7 +13,7 @@ import type { PageCards } from "./types";
   абзац, и захватывать соседние нельзя.
 */
 export const ngoTalksCards: PageCards = {
-  page: "/ngo/employers/talks",
+  page: "/ngo/talks",
   cards: [
     /* «Задача первого контакта — не рассказать всё о программе и …» */
     { blocks: ["/source/m6-3::pervoe-obschenie-s-rabotodatelem::paragraph::3qenf4"], title: "Важно" },

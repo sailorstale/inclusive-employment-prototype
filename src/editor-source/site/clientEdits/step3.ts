@@ -1,7 +1,7 @@
 import type { PageEdits } from "./types";
 
 /*
-  «ШАГ 3. СОЗДАНИЕ ИНКЛЮЗИВНОЙ СРЕДЫ» — /companies/hire/step-3, модуль m5-2.
+  «ШАГ 3. СОЗДАНИЕ ИНКЛЮЗИВНОЙ СРЕДЫ» — /companies/step-3, модуль m5-2.
 
   Что сюда класть, разобрано в types.ts. Готовые примеры на каждый случай — в
   соседних файлах: how.ts (переписанный текст, снятая разметка, вставки),
@@ -200,7 +200,7 @@ const INSERTS: PageEdits["inserts"] = [
 ];
 
 export const step3Edits: PageEdits = {
-  page: "/companies/hire/step-3",
+  page: "/companies/step-3",
   cells: CELLS,
   cellRows: CELL_ROWS,
   rewrite: REWRITE,

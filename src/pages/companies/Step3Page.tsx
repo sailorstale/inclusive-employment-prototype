@@ -1221,11 +1221,11 @@ export function Step3Page() {
       <StepNav
         prev={{
           label: "Шаг 2. Аудит готовности",
-          to: "/companies/hire/step-2",
+          to: "/companies/step-2",
         }}
         next={{
           label: "Шаг 4. Поиск и оформление",
-          to: "/companies/hire/step-4",
+          to: "/companies/step-4",
         }}
       />
 
@@ -1235,7 +1235,7 @@ export function Step3Page() {
         items={[
           {
             title: "Шаг 4. Поиск, собеседования и оформление",
-            to: "/companies/hire/step-4",
+            to: "/companies/step-4",
             description:
               "Где искать кандидатов, доступное собеседование и оформление на работу.",
           },
@@ -1247,7 +1247,7 @@ export function Step3Page() {
           },
           {
             title: "Шаг 2. Аудит",
-            to: "/companies/hire/step-2",
+            to: "/companies/step-2",
             description:
               "Откуда берётся список барьеров, которые устраняются на этом шаге.",
           },

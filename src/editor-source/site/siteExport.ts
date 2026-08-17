@@ -30,7 +30,7 @@ import {
   type PageMeta,
   type PageMetaOg,
 } from "./pageMeta";
-import { navLabelFor } from "./navLabel";
+import { navLabelFor, navGroupFor } from "./navLabel";
 
 /*
   ЕДИНЫЙ JSON ВСЕГО САЙТА — одно ТЗ разработчику на все страницы сразу:
@@ -77,6 +77,13 @@ export type PageExport = {
     ли мы его.
   */
   navTitle: string;
+  /*
+    navGroup — заголовок группы бокового меню, в которой стоит страница
+    («Соискатели», «Работодатели»). Группа не является уровнем адреса и своей
+    страницы не имеет: это разделитель списка, и узнать о нём разработчику
+    больше неоткуда. Поля НЕТ у страниц вне групп — см. navLabel.ts.
+  */
+  navGroup?: string;
   meta: PageMeta;
   "meta-og": PageMetaOg;
   h1: string;
@@ -192,9 +199,11 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     console.error("[мета] страницы без описания:", noDescription.join(", "));
   const pages = trees.map((t): PageExport => {
     const seo = metaFor(t.slug, t.title);
+    const group = navGroupFor(t.slug);
     return {
       slug: t.slug,
       navTitle: navLabelFor(t.slug),
+      ...(group ? { navGroup: group } : {}),
       meta: seo.meta,
       "meta-og": seo.og,
       h1: t.title,

@@ -1,7 +1,7 @@
 import type { PageCards } from "./types";
 
 /*
-  «Подготовка к собеседованию» — /ngo/candidates/interview, модуль m6-2.
+  «Подготовка к собеседованию» — /ngo/interview, модуль m6-2.
 
   ТАБЛИЦА ПРО ГРУППЫ КАНДИДАТОВ СТАЛА АККОРДЕОНАМИ — замечание Юли msq4orlr7dlb
   («попробовать карточки») с решением дизайнера «Давай оформим в аккордеоны».
@@ -19,7 +19,7 @@ import type { PageCards } from "./types";
   сделает вид, что всё хорошо.
 */
 export const ngoInterviewCards: PageCards = {
-  page: "/ngo/candidates/interview",
+  page: "/ngo/interview",
   cards: [
     {
       blocks: [

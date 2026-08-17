@@ -1,10 +1,10 @@
 import type { PageEdits } from "./types";
 
 /*
-  «КВОТЫ И ГОСПОДДЕРЖКА» — /general/legal/quotas, модуль m2.
+  «КВОТЫ И ГОСПОДДЕРЖКА» — /general/quotas, модуль m2.
 */
 export const quotasEdits: PageEdits = {
-  page: "/general/legal/quotas",
+  page: "/general/quotas",
 
   /*
     Ссылка на «Консультант Плюс» со слова «Квота» — замечание Юли от 7 августа

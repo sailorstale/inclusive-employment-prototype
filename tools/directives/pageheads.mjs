@@ -13,7 +13,7 @@ import { loadModule } from "./lib.mjs";
   гуглдоке. Оглавление (pagetoc.mjs) для этого не годится — оно показывает
   только то, что попало в навигацию, а решение принимается по всему списку.
 
-    node tools/directives/pageheads.mjs /companies/hire/step-4
+    node tools/directives/pageheads.mjs /companies/step-4
     node tools/directives/pageheads.mjs            — все страницы
 */
 
