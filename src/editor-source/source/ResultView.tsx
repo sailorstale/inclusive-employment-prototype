@@ -399,9 +399,9 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           {/*
             Абзацы цитаты разбираем тем же механизмом, что и выгрузка: строки,
             начатые маркером, — настоящий список, а не абзац с символом внутри
-            (см. paragraphsToTags). Иначе прототип и JSON разъедутся.
+            (см. mdBlocksToTags). Иначе прототип и JSON разъедутся.
           */}
-          {quizText(node.paragraphs.join("\n"))}
+          {quizText(node.text)}
         </Quote>
       );
 

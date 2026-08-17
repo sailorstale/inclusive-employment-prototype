@@ -98,7 +98,7 @@ function labelOf(n: Node): string {
     case "Quiz":
       return n.title || n.question;
     case "Quote":
-      return [n.author, n.org].filter(Boolean).join(", ") || n.paragraphs[0] || "";
+      return [n.author, n.org].filter(Boolean).join(", ") || n.text.split("\n")[0] || "";
     case "Prompt":
       return n.title || n.subtitle || n.text;
     /*

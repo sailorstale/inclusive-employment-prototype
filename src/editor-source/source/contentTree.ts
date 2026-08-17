@@ -26,6 +26,7 @@ import { blockRefId, type ResolveMd } from "./blockResolve";
 import { mergesFirstColumn } from "@/editor-source/site/mergedTables";
 import { liftsOutOfQuiz } from "@/editor-source/site/outOfQuiz";
 import { cardArt } from "./cardArt";
+import { smallImageSlug } from "@/figma/smallImageFiles";
 import { linkOrgSites } from "./orgSites";
 import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
 import { markRe } from "@/editor-source/richText";
@@ -89,6 +90,10 @@ type NodeKind =
         Иллюстрация-стикер в углу — сюжет из набора Small Image (не адрес файла:
         файлы разработчик забирает с прототипа сам). Ставится карточкам-ярлыкам
         «Важно» и «Пример», см. cardArt.ts.
+
+        В дереве лежит русское название сюжета, в выгрузке — его слаг
+        («Важная информация» → important). Перевод делает cleanForExport,
+        таблица — в smallImageFiles.ts.
       */
       image?: string;
       title?: string;
@@ -125,7 +130,18 @@ type NodeKind =
         этой цитаты не пустует, а отменено.
       */
       noPhoto?: true;
-      paragraphs: string[];
+      /*
+        РЕЧЬ ЦЕЛИКОМ ОДНИМ ПОЛЕМ. До 17 августа 2026 здесь лежал массив
+        paragraphs — по абзацу на строку, — и цитата была единственным
+        компонентом, у которого текст устроен не как у всех. Разработчик
+        попросил привести её к общему виду: одно поле text, абзацы и
+        перечисления внутри размечены тегами, как в любом другом тексте.
+
+        Внутри дерева абзацы по-прежнему разделены переводом строки, а пункты
+        перечисления начинаются с «• »: по этим приметам разметка блоками и
+        собирается перед выгрузкой.
+      */
+      text: string;
     }
   /*
     caption — подпись для скринридера, визуально скрытая (решение разработчика:
@@ -1826,7 +1842,6 @@ export function buildDoc(
       parts.push(opts.map((i) => i?.text ?? "").join(" "));
       parts.push(opts.map((i) => i?.feedback ?? "").join(" "));
     }
-    if (Array.isArray(o.paragraphs)) parts.push((o.paragraphs as string[]).join(" "));
     if (Array.isArray(o.header)) parts.push((o.header as string[]).join(" "));
     if (Array.isArray(o.rows))
       // Ячейка — либо строка, либо узел с содержимым (перечисление внутри).
@@ -3100,7 +3115,9 @@ export function buildDoc(
             logo,
             photo,
             ...(noPhoto ? { noPhoto: true as const } : {}),
-            paragraphs: speech,
+            // Строго перевод строки: по нему разбор узнаёт абзацы, а подряд
+            // идущие «• …» собирает в один список (см. mdBlocksToTags).
+            text: speech.join("\n"),
           });
           if (missing.length)
             out.push({ component: "note", text: `Дополнить авторство: ${missing.join(", ")}` });
@@ -4714,15 +4731,6 @@ export function mdLinesToTags(text: string): string {
     .join("<br>");
 }
 
-/** Абзацы цитаты: строки-пункты «• …» собираются в один список. */
-export function paragraphsToTags(items: string[]): string[] {
-  return textBlocks(items.join("\n")).map((b) =>
-    b.kind === "ul"
-      ? `<ul>${b.lines.map((l) => `<li>${mdToTags(l)}</li>`).join("")}</ul>`
-      : mdToTags(b.lines[0]),
-  );
-}
-
 export function mdBlocksToTags(text: string): string {
   const blocks = textBlocks(text);
   if (blocks.length <= 1 && blocks[0]?.kind !== "ul") return mdToTags(text);
@@ -4806,7 +4814,7 @@ const TEXT_KEYS = new Set([
   "explanation",
 ]);
 /** Поля-массивы строк и таблица (массив массивов). */
-const TEXT_ARRAY_KEYS = new Set(["paragraphs", "header"]);
+const TEXT_ARRAY_KEYS = new Set(["header"]);
 /*
   Списка «полей-абзацев» больше нет: абзацами разбирается ЛЮБОЕ текстовое поле.
   Разбор по имени компонента был узким местом — переносы строк точно так же
@@ -4977,6 +4985,17 @@ const cleanForExport = (
         out[k] = v.replace(/([a-z])([A-Z0-9])/g, "$1-$2").toLowerCase();
         continue;
       }
+      /*
+        Стикер-иллюстрация едет слагом («important»), а не русским названием
+        сюжета: слаг совпадает с именем файла в public/figma/illustrations/,
+        и разработчик заводит картинку у себя по тому же ключу — ровно как
+        иконку. Внутри дерева название остаётся русским: это свойство Name
+        набора Small Image в Figma, и прототип рисует картинку по нему.
+      */
+      if (k === "image" && typeof v === "string") {
+        out[k] = smallImageSlug(v);
+        continue;
+      }
       // Текст уезжает разработчику с тегами; служебные поля — как есть.
       if (TEXT_KEYS.has(k) && typeof v === "string") {
         /*
@@ -4985,15 +5004,6 @@ const cleanForExport = (
           пункты уехали бы разработчику символами «•» посреди текста.
         */
         out[k] = component === "List Item" ? mdLinesToTags(v) : mdBlocksToTags(v);
-        continue;
-      }
-      /*
-        Абзацы цитаты: подряд идущие пункты «• …» — один список, а не абзацы с
-        символом внутри. Тот же разбор, что у ячейки таблицы и у квиза.
-        Проверять ДО TEXT_ARRAY_KEYS: иначе под разбор попадёт и шапка таблицы.
-      */
-      if (k === "paragraphs" && Array.isArray(v)) {
-        out[k] = paragraphsToTags(v as string[]);
         continue;
       }
       if (TEXT_ARRAY_KEYS.has(k) && Array.isArray(v)) {

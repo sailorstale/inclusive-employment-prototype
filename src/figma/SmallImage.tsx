@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { SMALL_IMAGE_FILE, type SmallImageName } from "./smallImageFiles";
 
 /*
   Figma: component set «Small Image» (6257:43392), 18 вариантов по свойству Name.
@@ -8,7 +9,9 @@ import { cn } from "@/lib/utils";
   или врезки. Смысла сама по себе не несёт — текст без неё читается полностью.
 
   Рисунки достаны из Figma и лежат в public/figma/illustrations/. Файлы названы
-  латинскими слагами, сюжет → файл сопоставляется картой FILE ниже.
+  латинскими слагами, сюжет → файл сопоставляется картой в smallImageFiles.ts.
+  Та же карта даёт слаг сюжета для выгрузки разработчику, поэтому она вынесена
+  из компонента: имя картинки в прототипе и имя картинки в JSON обязаны совпадать.
 
   Расхождения с Figma (честно):
   1) Свойства Size в Figma нет: мастер 88, а в жизни рисунок масштабируют руками
@@ -20,55 +23,7 @@ import { cn } from "@/lib/utils";
      имена и код не трогаются.
 */
 
-export type SmallImageName =
-  | "Подготовка резюме"
-  | "Рамка"
-  | "Отклик на вакансию"
-  | "Собеседование"
-  | "Оформление"
-  | "Задачи и коммуникация в команде"
-  | "Комп"
-  | "Поиск"
-  | "Чеклист"
-  | "Пин"
-  | "Скрепка"
-  | "Галка"
-  | "Окно"
-  | "Рабочий стол"
-  | "Документы"
-  | "Баблы"
-  | "AI"
-  | "Важная информация"
-  | "Пример";
-
-/*
-  Сюжет → ИМЯ ФАЙЛА в public/figma/illustrations/, вместе с расширением.
-  Раньше здесь лежал только слаг, а «.svg» дописывался в коде: все рисунки
-  приехали из Figma вектором. «Важная информация» и «Пример» дизайнер выгрузил
-  картинкой (png), поэтому расширение стало частью записи — иначе пришлось бы
-  гадать по имени.
-*/
-const FILE: Record<SmallImageName, string> = {
-  "Подготовка резюме": "resume.svg",
-  Рамка: "frame.svg",
-  "Отклик на вакансию": "apply.svg",
-  Собеседование: "interview.svg",
-  Оформление: "onboarding.svg",
-  "Задачи и коммуникация в команде": "teamwork.svg",
-  Комп: "computer.svg",
-  Поиск: "search.svg",
-  Чеклист: "checklist.svg",
-  Пин: "pin.svg",
-  Скрепка: "clip.svg",
-  Галка: "check.svg",
-  Окно: "window.svg",
-  "Рабочий стол": "desktop.svg",
-  Документы: "documents.svg",
-  Баблы: "bubbles.svg",
-  AI: "ai.svg",
-  "Важная информация": "important.png",
-  Пример: "example.png",
-};
+export type { SmallImageName };
 
 type Props = {
   /** Сюжет — единственное свойство набора в Figma. */
@@ -80,7 +35,7 @@ type Props = {
 
 export function SmallImage({ name, size = 64, className }: Props) {
   // BASE_URL — чтобы путь работал и в dev (/), и в прод-сборке (подкаталог).
-  const src = `${import.meta.env.BASE_URL}figma/illustrations/${FILE[name]}`;
+  const src = `${import.meta.env.BASE_URL}figma/illustrations/${SMALL_IMAGE_FILE[name]}`;
 
   return (
     <img

@@ -125,7 +125,7 @@ export function useModuleDoc(moduleId: string): Doc | null {
       // до него её вернула бы правка редактора, а она у каждого стенда своя
       // (см. unlink в clientEdits).
       const own = dropClientLinks(text, base(type, text, md, anchor));
-      const out = decourse(dropStepNumber(type, own, anchor), moduleId);
+      const out = decourse(dropStepNumber(type, own, anchor, moduleId), moduleId);
       return type.startsWith("h") ? canonize(out) : out;
     };
   }, [edits, pathname, moduleId]);

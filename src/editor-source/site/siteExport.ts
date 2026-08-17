@@ -30,7 +30,7 @@ import {
   type PageMeta,
   type PageMetaOg,
 } from "./pageMeta";
-import { buildSiteMenu, navLabelFor, type SiteMenu } from "./siteMenu";
+import { navLabelFor } from "./navLabel";
 
 /*
   ЕДИНЫЙ JSON ВСЕГО САЙТА — одно ТЗ разработчику на все страницы сразу:
@@ -69,26 +69,27 @@ function toSections(blocks: SourceBlock[]): Section[] {
 export type PageExport = {
   slug: string;
   /*
-    nav — подпись страницы в боковом меню. Стоит рядом с h1 и намеренно от него
-    отличается: в меню пункт читается под заголовком своей группы и повторять её
-    слова незачем («Поиск» под «Работодателями» вместо «Поиска работодателей»).
-    Поле есть у КАЖДОЙ страницы, даже когда совпадает с h1: поле, которого то
-    нет, то есть, заставляет каждый раз проверять, не забыли ли мы его.
+    navTitle — подпись страницы в боковом меню. Стоит рядом с h1 и намеренно от
+    него отличается: в меню пункт читается под заголовком своей группы и
+    повторять её слова незачем («Поиск» под «Работодателями» вместо «Поиска
+    работодателей»). Поле есть у КАЖДОЙ страницы, даже когда совпадает с h1:
+    поле, которого то нет, то есть, заставляет каждый раз проверять, не забыли
+    ли мы его.
   */
-  nav: string;
+  navTitle: string;
   meta: PageMeta;
   "meta-og": PageMetaOg;
   h1: string;
   article: unknown[];
 };
 /*
-  Меню идёт ОТДЕЛЬНЫМ блоком, а не только подписями внутри страниц: заголовки
-  групп («Соискатели», «Работодатели») страницами не являются, и в списке
-  страниц им места нет. Устройство блока — в siteMenu.ts.
+  МЕНЮ САЙТА В ФАЙЛЕ НЕТ (просьба разработчика 17 августа 2026). Шапку, боковое
+  меню и подвал он собирает в конструкторе руками и данные для них из выгрузки
+  не берёт. От меню в файле осталась только подпись самой страницы — поле
+  navTitle, см. navLabel.ts.
 */
 export type OsnovyExport = {
   section: string;
-  menu: SiteMenu;
   pages: PageExport[];
 };
 
@@ -132,7 +133,7 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
       // до него её вернула бы правка редактора, а она у каждого стенда своя
       // (см. unlink в clientEdits).
       const own = dropClientLinks(text, base(type, text, md, anchor));
-      const out = decourse(dropStepNumber(type, own, anchor), page.module);
+      const out = decourse(dropStepNumber(type, own, anchor, page.module), page.module);
       // Единые названия повторяющихся блоков — как на сайте (см. canon.ts).
       return type.startsWith("h") ? canonize(out) : out;
     };
@@ -193,12 +194,12 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
     const seo = metaFor(t.slug, t.title);
     return {
       slug: t.slug,
-      nav: navLabelFor(t.slug),
+      navTitle: navLabelFor(t.slug),
       meta: seo.meta,
       "meta-og": seo.og,
       h1: t.title,
       article: toExport(t.nodes),
     };
   });
-  return { section: "Сайт", menu: buildSiteMenu(), pages };
+  return { section: "Сайт", pages };
 }

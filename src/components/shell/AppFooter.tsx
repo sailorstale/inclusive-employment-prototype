@@ -4,8 +4,8 @@ import { FOOTER_COLUMNS as columns } from "@/data/nav";
 
 // AppFooter (00 — Карта сайта) — три колонки ссылок по трекам + нижняя строка
 // (копирайт + мета-ссылки). Сами колонки живут в карте навигации рядом с
-// остальным меню: подвал — такая же навигация, и уезжает разработчику вместе с
-// шапкой и боковым меню (см. siteMenu.ts).
+// остальным меню (см. FOOTER_COLUMNS в data/nav.ts): подвал — такая же
+// навигация, как шапка и боковое меню.
 
 const footerLink =
   "text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm";

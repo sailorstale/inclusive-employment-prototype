@@ -1494,6 +1494,23 @@ const NGO_VACANCY_STEPS = new Set([
 */
 const NGO_STEPS_SECTION = "etapy-raboty-nko";
 
+/*
+  ПРАВИЛА УВАЖИТЕЛЬНОГО ОБЩЕНИЯ на «Этике и коммуникации» — номера сняты со всех
+  пяти названий (просьба разработчика 17 августа 2026). Правила собраны в пять
+  карточек, стоящих рядом, и порядок в них ничего не значит: «Не бойтесь
+  ошибиться» не следует из «Замечайте человека». Номер обещал последовательность,
+  которой нет.
+
+  Здесь названы СЕКЦИЯ И МОДУЛЬ, а не пять заголовков: подзаголовку достаётся
+  якорь его секции, своего у него нет. Модуль нужен потому, что якорь
+  «podvedem-itogi» не уникален — такая же секция есть ещё в четырёх модулях. Ни
+  один их подзаголовок сегодня с цифры не начинается, но полагаться на это
+  значит ждать беды: допишут в чужой модуль нумерованный подзаголовок, и номер
+  тихо исчезнет там, где его не трогали.
+*/
+const RULES_SECTION = "podvedem-itogi";
+const RULES_MODULE = "m3";
+
 /** Начало «Шаг 3.», «Шаг 3 —», «Шаг 3:» — с любым знаком после номера или без него. */
 const STEP_PREFIX = /^\s*Шаг\s+\d+\s*(?:[.)]|—|–|-|:)?\s+/u;
 
@@ -1506,15 +1523,21 @@ function cutPrefix(md: string, re: RegExp): string {
   return out.trim() ? out : md;
 }
 
+/** Ведущий порядковый номер: «1. », «2) ». */
+const NUMBER_PREFIX = /^\s*\d+\s*[.)]\s+/u;
+
 /** Заголовок шага — без ведущего «Шаг N.» и без порядкового номера. */
 export function dropStepNumber(
   type: string,
   md: string,
   anchor?: string,
+  module?: string,
 ): string {
   if (!anchor) return md;
   if (type === "h3" && anchor === NUMBERED_STEP_SECTION)
-    return cutPrefix(md, /^\s*\d+\s*[.)]\s+/u);
+    return cutPrefix(md, NUMBER_PREFIX);
+  if (type === "h3" && anchor === RULES_SECTION && module === RULES_MODULE)
+    return cutPrefix(md, NUMBER_PREFIX);
   if (type === "h3" && anchor === NGO_STEPS_SECTION)
     return cutPrefix(md, STEP_PREFIX);
   if (type !== "h2") return md;

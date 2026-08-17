@@ -120,7 +120,6 @@ function nodeText(n: unknown): string {
   const parts: string[] = [];
   for (const k of ["text", "title", "question", "author", "role"])
     if (typeof o[k] === "string") parts.push(o[k] as string);
-  if (Array.isArray(o.paragraphs)) parts.push((o.paragraphs as string[]).join(" "));
   if (Array.isArray(o.items))
     parts.push((o.items as { text?: string }[]).map((i) => i.text ?? "").join(" "));
   if (Array.isArray(o.children)) parts.push((o.children as unknown[]).map(nodeText).join(" "));

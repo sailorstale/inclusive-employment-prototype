@@ -22,8 +22,6 @@ export function nodeLabel(n: unknown): string {
   for (const k of ["text", "question", "title", "author", "caption"])
     if (typeof o[k] === "string" && (o[k] as string).trim())
       return (o[k] as string).trim();
-  if (Array.isArray(o.paragraphs) && o.paragraphs.length)
-    return String((o.paragraphs as string[])[0]);
   if (Array.isArray(o.header) && o.header.length)
     return (o.header as string[]).join(" · ");
   if (Array.isArray(o.children))

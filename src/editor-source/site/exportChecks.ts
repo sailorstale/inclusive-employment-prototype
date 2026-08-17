@@ -1,5 +1,6 @@
 import { routeTitles } from "@/data/nav";
 import { KNOWN_ICONS } from "@/editor-source/source/iconForText";
+import { SMALL_IMAGE_SLUGS } from "@/figma/smallImageFiles";
 import { editKeyConflicts } from "./clientEdits";
 import { cardBlockConflicts } from "./importantCards";
 import type { OsnovyExport } from "./siteExport";
@@ -46,6 +47,16 @@ export type Problem = {
   ровно так же. Вот их проверка и ловит.
 */
 const ALLOWED_ICONS = KNOWN_ICONS;
+
+/*
+  СТИКЕР-ИЛЛЮСТРАЦИЯ. Здесь список, наоборот, ЗАКРЫТЫЙ: сюжеты рисует дизайнер, и
+  в наборе Small Image их ровно девятнадцать. В выгрузку сюжет уезжает слагом
+  («important»), а перевод названия в слаг словарный — значит появился новый
+  способ разъехаться молча: сюжет в наборе есть, а записи для него нет, и вместо
+  слага уедет русское название. Глазами такое ловится случайно, поэтому ловим
+  проверкой.
+*/
+const ALLOWED_IMAGES = new Set(SMALL_IMAGE_SLUGS);
 
 /** Имена компонентов, о которых договорились. Всё остальное — разъезд. */
 export const ALLOWED_COMPONENTS = new Set([
@@ -183,9 +194,15 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       `Иконку «${icon}» прототип нарисовать не умеет — заведите её в iconForText.ts или проверьте написание`,
     );
 
+  const image = str(n.image);
+  if (image && !ALLOWED_IMAGES.has(image))
+    add(
+      "картинка-не-заведена",
+      "medium",
+      `Сюжет «${image}» уехал не слагом — заведите его в smallImageFiles.ts или проверьте написание`,
+    );
+
   for (const f of TEXT_FIELDS) if (typeof n[f] === "string") checkText(f, n[f] as string, add);
-  if (Array.isArray(n.paragraphs))
-    (n.paragraphs as unknown[]).forEach((p, i) => typeof p === "string" && checkText(`абзац ${i + 1}`, p, add));
 
   for (const { href, external } of hrefsOf(n)) {
     if (!href.trim()) add("ссылка-пустая", "high", "Ссылка без адреса");
@@ -270,8 +287,7 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
           add("организация-битая", "medium", `В названии организации сидит имя автора: «${org}»`);
       }
       if (!str(n.logo)) add("цитата-неполная", "high", "У цитаты нет логотипа");
-      if (!Array.isArray(n.paragraphs) || !n.paragraphs.length)
-        add("цитата-неполная", "high", "У цитаты нет текста");
+      if (!str(n.text)) add("цитата-неполная", "high", "У цитаты нет текста");
       /*
         Исключение из правила «имя и должность всегда»: на «Инклюзивном
         трудоустройстве» говорит не человек, а фонд ОРБИ — подписью работает
