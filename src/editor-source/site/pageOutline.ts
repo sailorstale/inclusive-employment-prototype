@@ -6,7 +6,6 @@ import type {
 } from "@/editor-source/source/contentTree";
 import type { OsnovyPage } from "./pageMap";
 import { quizSection, quizHost, withQuizInside } from "./quizzes";
-import { hideQuizVerdict } from "./quizVerdict";
 import { questionSections } from "./questionGroups";
 import { liftHeadingLinks } from "./headingLinks";
 
@@ -273,16 +272,9 @@ export function pageParts(
     своего раздела.
   */
   const host = quizzes ? quizHost(page.slug) : undefined;
-  /*
-    Строку-вердикт над разбором квиза на некоторых страницах не показываем — см.
-    quizVerdict.ts. Делаем это здесь, в общей доводке: так снятие достаётся и
-    квизам из карты секций, и тем, что приезжают отдельным разделом.
-  */
   const finish = (list: SectionNode[]) => {
-    const done = hideQuizVerdict(liftHeadingLinks(list), page.slug);
-    const quiz = quizzes
-      ? hideQuizVerdict([quizzes], page.slug)[0]
-      : undefined;
+    const done = liftHeadingLinks(list);
+    const quiz = quizzes;
     if (quiz && host)
       return [
         ...done.map((s) => (s.anchor === host ? withQuizInside(s, quiz) : s)),
