@@ -531,7 +531,6 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           items={node.items}
           // Один ответ или несколько — решает раскладка, по числу верных вариантов.
           mode={node.mode}
-          instant={node.instant}
           noVerdict={node.noVerdict}
           explanation={quizText(node.explanation)}
         />
