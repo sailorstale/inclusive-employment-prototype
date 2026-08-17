@@ -4734,6 +4734,26 @@ export function mdLinesToTags(text: string): string {
 export function mdBlocksToTags(text: string): string {
   const blocks = textBlocks(text);
   if (blocks.length <= 1 && blocks[0]?.kind !== "ul") return mdToTags(text);
+  return blocksToTags(blocks);
+}
+
+/*
+  РЕЧЬ ЦИТАТЫ — абзац ВСЕГДА в теге, даже когда он один (замечание разработчика
+  17 августа 2026: «в нескольких цитатах тоже есть проблема с форматом текста»).
+
+  Общее правило формата другое: одна фраза едет голой строкой, а теги
+  появляются, только когда есть что разделять. Для обычного текста это верно —
+  тег там ничего не добавляет. У цитаты выходило иначе: из 41 цитаты 10 состоят
+  из одного абзаца и уезжали без единого тега, а 31 приезжала с тегами.
+  Разработчик не может вставлять речь одним движением: сначала надо посмотреть,
+  что ему прислали на этот раз.
+*/
+export function quoteTextToTags(text: string): string {
+  return blocksToTags(textBlocks(text));
+}
+
+/** Абзацы и перечисления блоками: <p> и <ul><li>. */
+function blocksToTags(blocks: ReturnType<typeof textBlocks>): string {
   return blocks
     .map((b) =>
       b.kind === "ul"
@@ -5002,8 +5022,16 @@ const cleanForExport = (
           Вопрос и разбор квиза — не одна фраза, а несколько абзацев, внутри
           которых бывают перечисления. Их размечаем блоками (<p>, <ul>), иначе
           пункты уехали бы разработчику символами «•» посреди текста.
+
+          У цитаты правило строже: абзац всегда в теге, даже одинокий
+          (см. quoteTextToTags).
         */
-        out[k] = component === "List Item" ? mdLinesToTags(v) : mdBlocksToTags(v);
+        out[k] =
+          component === "List Item"
+            ? mdLinesToTags(v)
+            : component === "Quote"
+              ? quoteTextToTags(v)
+              : mdBlocksToTags(v);
         continue;
       }
       if (TEXT_ARRAY_KEYS.has(k) && Array.isArray(v)) {
