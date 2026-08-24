@@ -1,13 +1,15 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { Stat, FilterBtn } from "@/editor/adminUi";
 import {
   buildBlockIndex,
+  buildDocLinks,
   BLOCK_KINDS,
   KIND_LABEL,
   type BlockKind,
   type BlockRef,
+  type DocPlace,
 } from "./blockIndex";
 
 /*
@@ -21,6 +23,15 @@ import {
 
   Страница служебная, поэтому собрана из простых элементов админ-экранов
   (те же плашки и фильтры, что в «Инвентаре»), а не из компонентов сайта.
+
+  ВТОРОЙ ВИД — «ЯНДЕКС ДИСК». Дополнительные материалы переехали с гугл-доков
+  на Диск заказчика, и адреса на сайте подменяются на лету (см. yandexDisk).
+  Проверить такую подмену иначе как обойдя двадцать девять страниц было бы
+  нечем, поэтому здесь список всех переехавших документов: название, рабочая
+  ссылка на новый адрес и страницы, где документ открывается.
+
+  Список считается по СОБРАННОМУ САЙТУ, поэтому он же служит проверкой: пустая
+  строка «на сайте не стоит» значит, что документа на страницах нет.
 */
 
 export function BlocksPage() {
@@ -28,11 +39,16 @@ export function BlocksPage() {
   const [err, setErr] = React.useState<string | null>(null);
   const [kind, setKind] = React.useState<BlockKind | "Все">("Все");
   const [query, setQuery] = React.useState("");
+  const [vid, setVid] = React.useState<"blocks" | "docs">("blocks");
+  const [docs, setDocs] = React.useState<DocPlace[] | null>(null);
 
   React.useEffect(() => {
     let alive = true;
     buildBlockIndex()
       .then((rows) => alive && setAll(rows))
+      .catch((e) => alive && setErr(String(e)));
+    buildDocLinks()
+      .then((rows) => alive && setDocs(rows))
       .catch((e) => alive && setErr(String(e)));
     return () => {
       alive = false;
@@ -102,6 +118,19 @@ export function BlocksPage() {
           менялась вместе с фильтром и читалась как общее число. Сколько сейчас
           в списке — видно в заголовке группы. */}
       <div className="flex flex-wrap items-center gap-2">
+        <FilterBtn active={vid === "blocks"} onClick={() => setVid("blocks")}>
+          Блоки сайта
+        </FilterBtn>
+        <FilterBtn active={vid === "docs"} onClick={() => setVid("docs")}>
+          Яндекс Диск
+        </FilterBtn>
+      </div>
+
+      {vid === "docs" ? (
+        <DocsList docs={docs} />
+      ) : (
+        <>
+      <div className="flex flex-wrap items-center gap-2">
         <Stat label="блоков всего" value={all.length} />
         {BLOCK_KINDS.map((k) => (
           <Stat key={k} label={KIND_LABEL[k].toLowerCase()} value={counts.get(k) ?? 0} />
@@ -161,6 +190,82 @@ export function BlocksPage() {
           </section>
         ))
       )}
+        </>
+      )}
     </div>
+  );
+}
+
+/*
+  СПИСОК ПЕРЕЕХАВШИХ ДОКУМЕНТОВ. Каждая строка — рабочая ссылка на новый адрес
+  и страницы, где документ открывается на сайте.
+
+  Страницы считаются по собранному сайту, поэтому «на сайте не стоит» — это не
+  недосмотр списка, а факт: такого документа на страницах нет. У шести
+  материалов так и есть, разбор каждого лежит в «Сверка ссылок на доп
+  материалы.md» в корне репозитория.
+*/
+function DocsList({ docs }: { docs: DocPlace[] | null }) {
+  if (!docs)
+    return <p className="text-muted-foreground">Считаем страницы сайта…</p>;
+
+  const naSajte = docs.filter((d) => d.pages.length);
+  const bez = docs.filter((d) => !d.pages.length);
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Stat label="документов в таблице" value={docs.length} />
+        <Stat label="стоят на сайте" value={naSajte.length} />
+        <Stat label="на сайт не вышли" value={bez.length} />
+      </div>
+
+      <p className="max-w-prose text-sm text-muted-foreground">
+        Дополнительные материалы переехали с Гугл-доков на Яндекс Диск
+        заказчика. Адреса подменяются при сборке страницы, сам текст не
+        меняется. Ссылка открывает новый адрес в отдельной вкладке.
+      </p>
+
+      {[
+        { title: "Стоят на сайте", items: naSajte },
+        { title: "На сайт не вышли", items: bez },
+      ]
+        .filter((g) => g.items.length)
+        .map((g) => (
+          <div key={g.title} className="space-y-2">
+            <h2 className="text-lg font-semibold text-foreground">
+              {g.title}{" "}
+              <span className="text-sm font-normal text-muted-foreground">
+                · {g.items.length}
+              </span>
+            </h2>
+            <ul className="divide-y rounded-md border">
+              {g.items.map((d) => (
+                <li
+                  key={`${d.docId}-${d.href}`}
+                  className="flex items-start gap-3 px-3 py-2.5"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm text-foreground">{d.name}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {d.pages.length
+                        ? d.pages.map((p) => p.title).join(" · ")
+                        : "на сайте не стоит"}
+                    </span>
+                  </span>
+                  <a
+                    href={d.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs font-medium text-brand transition-colors hover:underline"
+                  >
+                    Открыть <ExternalLink className="h-3 w-3" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+    </section>
   );
 }

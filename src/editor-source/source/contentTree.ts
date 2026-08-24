@@ -25,6 +25,7 @@ import type { Section } from "./PlaygroundColumn";
 import { blockRefId, type ResolveMd } from "./blockResolve";
 import { mergesFirstColumn } from "@/editor-source/site/mergedTables";
 import { liftsOutOfQuiz } from "@/editor-source/site/outOfQuiz";
+import { toYandexDisk } from "@/editor-source/site/yandexDisk";
 import { cardArt } from "./cardArt";
 import { smallImageSlug } from "@/figma/smallImageFiles";
 import { linkOrgSites } from "./orgSites";
@@ -4240,7 +4241,14 @@ export function buildDoc(
           стоит в соседнем абзаце текстом: забрать абзац в директиву нельзя, он
           пропал бы целиком, ведь эта ветка отдаёт только плеер.
         */
-        const url = inBlocks ?? videoUrl(dir);
+        /*
+          Ролики тоже переехали на Яндекс Диск. Адрес плеера приходит отдельным
+          полем, мимо текста блока, поэтому общая подмена его не видит и он
+          меняется здесь (см. yandexDisk). Точка одна на всё: сюда сходятся и
+          адрес из источника, и из карточки в коде, и из директивы с сервера.
+        */
+        const found = inBlocks ?? videoUrl(dir);
+        const url = found ? toYandexDisk(found) : found;
         return [{ component: "Video", ...(url ? { href: url } : {}) }];
       }
 

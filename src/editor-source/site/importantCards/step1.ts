@@ -35,7 +35,7 @@ export const step1Cards: PageCards = {
     {
       blocks: [`${M}::vvedenie::paragraph::1mo4e5q`],
       target: "Video",
-      href: "https://disk.yandex.ru/i/Bv7n_bOBZJJLmg",
+      href: "https://disk.360.yandex.ru/i/WCceJ8cORaHMeQ",
     },
 
     /*

@@ -8,6 +8,7 @@ import { canonize } from "./canon";
 import { dropStepNumber } from "./pageMap";
 import { dropScaffold } from "./dropScaffold";
 import { applyClientEdits, dropClientLinks } from "./clientEdits";
+import { toYandexDisk } from "./yandexDisk";
 import { wrapImportantCards } from "./importantCards";
 import { dropCardTitles } from "./cardTitle";
 import { cutFromCards } from "./cutFromCard";
@@ -123,8 +124,10 @@ export function useModuleDoc(moduleId: string): Doc | null {
     return (type: string, text: string, md: string, anchor?: string) => {
       // Ссылку, снятую по замечанию клиента, убираем СРАЗУ ПОСЛЕ резолвера:
       // до него её вернула бы правка редактора, а она у каждого стенда своя
-      // (см. unlink в clientEdits).
-      const own = dropClientLinks(text, base(type, text, md, anchor));
+      // (см. unlink в clientEdits). Там же меняем адреса переехавших на Яндекс
+      // Диск документов — по той же причине: старый адрес мог приехать из
+      // правки редактора (см. yandexDisk).
+      const own = toYandexDisk(dropClientLinks(text, base(type, text, md, anchor)));
       const out = decourse(dropStepNumber(type, own, anchor, moduleId), moduleId);
       return type.startsWith("h") ? canonize(out) : out;
     };

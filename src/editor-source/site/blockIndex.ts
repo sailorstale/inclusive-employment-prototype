@@ -1,6 +1,7 @@
 import type { Node, SectionNode } from "@/editor-source/source/contentTree";
 import { buildSiteTrees } from "./siteExport";
 import { stripDecourse } from "./decourse";
+import { MOVED_DOCS, type MovedDoc } from "./yandexDisk";
 
 /*
   КАРТА БЛОКОВ САЙТА — где какие карточки, квизы, цитаты, заготовки, видео и
@@ -176,4 +177,50 @@ export async function buildBlockIndex(): Promise<BlockRef[]> {
   }
 
   return out;
+}
+
+/** Документ и страницы сайта, на которых он теперь открывается. */
+export type DocPlace = MovedDoc & {
+  /** Страницы, где стоит ссылка. Пусто — документа на сайте нет. */
+  pages: { slug: string; title: string }[];
+};
+
+/*
+  ГДЕ КАКОЙ ДОКУМЕНТ ОТКРЫВАЕТСЯ — считаем по СОБРАННОМУ САЙТУ, а не по списку
+  в коде. Так список не протухнет: он показывает ровно то, что видит читатель,
+  и сам говорит, какие документы на сайт не вышли.
+
+  Ищем по НОВОМУ адресу: подмена (см. yandexDisk) к этому моменту уже прошла.
+  Найдись документ по старому адресу — значит подмена куда-то не дотянулась, и
+  на странице это будет видно как «на сайте не стоит».
+
+  Обходим и строки внутри массивов: ячейки таблицы лежат в дереве сырыми
+  строками (Table.rows), и обход только по объектам их пропустил бы.
+*/
+export async function buildDocLinks(): Promise<DocPlace[]> {
+  const trees = await buildSiteTrees();
+  const found = new Map<string, { slug: string; title: string }[]>();
+
+  for (const tree of trees) {
+    const seen = new Set<string>();
+    const look = (value: unknown) => {
+      if (typeof value === "string") {
+        for (const d of MOVED_DOCS) if (value.includes(d.href)) seen.add(d.href);
+        return;
+      }
+      if (Array.isArray(value)) {
+        value.forEach(look);
+        return;
+      }
+      if (value && typeof value === "object")
+        Object.values(value as Record<string, unknown>).forEach(look);
+    };
+    look(tree.nodes);
+    for (const href of seen) {
+      if (!found.has(href)) found.set(href, []);
+      found.get(href)!.push({ slug: tree.slug, title: tree.title });
+    }
+  }
+
+  return MOVED_DOCS.map((d) => ({ ...d, pages: found.get(d.href) ?? [] }));
 }

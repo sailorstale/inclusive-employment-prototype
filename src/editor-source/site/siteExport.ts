@@ -18,6 +18,7 @@ import { mergeQuizFeedback } from "./quizAnswers";
 import { withCodeMarkup } from "./markup";
 import { withCodeEdits } from "./sourceEdits";
 import { applyClientEdits, dropClientLinks } from "./clientEdits";
+import { toYandexDisk } from "./yandexDisk";
 import { wrapImportantCards } from "./importantCards";
 import { dropCardTitles } from "./cardTitle";
 import { decourse } from "./decourse";
@@ -138,8 +139,10 @@ export async function buildSiteTrees(): Promise<PageTree[]> {
     const resolve = (type: string, text: string, md: string, anchor?: string) => {
       // Ссылку, снятую по замечанию клиента, убираем СРАЗУ ПОСЛЕ резолвера:
       // до него её вернула бы правка редактора, а она у каждого стенда своя
-      // (см. unlink в clientEdits).
-      const own = dropClientLinks(text, base(type, text, md, anchor));
+      // (см. unlink в clientEdits). Там же меняем адреса переехавших на Яндекс
+      // Диск документов — по той же причине: старый адрес мог приехать из
+      // правки редактора (см. yandexDisk).
+      const own = toYandexDisk(dropClientLinks(text, base(type, text, md, anchor)));
       const out = decourse(dropStepNumber(type, own, anchor, page.module), page.module);
       // Единые названия повторяющихся блоков — как на сайте (см. canon.ts).
       return type.startsWith("h") ? canonize(out) : out;

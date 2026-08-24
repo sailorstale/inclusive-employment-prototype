@@ -27,7 +27,7 @@ export const ngoStartCards: PageCards = {
     {
       blocks: ["/source/m6-1::vvedenie::paragraph::1mo4e5q"],
       target: "Video",
-      href: "https://disk.yandex.ru/i/zwrVDlQlxy_ECA",
+      href: "https://disk.360.yandex.ru/i/FTZPpqrVs3lL7A",
     },
 
     /*
