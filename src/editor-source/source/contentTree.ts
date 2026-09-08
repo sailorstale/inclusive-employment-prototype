@@ -4700,15 +4700,58 @@ export function dropEmptyWrappers<T extends Node | SectionNode>(nodes: T[]): T[]
   return out;
 }
 
+/*
+  СЛОВО-ВЕРДИКТ ИЗ НАЧАЛА РАЗБОРА СРЕЗАЕМ.
+
+  В источнике разбор варианта часто начинается с приговора: «Верно. Вы
+  обращаетесь напрямую к коллеге…», «Неверно. Даже если рядом переводчик…».
+  Автору так удобно: он пишет разбор, и по первому слову видно, к какому
+  варианту он относится. Но над разбором и так стоит вердикт, который считается
+  по отметкам correct (Feedback в Quiz.tsx, та же таблица у разработчика), и
+  читатель видел «Верно» дважды подряд: заголовком и первым словом абзаца.
+  Разработчик показал это 8 сентября 2026.
+
+  Срезаем ровно «Верно.» и «Неверно.» (с точкой или восклицанием) — то, что
+  слово в слово повторяет вердикт. Мягкие оценки автора вроде «Не совсем
+  верно.» или «Не лучший вариант.» остаются: это уже объяснение, а не дубль.
+
+  Именно здесь, а не при разборе источника: по этому первому слову два сборщика
+  квизов узнают верный вариант, и срезать его раньше нельзя. Здесь узел уже
+  собран, а дальше одна дорога и на страницу, и в выгрузку.
+*/
+const VERDICT_LEAD = /^\s*(?:не)?верно[.!]\s*/iu;
+
+const withoutVerdictLead = (feedback: string): string => {
+  const rest = feedback.replace(VERDICT_LEAD, "");
+  return rest ? rest : feedback;
+};
+
+function stripQuizVerdicts<T extends Node | SectionNode>(nodes: T[]): T[] {
+  return nodes.map((n): T => {
+    if (n.component === "Quiz")
+      return {
+        ...n,
+        items: n.items.map((it) =>
+          it.feedback ? { ...it, feedback: withoutVerdictLead(it.feedback) } : it,
+        ),
+      };
+    if ("children" in n && Array.isArray(n.children))
+      return { ...n, children: stripQuizVerdicts(n.children as Node[]) } as T;
+    return n;
+  });
+}
+
 /** Применить правила системы ко всему документу. */
 export function normalizeDoc(doc: Doc): Doc {
   return annotate({
     ...doc,
-    children: dropEmptyWrappers(
-      doc.children.map((n) =>
-        (n as SectionNode).component === "Section Container"
-          ? { ...(n as SectionNode), children: normalizeNodes((n as SectionNode).children) }
-          : normalizeNode(n as Node),
+    children: stripQuizVerdicts(
+      dropEmptyWrappers(
+        doc.children.map((n) =>
+          (n as SectionNode).component === "Section Container"
+            ? { ...(n as SectionNode), children: normalizeNodes((n as SectionNode).children) }
+            : normalizeNode(n as Node),
+        ),
       ),
     ),
   });

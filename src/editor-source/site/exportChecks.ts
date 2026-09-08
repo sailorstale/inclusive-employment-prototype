@@ -414,6 +414,15 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
         else if (seen.has(t)) add("квиз-дубль-варианта", "medium", `Вариант «${t.slice(0, 40)}» повторяется`);
         seen.add(t);
       }
+      /*
+        Вердикт над разбором считается по correct, а разбор из источника сам
+        начинался с «Верно.» — и слово шло дважды подряд. Срезает normalizeDoc
+        (contentTree.ts); здесь ловим, если разбор пришёл в обход него.
+      */
+      for (const it of items) {
+        if (/^\s*(?:не)?верно[.!]/iu.test(str(it.feedback)))
+          add("квиз-вердикт-в-разборе", "medium", `Разбор варианта начинается со слова-вердикта: «${str(it.feedback).slice(0, 40)}»`);
+      }
       if (!str(n.explanation)) add("квиз-без-разбора", "low", "У квиза нет разбора");
       break;
     }
