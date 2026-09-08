@@ -384,6 +384,9 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
           yandex={node.logo === "yandex"}
           org={node.org}
           logo={node.logo === "yandex" ? undefined : node.logo}
+          // Частная компания: ни логотипа, ни серого места под него
+          // (см. noLogo в contentTree).
+          noLogo={node.noLogo}
           author={node.author}
           // Должность приходит с markdown-ссылкой на сайт фонда (см. orgSites).
           role={node.role ? renderInline(node.role) : undefined}

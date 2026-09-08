@@ -37,6 +37,7 @@ import {
   findPhotoSlug,
   mentionsYandex,
   trimToCatalogName,
+  isCompanySlug,
   CANON_ORG,
   type LogoEntry,
   type AvatarEntry,
@@ -107,9 +108,9 @@ type NodeKind =
       author?: string;
       role?: string;
       /*
-        ПОЛНАЯ ЦИТАТА — решение дизайнера: имя, должность, организация и
-        логотип есть ВСЕГДА. Цитаты без логотипа не бывает: либо логотип
-        организации, либо знак Яндекса. Чего нет — то дозаполняется руками,
+        ПОЛНАЯ ЦИТАТА — решение дизайнера: имя, должность и организация есть
+        ВСЕГДА. Логотип — у фондов и НКО и знак Яндекса; у частных компаний его
+        нет намеренно (см. noLogo ниже). Чего нет — то дозаполняется руками,
         инструмент помечает такие места («дополнить авторство»).
       */
       org: string;
@@ -134,6 +135,15 @@ type NodeKind =
         напоминание дизайнеру, а не часть страницы. Срезается в cleanForExport.
       */
       noPhoto?: true;
+      /*
+        ЛОГОТИПА НЕ БУДЕТ — частная компания (решение дизайнера от 8 сентября
+        2026, список в COMPANIES). Отличие от «логотип пока не нашли» такое же,
+        как у фото: на странице нет серого прямоугольника, и «дополнить
+        авторство» про логотип не напоминает. В выгрузку не едет — у
+        разработчика правило простое: нет поля logo, значит нет ни знака, ни
+        места под него. Срезается в cleanForExport.
+      */
+      noLogo?: true;
       /*
         РЕЧЬ ЦЕЛИКОМ ОДНИМ ПОЛЕМ. До 17 августа 2026 здесь лежал массив
         paragraphs — по абзацу на строку, — и цитата была единственным
@@ -3048,13 +3058,22 @@ export function buildDoc(
             !yandex && !orgName && role
               ? findOrgInRole(role, logoIndex)
               : undefined;
-          const logo = yandex
+          const found = yandex
             ? "yandex"
             : orgName
               ? findSlug(orgName, logoIndex)
               : inRole?.slug;
+          /*
+            У частных компаний логотипа нет (решение дизайнера от 8 сентября
+            2026, см. COMPANIES в orgLogo). Слаг всё равно нужен: по нему
+            каталог отдаёт именительный падеж названия. А в узел он не идёт —
+            вместо него пометка noLogo, чтобы страница не рисовала серое место
+            под знак.
+          */
+          const company = isCompanySlug(found);
+          const logo = company ? undefined : found;
           // Именительный падеж там, где каталог хранит и падежную форму.
-          const canon = logo ? CANON_ORG[logo] : undefined;
+          const canon = found ? CANON_ORG[found] : undefined;
           const org = yandex ? "Яндекс" : (canon ?? orgName ?? inRole?.name ?? "");
           const photo = author ? findPhotoSlug(author, avatarIndex) : undefined;
 
@@ -3104,7 +3123,7 @@ export function buildDoc(
             !author && "имя",
             !role && "должность",
             !org && "организация",
-            org && !logo && `логотип «${org}» не найден в каталоге`,
+            org && !logo && !company && `логотип «${org}» не найден в каталоге`,
             author && !photo && !noPhoto && "фото автора",
           ].filter(Boolean) as string[];
 
@@ -3118,6 +3137,7 @@ export function buildDoc(
             logo,
             photo,
             ...(noPhoto ? { noPhoto: true as const } : {}),
+            ...(company ? { noLogo: true as const } : {}),
             // Строго перевод строки: по нему разбор узнаёт абзацы, а подряд
             // идущие «• …» собирает в один список (см. mdBlocksToTags).
             text: speech.join("\n"),
@@ -5015,6 +5035,9 @@ const cleanForExport = (
         photo, значит фотографии нет и места под неё тоже.
       */
       if (k === "noPhoto") continue;
+      // noLogo — та же логика: пометка для инструмента, разработчику хватает
+      // отсутствия поля logo (решение дизайнера от 8 сентября 2026).
+      if (k === "noLogo") continue;
       /*
         Якорь едет ТОЛЬКО у заголовков: разработчик делает из него id элемента.
         У секции он повторял якорь её первого H2 (одно и то же место), и id

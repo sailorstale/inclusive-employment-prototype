@@ -1,5 +1,6 @@
 import { routeTitles } from "@/data/nav";
 import { KNOWN_ICONS } from "@/editor-source/source/iconForText";
+import { isCompanyOrg } from "@/editor-source/source/orgLogo";
 import { SMALL_IMAGE_SLUGS } from "@/figma/smallImageFiles";
 import { editKeyConflicts } from "./clientEdits";
 import { cardBlockConflicts } from "./importantCards";
@@ -286,7 +287,9 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
         if (str(n.author) && org.includes(str(n.author)))
           add("организация-битая", "medium", `В названии организации сидит имя автора: «${org}»`);
       }
-      if (!str(n.logo)) add("цитата-неполная", "high", "У цитаты нет логотипа");
+      // У частных компаний логотипа нет по решению дизайнера (COMPANIES в
+      // orgLogo) — это не дыра, а правило, и сторож о нём молчит.
+      if (!str(n.logo) && !isCompanyOrg(org)) add("цитата-неполная", "high", "У цитаты нет логотипа");
       if (!str(n.text)) add("цитата-неполная", "high", "У цитаты нет текста");
       /*
         Исключение из правила «имя и должность всегда»: на «Инклюзивном
