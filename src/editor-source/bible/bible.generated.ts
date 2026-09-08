@@ -522,16 +522,28 @@ export const bibleBlocks: BibleBlock[] = [
     "text": "Иконки приезжают каноническими именами Lucide — строчными через дефис, как на lucide.dev. Разработчик один раз привязывает ключ к своей иконке и переиспользует."
   },
   {
-    "id": "bible::7-ikonka-edet-klyuchom-a-ne-kartinkoy::para::1dlv9i9",
+    "id": "bible::7-ikonka-edet-klyuchom-a-ne-kartinkoy::para::6tp6lf",
     "kind": "para",
-    "md": "Сейчас в реестре 23 имени:",
-    "text": "Сейчас в реестре 23 имени:"
+    "md": "Сейчас в реестре 30 имён:",
+    "text": "Сейчас в реестре 30 имён:"
   },
   {
-    "id": "bible::7-ikonka-edet-klyuchom-a-ne-kartinkoy::para::1l8ynhe",
+    "id": "bible::7-ikonka-edet-klyuchom-a-ne-kartinkoy::para::k2853q",
     "kind": "para",
-    "md": "`file-text` · `scale` · `clock` · `wallet` · `graduation-cap` · `alert-triangle` · `list-checks` · `search` · `message-square` · `shield-check` · `accessibility` · `building-2` · `heart` · `handshake` · `users` · `target` · `lightbulb` · `info` · `link` · `monitor-smartphone` · `ban` · `check` · `x`",
-    "text": "file-text · scale · clock · wallet · graduation-cap · alert-triangle · list-checks · search · message-square · shield-check · accessibility · building-2 · heart · handshake · users · target · lightbulb · info · link · monitor-smartphone · ban · check · x"
+    "md": "`file-text` · `scale` · `clock` · `wallet` · `graduation-cap` · `alert-triangle` · `list-checks` · `search` · `message-square` · `shield-check` · `accessibility` · `building-2` · `heart` · `handshake` · `users` · `target` · `lightbulb` · `info` · `link` · `monitor-smartphone` · `ban` · `check` · `x` · `ear` · `eye` · `brain` · `speech` · `heart-pulse` · `volume-x` · `hand`",
+    "text": "file-text · scale · clock · wallet · graduation-cap · alert-triangle · list-checks · search · message-square · shield-check · accessibility · building-2 · heart · handshake · users · target · lightbulb · info · link · monitor-smartphone · ban · check · x · ear · eye · brain · speech · heart-pulse · volume-x · hand"
+  },
+  {
+    "id": "bible::7-ikonka-edet-klyuchom-a-ne-kartinkoy::para::17cdx17",
+    "kind": "para",
+    "md": "Последние семь добавлены в августе 2026. Шесть из них обозначают группы кандидатов на «Шаге 4», «Шаге 5», «Шаге 6» и «Поиске вакансий»: ухо, глаз, голова, речь, сердце, ладонь. Перечёркнутый динамик стоит у сомнения «нельзя работать в шуме» на «Разговоре с работодателем». В выгрузке на сегодня встречаются 22 ключа из 30.",
+    "text": "Последние семь добавлены в августе 2026. Шесть из них обозначают группы кандидатов на «Шаге 4», «Шаге 5», «Шаге 6» и «Поиске вакансий»: ухо, глаз, голова, речь, сердце, ладонь. Перечёркнутый динамик стоит у сомнения «нельзя работать в шуме» на «Разговоре с работодателем». В выгрузке на сегодня встречаются 22 ключа из 30."
+  },
+  {
+    "id": "bible::7-ikonka-edet-klyuchom-a-ne-kartinkoy::para::fs8yi3",
+    "kind": "para",
+    "md": "Готовые файлы SVG лежат в [figma/icons/](figma/icons/README.md): имя файла совпадает с ключом в выгрузке буква в букву (`\"icon\": \"building-2\"` → `building-2.svg`). Папка собирается из кода прототипа командой `npm run icons`, поэтому новая иконка появляется в ней вместе с записью в реестре. Там же отдельным списком лежат иконки интерфейса — шапки, меню, поиска: в выгрузке их нет, они часть компонентов Figma.",
+    "text": "Готовые файлы SVG лежат в figma/icons/: имя файла совпадает с ключом в выгрузке буква в букву (\"icon\": \"building-2\" → building-2.svg). Папка собирается из кода прототипа командой npm run icons, поэтому новая иконка появляется в ней вместе с записью в реестре. Там же отдельным списком лежат иконки интерфейса — шапки, меню, поиска: в выгрузке их нет, они часть компонентов Figma."
   },
   {
     "id": "bible::7-ikonka-edet-klyuchom-a-ne-kartinkoy::para::ezhgdv",

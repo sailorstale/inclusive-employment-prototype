@@ -167,9 +167,13 @@
 
 Иконки приезжают каноническими именами Lucide — строчными через дефис, как на [lucide.dev](https://lucide.dev). Разработчик один раз привязывает ключ к своей иконке и переиспользует.
 
-Сейчас в реестре 23 имени:
+Сейчас в реестре 30 имён:
 
-`file-text` · `scale` · `clock` · `wallet` · `graduation-cap` · `alert-triangle` · `list-checks` · `search` · `message-square` · `shield-check` · `accessibility` · `building-2` · `heart` · `handshake` · `users` · `target` · `lightbulb` · `info` · `link` · `monitor-smartphone` · `ban` · `check` · `x`
+`file-text` · `scale` · `clock` · `wallet` · `graduation-cap` · `alert-triangle` · `list-checks` · `search` · `message-square` · `shield-check` · `accessibility` · `building-2` · `heart` · `handshake` · `users` · `target` · `lightbulb` · `info` · `link` · `monitor-smartphone` · `ban` · `check` · `x` · `ear` · `eye` · `brain` · `speech` · `heart-pulse` · `volume-x` · `hand`
+
+Последние семь добавлены в августе 2026. Шесть из них обозначают группы кандидатов на «Шаге 4», «Шаге 5», «Шаге 6» и «Поиске вакансий»: ухо, глаз, голова, речь, сердце, ладонь. Перечёркнутый динамик стоит у сомнения «нельзя работать в шуме» на «Разговоре с работодателем». В выгрузке на сегодня встречаются 22 ключа из 30.
+
+Готовые файлы SVG лежат в [figma/icons/](figma/icons/README.md): имя файла совпадает с ключом в выгрузке буква в букву (`"icon": "building-2"` → `building-2.svg`). Папка собирается из кода прототипа командой `npm run icons`, поэтому новая иконка появляется в ней вместе с записью в реестре. Там же отдельным списком лежат иконки интерфейса — шапки, меню, поиска: в выгрузке их нет, они часть компонентов Figma.
 
 Список открыт по решению дизайнера: новую иконку Lucide мы берём, когда она нужна, но обязательно заводим в реестре и говорим о ней разработчику. Имя, которого в реестре нет, прототип нарисовать не может — вместо иконки встаёт заглушка, и проверка ловит ровно это ([iconForText.tsx:104](prototype/src/editor-source/source/iconForText.tsx:104)).
 

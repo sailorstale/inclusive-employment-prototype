@@ -11,6 +11,7 @@
     "start": "node server/index.js",
     "preview": "vite preview",
     "icons": "node tools/icons/collect.mjs",
+    "icons:used": "node tools/icons/used.mjs",
     "bible": "node tools/bible/build.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
