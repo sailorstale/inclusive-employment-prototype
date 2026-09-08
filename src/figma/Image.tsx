@@ -15,6 +15,12 @@ import { cn } from "@/lib/utils";
   умолчанию рисуем рамку-заглушку: серый бокс card/bg-gray с иконкой «картинка»
   по центру — «здесь будет изображение». Если передать src, покажем настоящее.
 
+  Настоящая картинка от бокса 16:9 отвязана (решение дизайнера, 8 сентября
+  2026): ширина всегда одна — вся колонка, а высота идёт от пропорций самого
+  файла. Портрет получается высоким, баннер — низким, кадрирования и серого
+  паспарту вокруг нет. Пропорцию 16:9 держит только заглушка: без файла
+  высоту взять неоткуда.
+
   Клик по картинке скачивает файл. Схемы на страницах мелкие и подробные:
   читателю нужно открыть их крупно и сохранить себе, а разработчику — забрать
   исходник, не выковыривая его из вёрстки. В Figma такого поведения нет,
@@ -46,38 +52,28 @@ export function Image({ src, alt = "", className }: Props) {
       data-component="Image"
       className={cn("w-full pt-[var(--space-2xl)]", className)}
     >
-      <div className="flex aspect-[848/474] w-full items-center justify-center overflow-hidden rounded-[var(--radius-l)] bg-[color:var(--card-bg-gray)]">
-        {src ? (
-          /*
-            Картинку ВПИСЫВАЕМ в бокс, а не кадрируем им. Бокс из Figma — 16:9,
-            а в источнике всё подряд: портреты 954×1354, широкие баннеры
-            2048×372, мелкие иконки 160×144. При object-cover 16 картинок из 20
-            резались (у людей на иллюстрациях отрезало головы).
-
-            Серая подложка работает как паспарту. Крупные — ужимаются до бокса,
-            мелкие остаются в своём размере: апскейл только мылит.
-          */
-          <a
-            href={src}
-            download={downloadName(src, alt)}
-            title="Скачать картинку"
-            className="flex max-h-full max-w-full items-center justify-center rounded-[var(--radius-m)] outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--text-primary)]"
-          >
-            <img
-              src={src}
-              alt={alt}
-              className="max-h-full max-w-full object-contain"
-            />
-          </a>
-        ) : (
-          <div className="flex size-full items-center justify-center">
-            <ImageIcon
-              className="size-16 text-[color:var(--text-secondary)]"
-              aria-hidden
-            />
-          </div>
-        )}
-      </div>
+      {src ? (
+        /*
+          Ширина одна — вся колонка, высота — от файла: object-fit не нужен,
+          картинка просто масштабируется целиком. Мелкие файлы при этом
+          растягиваются до ширины колонки — это осознанно: одна ширина у всех.
+        */
+        <a
+          href={src}
+          download={downloadName(src, alt)}
+          title="Скачать картинку"
+          className="block w-full overflow-hidden rounded-[var(--radius-l)] outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--text-primary)]"
+        >
+          <img src={src} alt={alt} className="block h-auto w-full" />
+        </a>
+      ) : (
+        <div className="flex aspect-[848/474] w-full items-center justify-center overflow-hidden rounded-[var(--radius-l)] bg-[color:var(--card-bg-gray)]">
+          <ImageIcon
+            className="size-16 text-[color:var(--text-secondary)]"
+            aria-hidden
+          />
+        </div>
+      )}
     </div>
   );
 }
