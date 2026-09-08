@@ -104,6 +104,34 @@ type Rec = Record<string, unknown>;
 
 const isRec = (v: unknown): v is Rec => !!v && typeof v === "object" && !Array.isArray(v);
 const kids = (n: Rec): Rec[] => (Array.isArray(n.children) ? (n.children as unknown[]).filter(isRec) : []);
+
+/*
+  ВНУТРИ КАРТОЧКИ И АККОРДЕОНА ВСЁ ОДНОГО РАЗМЕРА — M. Абзац и список рядом
+  разного кегля разработчик собирает честно по файлу, и у него список
+  оказывается крупнее подводки (показал 8 сентября 2026). Правило держит
+  normalizeNode в contentTree; здесь — сторож, чтобы новое место сборки пунктов
+  не вернуло L молча. Ходим сквозь Stack и Block, до вложенной карточки — у неё
+  своя проверка.
+*/
+function checkInnerSizes(n: Rec, add: (rule: string, severity: Severity, message: string) => void) {
+  const sizes = new Set<string>();
+  const walk = (node: Rec) => {
+    for (const c of kids(node)) {
+      const comp = str(c.component);
+      // Стек без пунктов (две цитаты, карточки) размера не несёт — его не судим.
+      if ((comp === "Text" || comp === "Stack") && str(c.size)) sizes.add(`${comp} ${str(c.size)}`);
+      if (comp === "Stack" || comp === "Block") walk(c);
+    }
+  };
+  walk(n);
+  const odd = [...sizes].filter((s) => !s.endsWith(" M"));
+  if (odd.length)
+    add(
+      "размер-внутри-компонента",
+      "medium",
+      `Внутри ${str(n.component)} текст не M: ${odd.join(", ")} — абзацы и списки внутри компонента одного размера`,
+    );
+}
 const str = (v: unknown): string => (typeof v === "string" ? v : "");
 
 /*
@@ -268,8 +296,13 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       */
       if (!str(n.title))
         add("карточка-без-заголовка", "medium", "У карточки нет title — проверьте, не остался ли заголовок первым абзацем внутри");
+      checkInnerSizes(n, add);
       break;
     }
+
+    case "Accordion":
+      checkInnerSizes(n, add);
+      break;
 
     case "Quote": {
       const org = str(n.org);

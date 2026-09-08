@@ -4424,9 +4424,41 @@ function boldLabelOfList(n: Node): Node | null {
   return { component: "Text", size: item.size, text: item.text, at: item.at };
 }
 
+/*
+  ВНУТРИ КАРТОЧКИ И АККОРДЕОНА ВЕСЬ ТЕКСТ НА СТУПЕНЬ МЕЛЬЧЕ — и список тоже.
+
+  Абзац внутри General Card и Accordion давно едет размером M, а пункт списка
+  собирался в другом месте и о карточке не знал: оставался L. У нас разница
+  между L и M — один пиксель, и глазом её не видно; у разработчика кегли из
+  Figma (18 и 16), и список внутри карточки «Важно» оказался крупнее подводки
+  над ним. Разработчик показал это 8 сентября 2026, дизайнер решил: внутри
+  компонента и абзацы, и пункты — M.
+
+  Абзацы сюда же: карточки, собранные из таблицы и из готовых узлов, приезжали
+  с Text L — 29 карточек из 122 читались крупнее остальных. Правило одно на
+  всех: внутри компонента размер M.
+
+  Отдельным проходом по тем же причинам, что и bodyInsideAccordion: пункты
+  собирают пять разных мест, а правило одно. Вложенные Stack и Block проходим
+  насквозь; ячейки таблиц не трогаем — там свой размер уже стоит.
+*/
+function insideComponent(nodes: Node[]): Node[] {
+  return nodes.map((c): Node => {
+    // Опускаем только L: сноска S (адрес ссылки под текстом) остаётся сноской.
+    if (c.component === "List Item" || c.component === "Text")
+      return c.size === "L" ? { ...c, size: "M" } : c;
+    // Карточка внутри аккордеона — тот же случай: её пункты тоже M.
+    if (c.component === "Stack" || c.component === "Block" || c.component === "General Card")
+      return { ...c, children: insideComponent(c.children) } as Node;
+    return c;
+  });
+}
+
 function normalizeNode(n: Node): Node {
   if (n.component === "Accordion")
-    return { ...n, children: bodyInsideAccordion(n.children) };
+    return { ...n, children: insideComponent(bodyInsideAccordion(n.children)) };
+  if (n.component === "General Card")
+    return { ...n, children: insideComponent(normalizeNodes(n.children)) };
 
   const label = boldLabelOfList(n);
   if (label) return label;
