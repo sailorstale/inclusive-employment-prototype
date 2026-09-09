@@ -20,12 +20,20 @@ type Props = {
   poster?: string;
   /** Ссылка на ролик. Если задана — плейсхолдер кликабелен и ведёт на неё. */
   href?: string;
+  /*
+    Пропорции ролика со слэшем, как в CSS и в выгрузке: «2/3.5» для
+    портретного. Без поля — 16/9, то же умолчание, что у разработчика.
+  */
+  aspectRatio?: string;
   className?: string;
 };
 
-export function Video({ poster, href, className }: Props) {
+export function Video({ poster, href, aspectRatio, className }: Props) {
   const box = (
-    <div className="relative aspect-[848/474] w-full overflow-hidden rounded-[var(--radius-l)] bg-[color:var(--card-bg-green)]">
+    <div
+      className="relative w-full overflow-hidden rounded-[var(--radius-l)] bg-[color:var(--card-bg-green)]"
+      style={{ aspectRatio: aspectRatio || "16 / 9" }}
+    >
       {poster ? (
         <img
           src={poster}

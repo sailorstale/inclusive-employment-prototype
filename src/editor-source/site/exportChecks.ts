@@ -4,6 +4,7 @@ import { isCompanyOrg } from "@/editor-source/source/orgLogo";
 import { SMALL_IMAGE_SLUGS } from "@/figma/smallImageFiles";
 import { editKeyConflicts } from "./clientEdits";
 import { cardBlockConflicts } from "./importantCards";
+import { isPlayerHref } from "./videoPlayers";
 import type { OsnovyExport } from "./siteExport";
 
 /*
@@ -180,20 +181,38 @@ function checkText(field: string, value: string, add: (rule: string, sev: Severi
   if (/ {2,}/.test(value)) add("двойной-пробел", "low", `Два пробела подряд в поле «${field}»`);
 }
 
-/** Все href из тегов внутри текста плюс собственные адреса узлов. */
-function hrefsOf(n: Rec): { href: string; external: boolean }[] {
-  const out: { href: string; external: boolean }[] = [];
+/*
+  Все href из тегов внутри текста плюс собственные адреса узлов. У тега
+  запоминаем хвост атрибутов: по нему сверяется договор о ссылках. У адреса-поля
+  (href у Read More Item, Video) атрибутов нет и сверять нечего.
+*/
+function hrefsOf(n: Rec): { href: string; attrs?: string }[] {
+  const out: { href: string; attrs?: string }[] = [];
   for (const v of Object.values(n)) {
     const texts = typeof v === "string" ? [v] : Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
     for (const t of texts as string[]) {
       const re = /<a\s+href="([^"]*)"([^>]*)>/g;
       let m: RegExpExecArray | null;
-      while ((m = re.exec(t))) out.push({ href: m[1], external: /rel="external"/.test(m[2]) });
+      while ((m = re.exec(t))) out.push({ href: m[1], attrs: m[2] });
     }
   }
-  if (typeof n.href === "string") out.push({ href: n.href, external: /^https?:/.test(n.href) });
+  if (typeof n.href === "string") out.push({ href: n.href });
   return out;
 }
+
+/*
+  ДОГОВОР О ССЫЛКАХ (журнал изменений разработчика от 30 августа 2026, раздел 2):
+  тег уходит на страницу как есть, поэтому атрибуты обязаны стоять в данных.
+  Наружу — target="_blank" rel="noreferrer external", внутрь сайта —
+  target="_blank" rel="noopener", якорь «#…» — без атрибутов. Правило записано
+  здесь второй раз нарочно: сторож сверяет выгрузку с договором, а не с кодом,
+  который её собирает (см. linkAttrs в contentTree.ts).
+*/
+const LINK_ATTRS = {
+  external: ' target="_blank" rel="noreferrer external"',
+  internal: ' target="_blank" rel="noopener"',
+  anchor: "",
+};
 
 function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]) {
   const comp = str(n.component);
@@ -233,10 +252,11 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
 
   for (const f of TEXT_FIELDS) if (typeof n[f] === "string") checkText(f, n[f] as string, add);
 
-  for (const { href, external } of hrefsOf(n)) {
+  for (const { href, attrs } of hrefsOf(n)) {
     if (!href.trim()) add("ссылка-пустая", "high", "Ссылка без адреса");
     else if (/^https?:\/\//.test(href)) {
-      if (!external) add("ссылка-без-пометки", "medium", `Внешняя ссылка без rel="external": ${href}`);
+      if (attrs !== undefined && attrs !== LINK_ATTRS.external)
+        add("ссылка-без-пометки", "medium", `Внешняя ссылка не по договору — нужно${LINK_ATTRS.external}: ${href}`);
       if (/localhost|example\.com|TODO/i.test(href)) add("ссылка-заглушка", "high", `Адрес-заглушка: ${href}`);
       /*
         Адрес по http:// браузер помечает небезопасным, а часть сайтов по нему
@@ -252,7 +272,12 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       */
       if (!ctx.routes.has(href.split("#")[0]))
         add("ссылка-в-никуда", "high", `Внутренняя ссылка ведёт на адрес, которого на сайте нет: ${href}`);
-    } else if (!/^(mailto:|tel:|#)/.test(href))
+      if (attrs !== undefined && attrs !== LINK_ATTRS.internal)
+        add("ссылка-без-пометки", "medium", `Внутренняя ссылка не по договору — нужно${LINK_ATTRS.internal}: ${href}`);
+    } else if (href.startsWith("#")) {
+      if (attrs !== undefined && attrs !== LINK_ATTRS.anchor)
+        add("ссылка-без-пометки", "medium", `Якорь внутри страницы едет с атрибутами, а по договору без них: ${href}`);
+    } else if (!/^(mailto:|tel:)/.test(href))
       add("ссылка-протокол", "high", `Адрес не по правилу «внешняя с протоколом, внутренняя от корня»: ${href}`);
   }
 
@@ -500,6 +525,19 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
 
     case "Video":
       if (!str(n.href)) add("медиа-без-адреса", "high", "У видео нет адреса");
+      /*
+        Ролики с 30 августа 2026 едут адресом плеера Яндекса, а не файлом на
+        Диске (см. videoPlayers.ts). Адрес Диска значит, что ролик новый и в
+        таблицу плееров ещё не внесён.
+      */
+      else if (!isPlayerHref(str(n.href)))
+        add("видео-не-плеер", "medium", `Ролик ведёт не на плеер Яндекса, а на файл: ${str(n.href)}`);
+      /*
+        Пропорции — со слэшем, как в CSS: «16/9», «2/3.5». Вариант через букву x
+        разработчик отменил (ответ Евгении 9 сентября 2026).
+      */
+      if ("aspectRatio" in n && !/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(str(n.aspectRatio)))
+        add("видео-пропорции", "medium", `Пропорции ролика не по договору — нужно «16/9» или «2/3.5»: ${str(n.aspectRatio)}`);
       break;
   }
 

@@ -476,7 +476,7 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
       return <Image src={node.src} alt={node.alt} />;
 
     case "Video":
-      return <Video href={node.href} />;
+      return <Video href={node.href} poster={node.poster} aspectRatio={node.aspectRatio} />;
 
     case "Person Item":
       return (

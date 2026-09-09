@@ -26,10 +26,11 @@ import { blockRefId, type ResolveMd } from "./blockResolve";
 import { mergesFirstColumn } from "@/editor-source/site/mergedTables";
 import { liftsOutOfQuiz } from "@/editor-source/site/outOfQuiz";
 import { toYandexDisk } from "@/editor-source/site/yandexDisk";
+import { videoPlayer } from "@/editor-source/site/videoPlayers";
 import { cardArt } from "./cardArt";
 import { smallImageSlug } from "@/figma/smallImageFiles";
 import { linkOrgSites } from "./orgSites";
-import { safeHref, isExternalHref } from "@/editor-source/safeUrl";
+import { safeHref } from "@/editor-source/safeUrl";
 import { markRe } from "@/editor-source/richText";
 import {
   findSlug,
@@ -194,7 +195,15 @@ type NodeKind =
       colSpan?: number;
     }
   | { component: "Image"; src: string; alt?: string }
-  | { component: "Video"; href?: string }
+  | {
+      component: "Video";
+      /** Адрес плеера Яндекса; у ролика не из таблицы — адрес как в источнике. */
+      href?: string;
+      /** Кадр-обложка плеера. Разработчик заводит поле, у нас пока ни у одного ролика. */
+      poster?: string;
+      /** Пропорции ролика со слэшем («2/3.5»). Нет — умолчание 16/9. */
+      aspectRatio?: string;
+    }
   /*
     Ряд людей с фотографиями: портрет, имя и должность. Наше дополнение к
     системе — в Figma компонентов пока нет (см. КОМПОНЕНТЫ.md, «Люди»).
@@ -3207,38 +3216,39 @@ export function buildDoc(
       case "List": {
         const marker =
           mods.marker === "Number" ? "Number" : mods.marker === "Icon" ? "Icon" : "Dot";
-        const icon = marker === "Icon" ? listItemIcon(dir) : undefined;
+        const wantIcon = marker === "Icon" ? listItemIcon(dir) : undefined;
         /*
-          ЗНАЧОК ССЫЛКИ — ТОЛЬКО ТЕМ ПУНКТАМ, КОТОРЫЕ ПРАВДА ССЫЛКИ. Замечания
+          СПИСОК ССЫЛОК, В КОТОРОМ НЕ ВСЕ ПУНКТЫ ССЫЛКИ, ИДЁТ С ТОЧКАМИ. Замечания
           Мити msq53ababp05 и mst1swvk7w2w: в перечне площадок часть строк —
           ссылки, часть нет («региональные сайты вакансий», «профессиональные
-          сообщества и чаты»), а значок стоял у всех подряд и обещал переход,
-          которого нет.
+          сообщества и чаты»), а значок ссылки стоял у всех подряд и обещал
+          переход, которого нет.
 
-          Разбирается это здесь, а не в разметке: значок задаётся списку
-          целиком, поштучно его выставить нечем. Остальные значки (галочка,
-          крестик) остаются у всех пунктов — они говорят не о переходе, а о том,
-          что с пунктом делать.
+          До 9 сентября 2026 значок оставляли только настоящим ссылкам — своей
+          иконкой у пункта. Разработчик такую иконку не читает: по договору
+          (журнал изменений, раздел 3) иконка живёт у контейнера списка, а поле у
+          пункта молча пропускается, и у него весь перечень шёл с галочками.
+          Решение дизайнера 9 сентября 2026: в таком смешанном списке проще
+          поставить всем точки. Остальные значки (галочка, крестик) остаются у
+          всех пунктов — они говорят не о переходе, а о том, что с пунктом делать.
         */
-        const linkOnly = icon === "Link";
         const isLink = (text: string) => /^\s*\[[^\]]+\]\(/.test(text);
-        const item = (text: string): Node => {
-          const own = icon && (!linkOnly || isLink(text)) ? icon : undefined;
-          return {
-            component: "List Item",
-            size: "L",
-            type: own ? marker : "Dot",
-            ...(own ? { icon: own } : {}),
-            text,
-          };
-        };
+        /*
+          ПОДЗАГОЛОВОК ВНУТРИ СПИСКА. Строка вида «**Telegram-каналы с
+          вакансиями:**» — жирная целиком и с двоеточием — не площадка наравне с
+          hh.ru, а вводит пункты под собой. Из списка она выходит отдельным
+          абзацем, как строка «Где искать:» над ним, и список делится на два:
+          до неё и после. Замечание клиента msq52zsgazy8, решение дизайнера
+          9 сентября 2026. На сайте такая строка ровно одна.
+        */
+        const isSubheading = (text: string) => /^\s*\*\*[^*]+:\*\*\s*$/.test(text);
         /*
           ПУНКТ ИЗ ДВУХ СТРОК. Источник разложил пункт на заголовок-ссылку и
           абзац-описание — по просьбе «ссылка, потом после переноса строки
           текст» они снова один пункт: заголовок открывает пункт, следующие
           абзацы дописываются к нему с новой строки.
         */
-        const kids: Node[] = [];
+        const texts: string[] = [];
         if (wantsLinePairs(dir)) {
           const lines: string[][] = [];
           for (const it of items) {
@@ -3248,22 +3258,49 @@ export function buildDoc(
               it.b.items.forEach((li) => lines[lines.length - 1].push(liText(it, li)));
             else if (text.trim()) lines[lines.length - 1].push(text);
           }
-          kids.push(...lines.filter((l) => l.length).map((l) => item(l.join("\n"))));
+          texts.push(...lines.filter((l) => l.length).map((l) => l.join("\n")));
         } else {
           for (const it of items) {
-            if (it.b.kind === "list") it.b.items.forEach((li) => kids.push(item(liText(it, li))));
-            else kids.push(item(md(it, fix)));
+            if (it.b.kind === "list") it.b.items.forEach((li) => texts.push(liText(it, li)));
+            else texts.push(md(it, fix));
           }
         }
+        const entries = texts.filter((t) => !isSubheading(t));
+        const mixed = wantIcon === "Link" && !entries.every(isLink);
+        const icon = mixed ? undefined : wantIcon;
+        const item = (text: string): Node => ({
+          component: "List Item",
+          size: "L",
+          type: icon ? marker : "Dot",
+          ...(icon ? { icon } : {}),
+          text,
+        });
+        const stack = (kids: Node[]): Node => ({
+          component: "Stack",
+          ordered: marker === "Number",
+          children: kids,
+        });
+        const out: Node[] = [];
+        let kids: Node[] = [];
+        for (const text of texts) {
+          if (!isSubheading(text)) {
+            kids.push(item(text));
+            continue;
+          }
+          if (kids.length) out.push(stack(kids));
+          kids = [];
+          out.push({ component: "Text", size: "L", text });
+        }
+        if (kids.length || !out.length) out.push(stack(kids));
         const want = listCount(dir);
         return [
-          { component: "Stack", ordered: marker === "Number", children: kids },
+          ...out,
           // Просили N пунктов, а вышло другое — молчать нельзя (см. аккордеоны).
-          ...(want && kids.length !== want
+          ...(want && entries.length !== want
             ? [
                 {
                   component: "note" as const,
-                  text: `просили ${want} пунктов, получилось ${kids.length} — проверьте`,
+                  text: `просили ${want} пунктов, получилось ${entries.length} — проверьте`,
                 },
               ]
             : []),
@@ -4268,8 +4305,15 @@ export function buildDoc(
           адрес из источника, и из карточки в коде, и из директивы с сервера.
         */
         const found = inBlocks ?? videoUrl(dir);
+        /*
+          Плеер вместо файла на Диске. У разработчика ролики с 30 августа 2026
+          идут адресом встраиваемого плеера, и у портретных есть пропорции
+          (см. videoPlayers). Ролик не из таблицы едет старым адресом Диска:
+          так новый ролик не пропадёт молча, а сторож выгрузки его покажет.
+        */
         const url = found ? toYandexDisk(found) : found;
-        return [{ component: "Video", ...(url ? { href: url } : {}) }];
+        const player = url ? videoPlayer(url) : undefined;
+        return [{ component: "Video", ...(player ?? (url ? { href: url } : {})) }];
       }
 
       default:
@@ -4898,6 +4942,28 @@ function blocksToTags(blocks: ReturnType<typeof textBlocks>): string {
     .join("");
 }
 
+/*
+  ССЫЛКА ЕДЕТ ГОТОВОЙ, С АТРИБУТАМИ. Договор с разработчиком от 30 августа 2026
+  (data-changelog.md, раздел 2): раньше внешнюю ссылку помечал один rel="external",
+  а target и rel дописывал его код при выводе. Теперь тег уходит на страницу как
+  есть, поэтому атрибуты пишем мы:
+
+    наружу        target="_blank" rel="noreferrer external" — новая вкладка и стрелка;
+    внутрь сайта  target="_blank" rel="noopener"            — новая вкладка, обычный вид;
+    якорь «#…»    без атрибутов                             — это оглавление, а не переход.
+
+  Внутренние ссылки в новой вкладке — осознанное решение разработчика (ответ
+  Евгении 9 сентября 2026). noreferrer внутренним не ставится: реферер нужен
+  Метрике. Стрелку у внешней ссылки разработчик рисует по слову external в rel.
+  Почтовые ссылки (mailto:) договором не описаны, на сайте их нет — едут без
+  атрибутов.
+*/
+export function linkAttrs(href: string): string {
+  if (/^https?:\/\//i.test(href)) return ' target="_blank" rel="noreferrer external"';
+  if (href.startsWith("/")) return ' target="_blank" rel="noopener"';
+  return "";
+}
+
 export function mdToTags(text: string): string {
   // Метки раскурсовки — только для показа замен на сайте (<mark> с подсказкой).
   // В данные разработчику уходит ЧИСТЫЙ новый текст: убираем метки и оригинал,
@@ -4913,15 +4979,9 @@ export function mdToTags(text: string): string {
     out += escapeText(text.slice(last, m.index));
     if (m[1] !== undefined) {
       const href = safeHref(m[2]);
-      /*
-        Внешняя ссылка помечается rel="external": по ней разработчик берёт
-        компонент External Link со стрелкой, по остальным — обычную ссылку.
-        Правило то же, что в превью: с протоколом — наружу, от корня — внутрь.
-      */
-      const rel = href && isExternalHref(href) ? ' rel="external"' : "";
       // Небезопасный протокол — ссылку не делаем, текст сохраняем.
       out += href
-        ? `<a href="${escapeText(href)}"${rel}>${mdToTags(m[1])}</a>`
+        ? `<a href="${escapeText(href)}"${linkAttrs(href)}>${mdToTags(m[1])}</a>`
         : mdToTags(m[1]);
     } else if (m[3] !== undefined) {
       /*
