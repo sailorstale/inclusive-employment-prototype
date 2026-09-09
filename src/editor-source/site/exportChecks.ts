@@ -5,6 +5,8 @@ import { SMALL_IMAGE_SLUGS } from "@/figma/smallImageFiles";
 import { editKeyConflicts } from "./clientEdits";
 import { cardBlockConflicts } from "./importantCards";
 import { isPlayerHref } from "./videoPlayers";
+import { isPrototypePath } from "./hostedImages";
+import { isFinalName } from "./hostedPhotos";
 import type { OsnovyExport } from "./siteExport";
 
 /*
@@ -242,6 +244,17 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       `Иконку «${icon}» прототип нарисовать не умеет — заведите её в iconForText.ts или проверьте написание`,
     );
 
+  /*
+    Портрет и логотип едут адресом хостинга разработчика (hostedPhotos.ts). Имя
+    вместо адреса значит, что файл разработчику ещё не отдан: у него на странице
+    картинки не будет. Исключение — «yandex», его он держит именем сам.
+  */
+  for (const f of ["photo", "logo"] as const) {
+    const v = str(n[f]);
+    if (v && !/^https?:\/\//.test(v) && !isFinalName(v))
+      add("портрет-не-на-хостинге", "medium", `Поле «${f}» едет именем «${v}», а не адресом хостинга — файл разработчику не отдан`);
+  }
+
   const image = str(n.image);
   if (image && !ALLOWED_IMAGES.has(image))
     add(
@@ -474,20 +487,21 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
       if (!str(n.name)) add("человек-без-имени", "high", "У карточки человека нет имени");
       const photo = str(n.photo);
       if (!photo) add("человек-без-фото", "low", "У карточки человека нет фотографии");
-      /*
-        Картинка едет ИМЕНЕМ ФАЙЛА, а не адресом — так договорились с
-        разработчиком про логотипы и фото цитат («файлы разработчик забирает с
-        прототипа сам»). Полный путь с расширением в одном месте и голое имя в
-        другом заставят его писать две разные сборки адреса.
-      */
-      else if (photo.includes("/") || /\.\w{3,4}$/.test(photo))
-        add("фото-адресом", "medium", `Фото задано путём «${photo}», а у цитат — именем файла: два правила на одно и то же`);
+      // Адрес хостинга у фото проверяет общее правило «портрет-не-на-хостинге»
+      // выше: с 9 сентября 2026 фото едет адресом, как у цитат (hostedPhotos.ts).
       break;
     }
 
 
     case "Image":
       if (!str(n.src)) add("медиа-без-адреса", "high", "У картинки нет файла");
+      /*
+        Путь прототипа существует только у нас. Разработчик заливает схему к
+        себе и присылает адрес, мы заводим его в hostedImages.ts — до этого
+        картинка у него на странице битая.
+      */
+      else if (isPrototypePath(str(n.src)))
+        add("картинка-не-на-хостинге", "medium", `Схема едет путём прототипа, а не адресом хостинга разработчика: ${str(n.src)}`);
       /*
         Без alt картинка для незрячего читателя не существует: скринридер
         прочитает имя файла или промолчит. Формат не ломается — поле
@@ -658,6 +672,17 @@ export function checkExport(site: OsnovyExport): Problem[] {
     if (seenSlugs.has(slug))
       out.push({ rule: "страница-дубль", severity: "high", page: slug, where: "slug", message: "Такой адрес в выгрузке уже есть" });
     seenSlugs.add(slug);
+
+    /*
+      Запись раздела меню («Основы», «Для НКО») — без содержимого, у неё только
+      адрес и подпись (см. withHubs в siteExport). Меты и статьи у неё нет по
+      устройству, проверять её как страницу нельзя.
+    */
+    if (!("article" in page)) {
+      if (!str(page.navTitle))
+        out.push({ rule: "раздел-без-подписи", severity: "high", page: slug, where: "navTitle", message: "У раздела меню нет подписи" });
+      continue;
+    }
 
     const description = str(isRec(page.meta) ? page.meta.description : "");
     const twin = seenDescriptions.get(description);

@@ -96,10 +96,48 @@ export type PageExport = {
   не берёт. От меню в файле осталась только подпись самой страницы — поле
   navTitle, см. navLabel.ts.
 */
+/*
+  РАЗДЕЛ В СПИСКЕ СТРАНИЦ — запись без содержимого: адрес и подпись. Так устроен
+  файл разработчика: «Основы», «Для компаний», «Для НКО» и «Для соискателей»
+  стоят в pages перед своими страницами, и по ним конструктор строит верхнее
+  меню. 9 сентября 2026 Евгения загрузила нашу выгрузку без этих записей, и
+  меню с сайта пропало. Своей страницы у раздела нет: «Основы» и «Для компаний»
+  открываются первой страницей раздела, «Для соискателей» пока пуст.
+*/
+export type HubExport = { slug: string; navTitle: string };
+
+/*
+  Корень — только pages, как в файле разработчика. Поле section («Сайт»)
+  убрано 9 сентября 2026: у разработчика его нет, а держаться нужно его
+  структуры, чтобы загрузка файла ничего не ломала.
+*/
 export type OsnovyExport = {
-  section: string;
-  pages: PageExport[];
+  pages: (PageExport | HubExport)[];
 };
+
+/** Разделы меню в порядке файла разработчика: раздел стоит перед своими страницами. */
+const HUBS: HubExport[] = [
+  { slug: "/general", navTitle: "Основы" },
+  { slug: "/companies", navTitle: "Для компаний" },
+  { slug: "/ngo", navTitle: "Для НКО" },
+  { slug: "/jobseekers", navTitle: "Для соискателей" },
+];
+
+/** Страницы с записями разделов перед ними; раздел без страниц встаёт в конец. */
+export function withHubs(pages: PageExport[]): (PageExport | HubExport)[] {
+  const out: (PageExport | HubExport)[] = [];
+  const placed = new Set<string>();
+  for (const page of pages) {
+    const hub = HUBS.find((h) => page.slug.startsWith(`${h.slug}/`));
+    if (hub && !placed.has(hub.slug)) {
+      out.push(hub);
+      placed.add(hub.slug);
+    }
+    out.push(page);
+  }
+  for (const hub of HUBS) if (!placed.has(hub.slug)) out.push(hub);
+  return out;
+}
 
 /*
   ДЕРЕВО СТРАНИЦЫ ДО ВЫГРУЗКИ — те же узлы, что рисует сайт, но ещё со всеми
@@ -213,5 +251,5 @@ export async function buildOsnovyExport(): Promise<OsnovyExport> {
       article: toExport(t.nodes),
     };
   });
-  return { section: "Сайт", pages };
+  return { pages: withHubs(pages) };
 }

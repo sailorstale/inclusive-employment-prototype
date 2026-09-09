@@ -27,6 +27,8 @@ import { mergesFirstColumn } from "@/editor-source/site/mergedTables";
 import { liftsOutOfQuiz } from "@/editor-source/site/outOfQuiz";
 import { toYandexDisk } from "@/editor-source/site/yandexDisk";
 import { videoPlayer } from "@/editor-source/site/videoPlayers";
+import { hostedImage } from "@/editor-source/site/hostedImages";
+import { hostedPhoto } from "@/editor-source/site/hostedPhotos";
 import { cardArt } from "./cardArt";
 import { smallImageSlug } from "@/figma/smallImageFiles";
 import { linkOrgSites } from "./orgSites";
@@ -5209,6 +5211,24 @@ const cleanForExport = (
       */
       if (k === "icon" && typeof v === "string") {
         out[k] = v.replace(/([a-z])([A-Z0-9])/g, "$1-$2").toLowerCase();
+        continue;
+      }
+      /*
+        Схема едет адресом хостинга разработчика, а не путём прототипа: по
+        договору в src приезжает готовый https://… (см. hostedImages). В дереве
+        путь остаётся своим — прототип показывает и скачивает свой файл.
+      */
+      if (k === "src" && component === "Image" && typeof v === "string") {
+        out[k] = hostedImage(v);
+        continue;
+      }
+      /*
+        Портрет и логотип — тоже адресом хостинга разработчика (см.
+        hostedPhotos). Имя без адреса едет как есть: «yandex» по решению
+        разработчика, остальные — пока файл ему не отдан.
+      */
+      if ((k === "photo" || k === "logo") && typeof v === "string") {
+        out[k] = hostedPhoto(k, v);
         continue;
       }
       /*
