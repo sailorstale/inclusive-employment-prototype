@@ -30,7 +30,13 @@ const AT = {
   benefits: "/general/benefits",
   formats: "/general/formats",
   team: "/general/team",
-  companies: "/companies",
+  /*
+    Раздел «Для компаний» ведёт сразу на первый шаг: отдельной страницы-хаба
+    /companies на сайте разработчика нет (см. pageMap, решение дизайнера
+    5 августа 2026). Адрес /companies отдавал битую ссылку на «Как это
+    работает»; поправлено 9 сентября 2026 по решению дизайнера.
+  */
+  companies: "/companies/step-1",
   ngo: "/ngo",
   step: (n: string) => `/companies/step-${n}`,
   ngoAudience: "/ngo/audience",
