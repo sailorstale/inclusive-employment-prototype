@@ -27,9 +27,24 @@ const SECTION = "/source/m3::osobennosti-obscheniya-s-lyudmi-s-raznymi-formam";
   Адресуем блоки их собственными id, а не текстом: id держится за блок и
   переживает правку формулировки в источнике.
 */
+/*
+  «ГЛАВНОЕ ПРАВИЛО» → КАРТОЧКА «ВАЖНО» — просьба Мити от 16 сентября 2026.
+  Два абзаца раздела «Как общаться с людьми с инвалидностью» дизайнер собрал в
+  жёлтую карточку разметкой ещё 2 августа, а заголовок «Главное правило» снят
+  по замечанию Юли (dropScaffold). Карточка стояла жёлтой, но без названия и
+  без стикера, и от шести карточек «Важно» ниже по странице отличалась.
+  Запись здесь перекрывает разметку из данных ровно на этих двух блоках, и
+  карточка получает название «Важно» и стикер «Важная информация».
+*/
+const MAIN_RULE = "/source/m3::kak-obschatsya-s-lyudmi-s-invalidnostyu";
+
 export const teamCards: PageCards = {
   page: "/general/team",
   cards: [
+    {
+      blocks: [`${MAIN_RULE}::paragraph::hzat85`, `${MAIN_RULE}::paragraph::1pglj7s`],
+      title: "Важно",
+    },
     { blocks: [`${SECTION}::list::24d6l5`], title: "Важно" },
     {
       blocks: [`${SECTION}::list::vf7g9y`, `${SECTION}::paragraph::16hcn8v`],
