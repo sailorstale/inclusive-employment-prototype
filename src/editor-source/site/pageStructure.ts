@@ -238,9 +238,12 @@ function introNodes(intro?: SectionNode): Node[] {
 
 /*
   Вступление разделом без заголовка. Правило раскладки то же, что у обычных
-  разделов: прямо в слот секции кладутся только Heading и Text, всё остальное
-  заворачивается в Block (см. SectionContainer). Список законов на «Полезных
-  документах» приходит как раз «остальным».
+  разделов: прямо в слот секции кладётся проза — заголовок, абзац, фраза и
+  список (Stack — проза, см. NON_PROSE в contentTree.ts), всё остальное
+  заворачивается в Block. До 17 сентября 2026 список здесь считался
+  «остальным»: список законов на «Полезных документах» и «Такой аудит
+  помогает» на Шаге 2 ехали в конверте, и разработчик собирал вокруг них
+  пустую карточку.
 
   Якоря у раздела нет намеренно: в оглавление вступление не идёт, прокручивать
   к нему незачем — оно и так в начале страницы.
@@ -248,10 +251,9 @@ function introNodes(intro?: SectionNode): Node[] {
 function introSection(intro?: SectionNode): SectionNode[] {
   const nodes = introNodes(intro);
   if (!nodes.length) return [];
+  const direct = new Set(["Heading", "Text", "Phrase", "Stack", "Block"]);
   const children = nodes.map((n) =>
-    n.component === "Heading" || n.component === "Text" || n.component === "Block"
-      ? n
-      : ({ component: "Block", orientation: "Vertical", children: [n] } as Node),
+    direct.has(n.component) ? n : ({ component: "Block", orientation: "Vertical", children: [n] } as Node),
   );
   return [{ component: "Section Container", children }];
 }

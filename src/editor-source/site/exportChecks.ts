@@ -90,6 +90,9 @@ const WRAPPERS = new Set(["Block", "Stack", "Section Container", "Page Summary",
   это выделенная мысль внутри потока, а не блок. Кнопка в потоке текста —
   оговорённое исключение.
 */
+/** Проза: то, что в разделе лежит без конверта и чему Block противопоказан. */
+const PROSE_IN_SECTION = new Set(["Heading", "Text", "Phrase", "Stack"]);
+
 const SECTION_DIRECT = new Set([
   "Heading", "Text", "Phrase", "Stack", "Block", "Card Button", "Page Summary",
 ]);
@@ -226,6 +229,18 @@ function checkNode(n: Rec, page: string, where: string, ctx: Ctx, out: Problem[]
 
   if (WRAPPERS.has(comp) && !kids(n).length)
     add("пустой-конверт", "high", `«${comp}» без содержимого — на странице это пустая рамка`);
+
+  /*
+    Обратная сторона правила раскладки: Block нужен только не-прозе. У нас он
+    невидим, а разработчик собирает его как Card Container — список в конверте
+    получает пустую рамку с наклейкой (Шаг 2, 17 сентября 2026).
+  */
+  if (comp === "Block" && kids(n).length && kids(n).every((c) => PROSE_IN_SECTION.has(str(c.component))))
+    add(
+      "проза-в-конверте",
+      "medium",
+      `В Block лежит только проза (${kids(n).map((c) => str(c.component)).join(", ")}) — её кладут в раздел напрямую, а конверт у разработчика станет пустой карточкой`,
+    );
 
   for (const f of INTERNAL_FIELDS)
     if (f in n) add("служебное-поле", "medium", `Служебное поле «${f}» уехало в выгрузку`);
