@@ -240,6 +240,17 @@ export const MOVED_DOCS: MovedDoc[] = [
     docId: "1oG84ysE67qpx7hLi7-Nt-BL_VEqv72gN",
     href: "https://disk.360.yandex.ru/i/qlciBdmpTkcu3A",
   },
+  /*
+    ЧЕК-ЛИСТ АУДИТА ПУТИ КАНДИДАТА — «Шаг 3» (и повтор на «Шаге 2»). Гугл-
+    таблица, которой в таблице заказчика не было. Новый адрес прислал Митя
+    17 сентября 2026; тот же адрес на «Шаге 2» стоит прямо в правке
+    (clientEdits/step2.ts), потому что там ссылка пришла не из источника.
+  */
+  {
+    name: "Чек-лист аудита пути кандидата (аудит вашей компании)",
+    docId: "11g7QP9OJXRx5WztVtm1aQREHvHcN9XEFK14JdhBd44o",
+    href: "https://disk.360.yandex.ru/i/CS33Liv70rBzdw",
+  },
   {
     name: "Промпт: Оформление трудового договора и других локальных актов",
     docId: "1Fxti0pt2HsQNGVJVuXSzaGZN938UaqDvG3UNHEgpOt8",
