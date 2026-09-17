@@ -230,6 +230,16 @@ export const MOVED_DOCS: MovedDoc[] = [
     docId: "OAEFFYevt2uIwA",
     href: "https://disk.360.yandex.ru/i/olu7qYlGpeltVQ",
   },
+  /*
+    ЗАДАНИЕ «АНАЛИЗ НКО» — «С чего начать» (НКО). В таблице заказчика строка
+    без старого адреса, в сверке 23 августа осталась под вопросом. Новый адрес
+    прислал Митя 17 сентября 2026.
+  */
+  {
+    name: "Задание: анализ НКО",
+    docId: "1oG84ysE67qpx7hLi7-Nt-BL_VEqv72gN",
+    href: "https://disk.360.yandex.ru/i/qlciBdmpTkcu3A",
+  },
   {
     name: "Промпт: Оформление трудового договора и других локальных актов",
     docId: "1Fxti0pt2HsQNGVJVuXSzaGZN938UaqDvG3UNHEgpOt8",
