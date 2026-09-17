@@ -28,6 +28,7 @@ import { ngoPsychologyEdits } from "./ngoPsychology";
 import { ngoVacanciesEdits } from "./ngoVacancies";
 import { formatsEdits } from "./formats";
 import { ngoResumeEdits } from "./ngoResume";
+import { documentsEdits } from "./documents";
 
 /*
   ПРАВКИ ПО ЗАМЕЧАНИЯМ КЛИЕНТА, КОТОРЫЕ НЕ УМЕЩАЮТСЯ В «УБРАТЬ БЛОК».
@@ -89,6 +90,7 @@ export const PAGES: PageEdits[] = [
   ngoVacanciesEdits,
   formatsEdits,
   ngoResumeEdits,
+  documentsEdits,
 ];
 
 /*
