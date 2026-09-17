@@ -1413,6 +1413,13 @@ const isPageSummary = (g: Group) => g.dir?.target === "PageSummary";
 function needsCard(g: Group): boolean {
   if (isPageSummary(g)) return false;
   if (g.dir?.target) return NON_PROSE.has(g.dir.target);
+  /*
+    Картинка, развёрнутая в список («картинку в список»), — это уже Stack, а
+    Stack конверта не требует. С конвертом список стоял на 32 пикселя ниже
+    абзаца, чем соседние списки, — замечание Мити 17 сентября 2026 («лишний
+    enter после абзаца») на «Шаге 2».
+  */
+  if (wantsImageToList(g.dir)) return false;
   const k = g.items[0]?.b.kind;
   // Блок-цитата без автора становится Phrase — это проза, конверт не нужен.
   return k === "table" || k === "image";
