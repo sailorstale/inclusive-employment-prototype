@@ -133,6 +133,30 @@ const REWRITE: PageEdits["rewrite"] = {
 const CELLS: PageEdits["cells"] = {
   "• Сократить количество систем, между которыми нужно постоянно переключаться":
     "• Сократить количество систем, между которыми нужно постоянно переключаться• Подключить адаптацию на ясный язык в настройках [Яндекс Браузера](https://browser.yandex.ru/c/easy_read)",
+
+  /*
+    НЕЙРОЭКСПЕРТ И НЕЙРОРЕДАКТОР УШЛИ, ВМЕСТО НИХ «АЛИСА ПРО» — замечание
+    клиента от 17 сентября 2026, адрес сервиса она дала целиком. Два прежних
+    сервиса свернулись в один, и в обеих строках таблицы остаётся одна ссылка
+    вместо двух.
+
+    У сотрудников с инвалидностью по зрению: «Алиса Про» встаёт на место двух
+    снятых сервисов, «Документы с нейросетью» остаются как были.
+  */
+  "[Нейроэксперт](https://expert.ya.ru/expert) [Нейроредактор](https://browser.yandex.ru/) [Документы с нейросетью](https://360.yandex.ru/blog/articles/kakie-zadachi-biznesa-mozhno-doverit-nejroseti-v-yandeks-dokumentah)":
+    "[Алиса Про](https://alicepro.yandex.ru/expert?&from=neuroexpert) [Документы с нейросетью](https://360.yandex.ru/blog/articles/kakie-zadachi-biznesa-mozhno-doverit-nejroseti-v-yandeks-dokumentah)",
+
+  /*
+    У сотрудников с ментальной инвалидностью порядок клиент задала сама: ясный
+    язык, документы с нейросетью, Алиса Про. Первые две ссылки прежние, у них
+    менялось только место в списке.
+
+    В источнике «Ясный язык» и «Нейроредактор» слиты без пробела — так пришло из
+    гугл-дока. В новой записи пробелы расставлены, на страницу это не влияет:
+    ссылки раскладка и так ставит каждую со своей строки.
+  */
+  "[Ясный язык](https://browser.yandex.ru/c/easy_read)[Нейроредактор](https://browser.yandex.ru/) [Документы с нейросетью](https://360.yandex.ru/blog/articles/kakie-zadachi-biznesa-mozhno-doverit-nejroseti-v-yandeks-dokumentah) [Нейроэксперт](https://expert.ya.ru/expert)":
+    "[Ясный язык](https://browser.yandex.ru/c/easy_read) [Документы с нейросетью](https://360.yandex.ru/blog/articles/kakie-zadachi-biznesa-mozhno-doverit-nejroseti-v-yandeks-dokumentah) [Алиса Про](https://alicepro.yandex.ru/expert?&from=neuroexpert)",
 };
 
 /*
