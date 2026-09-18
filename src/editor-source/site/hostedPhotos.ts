@@ -63,11 +63,15 @@ const LOGOS: Record<string, string> = {
     "https://avatars.mds.yandex.net/get-lpc/17800094/c83a2bfb-d630-40dc-bab3-d5da33a35fe9/orig?width=160&height=80",
 };
 
+/*
+  Три портрета (Гульфия Коновалова, Алина Юхневич, Елена Черных) перезалиты
+  разработчиком: новые адреса прислал Руслан Цугаев 18 сентября 2026.
+*/
 const PHOTOS: Record<string, string> = {
   "alena-merkureva":
     "https://avatars.mds.yandex.net/get-lpc/17495851/b3292b55-4979-4f83-a1ed-2e91e3c06555/orig?width=80&height=80",
   "alina-yuhnevich":
-    "https://avatars.mds.yandex.net/get-lpc/17800094/eef64b26-9699-4b9d-969e-b86517a86827/orig?width=80&height=80",
+    "https://avatars.mds.yandex.net/get-lpc/16904900/37122b5c-5311-4dd8-9361-869d60318a59/orig?width=80&height=80",
   "alla-sotnikova":
     "https://avatars.mds.yandex.net/get-lpc/16405748/0847274e-0f48-4768-bb90-9b8f345acd69/orig?width=80&height=80",
   "anastasiya-plehanova":
@@ -83,9 +87,9 @@ const PHOTOS: Record<string, string> = {
   "ekaterina-siksimova":
     "https://avatars.mds.yandex.net/get-lpc/17800094/046734c3-f678-4f47-b927-7c1dc97123bd/orig?width=80&height=80",
   "elena-chernyh":
-    "https://avatars.mds.yandex.net/get-lpc/17495851/0580cf42-cd53-4792-9c3b-9de701829de5/orig?width=80&height=80",
+    "https://avatars.mds.yandex.net/get-lpc/17495851/504c23b6-94be-4941-8ef4-a62a19e202ac/orig?width=80&height=80",
   "gulfiya-konovalova":
-    "https://avatars.mds.yandex.net/get-lpc/17495851/ecb80c5f-4c5f-4873-8c46-a4c8abc9ce08/orig?width=80&height=80",
+    "https://avatars.mds.yandex.net/get-lpc/16405748/7458cdce-2d6b-4feb-8284-1f5f7c543bd5/orig?width=80&height=80",
   "gulnara-gorishnyaya":
     "https://avatars.mds.yandex.net/get-lpc/17495851/8f70c8f6-97e8-4f4a-9d9f-9898698ad548/orig?width=164&height=164",
   "gyuzel-kazakova":
