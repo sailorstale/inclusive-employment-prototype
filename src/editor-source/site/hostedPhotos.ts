@@ -15,8 +15,7 @@
     держит у себя, это его окончательное решение (журнал, таблица «Ожидают
     внесения»);
   — портрет, которого в таблице нет, едет именем, и сторож выгрузки это
-    показывает: значит, файл разработчику ещё не отдан. Так сейчас с портретом
-    Ольги Крыловой, добавленным после 30 августа.
+    показывает: значит, файл разработчику ещё не отдан.
 
   Логотипы частных компаний (lemana-pro, sberbank, mondelis-v-rossii,
   melon-fashion-group и другие) в таблице есть, но в выгрузке их больше нет:
@@ -106,6 +105,9 @@ const PHOTOS: Record<string, string> = {
     "https://avatars.mds.yandex.net/get-lpc/17800094/a398814c-0733-4e1c-be7d-410d792ed5d1/orig?width=80&height=80",
   "mariya-losyukova":
     "https://avatars.mds.yandex.net/get-lpc/16405748/b1ecf9f7-ab2a-4cbc-ac90-7c9ffa3fab30/orig?width=80&height=80",
+  // Портрет добавлен 8 сентября 2026, адрес прислал Митя 18 сентября.
+  "olga-krylova":
+    "https://avatars.mds.yandex.net/get-lpc/17800094/165365b9-d4a5-4e1b-b99b-93c556f019be/orig?width=80&height=80",
   "olga-povorova":
     "https://avatars.mds.yandex.net/get-lpc/17800094/207f334b-3519-4da4-aa89-c0ad5982ff81/orig?width=80&height=80",
   "regina-utyasheva":
