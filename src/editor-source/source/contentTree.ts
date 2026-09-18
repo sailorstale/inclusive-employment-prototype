@@ -33,6 +33,7 @@ import { cardArt } from "./cardArt";
 import { smallImageSlug } from "@/figma/smallImageFiles";
 import { linkOrgSites } from "./orgSites";
 import { safeHref } from "@/editor-source/safeUrl";
+import { autoId } from "@/editor-source/ids";
 import { markRe } from "@/editor-source/richText";
 import {
   findSlug,
@@ -1811,12 +1812,13 @@ export function buildDoc(
       case "table": {
         /*
           Первая колонка объединяется у поимённо названных таблиц — см.
-          site/mergedTables.ts. Адресуем блок его собственным адресом, а не
-          разметкой: разметка живёт в данных, у каждого стенда своя, и решение
-          по замечанию клиента до него бы не доехало.
+          site/mergedTables.ts. Адресуем таблицу секцией и шапкой, а не
+          разметкой и не полным адресом блока: разметка живёт в данных, у
+          каждого стенда своя, а полный адрес меняется от любой правки ячейки
+          по замечанию клиента, и объединение пропадало молча (18 сентября 2026).
         */
         const merge = mergesFirstColumn(
-          blockRefId(b, `/source/${moduleId}`, it.anchor),
+          autoId(`/source/${moduleId}`, "table-header", b.header.join(" | "), it.anchor),
         );
         const rows = b.rows.map((r) => r.map(cellValue));
         return [
