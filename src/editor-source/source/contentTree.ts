@@ -1410,17 +1410,6 @@ const NON_PROSE = new Set([
 
 const isPageSummary = (g: Group) => g.dir?.target === "PageSummary";
 
-/*
-  Конверт решается ещё и по РЕЗУЛЬТАТУ, а не только по источнику. Таблица из
-  документа может собраться списком (один столбец) или заголовками с абзацами
-  (mergedTables): по виду источника needsCard просит Block, а внутри одна
-  проза. У нас Block невидим, а разработчик собирает его как Card Container:
-  список получал пустую рамку с наклейкой и пустотой сверху (показал Митя
-  17 сентября 2026, «Такой аудит помогает» на Шаге 2).
-*/
-const PROSE = new Set(["Heading", "Text", "Phrase", "Stack"]);
-const allProse = (nodes: Node[]) => nodes.every((n) => PROSE.has(n.component));
-
 function needsCard(g: Group): boolean {
   if (isPageSummary(g)) return false;
   if (g.dir?.target) return NON_PROSE.has(g.dir.target);
@@ -4406,7 +4395,7 @@ export function buildDoc(
         пустой рамкой с отступом сверху и таким же едет в выгрузку.
       */
       if (!nodes.length) continue;
-      if (needsCard(g) && !allProse(nodes))
+      if (needsCard(g))
         kids.push({
           component: "Block",
           orientation: cardOrientation(g),
