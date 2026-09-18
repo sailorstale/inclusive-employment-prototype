@@ -258,6 +258,9 @@ function NodeView({ node, path }: { node: Node; path: string }) {
   );
 }
 
+/** Проза, у которой есть свой верхний отступ: конверту добавлять нечего. */
+const PROSE_IN_BLOCK = new Set(["Heading", "Text", "Phrase", "Stack"]);
+
 function NodeBody({ node, path }: { node: Node; path: string }) {
   switch (node.component) {
     case "Heading":
@@ -327,8 +330,20 @@ function NodeBody({ node, path }: { node: Node; path: string }) {
     }
 
     case "Block":
+      /*
+        КОНВЕРТ ВОКРУГ ОДНОЙ ПРОЗЫ — БЕЗ ВЕРХНЕГО ОТСТУПА. Список во вступлении
+        страницы лежит в Block (так в файле разработчика, и структуру выгрузки
+        мы не меняем — правило Мити от 18 сентября 2026). Но 32 пикселя конверта
+        плюс 16 собственных у списка давали пустую строку между «Такой аудит
+        помогает:» и пунктами. Это только показ: в выгрузку конверт едет как был.
+      */
       return (
-        <Block orientation={node.orientation}>
+        <Block
+          orientation={node.orientation}
+          className={
+            node.children.every((c) => PROSE_IN_BLOCK.has(c.component)) ? "pt-0" : undefined
+          }
+        >
           {node.children.map((c, i) => (
             <NodeView key={i} node={c} path={`${path}.${i}`} />
           ))}
