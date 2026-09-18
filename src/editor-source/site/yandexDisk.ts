@@ -251,6 +251,26 @@ export const MOVED_DOCS: MovedDoc[] = [
     docId: "11g7QP9OJXRx5WztVtm1aQREHvHcN9XEFK14JdhBd44o",
     href: "https://disk.360.yandex.ru/i/CS33Liv70rBzdw",
   },
+  /*
+    ИИ-ИНСТРУМЕНТ ДЛЯ АНАЛИЗА АНКЕТ ПО ВСЕЙ АУДИТОРИИ — «Аудитория программы».
+    Второй из двух ИИ-инструментов на странице; первого (анализ одного человека)
+    таблица заказчика касалась, этого нет. Адрес прислал Митя 18 сентября 2026.
+  */
+  {
+    name: "ИИ-инструмент: анализ анкет по всей аудитории",
+    docId: "1-0WVx6FKTEPyHBiDwcPR2mX7LRgKLj2C",
+    href: "https://disk.360.yandex.ru/i/kGNFPShIfJffUw",
+  },
+  /*
+    ПРОМПТЫ И ШАБЛОНЫ ДЛЯ КАРТЫ КАНАЛОВ ПРИВЛЕЧЕНИЯ — задание на «Аудитории
+    программы». В таблице заказчика строки не было. Адрес прислал Митя
+    18 сентября 2026.
+  */
+  {
+    name: "Задание: карта каналов привлечения, промпты и шаблоны",
+    docId: "1T02NBbxBEnaF-E94Cvu0nFXl-fzmh0ws",
+    href: "https://disk.360.yandex.ru/i/k4YOH7HDBwyB1A",
+  },
   {
     name: "Промпт: Оформление трудового договора и других локальных актов",
     docId: "1Fxti0pt2HsQNGVJVuXSzaGZN938UaqDvG3UNHEgpOt8",
