@@ -18,9 +18,10 @@ const HOSTED: Record<string, string> = {
   "/source-media/m5/img2.png":
     "https://avatars.mds.yandex.net/get-lpc/17800094/d4ad2c13-5fe5-4fe7-9583-9115688fbf74/orig?width=1536&height=1604",
   // «Запустить программу» (/ngo/start), этапы работы НКО.
-  // Новая версия схемы от 17 сентября 2026; адрес прислал Руслан Цугаев 18 сентября.
+  // Версия в одну строку (1536×346) от 18 сентября 2026; адрес прислал Митя.
+  // Тот же файл лежит и в прототипе.
   "/source-media/m6/img1.png":
-    "https://avatars.mds.yandex.net/get-lpc/16405748/1294c38e-124f-4faf-ac14-f4a9fcd17c59/orig?width=1536&height=914",
+    "https://avatars.mds.yandex.net/get-lpc/17800094/c365df33-f8ed-41cc-a856-398b68626a09/orig?width=1536&height=346",
   // «Аудитория программы», воронка участника
   "/source-media/m6/voronka-uchastnika.png":
     "https://avatars.mds.yandex.net/get-lpc/17800094/37c1a3b4-56cb-4398-a302-998cff3dda68/orig?width=1536&height=1532",
